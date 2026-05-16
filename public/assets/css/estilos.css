@@ -1,0 +1,820 @@
+/* * é um seletor universal, ou seja, aplica-se a todos os elementos HTML da página */
+* {
+    margin: 0; /* Remove todas as margens padrão */
+    padding: 0; /* Remove os preenchimentos internos padrão */
+    box-sizing: border-box; /* Garante que a largura e altura dos elementos incluam a borda */
+    font-family: 'Titillium Web', Arial, Helvetica, sans-serif; /* Define a fonte do texto da página */
+}
+
+/* Cores principais do projeto MEDICORE - alteração feita por mim */
+:root {
+    --cor-principal: #123c46;
+    --cor-principal-escura: #0d3139;
+    --cor-secundaria: #4fb3a4;
+    --cor-secundaria-escura: #3a9c8e;
+    --cor-fundo: #f8fbfb;
+    --cor-fundo-suave: #eaf6f6;
+    --cor-texto: #425466;
+    --cor-titulo: #123c46;
+    --cor-branco: #ffffff;
+    --cor-destaque: #f2a65a;
+    --sombra-suave: 0 8px 24px rgba(18, 60, 70, 0.08);
+    --sombra-media: 0 14px 32px rgba(18, 60, 70, 0.14);
+}
+
+html {
+    scroll-behavior: smooth; /* Faz a navegação por âncoras ficar mais suave */
+}
+
+body {
+    background-color: var(--cor-fundo); /* Fundo geral mais claro e suave */
+    color: var(--cor-texto); /* Cor base do texto */
+}
+
+/* Navegação */
+.bng-navbar {
+    background-color: var(--cor-principal);
+    display: flex; /* Alinha os elementos em linha */
+    align-items: center; /* Centraliza os itens verticalmente */
+    justify-content: space-between; /* Distribui os itens igualmente */
+    padding: 12px 30px; /* Alteração feita por mim: barra um pouco maior e estável */
+    position: sticky; /* Fixa a barra no topo ao fazer scroll */
+    top: 0; /* A barra fica colada ao topo */
+    z-index: 1000; /* Garante que a navbar fica por cima do conteúdo */
+    box-shadow: 0 3px 14px rgba(18, 60, 70, 0.18); /* Sombra suave */
+    min-height: 86px; /* Alteração feita por mim: impede variações de altura */
+}
+
+.bng-navbar div {
+    display: flex; /* Coloca os elementos lado a lado */
+    align-items: center; /* Alinha-os verticalmente ao centro */
+}
+
+.bng-navbar img {
+    height: 56px; /* Alteração feita por mim: logo ligeiramente maior */
+    margin-right: 14px; /* Adiciona espaço entre o logo e o texto */
+}
+
+.bng-navbar h3 {
+    font-size: 1.45em; /* Alteração feita por mim */
+    color: var(--cor-branco); /* Cor do texto */
+    font-weight: 700;
+    letter-spacing: 2px;
+    line-height: 1;
+}
+
+/* Estilos para os links centrais da navegação */
+.container-navegacao {
+    text-align: center; /* Centraliza os links */
+    padding: 12px; /* Alteração feita por mim: navbar um pouco maior */
+    gap: 8px;
+}
+
+.container-navegacao a {
+    font-size: 1.05em; /* Alteração feita por mim */
+    margin: 0px 14px; /* Espaçamento horizontal entre os links */
+    text-decoration: none; /* Remove o sublinhado */
+    color: #dff7f0; /* Cor suave dos links */
+    font-weight: 600;
+    transition: color 0.3s, border-color 0.3s;
+    padding-bottom: 4px;
+    border-bottom: 2px solid transparent; /* Alteração feita por mim: evita a navbar expandir no hover */
+    line-height: 1.2; /* Alteração feita por mim: mantém altura estável */
+}
+
+.container-navegacao a:hover {
+    color: var(--cor-branco);
+    border-bottom-color: var(--cor-secundaria); /* Alteração feita por mim */
+}
+
+/* Estilos para o botão da Área Cliente */
+.nav-cliente a {
+    color: var(--cor-branco); /* Cor do texto */
+    background-color: var(--cor-secundaria); /* Cor do botão */
+    text-decoration: none; /* Remove sublinhado */
+    font-size: 1em; /* Alteração feita por mim */
+    padding: 11px 20px; /* Alteração feita por mim: botão proporcional à navbar */
+    border-radius: 26px; /* Bordas arredondadas */
+    transition: background 0.3s, transform 0.3s; /* Efeito suave na transição */
+    font-weight: 600;
+    white-space: nowrap;
+    line-height: 1.2;
+}
+
+/* Efeito ao passar o mouse */
+.nav-cliente a:hover {
+    background-color: var(--cor-secundaria-escura); /* Cor de fundo ao passar o mouse */
+    transform: translateY(-2px);
+}
+
+/* Texto Genérico */
+.container-texto-generico {
+    display: flex; /* Ativa o layout flexível */
+    justify-content: center; /* Centraliza os elementos horizontalmente */
+    flex-wrap: wrap; /* Permite que os elementos quebrem linha em telas menores */
+    gap: 20px; /* Adiciona espaço entre os elementos */
+    padding: 70px 40px 90px 40px; /* Alteração feita por mim */
+    text-align: center; /* Centraliza o texto dentro dos artigos */
+    min-height: auto; /* Alteração feita por mim: evita altura exagerada */
+    background: linear-gradient(180deg, #f8fbfb 0%, #eaf6f6 100%);
+}
+
+/* Seção "Sobre" */
+#sobre {
+    scroll-margin-top: 110px;
+}
+
+.sobre-content {
+    max-width: 1100px; /* Largura maior para o carrossel */
+    margin: 0 auto; /* Centra horizontalmente o conteúdo */
+}
+
+.sobre-content h1 {
+    font-size: 3em; /* Tamanho grande para o título principal */
+    margin-bottom: 16px; /* Espaçamento abaixo do título */
+    color: var(--cor-titulo);
+    font-weight: 700;
+}
+
+.sobre-content p {
+    font-size: 1.2em; /* Aumenta o tamanho da letra do parágrafo */
+    margin-bottom: 28px; /* Espaço abaixo do parágrafo */
+    color: var(--cor-texto);
+    line-height: 1.6;
+}
+
+/* Carrossel da página inicial - alteração feita por mim */
+.hero-carousel {
+    max-width: 1100px;
+    margin: 30px auto 0 auto;
+    border-radius: 24px;
+    overflow: visible; /* Alteração feita por mim: permite colocar as setas fora da imagem */
+    background-color: transparent;
+    position: relative;
+}
+
+/* Alteração feita por mim: o conteúdo visual fica arredondado, mas as setas podem ficar fora */
+.hero-carousel .carousel-inner {
+    height: 560px; /* Alteração feita por mim: altura fixa total do carrossel */
+    border-radius: 24px;
+    overflow: hidden;
+    background-color: var(--cor-branco);
+    box-shadow: 0 14px 36px rgba(18, 60, 70, 0.18);
+}
+
+/* Alteração feita por mim: mantém todos os slides com altura estável */
+.hero-carousel .carousel-item {
+    height: 560px; /* Alteração feita por mim: todos os slides têm a mesma altura */
+    background-color: var(--cor-branco);
+}
+
+/* Imagem do carrossel */
+.hero-carousel .carousel-item img,
+.hero-carousel img {
+    width: 100%;
+    height: 390px !important; /* Alteração feita por mim: todas as imagens com a mesma altura */
+    object-fit: cover;
+    display: block;
+    filter: brightness(86%);
+}
+
+/* Alteração feita por mim: texto abaixo da imagem e não sobreposto */
+.hero-carousel .carousel-caption,
+.carousel-caption {
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+
+    height: 170px; /* Alteração feita por mim: impede o carrossel de mudar de tamanho */
+    min-height: 170px;
+    max-height: 170px;
+
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    background-color: var(--cor-branco);
+    color: var(--cor-texto);
+    border-radius: 0;
+    padding: 24px 40px;
+    text-align: center;
+    backdrop-filter: none;
+}
+
+.hero-carousel .carousel-caption h2,
+.carousel-caption h2 {
+    font-size: 1.9em;
+    font-weight: 700;
+    color: var(--cor-titulo);
+    margin-bottom: 10px;
+}
+
+.hero-carousel .carousel-caption h2::after,
+.carousel-caption h2::after {
+    content: "";
+    display: block;
+    width: 70px;
+    height: 4px;
+    background-color: var(--cor-secundaria);
+    margin: 12px auto 0;
+    border-radius: 20px;
+}
+
+.hero-carousel .carousel-caption p,
+.carousel-caption p {
+    font-size: 1.1em;
+    color: var(--cor-texto);
+    margin-bottom: 0;
+    line-height: 1.5;
+    max-width: 850px;
+}
+
+/* Indicadores do carrossel */
+.hero-carousel .carousel-indicators,
+.carousel-indicators {
+    bottom: 175px; /* Alteração feita por mim: indicadores ficam na zona inferior da imagem */
+    margin-bottom: 0;
+}
+
+.hero-carousel .carousel-indicators button,
+.carousel-indicators button {
+    background-color: var(--cor-secundaria) !important;
+}
+
+/* Alteração feita por mim: setas fora da imagem */
+.hero-carousel .carousel-control-prev,
+.hero-carousel .carousel-control-next {
+    width: 48px;
+    height: 48px;
+    top: 195px; /* Alteração feita por mim: centrado verticalmente na imagem */
+    bottom: auto;
+    background-color: var(--cor-secundaria);
+    border-radius: 50%;
+    opacity: 1;
+    box-shadow: 0 8px 20px rgba(18, 60, 70, 0.18);
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+/* Alteração feita por mim: posição da seta esquerda fora da imagem */
+.hero-carousel .carousel-control-prev {
+    left: -70px;
+}
+
+/* Alteração feita por mim: posição da seta direita fora da imagem */
+.hero-carousel .carousel-control-next {
+    right: -70px;
+}
+
+.hero-carousel .carousel-control-prev:hover,
+.hero-carousel .carousel-control-next:hover {
+    background-color: var(--cor-secundaria-escura);
+    transform: scale(1.05);
+}
+
+.hero-carousel .carousel-control-prev-icon,
+.hero-carousel .carousel-control-next-icon {
+    width: 22px;
+    height: 22px;
+}
+
+/* Botões gerais */
+.button {
+    display: inline-block; /* Permite definir largura/altura e manter como botão em linha */
+    background-color: var(--cor-secundaria); /* Cor de fundo */
+    color: var(--cor-branco); /* Cor do texto branca */
+    padding: 11px 22px; /* Espaçamento interno */
+    text-decoration: none; /* Remove o sublinhado do link */
+    border-radius: 24px; /* Bordas arredondadas no botão */
+    font-weight: 600;
+    transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 6px 16px rgba(79, 179, 164, 0.25);
+}
+
+.button:hover {
+    background-color: var(--cor-secundaria-escura);
+    color: var(--cor-branco);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(79, 179, 164, 0.32);
+}
+
+/* Estilos gerais das secções */
+section {
+    padding: 90px 40px; /* Espaçamento interno nas secções */
+    text-align: center; /* Centraliza todo o conteúdo textual por padrão */
+    min-height: 100vh; /* Garante que cada secção tenha pelo menos a altura de uma janela inteira */
+    scroll-margin-top: 110px;
+}
+
+section h2 {
+    font-size: 2.8em;
+    margin-bottom: 20px;
+    color: var(--cor-titulo);
+    font-weight: 700;
+}
+
+section h2::after {
+    content: "";
+    display: block;
+    width: 70px;
+    height: 4px;
+    background-color: var(--cor-secundaria);
+    margin: 14px auto 0;
+    border-radius: 20px;
+}
+
+/* Seção Equipa */
+#nossa-equipa {
+    background-color: var(--cor-branco);
+}
+
+/* Define o estilo dos títulos h2 da secção "nossa-equipa" e "funcionalidades" */
+#nossa-equipa h2,
+#funcionalidades h2 {
+    font-size: 2.8em; /* Aumenta o tamanho da fonte para maior destaque */
+    margin-bottom: 30px; /* Adiciona espaço abaixo do título */
+}
+
+/* Estilo para o container que agrupa todos os membros da equipa */
+.equipa-container {
+    display: flex; /* Organiza os elementos em linha (flexível) */
+    flex-wrap: wrap; /* Permite que os elementos passem para a linha abaixo em ecrãs pequenos */
+    justify-content: center; /* Centraliza os elementos horizontalmente */
+}
+
+/* Estilo individual de cada membro da equipa */
+.pessoa {
+    width: 300px; /* Define uma largura fixa para cada bloco */
+    margin: 20px; /* Espaçamento entre os blocos */
+    padding: 30px 24px; /* Espaço interno dentro do bloco */
+    background-color: var(--cor-branco); /* Cor de fundo */
+    border-radius: 20px; /* Bordas arredondadas */
+    text-align: center; /* Centraliza o conteúdo */
+    box-shadow: var(--sombra-suave);
+    border: 1px solid #e1eeee;
+    transition: transform 0.3s, box-shadow 0.3s;
+
+    display: flex; /* Alteração feita por mim: deixa os cards mais consistentes */
+    flex-direction: column;
+    align-items: center;
+}
+
+.pessoa:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--sombra-media);
+}
+
+.pessoa i {
+    color: var(--cor-secundaria);
+    margin-bottom: 18px;
+}
+
+.pessoa h3 {
+    color: var(--cor-titulo);
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.pessoa p {
+    color: var(--cor-texto);
+    line-height: 1.5;
+}
+
+/* Estilo para a imagem de cada pessoa */
+.pessoa img {
+    width: 100px; /* Largura fixa da imagem */
+    height: 100px; /* Altura fixa da imagem */
+    border-radius: 50%; /* Transforma a imagem num círculo */
+    margin-bottom: 10px; /* Espaço entre a imagem e o nome */
+    object-fit: cover;
+}
+
+/* Secção Funcionalidades */
+#funcionalidades {
+    background-color: var(--cor-fundo-suave);
+}
+
+.funcionalidades-container {
+    display: flex; /* Organiza os elementos internos em linha (flexível) */
+    flex-wrap: wrap; /* Permite que os elementos passem para a linha seguinte em ecrãs menores */
+    justify-content: center; /* Centraliza os elementos horizontalmente */
+    align-items: stretch;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Mantém compatibilidade caso uses a classe antiga servicos-container */
+.servicos-container {
+    display: flex; /* Organiza os elementos internos em linha (flexível) */
+    flex-wrap: wrap; /* Permite que os elementos passem para a linha seguinte em ecrãs menores */
+    justify-content: center; /* Centraliza os elementos horizontalmente */
+    align-items: stretch;
+}
+
+.servico {
+    width: 300px; /* Define a largura de cada “cartão” de serviço */
+    margin: 20px; /* Espaçamento entre os cartões */
+    padding: 30px 24px; /* Espaçamento interno dentro de cada cartão */
+    background-color: var(--cor-branco); /* Cor de fundo */
+    border-radius: 20px; /* Bordas arredondadas para um visual mais suave */
+    text-align: center; /* Centraliza o conteúdo dentro de cada serviço */
+    box-shadow: var(--sombra-suave);
+    border: 1px solid #e1eeee;
+    transition: transform 0.3s, box-shadow 0.3s;
+
+    display: flex; /* Alteração feita por mim: melhora o alinhamento interno */
+    flex-direction: column;
+    align-items: center;
+}
+
+.servico:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--sombra-media);
+}
+
+.servico i {
+    color: var(--cor-secundaria);
+    margin-bottom: 18px;
+}
+
+.servico h3 {
+    color: var(--cor-titulo);
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.servico p {
+    color: var(--cor-texto);
+    line-height: 1.5;
+}
+
+.servico img {
+    width: 100px; /* Largura da imagem */
+    height: 100px; /* Altura da imagem */
+    border-radius: 50%; /* Torna a imagem circular */
+    margin-bottom: 10px; /* Espaço entre a imagem e o texto seguinte */
+    object-fit: cover;
+}
+
+/* Secção Equipamentos */
+#equipamentos {
+    background-color: var(--cor-branco);
+}
+
+/* Estilos para a secção Gestão Hospitalar */
+#gestao-hospitalar {
+    background: linear-gradient(180deg, #eaf6f6 0%, #f8fbfb 100%);
+}
+
+.pacotes-container {
+    display: flex; /* Organiza os pacotes lado a lado */
+    flex-wrap: wrap; /* Permite quebra de linha em ecrãs pequenos */
+    justify-content: center; /* Centraliza os pacotes horizontalmente */
+    align-items: stretch; /* Alteração feita por mim: força os cards a terem a mesma altura */
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.pacote {
+    width: 300px; /* Largura de cada cartão */
+    min-height: 390px; /* Alteração feita por mim: altura mínima igual entre cards */
+    margin: 20px; /* Espaço entre os cartões */
+    padding: 34px 24px 30px 24px; /* Espaço interno dentro de cada cartão */
+    background-color: var(--cor-branco); /* Fundo branco */
+    border-radius: 20px; /* Bordas arredondadas */
+    text-align: center; /* Centraliza o conteúdo */
+    box-shadow: var(--sombra-suave);
+    border: 1px solid #e1eeee;
+    transition: transform 0.3s, box-shadow 0.3s;
+
+    display: flex; /* Alteração feita por mim */
+    flex-direction: column; /* Alteração feita por mim */
+    justify-content: flex-start; /* Alteração feita por mim */
+}
+
+.pacote:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--sombra-media);
+}
+
+.pacote h3 {
+    color: var(--cor-titulo);
+    font-weight: 700;
+    margin-bottom: 10px;
+    min-height: 76px; /* Alteração feita por mim: títulos com espaço semelhante */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pacote .preco {
+    font-size: 1.4em;
+    font-weight: bold;
+    margin-bottom: 14px;
+    color: var(--cor-secundaria);
+    min-height: 34px; /* Alteração feita por mim */
+}
+
+.pacote ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 24px;
+    flex-grow: 1; /* Alteração feita por mim: empurra o botão para baixo */
+}
+
+.pacote ul li {
+    margin-bottom: 8px;
+    color: var(--cor-texto);
+}
+
+/* Alteração feita por mim: botões dos cards alinhados */
+.pacote .button {
+    margin-top: auto;
+    align-self: center;
+    min-width: 130px;
+}
+
+/* Secção Contacto */
+#contacto {
+    background-color: var(--cor-branco);
+}
+
+#contacto p {
+    font-size: 1.1em;
+    margin-bottom: 28px;
+    color: var(--cor-texto);
+}
+
+#contacto form {
+    display: flex; /* Usa layout flexível */
+    flex-direction: column; /* Organiza os elementos na vertical */
+    max-width: 520px; /* Limita a largura do formulário */
+    margin: 0 auto; /* Centraliza horizontalmente */
+    background-color: var(--cor-fundo-suave);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: var(--sombra-suave);
+    text-align: left;
+}
+
+#contacto label {
+    margin-top: 10px; /* Espaço acima de cada rótulo (label) */
+    margin-bottom: 6px;
+    color: var(--cor-titulo);
+    font-weight: 600;
+}
+
+#contacto input,
+#contacto textarea {
+    padding: 12px; /* Espaço interno (dentro do campo) */
+    margin-bottom: 15px; /* Espaço abaixo de cada campo */
+    border: 1px solid #cfe4e4; /* Borda suave */
+    border-radius: 12px; /* Bordas arredondadas */
+    outline: none;
+    color: var(--cor-texto);
+    background-color: var(--cor-branco);
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+#contacto input:focus,
+#contacto textarea:focus {
+    border-color: var(--cor-secundaria);
+    box-shadow: 0 0 0 3px rgba(79, 179, 164, 0.18);
+}
+
+#contacto button {
+    background-color: var(--cor-secundaria); /* Cor de fundo do botão */
+    color: var(--cor-branco); /* Cor do texto do botão */
+    padding: 12px 20px; /* Espaçamento interno do botão */
+    border: none; /* Remove a borda padrão */
+    border-radius: 24px; /* Bordas arredondadas */
+    cursor: pointer; /* Cursor tipo "mão" ao passar por cima */
+    font-weight: 700;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+#contacto button:hover {
+    background-color: var(--cor-secundaria-escura);
+    transform: translateY(-2px);
+}
+
+/* Estilos para o Rodapé */
+.footer-container {
+    display: flex; /* Ativa o layout flexível */
+    background-color: var(--cor-principal); /* Cor de fundo escura */
+    color: var(--cor-branco); /* Cor do texto */
+    padding: 28px 20px; /* Espaçamento interno */
+    flex-wrap: wrap; /* Permite que os itens fiquem responsivos */
+    width: 100%; /* Faz o rodapé ocupar toda a largura da página */
+}
+
+.footer-section {
+    flex: 1; /* Faz com que as seções tenham tamanhos iguais */
+    min-width: 250px; /* Garante que cada seção tenha um tamanho mínimo */
+    padding: 10px; /* Espaçamento interno */
+    text-align: center; /* Centraliza o texto */
+}
+
+.footer-section strong {
+    font-size: 1rem; /* Define o tamanho da fonte dos títulos */
+    display: block; /* Faz com que ocupe toda a largura */
+    margin-bottom: 10px; /* Adiciona um espaço abaixo do título */
+    color: var(--cor-branco); /* Cor do texto */
+    letter-spacing: 1px;
+}
+
+.footer-section p {
+    font-size: 0.95rem; /* Define o tamanho da fonte dos parágrafos */
+    color: #dff7f0; /* Cor do texto mais suave */
+    margin-bottom: 5px;
+}
+
+/* Responsividade para tablets */
+@media (max-width: 1100px) {
+    .bng-navbar {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        min-height: auto;
+    }
+
+    .container-navegacao {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .container-navegacao a {
+        margin: 6px 10px;
+        font-size: 0.95em;
+    }
+
+    .hero-carousel .carousel-inner {
+        height: 540px;
+    }
+
+    .hero-carousel .carousel-item {
+        height: 540px;
+    }
+
+    .hero-carousel .carousel-item img,
+    .hero-carousel img {
+        height: 360px !important;
+    }
+
+    .hero-carousel .carousel-caption,
+    .carousel-caption {
+        height: 180px;
+        min-height: 180px;
+        max-height: 180px;
+    }
+
+    .hero-carousel .carousel-control-prev,
+    .hero-carousel .carousel-control-next {
+        top: 180px;
+    }
+
+    .hero-carousel .carousel-control-prev {
+        left: -60px;
+    }
+
+    .hero-carousel .carousel-control-next {
+        right: -60px;
+    }
+
+    .hero-carousel .carousel-indicators,
+    .carousel-indicators {
+        bottom: 185px;
+    }
+}
+
+/* Responsividade para telemóveis */
+@media (max-width: 768px) {
+    .bng-navbar {
+        padding: 10px 16px;
+    }
+
+    .bng-navbar img {
+        height: 42px;
+    }
+
+    .bng-navbar h3 {
+        font-size: 1.15em;
+    }
+
+    .container-navegacao {
+        flex-direction: column;
+        padding: 10px 0;
+    }
+
+    .container-navegacao a {
+        display: block;
+        margin: 4px 0;
+        font-size: 0.95em;
+    }
+
+    .nav-cliente a {
+        font-size: 0.9em;
+        padding: 8px 15px;
+    }
+
+    .container-texto-generico {
+        padding: 60px 20px;
+    }
+
+    section {
+        padding: 70px 20px;
+    }
+
+    .sobre-content h1 {
+        font-size: 2.2em;
+    }
+
+    .sobre-content p {
+        font-size: 1.05em;
+    }
+
+    section h2 {
+        font-size: 2.1em;
+    }
+
+    .hero-carousel {
+        overflow: hidden; /* No telemóvel as setas ficam dentro para não sair do ecrã */
+        border-radius: 16px;
+    }
+
+    .hero-carousel .carousel-inner {
+        height: 480px;
+        border-radius: 16px;
+    }
+
+    .hero-carousel .carousel-item {
+        height: 480px;
+    }
+
+    .hero-carousel .carousel-item img,
+    .hero-carousel img {
+        height: 280px !important;
+    }
+
+    .hero-carousel .carousel-caption,
+    .carousel-caption {
+        display: flex !important;
+        height: 200px;
+        min-height: 200px;
+        max-height: 200px;
+        padding: 18px 20px 24px 20px;
+    }
+
+    .hero-carousel .carousel-caption h2,
+    .carousel-caption h2 {
+        font-size: 1.35em;
+    }
+
+    .hero-carousel .carousel-caption p,
+    .carousel-caption p {
+        font-size: 1em;
+    }
+
+    .hero-carousel .carousel-indicators,
+    .carousel-indicators {
+        display: none;
+    }
+
+    .hero-carousel .carousel-control-prev,
+    .hero-carousel .carousel-control-next {
+        top: 140px;
+        width: 42px;
+        height: 42px;
+    }
+
+    .hero-carousel .carousel-control-prev {
+        left: 12px;
+    }
+
+    .hero-carousel .carousel-control-next {
+        right: 12px;
+    }
+
+    .pessoa,
+    .servico,
+    .pacote {
+        width: 100%;
+        max-width: 340px;
+    }
+
+    .pacote {
+        min-height: auto;
+    }
+
+    .pacote h3 {
+        min-height: auto;
+    }
+
+    #contacto form {
+        padding: 22px;
+    }
+}
