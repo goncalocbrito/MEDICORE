@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEDICORE | Área Técnica</title>
+
+    <!-- favicon -->
+    <link rel="shortcut icon" href="../../assets/img/MEDICORE_icon.png" type="image/png">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- estilos CSS -->
+    <link rel="stylesheet" href="../../assets/css/1230404.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../assets/fontawesome/all.min.css">
+
+    </head>
+
+    <body>
+
+        <!-- Navbar superior -->
+        <header class="container-fluid top-header">
+
+            <div class="row align-items-center">
+
+                <!-- Logo e Nome -->
+                <div class="col-md-4 d-flex align-items-center p-3">
+                    <a href="../../index.html">
+                        <img src="../../assets/img/MEDICORE_logotipo_branco.png"
+                            alt="Logo da MEDICORE"
+                            class="logo-private">
+                    </a>
+
+                </div>
+
+                <!-- Mensagem central -->
+                <div class="col-md-4 text-center p-3">
+                    <div class="mensagem-topo">
+                        <i class="fa-solid fa-user-doctor me-2"></i>
+                        <span>Bem-vindo, Sr. Engenheiro Gonçalo</span>
+                    </div>
+                </div>
+                
+                <!-- Utilizador -->
+                <div class="col-md-4 text-md-end p-3">
+
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle user-button"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                            <i class="fa-regular fa-user me-2"></i> Eng. Biomédico
+                        </button>
+
+                        <ul class="dropdown-menu dropdown-menu-end">
+
+                            <li>
+                                <a class="dropdown-item" href="perfil.php">
+                                    <i class="fa-solid fa-user-gear me-2"></i> Perfil técnico
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="alterar_password.php">
+                                    <i class="fa-solid fa-key me-2"></i> Alterar password
+                                </a>
+                            </li>
+
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="logout.php">
+                                    <i class="fa-solid fa-right-from-bracket me-2"></i> Sair
+                                </a>
+                            </li>
+
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
+
+        </header>
+
+        <!-- Menu horizontal da área privada -->
+        <nav class="navbar navbar-expand-lg menu-horizontal">
+            <div class="container-fluid">
+
+                <button class="navbar-toggler bg-light"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#menuPrivado"
+                        aria-controls="menuPrivado"
+                        aria-expanded="false"
+                        aria-label="Abrir menu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse justify-content-center" id="menuPrivado">
+                    <ul class="navbar-nav">
+
+                        <li class="nav-item">
+                            <a href="index.php" class="nav-link active">
+                                <i class="fa-solid fa-chart-line me-2"></i> Dashboard Técnico
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="views/equipamentos/lista.php" class="nav-link">
+                                <i class="fa-solid fa-stethoscope me-2"></i> Equipamentos
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="views/manutencoes/lista.php" class="nav-link">
+                                <i class="fa-solid fa-screwdriver-wrench me-2"></i> Manutenções
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="views/avarias/lista.php" class="nav-link">
+                                <i class="fa-solid fa-triangle-exclamation me-2"></i> Avarias
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="views/fornecedores/lista.php" class="nav-link">
+                                <i class="fa-solid fa-truck-medical me-2"></i> Fornecedores
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="views/relatorios/index.php" class="nav-link">
+                                <i class="fa-solid fa-file-medical me-2"></i> Relatórios
+                            </a>
+                        </li>
+
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <main class="conteudo-private">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="titulo-pagina">Gestão de Equipamentos</h2>
+                <p class="subtitulo-pagina">
+                    Consulta, registo e acompanhamento dos equipamentos médicos hospitalares.
+                </p>
+            </div>
+
+            <a href="adicionar.php" class="btn btn-adicionar">
+                <i class="fa-solid fa-plus me-2"></i> Adicionar Equipamento
+            </a>
+        </div>
+
+        <div class="table-responsive tabela-container">
+            <table class="table table-hover align-middle tabela-equipamentos">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Equipamento</th>
+                        <th>Categoria</th>
+                        <th>Fabricante</th>
+                        <th>Modelo</th>
+                        <th>Nº Série</th>
+                        <th>Localização</th>
+                        <th>Estado</th>
+                        <th>Última Manutenção</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>EQ-001</td>
+                        <td>Monitor Multiparamétrico</td>
+                        <td>Monitorização</td>
+                        <td>Philips</td>
+                        <td>IntelliVue MX450</td>
+                        <td>SN-MX450-2024</td>
+                        <td>UCI - Sala 2</td>
+                        <td>
+                            <span class="estado estado-ativo">Ativo</span>
+                        </td>
+                        <td>12/03/2026</td>
+                        <td class="text-center">
+                            <a href="detalhes.php?id=1" class="btn btn-sm btn-detalhes" title="Ver detalhes">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+
+                            <a href="editar.php?id=1" class="btn btn-sm btn-editar" title="Editar equipamento">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+
+                            <button class="btn btn-sm btn-eliminar" title="Eliminar equipamento">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>EQ-002</td>
+                        <td>Ventilador Pulmonar</td>
+                        <td>Suporte de Vida</td>
+                        <td>Dräger</td>
+                        <td>Evita V300</td>
+                        <td>SN-EV300-1198</td>
+                        <td>Urgência - Sala 1</td>
+                        <td>
+                            <span class="estado estado-manutencao">Em manutenção</span>
+                        </td>
+                        <td>28/02/2026</td>
+                        <td class="text-center">
+                            <a href="detalhes.php?id=2" class="btn btn-sm btn-detalhes" title="Ver detalhes">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+
+                            <a href="editar.php?id=2" class="btn btn-sm btn-editar" title="Editar equipamento">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+
+                            <button class="btn btn-sm btn-eliminar" title="Eliminar equipamento">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>EQ-003</td>
+                        <td>Desfibrilhador</td>
+                        <td>Emergência</td>
+                        <td>Zoll</td>
+                        <td>R Series</td>
+                        <td>SN-ZOLL-8821</td>
+                        <td>Bloco Operatório</td>
+                        <td>
+                            <span class="estado estado-avariado">Avariado</span>
+                        </td>
+                        <td>05/01/2026</td>
+                        <td class="text-center">
+                            <a href="detalhes.php?id=3" class="btn btn-sm btn-detalhes" title="Ver detalhes">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+
+                            <a href="editar.php?id=3" class="btn btn-sm btn-editar" title="Editar equipamento">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+
+                            <button class="btn btn-sm btn-eliminar" title="Eliminar equipamento">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

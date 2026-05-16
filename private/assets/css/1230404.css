@@ -222,3 +222,137 @@ body {
     justify-content: center;
 }
 
+/* Página de Equipamentos - alteração feita por mim */
+
+.titulo-pagina {
+    color: var(--cor-principal);
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
+.subtitulo-pagina {
+    color: var(--cor-texto);
+    margin-bottom: 0;
+}
+
+.btn-adicionar {
+    background-color: var(--cor-secundaria);
+    color: var(--cor-branco);
+    border-radius: 24px;
+    padding: 10px 20px;
+    font-weight: 700;
+    box-shadow: 0 6px 16px rgba(79, 179, 164, 0.25);
+}
+
+.btn-adicionar:hover {
+    background-color: var(--cor-secundaria-escura);
+    color: var(--cor-branco);
+}
+
+.tabela-container {
+    background-color: var(--cor-branco);
+    border-radius: 20px;
+    padding: 22px;
+    box-shadow: 0 8px 24px rgba(18, 60, 70, 0.08);
+    border: 1px solid #e1eeee;
+}
+
+.tabela-equipamentos {
+    margin-bottom: 0;
+}
+
+.tabela-equipamentos thead th {
+    background-color: #eaf6f6;
+    color: var(--cor-principal);
+    font-weight: 700;
+    border-bottom: none;
+    white-space: nowrap;
+}
+
+.tabela-equipamentos tbody td {
+    color: var(--cor-texto);
+    vertical-align: middle;
+}
+
+.tabela-equipamentos tbody tr:hover {
+    background-color: #f4fbfb;
+}
+
+/* Estados dos equipamentos */
+.estado {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.estado-ativo {
+    background-color: #dff7f0;
+    color: #24796e;
+}
+
+.estado-manutencao {
+    background-color: #fff3cd;
+    color: #9a6a00;
+}
+
+.estado-avariado {
+    background-color: #f8d7da;
+    color: #9f2534;
+}
+
+.estado-inativo {
+    background-color: #e2e3e5;
+    color: #555;
+}
+
+.estado-abatido {
+    background-color: #d6d8db;
+    color: #2f3337;
+}
+
+/* Botões de ações */
+.btn-detalhes,
+.btn-editar,
+.btn-eliminar {
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 3px;
+}
+
+.btn-detalhes {
+    background-color: #eaf6f6;
+    color: var(--cor-principal);
+}
+
+.btn-detalhes:hover {
+    background-color: var(--cor-secundaria);
+    color: var(--cor-branco);
+}
+
+.btn-editar {
+    background-color: #fff3cd;
+    color: #9a6a00;
+}
+
+.btn-editar:hover {
+    background-color: #f2a65a;
+    color: var(--cor-branco);
+}
+
+.btn-eliminar {
+    background-color: #f8d7da;
+    color: #9f2534;
+    border: none;
+}
+
+.btn-eliminar:hover {
+    background-color: #c0392b;
+    color: var(--cor-branco);
+}
