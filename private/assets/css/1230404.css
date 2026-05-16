@@ -1,0 +1,224 @@
+* {
+    font-family: 'Titillium Web', Arial, Helvetica, sans-serif;
+}
+
+:root {
+    --cor-principal: #123c46;
+    --cor-secundaria: #4fb3a4;
+    --cor-secundaria-escura: #3a9c8e;
+    --cor-fundo: #f8fbfb;
+    --cor-fundo-suave: #eaf6f6;
+    --cor-texto: #425466;
+    --cor-branco: #ffffff;
+}
+
+body {
+    background-color: var(--cor-fundo);
+    color: var(--cor-texto);
+}
+
+/* Navbar superior da área privada */
+.top-header {
+    background-color: var(--cor-principal);
+    color: var(--cor-branco);
+    box-shadow: 0 2px 12px rgba(18, 60, 70, 0.18);
+}
+
+.logo-private {
+    height: 48px;
+    margin-right: 14px;
+}
+
+.titulo-private {
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin: 0;
+}
+
+/* Botão do utilizador */
+.user-button {
+    background-color: var(--cor-secundaria);
+    border: none;
+    border-radius: 24px;
+    padding: 9px 18px;
+    font-weight: 600;
+}
+
+.user-button:hover {
+    background-color: var(--cor-secundaria-escura);
+}
+
+/* Menu horizontal */
+.menu-horizontal {
+    background-color: #0f3440;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.menu-horizontal .nav-link {
+    color: #dff7f0;
+    font-weight: 600;
+    padding: 14px 18px;
+    border-bottom: 3px solid transparent;
+    transition: color 0.3s, border-color 0.3s, background-color 0.3s;
+}
+
+.menu-horizontal .nav-link:hover,
+.menu-horizontal .nav-link.active {
+    color: var(--cor-branco);
+    border-bottom-color: var(--cor-secundaria);
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* Conteúdo principal */
+.conteudo-private {
+    padding: 40px;
+}
+
+/* Caixa de boas-vindas */
+.bem-vindo {
+    background: linear-gradient(135deg, #ffffff 0%, #f4fbfb 100%);
+    border-radius: 24px;
+    padding: 36px;
+    margin-bottom: 32px;
+    border: 1px solid #d6ece8;
+    border-left: 8px solid var(--cor-secundaria); /* Alteração feita por mim */
+    box-shadow: 0 10px 26px rgba(18, 60, 70, 0.08); /* Alteração feita por mim */
+}
+
+.bem-vindo h2 {
+    color: var(--cor-principal);
+    font-weight: 800;
+    margin-bottom: 14px;
+}
+
+.bem-vindo p {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    margin-bottom: 0;
+    color: var(--cor-texto);
+}
+
+/* Cards do dashboard */
+.dashboard-card {
+    background-color: var(--cor-branco);
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 8px 24px rgba(18, 60, 70, 0.08);
+    border: 1px solid #e1eeee;
+    height: 100%;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 32px rgba(18, 60, 70, 0.14);
+}
+
+.dashboard-card i {
+    color: var(--cor-secundaria);
+    margin-bottom: 16px;
+}
+
+.dashboard-card h4 {
+    color: var(--cor-principal);
+    font-weight: 700;
+}
+
+.dashboard-card p {
+    margin-bottom: 0;
+    line-height: 1.5;
+}
+
+/* Responsividade */
+@media (max-width: 991px) {
+    .menu-horizontal .nav-link {
+        padding: 12px 14px;
+    }
+
+    .conteudo-private {
+        padding: 24px;
+    }
+
+    .bem-vindo {
+        padding: 28px;
+    }
+
+    .mensagem-topo {
+        font-size: 0.92rem;
+        padding: 8px 14px;
+    }
+}
+
+@media (max-width: 768px) {
+    .logo-private {
+        height: 40px;
+    }
+
+    .titulo-private {
+        font-size: 1.3rem;
+    }
+
+    .top-header .text-md-end {
+        text-align: left !important;
+    }
+
+    .user-button {
+        margin-top: 10px;
+    }
+
+    .conteudo-private {
+        padding: 20px;
+    }
+
+    .bem-vindo h2 {
+        font-size: 1.7rem;
+    }
+
+    .top-header .text-center {
+        justify-content: flex-start;
+    }
+
+    .mensagem-topo {
+        margin-top: 8px;
+        white-space: normal;
+        text-align: center;
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Mensagem central do topo - alteração feita por mim */
+.mensagem-topo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.10);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    white-space: nowrap;
+}
+
+.mensagem-topo i {
+    color: #8fe3d6;
+    font-size: 1rem;
+}
+
+/* Ajuste do cabeçalho superior - alteração feita por mim */
+.top-header .row {
+    min-height: 86px;
+}
+
+/* Melhorar alinhamento central em ecrãs maiores */
+.top-header .text-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
