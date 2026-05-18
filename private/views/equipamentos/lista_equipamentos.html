@@ -115,10 +115,25 @@
                             </a>
                         </li>
 
-                        <li class="nav-item">
-                            <a href="views/equipamentos/lista.php" class="nav-link">
+                        <li class="nav-item menu-dropdown-hover">
+                            <a href="lista_equipamentos.html" class="nav-link">
                                 <i class="fa-solid fa-stethoscope me-2"></i> Equipamentos
+                                <i class="fa-solid fa-chevron-down ms-1 small"></i>
                             </a>
+
+                            <ul class="submenu-equipamentos">
+                                <li>
+                                    <a href="lista_equipamentos.html">
+                                        <i class="fa-solid fa-list me-2"></i> Lista de Equipamentos
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="views/equipamentos/novo_equipamento.html">
+                                        <i class="fa-solid fa-plus me-2"></i> Novo Equipamento
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
 
                         <li class="nav-item">
@@ -160,7 +175,7 @@
                 </p>
             </div>
 
-            <a href="adicionar.php" class="btn btn-adicionar">
+            <a href="novo_equipamento.html" class="btn btn-adicionar">
                 <i class="fa-solid fa-plus me-2"></i> Adicionar Equipamento
             </a>
         </div>

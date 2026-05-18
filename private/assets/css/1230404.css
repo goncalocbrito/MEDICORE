@@ -356,3 +356,228 @@ body {
     background-color: #c0392b;
     color: var(--cor-branco);
 }
+
+/*novo_equipamento.html*/
+
+/* Dropdown no menu Equipamentos - alteração feita por mim */
+.menu-dropdown-hover {
+    position: relative;
+}
+
+.submenu-equipamentos {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 230px;
+    padding: 10px 0;
+    margin: 0;
+    list-style: none;
+    background-color: #123c46;
+    border-radius: 0 0 16px 16px;
+    box-shadow: 0 12px 28px rgba(18, 60, 70, 0.22);
+    z-index: 1200;
+}
+
+.menu-dropdown-hover:hover .submenu-equipamentos {
+    display: block;
+}
+
+.submenu-equipamentos li a {
+    display: block;
+    color: #dff7f0;
+    text-decoration: none;
+    padding: 12px 18px;
+    font-weight: 600;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.submenu-equipamentos li a:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+
+/* Página Novo Equipamento - alteração feita por mim */
+.titulo-pagina {
+    color: var(--cor-principal);
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
+.subtitulo-pagina {
+    color: var(--cor-texto);
+    margin-bottom: 0;
+}
+
+.btn-adicionar,
+.btn-guardar {
+    background-color: var(--cor-secundaria);
+    color: var(--cor-branco);
+    border-radius: 24px;
+    padding: 10px 20px;
+    font-weight: 700;
+    box-shadow: 0 6px 16px rgba(79, 179, 164, 0.25);
+    border: none;
+}
+
+.btn-adicionar:hover,
+.btn-guardar:hover {
+    background-color: var(--cor-secundaria-escura);
+    color: var(--cor-branco);
+}
+
+.btn-voltar {
+    background-color: #eaf6f6;
+    color: var(--cor-principal);
+    border-radius: 24px;
+    padding: 10px 20px;
+    font-weight: 700;
+    border: 1px solid #d6ece8;
+}
+
+.btn-voltar:hover {
+    background-color: var(--cor-principal);
+    color: var(--cor-branco);
+}
+
+.form-equipamento {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.form-card {
+    background-color: var(--cor-branco);
+    border: 1px solid #d6ece8;
+    border-left: 6px solid var(--cor-secundaria);
+    border-radius: 22px;
+    padding: 30px;
+    margin-bottom: 28px;
+    box-shadow: 0 8px 24px rgba(18, 60, 70, 0.08);
+}
+
+.form-card h4 {
+    color: var(--cor-principal);
+    font-weight: 800;
+    margin-bottom: 24px;
+}
+
+.form-card h4 i {
+    color: var(--cor-secundaria);
+}
+
+.form-label {
+    color: var(--cor-principal);
+    font-weight: 700;
+}
+
+.form-control,
+.form-select {
+    border-radius: 14px;
+    border: 1px solid #cfe4e4;
+    padding: 11px 14px;
+    color: var(--cor-texto);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--cor-secundaria);
+    box-shadow: 0 0 0 3px rgba(79, 179, 164, 0.18);
+}
+
+.form-check-input:checked {
+    background-color: var(--cor-secundaria);
+    border-color: var(--cor-secundaria);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 14px;
+    margin-top: 20px;
+    margin-bottom: 40px;
+}
+
+.btn-cancelar {
+    background-color: #f8d7da;
+    color: #9f2534;
+    border-radius: 24px;
+    padding: 10px 20px;
+    font-weight: 700;
+}
+
+.btn-cancelar:hover {
+    background-color: #c0392b;
+    color: #ffffff;
+}
+
+.btn-limpar {
+    background-color: #fff3cd;
+    color: #9a6a00;
+    border-radius: 24px;
+    padding: 10px 20px;
+    font-weight: 700;
+}
+
+.btn-limpar:hover {
+    background-color: #f2a65a;
+    color: #ffffff;
+}
+
+/* Responsividade do formulário - alteração feita por mim */
+@media (max-width: 768px) {
+    .form-card {
+        padding: 22px;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .form-actions .btn {
+        width: 100%;
+    }
+
+    .submenu-equipamentos {
+        position: static;
+        display: block;
+        box-shadow: none;
+        border-radius: 0;
+        background-color: rgba(255, 255, 255, 0.04);
+    }
+}
+
+/* Botão de ajuda da criticidade - alteração feita por mim */
+.btn-ajuda-criticidade {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: 50%;
+    background-color: #eaf6f6;
+    color: var(--cor-secundaria);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.btn-ajuda-criticidade:hover {
+    background-color: var(--cor-secundaria);
+    color: #ffffff;
+    transform: scale(1.08);
+}
+
+.btn-ajuda-criticidade:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(79, 179, 164, 0.18);
+}
+
+.texto-ajuda-form {
+    display: block;
+    margin-top: 8px;
+    color: #6b7c8f;
+    font-size: 0.92rem;
+    line-height: 1.4;
+}
