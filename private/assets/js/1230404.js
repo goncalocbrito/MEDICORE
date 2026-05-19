@@ -187,3 +187,252 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 });
+
+// Temporário
+// Adicionar vários documentos ao formulário de novo equipamento
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const btnAdicionarDocumento = document.getElementById("btnAdicionarDocumento");
+    const listaDocumentos = document.getElementById("listaDocumentos");
+
+    function atualizarBotoesRemoverDocumento() {
+        if (!listaDocumentos) return;
+
+        const documentos = listaDocumentos.querySelectorAll(".documento-form-item");
+        const botoesRemover = listaDocumentos.querySelectorAll(".btn-remover-documento");
+
+        botoesRemover.forEach(function (botao) {
+            if (documentos.length <= 1) {
+                botao.style.visibility = "hidden";
+                botao.disabled = true;
+            } else {
+                botao.style.visibility = "visible";
+                botao.disabled = false;
+            }
+        });
+    }
+
+    if (btnAdicionarDocumento && listaDocumentos) {
+
+        atualizarBotoesRemoverDocumento();
+
+        btnAdicionarDocumento.addEventListener("click", function () {
+
+            const novoDocumento = document.createElement("div");
+            novoDocumento.classList.add("documento-form-item");
+
+            novoDocumento.innerHTML = `
+                <div class="row g-4 align-items-end">
+
+                    <div class="col-md-4">
+                        <label class="form-label">Tipo de Documento</label>
+                        <select class="form-select" name="tipoDocumento[]">
+                            <option value="">Selecionar tipo</option>
+                            <option value="fotografia">Fotografia do Equipamento</option>
+                            <option value="manual">Manual de Instruções</option>
+                            <option value="certificado_calibracao">Certificado de Calibração</option>
+                            <option value="certificado_manutencao">Certificado de Manutenção</option>
+                            <option value="ficha_tecnica">Ficha Técnica</option>
+                            <option value="garantia">Documento de Garantia</option>
+                            <option value="outro">Outro</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Nome do Documento</label>
+                        <input type="text"
+                               class="form-control"
+                               name="nomeDocumento[]"
+                               placeholder="Ex: Certificado de calibração 2026">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Ficheiro</label>
+                        <input type="file"
+                               class="form-control"
+                               name="ficheiroDocumento[]">
+                    </div>
+
+                    <div class="col-md-1 text-end">
+                        <button type="button" class="btn btn-remover-documento" title="Remover documento">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+
+                </div>
+            `;
+
+            listaDocumentos.appendChild(novoDocumento);
+            atualizarBotoesRemoverDocumento();
+        });
+
+
+        listaDocumentos.addEventListener("click", function (event) {
+
+            const botaoRemover = event.target.closest(".btn-remover-documento");
+
+            if (botaoRemover) {
+                const documento = botaoRemover.closest(".documento-form-item");
+                documento.remove();
+                atualizarBotoesRemoverDocumento();
+            }
+
+        });
+
+    }
+
+});
+
+// Preencher formulário de edição de equipamento
+// Alteração feita por mim
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const formEditar = document.getElementById("formEditarEquipamento");
+
+    if (!formEditar) return;
+
+    const equipamentosEditar = {
+        "EQ-001": {
+            codigo: "EQ-001",
+            nome: "Monitor Multiparamétrico",
+            categoria: "Monitorização",
+            fabricante: "Philips",
+            modelo: "IntelliVue MX450",
+            serie: "SN-MX450-2024",
+            departamento: "Unidade de Cuidados Intensivos",
+            edificio: "Edifício A",
+            piso: "2",
+            sala: "Sala 2",
+            estado: "Ativo",
+            criticidade: "Crítica",
+            operacional: "Operacional",
+            fornecedor: "MedSupply Portugal",
+            dataFabrico: "2023-11-10",
+            dataAquisicao: "2024-01-15",
+            dataInstalacao: "2024-01-20",
+            valorAquisicao: "3500.00",
+            fimGarantia: "2027-01-20",
+            contratoManutencao: "Sim",
+            ultimaManutencao: "2026-03-12",
+            ultimaCalibracao: "2026-03-12",
+            proximaCalibracao: "2026-09-12",
+            periodicidade: "Semestral",
+            responsavelTecnico: "Eng. Gonçalo Brito",
+            observacoes: "Equipamento em funcionamento normal, localizado na UCI."
+        },
+
+        "EQ-002": {
+            codigo: "EQ-002",
+            nome: "Ventilador Pulmonar",
+            categoria: "Suporte de Vida",
+            fabricante: "Dräger",
+            modelo: "Evita V300",
+            serie: "SN-EV300-1198",
+            departamento: "Urgência",
+            edificio: "Edifício B",
+            piso: "0",
+            sala: "Sala 1",
+            estado: "Em manutenção",
+            criticidade: "Crítica",
+            operacional: "Não operacional",
+            fornecedor: "Biomedical Solutions",
+            dataFabrico: "2022-12-05",
+            dataAquisicao: "2023-06-10",
+            dataInstalacao: "2023-06-18",
+            valorAquisicao: "12500.00",
+            fimGarantia: "2026-06-18",
+            contratoManutencao: "Sim",
+            ultimaManutencao: "2026-02-28",
+            ultimaCalibracao: "2026-02-28",
+            proximaCalibracao: "2026-08-28",
+            periodicidade: "Semestral",
+            responsavelTecnico: "Eng. Gonçalo Brito",
+            observacoes: "Equipamento em manutenção preventiva."
+        },
+
+        "EQ-003": {
+            codigo: "EQ-003",
+            nome: "Desfibrilhador",
+            categoria: "Emergência",
+            fabricante: "Zoll",
+            modelo: "R Series",
+            serie: "SN-ZOLL-8821",
+            departamento: "Bloco Operatório",
+            edificio: "Edifício C",
+            piso: "1",
+            sala: "Bloco Operatório",
+            estado: "Avariado",
+            criticidade: "Crítica",
+            operacional: "Não operacional",
+            fornecedor: "ClinicalTech Equipamentos",
+            dataFabrico: "2021-05-20",
+            dataAquisicao: "2022-09-02",
+            dataInstalacao: "2022-09-08",
+            valorAquisicao: "8900.00",
+            fimGarantia: "2025-09-08",
+            contratoManutencao: "Em análise",
+            ultimaManutencao: "2026-01-05",
+            ultimaCalibracao: "2026-01-05",
+            proximaCalibracao: "",
+            periodicidade: "Anual",
+            responsavelTecnico: "Eng. Gonçalo Brito",
+            observacoes: "Equipamento sinalizado como avariado. Deve permanecer indisponível até avaliação técnica."
+        }
+    };
+
+    const parametros = new URLSearchParams(window.location.search);
+    const idEquipamento = parametros.get("id");
+    const equipamento = equipamentosEditar[idEquipamento];
+
+    if (!equipamento) {
+        alert("Equipamento não encontrado.");
+        window.location.href = "lista_equipamentos.html";
+        return;
+    }
+
+    document.getElementById("codigoInventario").value = equipamento.codigo;
+    document.getElementById("nomeEquipamento").value = equipamento.nome;
+    document.getElementById("categoria").value = equipamento.categoria;
+    document.getElementById("fabricante").value = equipamento.fabricante;
+    document.getElementById("modelo").value = equipamento.modelo;
+    document.getElementById("numeroSerie").value = equipamento.serie;
+
+    document.getElementById("departamento").value = equipamento.departamento;
+    document.getElementById("edificio").value = equipamento.edificio;
+    document.getElementById("piso").value = equipamento.piso;
+    document.getElementById("sala").value = equipamento.sala;
+    document.getElementById("estado").value = equipamento.estado;
+    document.getElementById("criticidade").value = equipamento.criticidade;
+
+    if (equipamento.operacional === "Operacional") {
+        document.getElementById("operacionalSim").checked = true;
+    } else {
+        document.getElementById("operacionalNao").checked = true;
+    }
+
+    document.getElementById("fornecedor").value = equipamento.fornecedor;
+    document.getElementById("dataFabrico").value = equipamento.dataFabrico;
+    document.getElementById("dataAquisicao").value = equipamento.dataAquisicao;
+    document.getElementById("dataInstalacao").value = equipamento.dataInstalacao;
+    document.getElementById("valorAquisicao").value = equipamento.valorAquisicao;
+    document.getElementById("fimGarantia").value = equipamento.fimGarantia;
+    document.getElementById("contratoManutencao").value = equipamento.contratoManutencao;
+
+    document.getElementById("ultimaManutencao").value = equipamento.ultimaManutencao;
+    document.getElementById("ultimaCalibracao").value = equipamento.ultimaCalibracao;
+    document.getElementById("proximaCalibracao").value = equipamento.proximaCalibracao;
+    document.getElementById("periodicidade").value = equipamento.periodicidade;
+    document.getElementById("responsavelTecnico").value = equipamento.responsavelTecnico;
+    document.getElementById("observacoes").value = equipamento.observacoes;
+
+    formEditar.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        alert("Alterações registadas com sucesso.");
+
+        window.location.href = "lista_equipamentos.html";
+    });
+
+});

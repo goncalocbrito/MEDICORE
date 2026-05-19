@@ -595,6 +595,55 @@ body {
     line-height: 1.4;
 }
 
+/* Documentos no formulário de novo equipamento - alteração feita por mim */
+
+.btn-adicionar-documento {
+    background-color: var(--cor-secundaria);
+    color: var(--cor-branco);
+    border-radius: 24px;
+    padding: 9px 18px;
+    font-weight: 700;
+    border: none;
+    box-shadow: 0 6px 16px rgba(79, 179, 164, 0.22);
+}
+
+.btn-adicionar-documento:hover {
+    background-color: var(--cor-secundaria-escura);
+    color: var(--cor-branco);
+}
+
+.documento-form-item {
+    background-color: #f8fbfb;
+    border: 1px solid #d6ece8;
+    border-radius: 18px;
+    padding: 22px;
+    margin-bottom: 18px;
+}
+
+.btn-remover-documento {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background-color: #f8d7da;
+    color: #9f2534;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-remover-documento:hover {
+    background-color: #c0392b;
+    color: #ffffff;
+}
+
+.texto-ajuda-form {
+    display: block;
+    color: #6b7c8f;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
 /* Página Detalhes do Equipamento - alteração feita por mim */
 
 .detalhes-resumo {
@@ -880,4 +929,17 @@ body {
         flex: 1;
         text-align: center;
     }
+}
+
+/* editar_equipamento.html
+/* Campos bloqueados na edição - alteração feita por mim */
+.form-card-bloqueado {
+    border-left-color: #9fbec4;
+    background: linear-gradient(135deg, #ffffff 0%, #f7fbfb 100%);
+}
+
+.form-card-bloqueado input[readonly] {
+    background-color: #eef5f5;
+    color: #5c6f78;
+    cursor: not-allowed;
 }
