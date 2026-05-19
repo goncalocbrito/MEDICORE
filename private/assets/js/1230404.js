@@ -436,3 +436,96 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+
+// Página apagar_equipamento.html
+// Preencher dados do equipamento e confirmar remoção
+// TEMPORÁRIO
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const paginaRemover = document.getElementById("btnConfirmarRemocao");
+
+    if (!paginaRemover) return;
+
+    const equipamentosRemover = {
+        "EQ-001": {
+            codigo: "EQ-001",
+            nome: "Monitor Multiparamétrico",
+            categoria: "Monitorização",
+            fabricante: "Philips",
+            modelo: "IntelliVue MX450",
+            serie: "SN-MX450-2024",
+            localizacao: "UCI - Sala 2",
+            estado: "Ativo",
+            estadoClasse: "estado-ativo",
+            criticidade: "Crítica",
+            ultimaManutencao: "12/03/2026"
+        },
+
+        "EQ-002": {
+            codigo: "EQ-002",
+            nome: "Ventilador Pulmonar",
+            categoria: "Suporte de Vida",
+            fabricante: "Dräger",
+            modelo: "Evita V300",
+            serie: "SN-EV300-1198",
+            localizacao: "Urgência - Sala 1",
+            estado: "Em manutenção",
+            estadoClasse: "estado-manutencao",
+            criticidade: "Crítica",
+            ultimaManutencao: "28/02/2026"
+        },
+
+        "EQ-003": {
+            codigo: "EQ-003",
+            nome: "Desfibrilhador",
+            categoria: "Emergência",
+            fabricante: "Zoll",
+            modelo: "R Series",
+            serie: "SN-ZOLL-8821",
+            localizacao: "Bloco Operatório",
+            estado: "Avariado",
+            estadoClasse: "estado-avariado",
+            criticidade: "Crítica",
+            ultimaManutencao: "05/01/2026"
+        }
+    };
+
+    const parametros = new URLSearchParams(window.location.search);
+    const idEquipamento = parametros.get("id");
+    const equipamento = equipamentosRemover[idEquipamento];
+
+    if (!equipamento) {
+        alert("Equipamento não encontrado.");
+        window.location.href = "lista_equipamentos.html";
+        return;
+    }
+
+    document.getElementById("removerCodigo").textContent = equipamento.codigo;
+    document.getElementById("removerNome").textContent = equipamento.nome;
+    document.getElementById("removerCategoria").textContent = equipamento.categoria;
+    document.getElementById("removerFabricante").textContent = equipamento.fabricante;
+    document.getElementById("removerModelo").textContent = equipamento.modelo;
+    document.getElementById("removerSerie").textContent = equipamento.serie;
+    document.getElementById("removerLocalizacao").textContent = equipamento.localizacao;
+    document.getElementById("removerCriticidade").textContent = equipamento.criticidade;
+    document.getElementById("removerUltimaManutencao").textContent = equipamento.ultimaManutencao;
+
+    const estado = document.getElementById("removerEstado");
+    estado.textContent = equipamento.estado;
+    estado.className = `estado ${equipamento.estadoClasse}`;
+
+    const checkbox = document.getElementById("confirmarRemocao");
+    const botaoConfirmar = document.getElementById("btnConfirmarRemocao");
+
+    checkbox.addEventListener("change", function () {
+        botaoConfirmar.disabled = !checkbox.checked;
+    });
+
+    botaoConfirmar.addEventListener("click", function () {
+        alert("Equipamento removido com sucesso.");
+
+        window.location.href = "lista_equipamentos.html";
+    });
+
+});
