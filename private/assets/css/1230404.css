@@ -362,21 +362,32 @@ body {
 /* Dropdown no menu Equipamentos - alteração feita por mim */
 .menu-dropdown-hover {
     position: relative;
+    width: 220px; /* Define o tamanho do botão Equipamentos */
 }
 
+/* Garante que o link Equipamentos ocupa toda a largura definida */
+.menu-dropdown-hover > .nav-link {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Submenu com o mesmo tamanho do botão Equipamentos */
 .submenu-equipamentos {
     display: none;
     position: absolute;
     top: 100%;
     left: 0;
-    min-width: 230px;
-    padding: 10px 0;
+    width: 220px; /* Mesmo tamanho do menu Equipamentos */
+    padding: 8px 0;
     margin: 0;
     list-style: none;
     background-color: #123c46;
     border-radius: 0 0 16px 16px;
     box-shadow: 0 12px 28px rgba(18, 60, 70, 0.22);
     z-index: 1200;
+    overflow: hidden;
 }
 
 .menu-dropdown-hover:hover .submenu-equipamentos {
@@ -384,11 +395,13 @@ body {
 }
 
 .submenu-equipamentos li a {
-    display: block;
+    display: flex;
+    align-items: center;
     color: #dff7f0;
     text-decoration: none;
-    padding: 12px 18px;
+    padding: 12px 16px;
     font-weight: 600;
+    font-size: 0.95rem;
     transition: background-color 0.3s, color 0.3s;
 }
 
@@ -580,4 +593,291 @@ body {
     color: #6b7c8f;
     font-size: 0.92rem;
     line-height: 1.4;
+}
+
+/* Página Detalhes do Equipamento - alteração feita por mim */
+
+.detalhes-resumo {
+    background: linear-gradient(135deg, #ffffff 0%, #f4fbfb 100%);
+    border-radius: 24px;
+    padding: 32px;
+    margin-bottom: 30px;
+    border: 1px solid #d6ece8;
+    border-left: 8px solid var(--cor-secundaria);
+    box-shadow: 0 10px 26px rgba(18, 60, 70, 0.08);
+}
+
+.icone-detalhes {
+    width: 120px;
+    height: 120px;
+    border-radius: 28px;
+    background-color: #eaf6f6;
+    color: var(--cor-secundaria);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+}
+
+.detalhes-resumo h3 {
+    color: var(--cor-principal);
+    font-weight: 800;
+    margin-bottom: 14px;
+}
+
+.detalhes-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.badge-detalhe {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background-color: #eaf6f6;
+    color: var(--cor-principal);
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.detalhes-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.detalhes-card {
+    background-color: var(--cor-branco);
+    border: 1px solid #d6ece8;
+    border-radius: 22px;
+    padding: 28px;
+    box-shadow: 0 8px 24px rgba(18, 60, 70, 0.08);
+}
+
+.detalhes-card h4 {
+    color: var(--cor-principal);
+    font-weight: 800;
+    margin-bottom: 22px;
+}
+
+.detalhes-card h4 i {
+    color: var(--cor-secundaria);
+}
+
+.detalhe-linha {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e8f1f1;
+}
+
+.detalhe-linha:last-child {
+    border-bottom: none;
+}
+
+.detalhe-linha strong {
+    color: var(--cor-principal);
+    font-weight: 700;
+}
+
+.detalhe-linha span {
+    color: var(--cor-texto);
+    text-align: right;
+}
+
+.detalhes-observacoes {
+    margin-top: 24px;
+}
+
+.detalhes-observacoes p {
+    margin-bottom: 0;
+    line-height: 1.7;
+}
+
+.btn-editar-detalhes {
+    background-color: #fff3cd;
+    color: #9a6a00;
+    border-radius: 24px;
+    padding: 10px 20px;
+    font-weight: 700;
+}
+
+.btn-editar-detalhes:hover {
+    background-color: #f2a65a;
+    color: #ffffff;
+}
+
+/* Responsividade dos detalhes */
+@media (max-width: 991px) {
+    .detalhes-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .detalhe-linha {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .detalhe-linha span {
+        text-align: left;
+    }
+}
+
+@media (max-width: 768px) {
+    .detalhes-resumo {
+        text-align: center;
+    }
+
+    .detalhes-badges {
+        justify-content: center;
+    }
+
+    .icone-detalhes {
+        margin-bottom: 20px;
+    }
+}
+
+/* Documentos do equipamento - alteração feita por mim */
+
+.documentos-card {
+    margin-top: 24px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.documentos-toggle {
+    width: 100%;
+    background: linear-gradient(135deg, #ffffff 0%, #f4fbfb 100%);
+    border: none;
+    color: var(--cor-principal);
+    padding: 24px 28px;
+    font-size: 1.25rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.documentos-toggle span {
+    display: flex;
+    align-items: center;
+}
+
+.documentos-toggle i {
+    color: var(--cor-secundaria);
+}
+
+.documentos-toggle:hover {
+    background: linear-gradient(135deg, #eaf6f6 0%, #ffffff 100%);
+}
+
+.documentos-lista {
+    padding: 0 28px 28px 28px;
+}
+
+.documento-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 18px 0;
+    border-top: 1px solid #e8f1f1;
+}
+
+.documento-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+}
+
+/* Ícones dos documentos sem caixa de fundo */
+.documento-icone {
+    width: 34px;
+    min-width: 34px;
+    height: auto;
+
+    background-color: transparent;
+    border-radius: 0;
+    color: var(--cor-secundaria);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 1.7rem;
+    line-height: 1;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.documento-info .documento-icone {
+    margin-top: 5px; 
+}
+
+.documento-info h5 {
+    color: var(--cor-principal);
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.documento-info p {
+    color: var(--cor-texto);
+    margin-bottom: 0;
+    font-size: 0.95rem;
+}
+
+.documento-acoes {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.btn-documento-ver,
+.btn-documento-download {
+    text-decoration: none;
+    border-radius: 22px;
+    padding: 8px 14px;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.btn-documento-ver {
+    background-color: #eaf6f6;
+    color: var(--cor-principal);
+}
+
+.btn-documento-ver:hover {
+    background-color: var(--cor-secundaria);
+    color: #ffffff;
+}
+
+.btn-documento-download {
+    background-color: var(--cor-secundaria);
+    color: #ffffff;
+}
+
+.btn-documento-download:hover {
+    background-color: var(--cor-secundaria-escura);
+    color: #ffffff;
+}
+
+@media (max-width: 768px) {
+    .documento-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .documento-acoes {
+        width: 100%;
+    }
+
+    .btn-documento-ver,
+    .btn-documento-download {
+        flex: 1;
+        text-align: center;
+    }
 }

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEDICORE | Área Técnica</title>
+
+    <!-- favicon -->
+    <link rel="shortcut icon" href="../../assets/img/MEDICORE_icon.png" type="image/png">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- estilos CSS -->
+    <link rel="stylesheet" href="../../assets/css/1230404.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../assets/fontawesome/all.min.css">
+
+    </head>
+
+    <body>
+
+        <!-- Navbar superior -->
+        <header class="container-fluid top-header">
+
+            <div class="row align-items-center">
+
+                <!-- Logo e Nome -->
+                <div class="col-md-4 d-flex align-items-center p-3">
+                    <a href="../../index.html">
+                        <img src="../../assets/img/MEDICORE_logotipo_branco.png"
+                            alt="Logo da MEDICORE"
+                            class="logo-private">
+                    </a>
+
+                </div>
+
+                <!-- Mensagem central -->
+                <div class="col-md-4 text-center p-3">
+                    <div class="mensagem-topo">
+                        <i class="fa-solid fa-user-doctor me-2"></i>
+                        <span>Bem-vindo, Sr. Engenheiro Gonçalo</span>
+                    </div>
+                </div>
+                
+                <!-- Utilizador -->
+                <div class="col-md-4 text-md-end p-3">
+
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle user-button"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                            <i class="fa-regular fa-user me-2"></i> Eng. Biomédico
+                        </button>
+
+                        <ul class="dropdown-menu dropdown-menu-end">
+
+                            <li>
+                                <a class="dropdown-item" href="perfil.php">
+                                    <i class="fa-solid fa-user-gear me-2"></i> Perfil técnico
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="alterar_password.php">
+                                    <i class="fa-solid fa-key me-2"></i> Alterar password
+                                </a>
+                            </li>
+
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+
+                            <li>
+                                <a class="dropdown-item" href="logout.php">
+                                    <i class="fa-solid fa-right-from-bracket me-2"></i> Sair
+                                </a>
+                            </li>
+
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
+
+        </header>
+
+        <!-- Menu horizontal da área privada -->
+        <nav class="navbar navbar-expand-lg menu-horizontal">
+            <div class="container-fluid">
+
+                <button class="navbar-toggler bg-light"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#menuPrivado"
+                        aria-controls="menuPrivado"
+                        aria-expanded="false"
+                        aria-label="Abrir menu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse justify-content-center" id="menuPrivado">
+                    <ul class="navbar-nav">
+
+                        <li class="nav-item">
+                            <a href="index.php" class="nav-link">
+                                <i class="fa-solid fa-chart-line me-2"></i> Dashboard Técnico
+                            </a>
+                        </li>
+
+                        <li class="nav-item menu-dropdown-hover">
+                            <a href="lista_equipamentos.html" class="nav-link active">
+                                <i class="fa-solid fa-stethoscope me-2"></i> Equipamentos
+                                <i class="fa-solid fa-chevron-down ms-1 small"></i>
+                            </a>
+
+                            <ul class="submenu-equipamentos">
+                                <li>
+                                    <a href="lista_equipamentos.html">
+                                        <i class="fa-solid fa-list me-2"></i> Lista de Equipamentos
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="novo_equipamento.html">
+                                        <i class="fa-solid fa-plus me-2"></i> Adiconar Equipamento
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="views/manutencoes/lista.php" class="nav-link">
+                                <i class="fa-solid fa-screwdriver-wrench me-2"></i> Manutenções
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="views/avarias/lista.php" class="nav-link">
+                                <i class="fa-solid fa-triangle-exclamation me-2"></i> Avarias
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="views/fornecedores/lista.php" class="nav-link">
+                                <i class="fa-solid fa-truck-medical me-2"></i> Fornecedores
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="views/relatorios/index.php" class="nav-link">
+                                <i class="fa-solid fa-file-medical me-2"></i> Relatórios
+                            </a>
+                        </li>
+
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <main class="conteudo-private">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="titulo-pagina" id="detalheNome">Detalhes do Equipamento</h2>
+                    <p class="subtitulo-pagina">
+                        Consulta técnica completa do equipamento selecionado.
+                    </p>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <a href="lista_equipamentos.html" class="btn btn-voltar">
+                        <i class="fa-solid fa-arrow-left me-2"></i> Voltar à Lista
+                    </a>
+                </div>
+            </div>
+
+            <section class="detalhes-resumo">
+                <div class="row g-4 align-items-center">
+
+                    <div class="col-md-3 text-center">
+                        <div class="icone-detalhes">
+                            <i class="fa-solid fa-stethoscope"></i>
+                        </div>
+                    </div>
+
+                    <div class="col-md-9">
+                        <h3 id="detalheTituloEquipamento">Equipamento Médico</h3>
+
+                        <div class="detalhes-badges">
+                            <span id="detalheEstado" class="estado estado-ativo">Ativo</span>
+                            <span id="detalheCriticidade" class="badge-detalhe">Criticidade</span>
+                            <span id="detalheOperacional" class="badge-detalhe">Operacional</span>
+                        </div>
+
+                        <p id="detalheResumo">
+                            Informação técnica resumida do equipamento médico selecionado.
+                        </p>
+                    </div>
+
+                </div>
+            </section>
+
+            <div class="detalhes-grid">
+
+                <section class="detalhes-card">
+                    <h4>
+                        <i class="fa-solid fa-circle-info me-2"></i>
+                        Identificação
+                    </h4>
+
+                    <div class="detalhe-linha">
+                        <strong>Código de Inventário:</strong>
+                        <span id="detalheCodigo">---</span>
+                    </div>
+
+                    <div class="detalhe-linha">
+                        <strong>Categoria:</strong>
+                        <span id="detalheCategoria">---</span>
+                    </div>
+
+                    <div class="detalhe-linha">
+                        <strong>Fabricante:</strong>
+                        <span id="detalheFabricante">---</span>
+                    </div>
+
+                    <div class="detalhe-linha">
+                        <strong>Modelo:</strong>
+                        <span id="detalheModelo">---</span>
+                    </div>
+
+                    <div class="detalhe-linha">
+                        <strong>Número de Série:</strong>
+                        <span id="detalheSerie">---</span>
+                    </div>
+                </section>
+
+                <section class="detalhes-card">
+                    <h4>
+                        <i class="fa-solid fa-location-dot me-2"></i>
+                        Localização e Estado
+                    </h4>
+
+                    <div class="detalhe-linha">
+                        <strong>Departamento:</strong>
+                        <span id="detalheDepartamento">---</span>
+                    </div>
+
+                    <div class="detalhe-linha">
+                        <strong>Localização:</strong>
+                        <span id="detalheLocalizacao">---</span>
+                    </div>
+
+                    <div class="detalhe-linha">
+                        <strong>Estado:</strong>
+                        <span id="detalheEstadoTexto">---</span>
+                    </div>
+
+                    <div class="detalhe-linha">
+                        <strong>Criticidade:</strong>
+                        <span id="detalheCriticidadeTexto">---</span>
+                    </div>
+                </section>
+
+                <section class="detalhes-card">
+                    <h4>
+                        <i class="fa-solid fa-truck-medical me-2"></i>
+                        Aquisição e Fornecedor
+                    </h4>
+
+                    <div class="detalhe-linha">
+                        <strong>Fornecedor:</strong>
+                        <span id="detalheFornecedor">---</span>
+                    </div>
+
+                    <div class="detalhe-linha">
+                        <strong>Data de Aquisição:</strong>
+                        <span id="detalheAquisicao">---</span>
+                    </div>
+
+                    <div class="detalhe-linha">
+                        <strong>Data de Instalação:</strong>
+                        <span id="detalheInstalacao">---</span>
+                    </div>
+
+                    <div class="detalhe-linha">
+                        <strong>Fim da Garantia:</strong>
+                        <span id="detalheGarantia">---</span>
+                    </div>
+                </section>
+
+                <section class="detalhes-card">
+                    <h4>
+                        <i class="fa-solid fa-screwdriver-wrench me-2"></i>
+                        Manutenção
+                    </h4>
+
+                    <div class="detalhe-linha">
+                        <strong>Última Manutenção:</strong>
+                        <span id="detalheUltimaManutencao">---</span>
+                    </div>
+
+                    <div class="detalhe-linha">
+                        <strong>Próxima Manutenção:</strong>
+                        <span id="detalheProximaManutencao">---</span>
+                    </div>
+
+                    <div class="detalhe-linha">
+                        <strong>Periodicidade:</strong>
+                        <span id="detalhePeriodicidade">---</span>
+                    </div>
+
+                    <div class="detalhe-linha">
+                        <strong>Responsável Técnico:</strong>
+                        <span id="detalheResponsavel">---</span>
+                    </div>
+                </section>
+
+            </div>
+
+            <section class="detalhes-card detalhes-observacoes">
+                <h4>
+                    <i class="fa-solid fa-clipboard-list me-2"></i>
+                    Observações Técnicas
+                </h4>
+
+                <p id="detalheObservacoes">
+                    Sem observações registadas.
+                </p>
+            </section>
+
+            <section class="detalhes-card documentos-card">
+                <button class="documentos-toggle"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#documentosEquipamento"
+                        aria-expanded="false"
+                        aria-controls="documentosEquipamento">
+
+                    <span>
+                        <i class="fa-solid fa-folder-open me-2"></i>
+                        Documentos do Equipamento
+                    </span>
+
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+
+                <div class="collapse mt-4" id="documentosEquipamento">
+
+                    <div class="documentos-lista">
+
+                        <div class="documento-item">
+                            <div class="documento-info">
+                                <i class="fa-solid fa-file-pdf documento-icone"></i>
+                                <div>
+                                    <h5>Manual de Instruções</h5>
+                                    <p>Documento técnico com instruções de utilização do equipamento.</p>
+                                </div>
+                            </div>
+
+                            <div class="documento-acoes">
+                                <a href="#" class="btn-documento-ver">
+                                    <i class="fa-solid fa-eye me-1"></i> Ver
+                                </a>
+                                <a href="#" class="btn-documento-download">
+                                    <i class="fa-solid fa-download me-1"></i> Download
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="documento-item">
+                            <div class="documento-info">
+                                <i class="fa-solid fa-file-shield documento-icone"></i>
+                                <div>
+                                    <h5>Certificado de Calibração</h5>
+                                    <p>Registo associado à calibração e validação técnica do equipamento.</p>
+                                </div>
+                            </div>
+
+                            <div class="documento-acoes">
+                                <a href="#" class="btn-documento-ver">
+                                    <i class="fa-solid fa-eye me-1"></i> Ver
+                                </a>
+                                <a href="#" class="btn-documento-download">
+                                    <i class="fa-solid fa-download me-1"></i> Download
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="documento-item">
+                            <div class="documento-info">
+                                <i class="fa-solid fa-file-medical documento-icone"></i>
+                                <div>
+                                    <h5>Certificado de Manutenção</h5>
+                                    <p>Comprovativo da última manutenção preventiva ou corretiva realizada.</p>
+                                </div>
+                            </div>
+
+                            <div class="documento-acoes">
+                                <a href="#" class="btn-documento-ver">
+                                    <i class="fa-solid fa-eye me-1"></i> Ver
+                                </a>
+                                <a href="#" class="btn-documento-download">
+                                    <i class="fa-solid fa-download me-1"></i> Download
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="documento-item">
+                            <div class="documento-info">
+                                <i class="fa-solid fa-file-lines documento-icone"></i>
+                                <div>
+                                    <h5>Ficha Técnica</h5>
+                                    <p>Resumo das características técnicas e especificações do equipamento.</p>
+                                </div>
+                            </div>
+
+                            <div class="documento-acoes">
+                                <a href="#" class="btn-documento-ver">
+                                    <i class="fa-solid fa-eye me-1"></i> Ver
+                                </a>
+                                <a href="#" class="btn-documento-download">
+                                    <i class="fa-solid fa-download me-1"></i> Download
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </section>
+
+        </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- JavaScript -->
+    <script src="../../assets/js/1230404.js"></script>
+
+</body>
+</html>
