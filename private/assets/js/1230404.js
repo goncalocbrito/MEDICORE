@@ -523,9 +523,424 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     botaoConfirmar.addEventListener("click", function () {
-        alert("Equipamento removido com sucesso.");
+        botaoConfirmar.disabled = true;
 
-        window.location.href = "lista_equipamentos.html";
+        mostrarCardConfirmacaoRemocao(
+            "Equipamento",
+            equipamento.nome,
+            "lista_equipamentos.html"
+        );
     });
 
 });
+
+// Dados temporários dos fornecedores
+
+const fornecedoresMEDICORE = {
+    "FOR-001": {
+        nome: "Philips Medical Systems",
+        tipos: ["Fabricante"],
+        nif: "509123456",
+        email: "suporte@philips-med.pt",
+        telefone: "+351 220 000 111",
+        website: "https://www.philips.pt",
+        contacto: "Carlos Almeida",
+        cargo: "Suporte Técnico",
+        emailContacto: "carlos.almeida@philips-med.pt",
+        morada: "Rua da Tecnologia Médica, 45",
+        codigoPostal: "4100-000",
+        localidade: "Porto",
+        pais: "Portugal",
+        estado: "Ativo",
+        estadoClasse: "estado-ativo",
+        contrato: "Sim",
+        inicioContrato: "2024-01-01",
+        fimContrato: "2027-01-01",
+        qtdEquipamentos: "12",
+        area: "Fabrico e suporte técnico de equipamentos de monitorização clínica.",
+        equipamentos: "Monitores multiparamétricos Philips IntelliVue.",
+        observacoes: "Fornecedor associado a equipamentos de monitorização em unidades críticas.",
+
+        equipamentosAssociados: [
+            {
+                codigo: "EQ-001",
+                nome: "Monitor Multiparamétrico",
+                categoria: "Monitorização",
+                modelo: "IntelliVue MX450",
+                serie: "SN-MX450-2024",
+                relacao: "Fabricante",
+                estado: "Ativo",
+                estadoClasse: "estado-ativo"
+            },
+            {
+                codigo: "EQ-004",
+                nome: "Monitor de Sinais Vitais",
+                categoria: "Monitorização",
+                modelo: "SureSigns VS4",
+                serie: "SN-VS4-2025",
+                relacao: "Fabricante",
+                estado: "Ativo",
+                estadoClasse: "estado-ativo"
+            },
+            {
+                codigo: "EQ-005",
+                nome: "Bomba de Infusão",
+                categoria: "Terapêutica",
+                modelo: "InfusionCare P200",
+                serie: "SN-P200-2024",
+                relacao: "Fabricante",
+                estado: "Em manutenção",
+                estadoClasse: "estado-manutencao"
+            }
+        ]
+    },
+
+    "FOR-002": {
+        nome: "MedSupply Portugal",
+        tipos: ["Distribuidor"],
+        nif: "514987321",
+        email: "comercial@medsupply.pt",
+        telefone: "+351 221 234 567",
+        website: "https://www.medsupply.pt",
+        contacto: "Ana Martins",
+        cargo: "Gestora Comercial",
+        emailContacto: "ana.martins@medsupply.pt",
+        morada: "Avenida dos Dispositivos Médicos, 80",
+        codigoPostal: "1000-000",
+        localidade: "Lisboa",
+        pais: "Portugal",
+        estado: "Ativo",
+        estadoClasse: "estado-ativo",
+        contrato: "Sim",
+        inicioContrato: "2024-03-01",
+        fimContrato: "2026-03-01",
+        qtdEquipamentos: "8",
+        area: "Venda e distribuição de dispositivos e equipamentos médicos.",
+        equipamentos: "Bombas de infusão, monitores e acessórios clínicos.",
+        observacoes: "Fornecedor com boa resposta comercial e disponibilidade de stock.",
+
+        equipamentosAssociados: [
+            {
+                codigo: "EQ-001",
+                nome: "Monitor Multiparamétrico",
+                categoria: "Monitorização",
+                modelo: "IntelliVue MX450",
+                relacao: "Distribuidor",
+                serie: "SN-XT42-2024",
+                estado: "Ativo",
+                estadoClasse: "estado-ativo"
+            },
+            {
+                codigo: "EQ-006",
+                nome: "Oxímetro de Pulso",
+                categoria: "Monitorização",
+                modelo: "OxiPro 300",
+                relacao: "Distribuidor",
+                serie: "SN-LOL9-2026",
+                estado: "Ativo",
+                estadoClasse: "estado-ativo"
+            }
+        ]
+    },
+
+    "FOR-003": {
+        nome: "Biomedical Solutions",
+        tipos: ["Manutenção"],
+        nif: "507654789",
+        email: "tecnica@biomedicalsolutions.pt",
+        telefone: "+351 222 456 789",
+        website: "https://www.biomedicalsolutions.pt",
+        contacto: "Rui Oliveira",
+        cargo: "Responsável Técnico",
+        emailContacto: "rui.oliveira@biomedicalsolutions.pt",
+        morada: "Rua da Engenharia Biomédica, 12",
+        codigoPostal: "4470-000",
+        localidade: "Maia",
+        pais: "Portugal",
+        estado: "Ativo",
+        estadoClasse: "estado-ativo",
+        contrato: "Sim",
+        inicioContrato: "2025-01-01",
+        fimContrato: "2027-12-31",
+        qtdEquipamentos: "5",
+        area: "Manutenção preventiva e corretiva de equipamentos hospitalares.",
+        equipamentos: "Ventiladores, monitores e equipamentos de suporte clínico.",
+        observacoes: "Fornecedor responsável por manutenções técnicas periódicas."
+    },
+
+    "FOR-004": {
+        nome: "CalibraMed",
+        tipos: ["Calibração"],
+        nif: "515321987",
+        email: "calibracao@calibramed.pt",
+        telefone: "+351 223 987 654",
+        website: "https://www.calibramed.pt",
+        contacto: "Marta Costa",
+        cargo: "Técnica de Calibração",
+        emailContacto: "marta.costa@calibramed.pt",
+        morada: "Parque Tecnológico de Braga",
+        codigoPostal: "4700-000",
+        localidade: "Braga",
+        pais: "Portugal",
+        estado: "Inativo",
+        estadoClasse: "estado-inativo",
+        contrato: "Não",
+        inicioContrato: "2023-01-01",
+        fimContrato: "2024-12-31",
+        qtdEquipamentos: "3",
+        area: "Calibração e emissão de certificados técnicos.",
+        equipamentos: "Equipamentos de medição, monitores e dispositivos laboratoriais.",
+        observacoes: "Fornecedor inativo, mantendo apenas histórico de calibrações anteriores."
+    }
+};
+
+
+// Detalhes do fornecedor
+document.addEventListener("DOMContentLoaded", function () {
+
+    const detalheFornecedorNome = document.getElementById("detalheFornecedorNome");
+
+    if (!detalheFornecedorNome) return;
+
+    const parametros = new URLSearchParams(window.location.search);
+    const idFornecedor = parametros.get("id");
+    const fornecedor = fornecedoresMEDICORE[idFornecedor];
+
+    if (!fornecedor) {
+        alert("Fornecedor não encontrado.");
+        window.location.href = "lista_fornecedores.html";
+        return;
+    }
+
+    detalheFornecedorNome.textContent = fornecedor.nome;
+    document.getElementById("detalheFornecedorResumo").textContent =
+        `${fornecedor.nome} é uma entidade associada a ${fornecedor.qtdEquipamentos} equipamento(s), com estado ${fornecedor.estado}.`;
+
+    const tiposContainer = document.getElementById("detalheFornecedorTipos");
+    tiposContainer.innerHTML = "";
+
+    fornecedor.tipos.forEach(function (tipo) {
+        const span = document.createElement("span");
+        span.className = "badge-detalhe";
+        span.textContent = tipo;
+        tiposContainer.appendChild(span);
+    });
+
+    document.getElementById("detalheFornecedorNif").textContent = fornecedor.nif;
+    document.getElementById("detalheFornecedorEstado").textContent = fornecedor.estado;
+    document.getElementById("detalheFornecedorPais").textContent = fornecedor.pais;
+    document.getElementById("detalheFornecedorLocalidade").textContent = fornecedor.localidade;
+
+    document.getElementById("detalheFornecedorEmail").textContent = fornecedor.email;
+    document.getElementById("detalheFornecedorTelefone").textContent = fornecedor.telefone;
+    document.getElementById("detalheFornecedorContacto").textContent = `${fornecedor.contacto} — ${fornecedor.cargo}`;
+    document.getElementById("detalheFornecedorWebsite").textContent = fornecedor.website;
+
+    document.getElementById("detalheFornecedorContrato").textContent = fornecedor.contrato;
+    document.getElementById("detalheFornecedorInicioContrato").textContent = fornecedor.inicioContrato;
+    document.getElementById("detalheFornecedorFimContrato").textContent = fornecedor.fimContrato;
+    document.getElementById("detalheFornecedorQtdEquipamentos").textContent = fornecedor.qtdEquipamentos;
+
+    document.getElementById("detalheFornecedorArea").textContent = fornecedor.area;
+    document.getElementById("detalheFornecedorEquipamentos").textContent = fornecedor.equipamentos;
+    document.getElementById("detalheFornecedorObservacoes").textContent = fornecedor.observacoes;
+
+    const tabelaEquipamentosFornecedor = document.getElementById("tabelaEquipamentosFornecedor");
+    const totalEquipamentosFornecedor = document.getElementById("totalEquipamentosFornecedor");
+
+    if (tabelaEquipamentosFornecedor && totalEquipamentosFornecedor) {
+        tabelaEquipamentosFornecedor.innerHTML = "";
+
+        const equipamentosAssociados = fornecedor.equipamentosAssociados || [];
+
+        totalEquipamentosFornecedor.textContent = `${equipamentosAssociados.length} equipamento(s)`;
+
+        if (equipamentosAssociados.length === 0) {
+            tabelaEquipamentosFornecedor.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-muted">
+                        Não existem equipamentos associados a este fornecedor.
+                    </td>
+                </tr>
+            `;
+        } else {
+            equipamentosAssociados.forEach(function (equipamento) {
+                const linha = document.createElement("tr");
+
+                linha.innerHTML = `
+                    <td>${equipamento.codigo}</td>
+                    <td>${equipamento.nome}</td>
+                    <td>${equipamento.categoria}</td>
+                    <td>${equipamento.modelo}</td>
+                    <td>${equipamento.serie}</td>
+                    <td>
+                        <span class="tipo-fornecedor tipo-distribuidor">${equipamento.relacao}</span>
+                    </td>
+                    <td>
+                        <span class="estado ${equipamento.estadoClasse}">${equipamento.estado}</span>
+                    </td>
+                `;
+
+                tabelaEquipamentosFornecedor.appendChild(linha);
+            });
+        }
+    }
+
+});
+
+
+// Editar fornecedor
+document.addEventListener("DOMContentLoaded", function () {
+
+    const formEditarFornecedor = document.getElementById("formEditarFornecedor");
+
+    if (!formEditarFornecedor) return;
+
+    const parametros = new URLSearchParams(window.location.search);
+    const idFornecedor = parametros.get("id");
+    const fornecedor = fornecedoresMEDICORE[idFornecedor];
+
+    if (!fornecedor) {
+        alert("Fornecedor não encontrado.");
+        window.location.href = "lista_fornecedores.html";
+        return;
+    }
+
+    document.getElementById("nomeFornecedor").value = fornecedor.nome;
+    document.getElementById("nifFornecedor").value = fornecedor.nif;
+    document.getElementById("estadoFornecedor").value = fornecedor.estado;
+
+    document.getElementById("tipoFabricante").checked = fornecedor.tipos.includes("Fabricante");
+    document.getElementById("tipoDistribuidor").checked = fornecedor.tipos.includes("Distribuidor");
+    document.getElementById("tipoManutencao").checked = fornecedor.tipos.includes("Manutenção");
+    document.getElementById("tipoCalibracao").checked = fornecedor.tipos.includes("Calibração");
+
+    document.getElementById("emailFornecedor").value = fornecedor.email;
+    document.getElementById("telefoneFornecedor").value = fornecedor.telefone;
+    document.getElementById("websiteFornecedor").value = fornecedor.website;
+    document.getElementById("contactoResponsavel").value = fornecedor.contacto;
+    document.getElementById("cargoContacto").value = fornecedor.cargo;
+    document.getElementById("emailContacto").value = fornecedor.emailContacto;
+
+    document.getElementById("moradaFornecedor").value = fornecedor.morada;
+    document.getElementById("codigoPostalFornecedor").value = fornecedor.codigoPostal;
+    document.getElementById("localidadeFornecedor").value = fornecedor.localidade;
+    document.getElementById("paisFornecedor").value = fornecedor.pais;
+
+    document.getElementById("contratoFornecedor").value = fornecedor.contrato;
+    document.getElementById("inicioContratoFornecedor").value = fornecedor.inicioContrato;
+    document.getElementById("fimContratoFornecedor").value = fornecedor.fimContrato;
+    document.getElementById("areaAtuacaoFornecedor").value = fornecedor.area;
+    document.getElementById("equipamentosAssociadosFornecedor").value = fornecedor.equipamentos;
+    document.getElementById("observacoesFornecedor").value = fornecedor.observacoes;
+
+    formEditarFornecedor.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        alert("Alterações do fornecedor registadas com sucesso.");
+        window.location.href = "lista_fornecedores.html";
+    });
+
+});
+
+
+// Novo fornecedor
+document.addEventListener("DOMContentLoaded", function () {
+
+    const formNovoFornecedor = document.getElementById("formNovoFornecedor");
+
+    if (!formNovoFornecedor) return;
+
+    formNovoFornecedor.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        alert("Fornecedor registado com sucesso.");
+        window.location.href = "lista_fornecedores.html";
+    });
+
+});
+
+
+// Remover fornecedor
+document.addEventListener("DOMContentLoaded", function () {
+
+    const botaoRemoverFornecedor = document.getElementById("btnConfirmarRemocaoFornecedor");
+
+    if (!botaoRemoverFornecedor) return;
+
+    const parametros = new URLSearchParams(window.location.search);
+    const idFornecedor = parametros.get("id");
+    const fornecedor = fornecedoresMEDICORE[idFornecedor];
+
+    if (!fornecedor) {
+        alert("Fornecedor não encontrado.");
+        window.location.href = "lista_fornecedores.html";
+        return;
+    }
+
+    document.getElementById("removerFornecedorNome").textContent = fornecedor.nome;
+    document.getElementById("removerFornecedorTipo").textContent = fornecedor.tipos.join(", ");
+    document.getElementById("removerFornecedorNif").textContent = fornecedor.nif;
+    document.getElementById("removerFornecedorEmail").textContent = fornecedor.email;
+    document.getElementById("removerFornecedorTelefone").textContent = fornecedor.telefone;
+    document.getElementById("removerFornecedorLocalidade").textContent = fornecedor.localidade;
+    document.getElementById("removerFornecedorEquipamentos").textContent = fornecedor.qtdEquipamentos;
+    document.getElementById("removerFornecedorContrato").textContent = fornecedor.contrato;
+
+    const estado = document.getElementById("removerFornecedorEstado");
+    estado.textContent = fornecedor.estado;
+    estado.className = `estado ${fornecedor.estadoClasse}`;
+
+    const checkbox = document.getElementById("confirmarRemocaoFornecedor");
+
+    checkbox.addEventListener("change", function () {
+        botaoRemoverFornecedor.disabled = !checkbox.checked;
+    });
+
+    botaoRemoverFornecedor.addEventListener("click", function () {
+        botaoRemoverFornecedor.disabled = true;
+
+        mostrarCardConfirmacaoRemocao(
+            "Fornecedor",
+            fornecedor.nome,
+            "lista_fornecedores.html"
+        );
+    });
+
+});
+
+// Card visual de confirmação de remoção
+
+function mostrarCardConfirmacaoRemocao(tipo, nome, paginaDestino) {
+
+    const overlay = document.createElement("div");
+    overlay.classList.add("remocao-sucesso-overlay");
+
+    overlay.innerHTML = `
+        <div class="remocao-sucesso-card">
+            <div class="remocao-sucesso-icone">
+                <i class="fa-solid fa-check"></i>
+            </div>
+
+            <h3>${tipo} removido com sucesso</h3>
+
+            <p>
+                <strong>${nome}</strong> foi removido do sistema.
+            </p>
+
+            <p class="texto-redirecionar">
+                A redirecionar para a lista...
+            </p>
+
+            <div class="barra-redirecionar">
+                <span></span>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    setTimeout(function () {
+        window.location.href = paginaDestino;
+    }, 3000);
+}

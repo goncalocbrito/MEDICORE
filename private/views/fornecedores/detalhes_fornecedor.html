@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEDICORE | Fornecedores</title>
+
+    <!-- favicon -->
+    <link rel="shortcut icon" href="../../assets/img/MEDICORE_icon.png" type="image/png">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="../../assets/bootstrap/bootstrap.min.css">
+
+    <!-- CSS individual do aluno -->
+    <link rel="stylesheet" href="../../assets/css/1230404.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../assets/fontawesome/all.min.css">
+</head>
+
+<body>
+
+    <!-- Navbar superior -->
+    <header class="container-fluid top-header">
+
+        <div class="row align-items-center">
+
+            <!-- Logo e Nome -->
+            <div class="col-md-4 d-flex align-items-center p-3">
+                <a href="../../index.html">
+                    <img src="../../assets/img/MEDICORE_logotipo_branco.png"
+                         alt="Logo da MEDICORE"
+                         class="logo-private">
+                </a>
+            </div>
+
+            <!-- Mensagem central -->
+            <div class="col-md-4 text-center p-3">
+                <div class="mensagem-topo">
+                    <i class="fa-solid fa-user-doctor me-2"></i>
+                    <span>Bem-vindo, Sr. Engenheiro Gonçalo</span>
+                </div>
+            </div>
+
+            <!-- Utilizador -->
+            <div class="col-md-4 text-md-end p-3">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle user-button"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        <i class="fa-regular fa-user me-2"></i> Eng. Biomédico
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <i class="fa-solid fa-user-gear me-2"></i> Perfil técnico
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <i class="fa-solid fa-key me-2"></i> Alterar password
+                            </a>
+                        </li>
+
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item" href="../../index.html">
+                                <i class="fa-solid fa-right-from-bracket me-2"></i> Sair
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+    </header>
+
+    <!-- Menu horizontal da área privada -->
+    <nav class="navbar navbar-expand-lg menu-horizontal">
+        <div class="container-fluid">
+
+            <button class="navbar-toggler bg-light"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#menuPrivado"
+                    aria-controls="menuPrivado"
+                    aria-expanded="false"
+                    aria-label="Abrir menu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse justify-content-center" id="menuPrivado">
+                <ul class="navbar-nav">
+
+                    <li class="nav-item">
+                        <a href="../../index.html" class="nav-link">
+                            <i class="fa-solid fa-chart-line me-2"></i> Dashboard Técnico
+                        </a>
+                    </li>
+
+                    <li class="nav-item menu-dropdown-hover">
+                        <a href="../equipamentos/lista_equipamentos.html" class="nav-link">
+                            <i class="fa-solid fa-stethoscope me-2"></i> Equipamentos
+                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
+                        </a>
+
+                        <ul class="submenu-equipamentos">
+                            <li>
+                                <a href="../equipamentos/lista_equipamentos.html">
+                                    <i class="fa-solid fa-list me-2"></i> Lista de Equipamentos
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="../equipamentos/novo_equipamento.html">
+                                    <i class="fa-solid fa-plus me-2"></i> Adicionar Equipamento
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="../manutencoes/lista.html" class="nav-link">
+                            <i class="fa-solid fa-screwdriver-wrench me-2"></i> Manutenções
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="../avarias/lista.html" class="nav-link">
+                            <i class="fa-solid fa-triangle-exclamation me-2"></i> Avarias
+                        </a>
+                    </li>
+
+                    <li class="nav-item menu-dropdown-hover-fornecedores">
+                        <a href="lista_fornecedores.html" class="nav-link active">
+                            <i class="fa-solid fa-truck-medical me-2"></i> Fornecedores
+                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
+                        </a>
+
+                        <ul class="submenu-fornecedores">
+                            <li>
+                                <a href="lista_fornecedores.html" class="submenu-active">
+                                    <i class="fa-solid fa-list me-2"></i> Lista de Fornecedores
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="novo_fornecedor.html">
+                                    <i class="fa-solid fa-plus me-2"></i> Adicionar Fornecedor
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="../relatorios/index.html" class="nav-link">
+                            <i class="fa-solid fa-file-medical me-2"></i> Relatórios
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Conteúdo Principal -->
+    <main class="conteudo-private">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="titulo-pagina">Detalhes do Fornecedor</h2>
+                <p class="subtitulo-pagina">
+                    Consulta completa da entidade fornecedora associada aos equipamentos médicos.
+                </p>
+            </div>
+
+            <a href="lista_fornecedores.html" class="btn btn-voltar">
+                <i class="fa-solid fa-arrow-left me-2"></i> Voltar à Lista
+            </a>
+        </div>
+
+        <section class="detalhes-resumo">
+            <div class="row g-4 align-items-center">
+
+                <div class="col-md-3 text-center">
+                    <div class="icone-detalhes">
+                        <i class="fa-solid fa-truck-medical"></i>
+                    </div>
+                </div>
+
+                <div class="col-md-9">
+                    <h3 id="detalheFornecedorNome">Fornecedor</h3>
+
+                    <div class="detalhes-badges" id="detalheFornecedorTipos">
+                        <!-- preenchido por JS -->
+                    </div>
+
+                    <p id="detalheFornecedorResumo">
+                        Informação resumida do fornecedor selecionado.
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+        <div class="detalhes-grid">
+
+            <section class="detalhes-card">
+                <h4>
+                    <i class="fa-solid fa-circle-info me-2"></i>
+                    Identificação
+                </h4>
+
+                <div class="detalhe-linha">
+                    <strong>NIF:</strong>
+                    <span id="detalheFornecedorNif">---</span>
+                </div>
+
+                <div class="detalhe-linha">
+                    <strong>Estado:</strong>
+                    <span id="detalheFornecedorEstado">---</span>
+                </div>
+
+                <div class="detalhe-linha">
+                    <strong>País:</strong>
+                    <span id="detalheFornecedorPais">---</span>
+                </div>
+
+                <div class="detalhe-linha">
+                    <strong>Localidade:</strong>
+                    <span id="detalheFornecedorLocalidade">---</span>
+                </div>
+            </section>
+
+            <section class="detalhes-card">
+                <h4>
+                    <i class="fa-solid fa-address-book me-2"></i>
+                    Contactos
+                </h4>
+
+                <div class="detalhe-linha">
+                    <strong>Email:</strong>
+                    <span id="detalheFornecedorEmail">---</span>
+                </div>
+
+                <div class="detalhe-linha">
+                    <strong>Telefone:</strong>
+                    <span id="detalheFornecedorTelefone">---</span>
+                </div>
+
+                <div class="detalhe-linha">
+                    <strong>Contacto:</strong>
+                    <span id="detalheFornecedorContacto">---</span>
+                </div>
+
+                <div class="detalhe-linha">
+                    <strong>Website:</strong>
+                    <span id="detalheFornecedorWebsite">---</span>
+                </div>
+            </section>
+
+            <section class="detalhes-card">
+                <h4>
+                    <i class="fa-solid fa-file-contract me-2"></i>
+                    Contrato
+                </h4>
+
+                <div class="detalhe-linha">
+                    <strong>Contrato ativo:</strong>
+                    <span id="detalheFornecedorContrato">---</span>
+                </div>
+
+                <div class="detalhe-linha">
+                    <strong>Início:</strong>
+                    <span id="detalheFornecedorInicioContrato">---</span>
+                </div>
+
+                <div class="detalhe-linha">
+                    <strong>Fim:</strong>
+                    <span id="detalheFornecedorFimContrato">---</span>
+                </div>
+
+                <div class="detalhe-linha">
+                    <strong>Equipamentos associados:</strong>
+                    <span id="detalheFornecedorQtdEquipamentos">---</span>
+                </div>
+            </section>
+
+            <section class="detalhes-card">
+                <h4>
+                    <i class="fa-solid fa-stethoscope me-2"></i>
+                    Associação Técnica
+                </h4>
+
+                <div class="detalhe-linha">
+                    <strong>Área de atuação:</strong>
+                    <span id="detalheFornecedorArea">---</span>
+                </div>
+
+                <div class="detalhe-linha">
+                    <strong>Equipamentos / marcas:</strong>
+                    <span id="detalheFornecedorEquipamentos">---</span>
+                </div>
+            </section>
+
+        </div>
+
+        <section class="detalhes-card detalhes-observacoes">
+            <h4>
+                <i class="fa-solid fa-clipboard-list me-2"></i>
+                Observações
+            </h4>
+
+            <p id="detalheFornecedorObservacoes">
+                Sem observações registadas.
+            </p>
+        </section>
+
+        <!-- Equipamentos associados ao fornecedor -->
+        <section class="detalhes-card equipamentos-associados-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="mb-0">
+                    <i class="fa-solid fa-stethoscope me-2"></i>
+                    Equipamentos Associados ao Fornecedor
+                </h4>
+
+                <span class="badge-detalhe" id="totalEquipamentosFornecedor">
+                    0 equipamentos
+                </span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle tabela-equipamentos-associados">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Equipamento</th>
+                            <th>Categoria</th>
+                            <th>Modelo</th>
+                            <th>Nº Série</th>
+                            <th>Relação</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tabelaEquipamentosFornecedor">
+                        <!-- preenchido por JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="../../assets/bootstrap/bootstrap.bundle.min.js"></script>
+
+    <!-- JavaScript individual do aluno -->
+    <script src="../../assets/js/1230404.js"></script>
+
+</body>
+</html>
