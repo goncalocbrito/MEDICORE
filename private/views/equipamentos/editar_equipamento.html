@@ -284,18 +284,43 @@
                     </div>
 
                     <div class="col-md-3">
-                        <label for="edificio" class="form-label">Edifício</label>
-                        <input type="text" class="form-control" id="edificio" placeholder="Ex: Edifício A">
+                        <label for="edificio" class="form-label">Edifício *</label>
+                        <select class="form-select" id="edificio" name="edificio" required>
+                            <option value="">Selecionar edifício</option>
+                            <option value="edificio_a">Edifício A</option>
+                            <option value="edificio_b">Edifício B</option>
+                            <option value="edificio_c">Edifício C</option>
+                            <option value="edificio_d">Edifício D</option>
+                            <option value="edificio_tecnico">Edifício Técnico</option>
+                        </select>
                     </div>
 
                     <div class="col-md-2">
-                        <label for="piso" class="form-label">Piso</label>
-                        <input type="text" class="form-control" id="piso" placeholder="Ex: 2">
+                        <label for="piso" class="form-label">Piso *</label>
+                        <select class="form-select" id="piso" name="piso" required>
+                            <option value="">Selecionar piso</option>
+                            <option value="-1">Piso -1</option>
+                            <option value="0">Piso 0</option>
+                            <option value="1">Piso 1</option>
+                            <option value="2">Piso 2</option>
+                            <option value="3">Piso 3</option>
+                            <option value="4">Piso 4</option>
+                        </select>
                     </div>
 
                     <div class="col-md-3">
-                        <label for="sala" class="form-label">Sala</label>
-                        <input type="text" class="form-control" id="sala" placeholder="Ex: Sala 201">
+                        <label for="sala" class="form-label">Sala *</label>
+                        <select class="form-select" id="sala" name="sala" required>
+                            <option value="">Selecionar sala</option>
+                            <option value="sala_1">Sala 1</option>
+                            <option value="sala_2">Sala 2</option>
+                            <option value="sala_201">Sala 201</option>
+                            <option value="bo_02">BO-02</option>
+                            <option value="lab_105">Lab-105</option>
+                            <option value="arm_01">ARM-01</option>
+                            <option value="consulta_01">Consulta 01</option>
+                            <option value="esterilizacao_01">Esterilização 01</option>
+                        </select>
                     </div>
 
                     <div class="col-md-4">
