@@ -138,20 +138,20 @@
                     </li>
 
                     <li class="nav-item menu-dropdown-hover-localizacoes">
-                        <a href="../localizacoes/lista_localizacoes.html" class="nav-link">
+                        <a href="lista_localizacoes.html" class="nav-link active">
                             <i class="fa-solid fa-location-dot me-2"></i> Localizações
                             <i class="fa-solid fa-chevron-down ms-1 small"></i>
                         </a>
 
                         <ul class="submenu-localizacoes">
                             <li>
-                                <a href="../localizacoes/lista_localizacoes.html">
+                                <a href="lista_localizacoes.html">
                                     <i class="fa-solid fa-list me-2"></i> Lista de Localizações
                                 </a>
                             </li>
 
                             <li>
-                                <a href="../localizacoes/nova_localizacao.html">
+                                <a href="nova_localizacao.html">
                                     <i class="fa-solid fa-plus me-2"></i> Adicionar Localização
                                 </a>
                             </li>
@@ -159,7 +159,7 @@
                     </li>
 
                     <li class="nav-item menu-dropdown-hover-fornecedores">
-                        <a href="lista_fornecedores.html" class="nav-link active">
+                        <a href="lista_fornecedores.html" class="nav-link">
                             <i class="fa-solid fa-truck-medical me-2"></i> Fornecedores
                             <i class="fa-solid fa-chevron-down ms-1 small"></i>
                         </a>
@@ -192,191 +192,140 @@
 
     <!-- Conteúdo Principal -->
     <main class="conteudo-private">
+
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h2 class="titulo-pagina">Detalhes do Fornecedor</h2>
+                <h2 class="titulo-pagina">Remover Localização</h2>
                 <p class="subtitulo-pagina">
-                    Consulta completa da entidade fornecedora associada aos equipamentos médicos.
+                    Confirmação de remoção de localização hospitalar associada aos equipamentos médicos.
                 </p>
             </div>
 
-            <a href="lista_fornecedores.html" class="btn btn-voltar">
+            <a href="lista_localizacoes.html" class="btn btn-voltar">
                 <i class="fa-solid fa-arrow-left me-2"></i> Voltar à Lista
             </a>
         </div>
 
-        <section class="detalhes-resumo">
-            <div class="row g-4 align-items-center">
+        <section class="remover-alerta">
+            <div class="remover-alerta-icone">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
 
-                <div class="col-md-3 text-center">
-                    <div class="icone-detalhes">
-                        <i class="fa-solid fa-truck-medical"></i>
-                    </div>
-                </div>
-
-                <div class="col-md-9">
-                    <h3 id="detalheFornecedorNome">Fornecedor</h3>
-
-                    <div class="detalhes-badges" id="detalheFornecedorTipos">
-                        <!-- preenchido por JS -->
-                    </div>
-
-                    <p id="detalheFornecedorResumo">
-                        Informação resumida do fornecedor selecionado.
-                    </p>
-                </div>
-
+            <div>
+                <h3>Atenção: ação sensível</h3>
+                <p>
+                    Se esta localização ainda estiver associada a equipamentos médicos,
+                    recomenda-se alterar o estado para <strong>Inativa</strong> ou
+                    <strong>Indisponível</strong> em vez de a eliminar definitivamente.
+                </p>
             </div>
         </section>
 
-        <div class="detalhes-grid">
+        <section class="remover-card">
 
-            <section class="detalhes-card">
+            <div class="remover-card-header">
                 <h4>
-                    <i class="fa-solid fa-circle-info me-2"></i>
-                    Identificação
+                    <i class="fa-solid fa-location-dot me-2"></i>
+                    Localização Selecionada
                 </h4>
 
-                <div class="detalhe-linha">
-                    <strong>NIF:</strong>
-                    <span id="detalheFornecedorNif">---</span>
+                <span id="removerLocalizacaoEstado" class="estado estado-ativo">Estado</span>
+            </div>
+
+            <div class="remover-resumo">
+
+                <div class="remover-linha">
+                    <strong>Departamento / Serviço:</strong>
+                    <span id="removerLocalizacaoDepartamento">---</span>
                 </div>
 
-                <div class="detalhe-linha">
-                    <strong>Estado:</strong>
-                    <span id="detalheFornecedorEstado">---</span>
+                <div class="remover-linha">
+                    <strong>Edifício:</strong>
+                    <span id="removerLocalizacaoEdificio">---</span>
                 </div>
 
-                <div class="detalhe-linha">
-                    <strong>País:</strong>
-                    <span id="detalheFornecedorPais">---</span>
+                <div class="remover-linha">
+                    <strong>Piso:</strong>
+                    <span id="removerLocalizacaoPiso">---</span>
                 </div>
 
-                <div class="detalhe-linha">
-                    <strong>Localidade:</strong>
-                    <span id="detalheFornecedorLocalidade">---</span>
-                </div>
-            </section>
-
-            <section class="detalhes-card">
-                <h4>
-                    <i class="fa-solid fa-address-book me-2"></i>
-                    Contactos
-                </h4>
-
-                <div class="detalhe-linha">
-                    <strong>Email:</strong>
-                    <span id="detalheFornecedorEmail">---</span>
+                <div class="remover-linha">
+                    <strong>Sala:</strong>
+                    <span id="removerLocalizacaoSala">---</span>
                 </div>
 
-                <div class="detalhe-linha">
-                    <strong>Telefone:</strong>
-                    <span id="detalheFornecedorTelefone">---</span>
+                <div class="remover-linha">
+                    <strong>Tipo de Espaço:</strong>
+                    <span id="removerLocalizacaoTipo">---</span>
                 </div>
 
-                <div class="detalhe-linha">
-                    <strong>Contacto:</strong>
-                    <span id="detalheFornecedorContacto">---</span>
+                <div class="remover-linha">
+                    <strong>Responsável:</strong>
+                    <span id="removerLocalizacaoResponsavel">---</span>
                 </div>
 
-                <div class="detalhe-linha">
-                    <strong>Website:</strong>
-                    <span id="detalheFornecedorWebsite">---</span>
-                </div>
-            </section>
-
-            <section class="detalhes-card">
-                <h4>
-                    <i class="fa-solid fa-file-contract me-2"></i>
-                    Contrato
-                </h4>
-
-                <div class="detalhe-linha">
-                    <strong>Contrato ativo:</strong>
-                    <span id="detalheFornecedorContrato">---</span>
+                <div class="remover-linha">
+                    <strong>Contacto Interno:</strong>
+                    <span id="removerLocalizacaoContacto">---</span>
                 </div>
 
-                <div class="detalhe-linha">
-                    <strong>Início:</strong>
-                    <span id="detalheFornecedorInicioContrato">---</span>
+                <div class="remover-linha">
+                    <strong>Equipamentos Associados:</strong>
+                    <span id="removerLocalizacaoEquipamentos">---</span>
                 </div>
 
-                <div class="detalhe-linha">
-                    <strong>Fim:</strong>
-                    <span id="detalheFornecedorFimContrato">---</span>
+                <div class="remover-linha">
+                    <strong>Criticidade da Área:</strong>
+                    <span id="removerLocalizacaoCriticidade">---</span>
                 </div>
 
-                <div class="detalhe-linha">
-                    <strong>Equipamentos associados:</strong>
-                    <span id="detalheFornecedorQtdEquipamentos">---</span>
-                </div>
-            </section>
-
-            <section class="detalhes-card">
-                <h4>
-                    <i class="fa-solid fa-stethoscope me-2"></i>
-                    Associação Técnica
-                </h4>
-
-                <div class="detalhe-linha">
-                    <strong>Área de atuação:</strong>
-                    <span id="detalheFornecedorArea">---</span>
+                <div class="remover-linha">
+                    <strong>Suporte de Vida:</strong>
+                    <span id="removerLocalizacaoSuporteVida">---</span>
                 </div>
 
-                <div class="detalhe-linha">
-                    <strong>Equipamentos / marcas:</strong>
-                    <span id="detalheFornecedorEquipamentos">---</span>
-                </div>
-            </section>
+            </div>
 
-        </div>
+        </section>
 
-        <section class="detalhes-card detalhes-observacoes">
+        <section class="remover-confirmacao">
+
             <h4>
-                <i class="fa-solid fa-clipboard-list me-2"></i>
-                Observações
+                <i class="fa-solid fa-shield-halved me-2"></i>
+                Confirmação
             </h4>
 
-            <p id="detalheFornecedorObservacoes">
-                Sem observações registadas.
+            <p>
+                Confirme que pretende remover esta localização. Esta operação é apenas uma simulação nesta fase do projeto.
             </p>
-        </section>
 
-        <!-- Equipamentos associados ao fornecedor -->
-        <section class="detalhes-card equipamentos-associados-card">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="mb-0">
-                    <i class="fa-solid fa-stethoscope me-2"></i>
-                    Equipamentos Associados ao Fornecedor
-                </h4>
+            <div class="form-check remover-check">
+                <input class="form-check-input"
+                    type="checkbox"
+                    id="confirmarRemocaoLocalizacao">
 
-                <span class="badge-detalhe" id="totalEquipamentosFornecedor">
-                    0 equipamentos
-                </span>
+                <label class="form-check-label" for="confirmarRemocaoLocalizacao">
+                    Confirmo que pretendo remover esta localização.
+                </label>
             </div>
 
-            <div class="table-responsive">
-                <table class="table table-hover align-middle tabela-equipamentos-associados">
-                    <thead>
-                        <tr>
-                            <th>Código</th>
-                            <th>Equipamento</th>
-                            <th>Categoria</th>
-                            <th>Modelo</th>
-                            <th>Nº Série</th>
-                            <th>Relação</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
+            <div class="form-actions">
+                <a href="lista_localizacoes.html" class="btn btn-cancelar">
+                    <i class="fa-solid fa-xmark me-2"></i> Cancelar
+                </a>
 
-                    <tbody id="tabelaEquipamentosFornecedor">
-                        <!-- preenchido por JavaScript -->
-                    </tbody>
-                </table>
+                <button type="button"
+                        class="btn btn-confirmar-remocao"
+                        id="btnConfirmarRemocaoLocalizacao"
+                        disabled>
+                    <i class="fa-solid fa-trash me-2"></i> Confirmar Remoção
+                </button>
             </div>
+
         </section>
 
     </main>
+
 
     <!-- Bootstrap JS -->
     <script src="../../assets/bootstrap/bootstrap.bundle.min.js"></script>

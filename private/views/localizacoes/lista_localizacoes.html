@@ -138,20 +138,20 @@
                     </li>
 
                     <li class="nav-item menu-dropdown-hover-localizacoes">
-                        <a href="../localizacoes/lista_localizacoes.html" class="nav-link">
+                        <a href="lista_localizacoes.html" class="nav-link active">
                             <i class="fa-solid fa-location-dot me-2"></i> Localizações
                             <i class="fa-solid fa-chevron-down ms-1 small"></i>
                         </a>
 
                         <ul class="submenu-localizacoes">
                             <li>
-                                <a href="../localizacoes/lista_localizacoes.html">
+                                <a href="lista_localizacoes.html">
                                     <i class="fa-solid fa-list me-2"></i> Lista de Localizações
                                 </a>
                             </li>
 
                             <li>
-                                <a href="../localizacoes/nova_localizacao.html">
+                                <a href="nova_localizacao.html">
                                     <i class="fa-solid fa-plus me-2"></i> Adicionar Localização
                                 </a>
                             </li>
@@ -159,7 +159,7 @@
                     </li>
 
                     <li class="nav-item menu-dropdown-hover-fornecedores">
-                        <a href="lista_fornecedores.html" class="nav-link active">
+                        <a href="lista_fornecedores.html" class="nav-link">
                             <i class="fa-solid fa-truck-medical me-2"></i> Fornecedores
                             <i class="fa-solid fa-chevron-down ms-1 small"></i>
                         </a>
@@ -191,45 +191,48 @@
     </nav>
 
     <!-- Conteúdo Principal -->
-    <main class="conteudo-private">
 
+    <main class="conteudo-private">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h2 class="titulo-pagina">Gestão de Fornecedores</h2>
+                <h2 class="titulo-pagina">Gestão de Localizações</h2>
                 <p class="subtitulo-pagina">
-                    Consulta, registo e acompanhamento dos fornecedores associados aos equipamentos médicos.
+                    Consulta, registo e acompanhamento das localizações hospitalares associadas aos equipamentos médicos.
                 </p>
             </div>
 
-            <a href="novo_fornecedor.html" class="btn btn-adicionar">
-                <i class="fa-solid fa-plus me-2"></i> Adicionar Fornecedor
+            <a href="nova_localizacao.html" class="btn btn-adicionar">
+                <i class="fa-solid fa-plus me-2"></i> Adicionar Localização
             </a>
-        </div>        
+        </div>
 
-        <!-- Filtros simples -->
+        <!-- Filtros -->
         <section class="filtros-fornecedores mb-4">
             <div class="row g-3 align-items-end">
 
-                <div class="col-md-6">
-                    <label for="pesquisaFornecedor" class="form-label">Pesquisar fornecedor</label>
+                <div class="col-md-5">
+                    <label for="pesquisaLocalizacao" class="form-label">Pesquisar localização</label>
                     <input type="text"
-                           id="pesquisaFornecedor"
-                           class="form-control"
-                           placeholder="Pesquisar por nome, NIF, email ou contacto...">
+                        id="pesquisaLocalizacao"
+                        class="form-control"
+                        placeholder="Pesquisar por departamento, edifício, piso, sala ou responsável...">
                 </div>
 
                 <div class="col-md-4">
-                    <label for="filtroTipoFornecedor" class="form-label">Tipo de fornecedor</label>
-                    <select id="filtroTipoFornecedor" class="form-select">
+                    <label for="filtroTipoEspaco" class="form-label">Tipo de espaço</label>
+                    <select id="filtroTipoEspaco" class="form-select">
                         <option value="">Todos os tipos</option>
-                        <option value="fabricante">Fabricante</option>
-                        <option value="distribuidor">Vendedor / Distribuidor</option>
-                        <option value="manutencao">Manutenção</option>
-                        <option value="calibracao">Calibração</option>
+                        <option value="area_clinica">Área Clínica</option>
+                        <option value="urgencia">Urgência</option>
+                        <option value="uci">Unidade de Cuidados Intensivos</option>
+                        <option value="bloco_operatorio">Bloco Operatório</option>
+                        <option value="laboratorio">Laboratório</option>
+                        <option value="armazem_tecnico">Armazém Técnico</option>
+                        <option value="consulta_externa">Consulta Externa</option>
                     </select>
                 </div>
 
-                <div class="col-md-2">
+                <div class="col-md-3">
                     <button type="button" class="btn btn-limpar-filtros w-100">
                         <i class="fa-solid fa-filter-circle-xmark me-2"></i> Limpar
                     </button>
@@ -238,17 +241,17 @@
             </div>
         </section>
 
-        <!-- Tabela de fornecedores -->
+        <!-- Tabela de localizações -->
         <div class="table-responsive tabela-container">
-            <table class="table table-hover align-middle tabela-fornecedores">
+            <table class="table table-hover align-middle tabela-localizacoes">
                 <thead>
                     <tr>
-                        <th>Fornecedor</th>
-                        <th>Tipo</th>
-                        <th>NIF</th>
-                        <th>Email</th>
-                        <th>Telefone</th>
-                        <th>Localidade</th>
+                        <th>Departamento / Serviço</th>
+                        <th>Edifício</th>
+                        <th>Piso</th>
+                        <th>Sala</th>
+                        <th>Tipo de Espaço</th>
+                        <th>Responsável</th>
                         <th>Estado</th>
                         <th>Equipamentos</th>
                         <th class="text-center">Ações</th>
@@ -256,113 +259,141 @@
                 </thead>
 
                 <tbody>
-                    <tr data-tipo="fabricante">
-                        <td>Philips Medical Systems</td>
+                    <tr data-tipo="uci">
+                        <td>Unidade de Cuidados Intensivos</td>
+                        <td>Edifício A</td>
+                        <td>2</td>
+                        <td>Sala 201</td>
                         <td>
-                            <span class="tipo-fornecedor tipo-fabricante">Fabricante</span>
+                            <span class="tipo-localizacao tipo-uci">UCI</span>
                         </td>
-                        <td>509123456</td>
-                        <td>suporte@philips-med.pt</td>
-                        <td>+351 220 000 111</td>
-                        <td>Porto</td>
+                        <td>Enf. Maria Costa</td>
                         <td>
-                            <span class="estado estado-ativo">Ativo</span>
-                        </td>
-                        <td>12</td>
-                        <td class="text-center">
-                            <a href="detalhes_fornecedor.html?id=FOR-001" class="btn btn-sm btn-detalhes" title="Ver detalhes">
-                                <i class="fa-solid fa-eye"></i>
-                            </a>
-
-                            <a href="editar_fornecedor.html?id=FOR-001" class="btn btn-sm btn-editar" title="Editar fornecedor">
-                                <i class="fa-solid fa-pen"></i>
-                            </a>
-
-                            <a href="apagar_fornecedor.html?id=FOR-001" class="btn btn-sm btn-eliminar" title="Remover fornecedor">
-                                <i class="fa-solid fa-trash"></i>
-                            </a>
-                        </td>
-                    </tr>
-
-                    <tr data-tipo="distribuidor">
-                        <td>MedSupply Portugal</td>
-                        <td>
-                            <span class="tipo-fornecedor tipo-distribuidor">Distribuidor</span>
-                        </td>
-                        <td>514987321</td>
-                        <td>comercial@medsupply.pt</td>
-                        <td>+351 221 234 567</td>
-                        <td>Lisboa</td>
-                        <td>
-                            <span class="estado estado-ativo">Ativo</span>
+                            <span class="estado estado-ativo">Ativa</span>
                         </td>
                         <td>8</td>
                         <td class="text-center">
-                            <a href="detalhes_fornecedor.html?id=FOR-002" class="btn btn-sm btn-detalhes" title="Ver detalhes">
+                            <a href="detalhes_localizacao.html?id=LOC-001" class="btn btn-sm btn-detalhes" title="Ver detalhes">
                                 <i class="fa-solid fa-eye"></i>
                             </a>
 
-                            <a href="editar_fornecedor.html?id=FOR-002" class="btn btn-sm btn-editar" title="Editar fornecedor">
+                            <a href="editar_localizacao.html?id=LOC-001" class="btn btn-sm btn-editar" title="Editar localização">
                                 <i class="fa-solid fa-pen"></i>
                             </a>
 
-                            <a href="apagar_fornecedor.html?id=FOR-002" class="btn btn-sm btn-eliminar" title="Remover fornecedor">
+                            <a href="apagar_localizacao.html?id=LOC-001" class="btn btn-sm btn-eliminar" title="Remover localização">
                                 <i class="fa-solid fa-trash"></i>
                             </a>
                         </td>
                     </tr>
 
-                    <tr data-tipo="manutencao">
-                        <td>Biomedical Solutions</td>
+                    <tr data-tipo="urgencia">
+                        <td>Urgência</td>
+                        <td>Edifício B</td>
+                        <td>0</td>
+                        <td>Sala 1</td>
                         <td>
-                            <span class="tipo-fornecedor tipo-manutencao">Manutenção</span>
+                            <span class="tipo-localizacao tipo-urgencia">Urgência</span>
                         </td>
-                        <td>507654789</td>
-                        <td>tecnica@biomedicalsolutions.pt</td>
-                        <td>+351 222 456 789</td>
-                        <td>Maia</td>
+                        <td>Dr. João Martins</td>
                         <td>
-                            <span class="estado estado-ativo">Ativo</span>
+                            <span class="estado estado-ativo">Ativa</span>
                         </td>
-                        <td>5</td>
+                        <td>12</td>
                         <td class="text-center">
-                            <a href="detalhes_fornecedor.html?id=FOR-003" class="btn btn-sm btn-detalhes" title="Ver detalhes">
+                            <a href="detalhes_localizacao.html?id=LOC-002" class="btn btn-sm btn-detalhes" title="Ver detalhes">
                                 <i class="fa-solid fa-eye"></i>
                             </a>
 
-                            <a href="editar_fornecedor.html?id=FOR-003" class="btn btn-sm btn-editar" title="Editar fornecedor">
+                            <a href="editar_localizacao.html?id=LOC-002" class="btn btn-sm btn-editar" title="Editar localização">
                                 <i class="fa-solid fa-pen"></i>
                             </a>
 
-                            <a href="apagar_fornecedor.html?id=FOR-003" class="btn btn-sm btn-eliminar" title="Remover fornecedor">
+                            <a href="apagar_localizacao.html?id=LOC-002" class="btn btn-sm btn-eliminar" title="Remover localização">
                                 <i class="fa-solid fa-trash"></i>
                             </a>
                         </td>
                     </tr>
 
-                    <tr data-tipo="calibracao">
-                        <td>CalibraMed</td>
+                    <tr data-tipo="bloco_operatorio">
+                        <td>Bloco Operatório</td>
+                        <td>Edifício C</td>
+                        <td>1</td>
+                        <td>BO-02</td>
                         <td>
-                            <span class="tipo-fornecedor tipo-calibracao">Calibração</span>
+                            <span class="tipo-localizacao tipo-bloco">Bloco Operatório</span>
                         </td>
-                        <td>515321987</td>
-                        <td>calibracao@calibramed.pt</td>
-                        <td>+351 223 987 654</td>
-                        <td>Braga</td>
+                        <td>Enf. Ricardo Silva</td>
                         <td>
-                            <span class="estado estado-inativo">Inativo</span>
+                            <span class="estado estado-ativo">Ativa</span>
                         </td>
-                        <td>3</td>
+                        <td>6</td>
                         <td class="text-center">
-                            <a href="detalhes_fornecedor.html?id=FOR-004" class="btn btn-sm btn-detalhes" title="Ver detalhes">
+                            <a href="detalhes_localizacao.html?id=LOC-003" class="btn btn-sm btn-detalhes" title="Ver detalhes">
                                 <i class="fa-solid fa-eye"></i>
                             </a>
 
-                            <a href="editar_fornecedor.html?id=FOR-004" class="btn btn-sm btn-editar" title="Editar fornecedor">
+                            <a href="editar_localizacao.html?id=LOC-003" class="btn btn-sm btn-editar" title="Editar localização">
                                 <i class="fa-solid fa-pen"></i>
                             </a>
 
-                            <a href="apagar_fornecedor.html?id=FOR-004" class="btn btn-sm btn-eliminar" title="Remover fornecedor">
+                            <a href="apagar_localizacao.html?id=LOC-003" class="btn btn-sm btn-eliminar" title="Remover localização">
+                                <i class="fa-solid fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+
+                    <tr data-tipo="laboratorio">
+                        <td>Laboratório Clínico</td>
+                        <td>Edifício D</td>
+                        <td>1</td>
+                        <td>Lab-105</td>
+                        <td>
+                            <span class="tipo-localizacao tipo-laboratorio">Laboratório</span>
+                        </td>
+                        <td>Téc. Ana Ferreira</td>
+                        <td>
+                            <span class="estado estado-manutencao">Em manutenção</span>
+                        </td>
+                        <td>10</td>
+                        <td class="text-center">
+                            <a href="detalhes_localizacao.html?id=LOC-004" class="btn btn-sm btn-detalhes" title="Ver detalhes">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+
+                            <a href="editar_localizacao.html?id=LOC-004" class="btn btn-sm btn-editar" title="Editar localização">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+
+                            <a href="apagar_localizacao.html?id=LOC-004" class="btn btn-sm btn-eliminar" title="Remover localização">
+                                <i class="fa-solid fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+
+                    <tr data-tipo="armazem_tecnico">
+                        <td>Armazém Técnico</td>
+                        <td>Edifício Técnico</td>
+                        <td>-1</td>
+                        <td>ARM-01</td>
+                        <td>
+                            <span class="tipo-localizacao tipo-armazem">Armazém Técnico</span>
+                        </td>
+                        <td>Eng. Gonçalo Brito</td>
+                        <td>
+                            <span class="estado estado-inativo">Inativa</span>
+                        </td>
+                        <td>4</td>
+                        <td class="text-center">
+                            <a href="detalhes_localizacao.html?id=LOC-005" class="btn btn-sm btn-detalhes" title="Ver detalhes">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+
+                            <a href="editar_localizacao.html?id=LOC-005" class="btn btn-sm btn-editar" title="Editar localização">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+
+                            <a href="apagar_localizacao.html?id=LOC-005" class="btn btn-sm btn-eliminar" title="Remover localização">
                                 <i class="fa-solid fa-trash"></i>
                             </a>
                         </td>

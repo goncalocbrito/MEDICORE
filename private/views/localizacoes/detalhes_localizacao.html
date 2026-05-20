@@ -138,20 +138,20 @@
                     </li>
 
                     <li class="nav-item menu-dropdown-hover-localizacoes">
-                        <a href="../localizacoes/lista_localizacoes.html" class="nav-link">
+                        <a href="lista_localizacoes.html" class="nav-link active">
                             <i class="fa-solid fa-location-dot me-2"></i> Localizações
                             <i class="fa-solid fa-chevron-down ms-1 small"></i>
                         </a>
 
                         <ul class="submenu-localizacoes">
                             <li>
-                                <a href="../localizacoes/lista_localizacoes.html">
+                                <a href="lista_localizacoes.html">
                                     <i class="fa-solid fa-list me-2"></i> Lista de Localizações
                                 </a>
                             </li>
 
                             <li>
-                                <a href="../localizacoes/nova_localizacao.html">
+                                <a href="nova_localizacao.html">
                                     <i class="fa-solid fa-plus me-2"></i> Adicionar Localização
                                 </a>
                             </li>
@@ -159,7 +159,7 @@
                     </li>
 
                     <li class="nav-item menu-dropdown-hover-fornecedores">
-                        <a href="lista_fornecedores.html" class="nav-link active">
+                        <a href="lista_fornecedores.html" class="nav-link">
                             <i class="fa-solid fa-truck-medical me-2"></i> Fornecedores
                             <i class="fa-solid fa-chevron-down ms-1 small"></i>
                         </a>
@@ -192,37 +192,41 @@
 
     <!-- Conteúdo Principal -->
     <main class="conteudo-private">
+
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h2 class="titulo-pagina">Detalhes do Fornecedor</h2>
+                <h2 class="titulo-pagina">Detalhes da Localização</h2>
                 <p class="subtitulo-pagina">
-                    Consulta completa da entidade fornecedora associada aos equipamentos médicos.
+                    Consulta completa da localização hospitalar associada aos equipamentos médicos.
                 </p>
             </div>
 
-            <a href="lista_fornecedores.html" class="btn btn-voltar">
+            <a href="lista_localizacoes.html" class="btn btn-voltar">
                 <i class="fa-solid fa-arrow-left me-2"></i> Voltar à Lista
             </a>
         </div>
 
+        <!-- Resumo da localização -->
         <section class="detalhes-resumo">
             <div class="row g-4 align-items-center">
 
                 <div class="col-md-3 text-center">
                     <div class="icone-detalhes">
-                        <i class="fa-solid fa-truck-medical"></i>
+                        <i class="fa-solid fa-location-dot"></i>
                     </div>
                 </div>
 
                 <div class="col-md-9">
-                    <h3 id="detalheFornecedorNome">Fornecedor</h3>
+                    <h3 id="detalheLocalizacaoTitulo">Localização Hospitalar</h3>
 
-                    <div class="detalhes-badges" id="detalheFornecedorTipos">
-                        <!-- preenchido por JS -->
+                    <div class="detalhes-badges">
+                        <span id="detalheLocalizacaoEstado" class="estado estado-ativo">Ativa</span>
+                        <span id="detalheLocalizacaoTipo" class="badge-detalhe">Tipo de espaço</span>
+                        <span id="detalheLocalizacaoCriticidade" class="badge-detalhe">Criticidade</span>
                     </div>
 
-                    <p id="detalheFornecedorResumo">
-                        Informação resumida do fornecedor selecionado.
+                    <p id="detalheLocalizacaoResumo">
+                        Informação resumida da localização selecionada.
                     </p>
                 </div>
 
@@ -231,6 +235,7 @@
 
         <div class="detalhes-grid">
 
+            <!-- Identificação -->
             <section class="detalhes-card">
                 <h4>
                     <i class="fa-solid fa-circle-info me-2"></i>
@@ -238,120 +243,154 @@
                 </h4>
 
                 <div class="detalhe-linha">
-                    <strong>NIF:</strong>
-                    <span id="detalheFornecedorNif">---</span>
+                    <strong>Departamento / Serviço:</strong>
+                    <span id="detalheDepartamento">---</span>
                 </div>
 
                 <div class="detalhe-linha">
-                    <strong>Estado:</strong>
-                    <span id="detalheFornecedorEstado">---</span>
+                    <strong>Edifício:</strong>
+                    <span id="detalheEdificio">---</span>
                 </div>
 
                 <div class="detalhe-linha">
-                    <strong>País:</strong>
-                    <span id="detalheFornecedorPais">---</span>
+                    <strong>Piso:</strong>
+                    <span id="detalhePiso">---</span>
                 </div>
 
                 <div class="detalhe-linha">
-                    <strong>Localidade:</strong>
-                    <span id="detalheFornecedorLocalidade">---</span>
+                    <strong>Sala:</strong>
+                    <span id="detalheSala">---</span>
+                </div>
+
+                <div class="detalhe-linha">
+                    <strong>Tipo de Espaço:</strong>
+                    <span id="detalheTipoEspaco">---</span>
                 </div>
             </section>
 
+            <!-- Responsável -->
             <section class="detalhes-card">
                 <h4>
-                    <i class="fa-solid fa-address-book me-2"></i>
-                    Contactos
+                    <i class="fa-solid fa-user-gear me-2"></i>
+                    Responsável e Contacto
                 </h4>
+
+                <div class="detalhe-linha">
+                    <strong>Responsável:</strong>
+                    <span id="detalheResponsavel">---</span>
+                </div>
+
+                <div class="detalhe-linha">
+                    <strong>Função:</strong>
+                    <span id="detalheFuncao">---</span>
+                </div>
+
+                <div class="detalhe-linha">
+                    <strong>Contacto Interno:</strong>
+                    <span id="detalheContacto">---</span>
+                </div>
 
                 <div class="detalhe-linha">
                     <strong>Email:</strong>
-                    <span id="detalheFornecedorEmail">---</span>
+                    <span id="detalheEmail">---</span>
                 </div>
 
                 <div class="detalhe-linha">
-                    <strong>Telefone:</strong>
-                    <span id="detalheFornecedorTelefone">---</span>
-                </div>
-
-                <div class="detalhe-linha">
-                    <strong>Contacto:</strong>
-                    <span id="detalheFornecedorContacto">---</span>
-                </div>
-
-                <div class="detalhe-linha">
-                    <strong>Website:</strong>
-                    <span id="detalheFornecedorWebsite">---</span>
+                    <strong>Notas:</strong>
+                    <span id="detalheNotasContacto">---</span>
                 </div>
             </section>
 
+            <!-- Características -->
             <section class="detalhes-card">
                 <h4>
-                    <i class="fa-solid fa-file-contract me-2"></i>
-                    Contrato
+                    <i class="fa-solid fa-hospital me-2"></i>
+                    Características da Área
                 </h4>
 
                 <div class="detalhe-linha">
-                    <strong>Contrato ativo:</strong>
-                    <span id="detalheFornecedorContrato">---</span>
+                    <strong>Acesso:</strong>
+                    <span id="detalheAcesso">---</span>
                 </div>
 
                 <div class="detalhe-linha">
-                    <strong>Início:</strong>
-                    <span id="detalheFornecedorInicioContrato">---</span>
+                    <strong>Criticidade da Área:</strong>
+                    <span id="detalheCriticidadeArea">---</span>
                 </div>
 
                 <div class="detalhe-linha">
-                    <strong>Fim:</strong>
-                    <span id="detalheFornecedorFimContrato">---</span>
+                    <strong>Permite Equipamentos Críticos:</strong>
+                    <span id="detalhePermiteCriticos">---</span>
                 </div>
 
                 <div class="detalhe-linha">
-                    <strong>Equipamentos associados:</strong>
-                    <span id="detalheFornecedorQtdEquipamentos">---</span>
+                    <strong>Área com Suporte de Vida:</strong>
+                    <span id="detalheSuporteVida">---</span>
+                </div>
+
+                <div class="detalhe-linha">
+                    <strong>Capacidade Estimada:</strong>
+                    <span id="detalheCapacidade">---</span>
                 </div>
             </section>
 
+            <!-- Indicadores -->
             <section class="detalhes-card">
                 <h4>
-                    <i class="fa-solid fa-stethoscope me-2"></i>
-                    Associação Técnica
+                    <i class="fa-solid fa-chart-pie me-2"></i>
+                    Indicadores da Localização
                 </h4>
 
                 <div class="detalhe-linha">
-                    <strong>Área de atuação:</strong>
-                    <span id="detalheFornecedorArea">---</span>
+                    <strong>Equipamentos Associados:</strong>
+                    <span id="detalheQtdEquipamentos">---</span>
                 </div>
 
                 <div class="detalhe-linha">
-                    <strong>Equipamentos / marcas:</strong>
-                    <span id="detalheFornecedorEquipamentos">---</span>
+                    <strong>Equipamentos Ativos:</strong>
+                    <span id="detalheEquipamentosAtivos">---</span>
+                </div>
+
+                <div class="detalhe-linha">
+                    <strong>Em Manutenção:</strong>
+                    <span id="detalheEquipamentosManutencao">---</span>
+                </div>
+
+                <div class="detalhe-linha">
+                    <strong>Avariados:</strong>
+                    <span id="detalheEquipamentosAvariados">---</span>
+                </div>
+
+                <div class="detalhe-linha">
+                    <strong>Ocupação Estimada:</strong>
+                    <span id="detalheOcupacao">---</span>
                 </div>
             </section>
 
         </div>
 
+        <!-- Observações -->
         <section class="detalhes-card detalhes-observacoes">
             <h4>
                 <i class="fa-solid fa-clipboard-list me-2"></i>
                 Observações
             </h4>
 
-            <p id="detalheFornecedorObservacoes">
+            <p id="detalheObservacoesLocalizacao">
                 Sem observações registadas.
             </p>
         </section>
 
-        <!-- Equipamentos associados ao fornecedor -->
+        <!-- Equipamentos associados -->
         <section class="detalhes-card equipamentos-associados-card">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h4 class="mb-0">
                     <i class="fa-solid fa-stethoscope me-2"></i>
-                    Equipamentos Associados ao Fornecedor
+                    Equipamentos Associados à Localização
                 </h4>
 
-                <span class="badge-detalhe" id="totalEquipamentosFornecedor">
-                    0 equipamentos
+                <span class="badge-detalhe" id="totalEquipamentosLocalizacao">
+                    0 equipamento(s)
                 </span>
             </div>
 
@@ -364,12 +403,12 @@
                             <th>Categoria</th>
                             <th>Modelo</th>
                             <th>Nº Série</th>
-                            <th>Relação</th>
+                            <th>Criticidade</th>
                             <th>Estado</th>
                         </tr>
                     </thead>
 
-                    <tbody id="tabelaEquipamentosFornecedor">
+                    <tbody id="tabelaEquipamentosLocalizacao">
                         <!-- preenchido por JavaScript -->
                     </tbody>
                 </table>
@@ -377,6 +416,7 @@
         </section>
 
     </main>
+
 
     <!-- Bootstrap JS -->
     <script src="../../assets/bootstrap/bootstrap.bundle.min.js"></script>

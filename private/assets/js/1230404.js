@@ -1076,3 +1076,354 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+
+//Temporário
+// Nova localização
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const formNovaLocalizacao = document.getElementById("formNovaLocalizacao");
+
+    if (!formNovaLocalizacao) return;
+
+    formNovaLocalizacao.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        alert("Localização registada com sucesso.");
+        window.location.href = "lista_localizacoes.html";
+    });
+
+});
+
+// Dados temporários das localizações
+// Alteração feita por mim
+
+const localizacoesMEDICORE = {
+    "LOC-001": {
+        departamento: "Unidade de Cuidados Intensivos",
+        edificio: "Edifício A",
+        piso: "2",
+        sala: "Sala 201",
+        tipoEspaco: "UCI",
+        estado: "Ativa",
+        estadoClasse: "estado-ativo",
+        responsavel: "Enf. Maria Costa",
+        funcao: "Enfermeira Responsável",
+        contacto: "Ext. 2201",
+        email: "maria.costa@hospital.pt",
+        notasContacto: "Contactar preferencialmente durante o turno da manhã.",
+        acesso: "Apenas pessoal autorizado",
+        criticidade: "Crítica",
+        permiteCriticos: "Sim",
+        suporteVida: "Sim",
+        capacidade: "10 equipamentos",
+        qtdEquipamentos: 8,
+        equipamentosAtivos: 7,
+        equipamentosManutencao: 1,
+        equipamentosAvariados: 0,
+        ocupacao: "80%",
+        observacoes: "Área crítica com equipamentos de suporte de vida e monitorização contínua.",
+        equipamentosAssociados: [
+            {
+                codigo: "EQ-001",
+                nome: "Monitor Multiparamétrico",
+                categoria: "Monitorização",
+                modelo: "IntelliVue MX450",
+                serie: "SN-MX450-2024",
+                criticidade: "Crítica",
+                estado: "Ativo",
+                estadoClasse: "estado-ativo"
+            },
+            {
+                codigo: "EQ-002",
+                nome: "Ventilador Pulmonar",
+                categoria: "Suporte de Vida",
+                modelo: "Evita V300",
+                serie: "SN-EV300-1198",
+                criticidade: "Crítica",
+                estado: "Em manutenção",
+                estadoClasse: "estado-manutencao"
+            }
+        ]
+    },
+
+    "LOC-002": {
+        departamento: "Urgência",
+        edificio: "Edifício B",
+        piso: "0",
+        sala: "Sala 1",
+        tipoEspaco: "Urgência",
+        estado: "Ativa",
+        estadoClasse: "estado-ativo",
+        responsavel: "Dr. João Martins",
+        funcao: "Coordenador de Serviço",
+        contacto: "Ext. 1101",
+        email: "joao.martins@hospital.pt",
+        notasContacto: "Serviço com funcionamento permanente.",
+        acesso: "Restrito",
+        criticidade: "Alta",
+        permiteCriticos: "Sim",
+        suporteVida: "Sim",
+        capacidade: "14 equipamentos",
+        qtdEquipamentos: 12,
+        equipamentosAtivos: 10,
+        equipamentosManutencao: 1,
+        equipamentosAvariados: 1,
+        ocupacao: "86%",
+        observacoes: "Área de elevada rotação com necessidade de resposta técnica rápida.",
+        equipamentosAssociados: [
+            {
+                codigo: "EQ-006",
+                nome: "Oxímetro de Pulso",
+                categoria: "Monitorização",
+                modelo: "OxiPro 300",
+                serie: "SN-OXI-300-2025",
+                criticidade: "Média",
+                estado: "Ativo",
+                estadoClasse: "estado-ativo"
+            }
+        ]
+    },
+
+    "LOC-003": {
+        departamento: "Bloco Operatório",
+        edificio: "Edifício C",
+        piso: "1",
+        sala: "BO-02",
+        tipoEspaco: "Bloco Operatório",
+        estado: "Ativa",
+        estadoClasse: "estado-ativo",
+        responsavel: "Enf. Ricardo Silva",
+        funcao: "Responsável de Bloco",
+        contacto: "Ext. 3102",
+        email: "ricardo.silva@hospital.pt",
+        notasContacto: "Evitar contacto durante períodos cirúrgicos.",
+        acesso: "Apenas pessoal autorizado",
+        criticidade: "Crítica",
+        permiteCriticos: "Sim",
+        suporteVida: "Sim",
+        capacidade: "8 equipamentos",
+        qtdEquipamentos: 6,
+        equipamentosAtivos: 5,
+        equipamentosManutencao: 0,
+        equipamentosAvariados: 1,
+        ocupacao: "75%",
+        observacoes: "Localização com equipamentos de anestesia, emergência e suporte intraoperatório.",
+        equipamentosAssociados: [
+            {
+                codigo: "EQ-003",
+                nome: "Desfibrilhador",
+                categoria: "Emergência",
+                modelo: "R Series",
+                serie: "SN-ZOLL-8821",
+                criticidade: "Crítica",
+                estado: "Avariado",
+                estadoClasse: "estado-avariado"
+            }
+        ]
+    },
+
+    "LOC-004": {
+        departamento: "Laboratório Clínico",
+        edificio: "Edifício D",
+        piso: "1",
+        sala: "Lab-105",
+        tipoEspaco: "Laboratório",
+        estado: "Em manutenção",
+        estadoClasse: "estado-manutencao",
+        responsavel: "Téc. Ana Ferreira",
+        funcao: "Técnica Coordenadora",
+        contacto: "Ext. 4105",
+        email: "ana.ferreira@hospital.pt",
+        notasContacto: "Contactar em horário laboral.",
+        acesso: "Acesso técnico",
+        criticidade: "Alta",
+        permiteCriticos: "Sim",
+        suporteVida: "Não",
+        capacidade: "12 equipamentos",
+        qtdEquipamentos: 10,
+        equipamentosAtivos: 8,
+        equipamentosManutencao: 2,
+        equipamentosAvariados: 0,
+        ocupacao: "83%",
+        observacoes: "Zona laboratorial com equipamentos sujeitos a calibração periódica.",
+        equipamentosAssociados: []
+    },
+
+    "LOC-005": {
+        departamento: "Armazém Técnico",
+        edificio: "Edifício Técnico",
+        piso: "-1",
+        sala: "ARM-01",
+        tipoEspaco: "Armazém Técnico",
+        estado: "Inativa",
+        estadoClasse: "estado-inativo",
+        responsavel: "Eng. Gonçalo Brito",
+        funcao: "Engenheiro Biomédico",
+        contacto: "Ext. 5001",
+        email: "g.brito@hospital.pt",
+        notasContacto: "Espaço reservado a equipamentos em stock ou abatidos.",
+        acesso: "Acesso técnico",
+        criticidade: "Baixa",
+        permiteCriticos: "Não",
+        suporteVida: "Não",
+        capacidade: "20 equipamentos",
+        qtdEquipamentos: 4,
+        equipamentosAtivos: 0,
+        equipamentosManutencao: 0,
+        equipamentosAvariados: 0,
+        ocupacao: "20%",
+        observacoes: "Localização destinada a armazenamento técnico e equipamentos fora de utilização.",
+        equipamentosAssociados: []
+    }
+};
+
+
+// Detalhes da localização
+// Alteração feita por mim
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const paginaDetalhesLocalizacao = document.getElementById("detalheLocalizacaoTitulo");
+
+    if (!paginaDetalhesLocalizacao) return;
+
+    const parametros = new URLSearchParams(window.location.search);
+    const idLocalizacao = parametros.get("id");
+    const localizacao = localizacoesMEDICORE[idLocalizacao];
+
+    if (!localizacao) {
+        alert("Localização não encontrada.");
+        window.location.href = "lista_localizacoes.html";
+        return;
+    }
+
+    const titulo = `${localizacao.departamento} — ${localizacao.edificio}, Piso ${localizacao.piso}, ${localizacao.sala}`;
+
+    document.getElementById("detalheLocalizacaoTitulo").textContent = titulo;
+    document.getElementById("detalheLocalizacaoResumo").textContent =
+        `${localizacao.departamento}, localizada em ${localizacao.edificio}, piso ${localizacao.piso}, ${localizacao.sala}, com ${localizacao.qtdEquipamentos} equipamento(s) associado(s).`;
+
+    const estado = document.getElementById("detalheLocalizacaoEstado");
+    estado.textContent = localizacao.estado;
+    estado.className = `estado ${localizacao.estadoClasse}`;
+
+    document.getElementById("detalheLocalizacaoTipo").textContent = localizacao.tipoEspaco;
+    document.getElementById("detalheLocalizacaoCriticidade").textContent = `Criticidade: ${localizacao.criticidade}`;
+
+    document.getElementById("detalheDepartamento").textContent = localizacao.departamento;
+    document.getElementById("detalheEdificio").textContent = localizacao.edificio;
+    document.getElementById("detalhePiso").textContent = localizacao.piso;
+    document.getElementById("detalheSala").textContent = localizacao.sala;
+    document.getElementById("detalheTipoEspaco").textContent = localizacao.tipoEspaco;
+
+    document.getElementById("detalheResponsavel").textContent = localizacao.responsavel;
+    document.getElementById("detalheFuncao").textContent = localizacao.funcao;
+    document.getElementById("detalheContacto").textContent = localizacao.contacto;
+    document.getElementById("detalheEmail").textContent = localizacao.email;
+    document.getElementById("detalheNotasContacto").textContent = localizacao.notasContacto;
+
+    document.getElementById("detalheAcesso").textContent = localizacao.acesso;
+    document.getElementById("detalheCriticidadeArea").textContent = localizacao.criticidade;
+    document.getElementById("detalhePermiteCriticos").textContent = localizacao.permiteCriticos;
+    document.getElementById("detalheSuporteVida").textContent = localizacao.suporteVida;
+    document.getElementById("detalheCapacidade").textContent = localizacao.capacidade;
+
+    document.getElementById("detalheQtdEquipamentos").textContent = localizacao.qtdEquipamentos;
+    document.getElementById("detalheEquipamentosAtivos").textContent = localizacao.equipamentosAtivos;
+    document.getElementById("detalheEquipamentosManutencao").textContent = localizacao.equipamentosManutencao;
+    document.getElementById("detalheEquipamentosAvariados").textContent = localizacao.equipamentosAvariados;
+    document.getElementById("detalheOcupacao").textContent = localizacao.ocupacao;
+
+    document.getElementById("detalheObservacoesLocalizacao").textContent = localizacao.observacoes;
+
+    const tabela = document.getElementById("tabelaEquipamentosLocalizacao");
+    const total = document.getElementById("totalEquipamentosLocalizacao");
+
+    const equipamentos = localizacao.equipamentosAssociados || [];
+
+    total.textContent = `${equipamentos.length} equipamento(s)`;
+    tabela.innerHTML = "";
+
+    if (equipamentos.length === 0) {
+        tabela.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center text-muted">
+                    Não existem equipamentos associados a esta localização.
+                </td>
+            </tr>
+        `;
+    } else {
+        equipamentos.forEach(function (equipamento) {
+            const linha = document.createElement("tr");
+
+            linha.innerHTML = `
+                <td>${equipamento.codigo}</td>
+                <td>${equipamento.nome}</td>
+                <td>${equipamento.categoria}</td>
+                <td>${equipamento.modelo}</td>
+                <td>${equipamento.serie}</td>
+                <td>${equipamento.criticidade}</td>
+                <td>
+                    <span class="estado ${equipamento.estadoClasse}">${equipamento.estado}</span>
+                </td>
+            `;
+
+            tabela.appendChild(linha);
+        });
+    }
+
+});
+
+// Página apagar_localizacao.html
+// Preencher dados da localização e confirmar remoção
+// Alteração feita por mim
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const botaoRemoverLocalizacao = document.getElementById("btnConfirmarRemocaoLocalizacao");
+
+    if (!botaoRemoverLocalizacao) return;
+
+    const parametros = new URLSearchParams(window.location.search);
+    const idLocalizacao = parametros.get("id");
+    const localizacao = localizacoesMEDICORE[idLocalizacao];
+
+    if (!localizacao) {
+        alert("Localização não encontrada.");
+        window.location.href = "lista_localizacoes.html";
+        return;
+    }
+
+    document.getElementById("removerLocalizacaoDepartamento").textContent = localizacao.departamento;
+    document.getElementById("removerLocalizacaoEdificio").textContent = localizacao.edificio;
+    document.getElementById("removerLocalizacaoPiso").textContent = localizacao.piso;
+    document.getElementById("removerLocalizacaoSala").textContent = localizacao.sala;
+    document.getElementById("removerLocalizacaoTipo").textContent = localizacao.tipoEspaco;
+    document.getElementById("removerLocalizacaoResponsavel").textContent = localizacao.responsavel;
+    document.getElementById("removerLocalizacaoContacto").textContent = localizacao.contacto;
+    document.getElementById("removerLocalizacaoEquipamentos").textContent = localizacao.qtdEquipamentos;
+    document.getElementById("removerLocalizacaoCriticidade").textContent = localizacao.criticidade;
+    document.getElementById("removerLocalizacaoSuporteVida").textContent = localizacao.suporteVida;
+
+    const estado = document.getElementById("removerLocalizacaoEstado");
+    estado.textContent = localizacao.estado;
+    estado.className = `estado ${localizacao.estadoClasse}`;
+
+    const checkbox = document.getElementById("confirmarRemocaoLocalizacao");
+
+    checkbox.addEventListener("change", function () {
+        botaoRemoverLocalizacao.disabled = !checkbox.checked;
+    });
+
+    botaoRemoverLocalizacao.addEventListener("click", function () {
+        botaoRemoverLocalizacao.disabled = true;
+
+        mostrarCardConfirmacaoRemocao(
+            "Localização",
+            `${localizacao.departamento} — ${localizacao.edificio}, Piso ${localizacao.piso}, ${localizacao.sala}`,
+            "lista_localizacoes.html"
+        );
+    });
+
+});
