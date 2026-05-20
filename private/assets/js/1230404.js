@@ -944,3 +944,135 @@ function mostrarCardConfirmacaoRemocao(tipo, nome, paginaDestino) {
         window.location.href = paginaDestino;
     }, 3000);
 }
+
+// Dashboard de Gestão MEDICORE
+// Alteração feita por mim
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const graficoEstado = document.getElementById("graficoEstadoEquipamentos");
+
+    if (!graficoEstado) return;
+
+    if (typeof Chart === "undefined") {
+        console.warn("Chart.js não foi carregado.");
+        return;
+    }
+
+    const opcoesGraficos = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: {
+                    color: "#123c46",
+                    font: {
+                        family: "Titillium Web",
+                        weight: "600"
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    color: "#425466"
+                },
+                grid: {
+                    color: "#e8f1f1"
+                }
+            },
+            x: {
+                ticks: {
+                    color: "#425466"
+                },
+                grid: {
+                    display: false
+                }
+            }
+        }
+    };
+
+    // Equipamentos por estado
+    new Chart(document.getElementById("graficoEstadoEquipamentos"), {
+        type: "doughnut",
+        data: {
+            labels: ["Ativos", "Em manutenção", "Avariados", "Inativos", "Abatidos"],
+            datasets: [{
+                data: [95, 14, 7, 9, 3],
+                backgroundColor: [
+                    "#4fb3a4",
+                    "#f2a65a",
+                    "#c0392b",
+                    "#9fbec4",
+                    "#425466"
+                ],
+                borderWidth: 3,
+                borderColor: "#ffffff"
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: "bottom",
+                    labels: {
+                        color: "#123c46",
+                        font: {
+                            family: "Titillium Web",
+                            weight: "600"
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Equipamentos por categoria
+    new Chart(document.getElementById("graficoCategoriaEquipamentos"), {
+        type: "bar",
+        data: {
+            labels: ["Monitorização", "Suporte de Vida", "Imagiologia", "Laboratório", "Cirurgia", "Diagnóstico"],
+            datasets: [{
+                label: "Nº de equipamentos",
+                data: [30, 18, 12, 22, 16, 30],
+                backgroundColor: "#4fb3a4",
+                borderRadius: 10
+            }]
+        },
+        options: opcoesGraficos
+    });
+
+    // Equipamentos por localização
+    new Chart(document.getElementById("graficoLocalizacaoEquipamentos"), {
+        type: "bar",
+        data: {
+            labels: ["UCI", "Urgência", "Bloco Operatório", "Radiologia", "Laboratório", "Consulta Externa"],
+            datasets: [{
+                label: "Nº de equipamentos",
+                data: [18, 22, 15, 10, 20, 12],
+                backgroundColor: "#123c46",
+                borderRadius: 10
+            }]
+        },
+        options: opcoesGraficos
+    });
+
+    // Equipamentos de suporte de vida por serviço
+    new Chart(document.getElementById("graficoSuporteVida"), {
+        type: "bar",
+        data: {
+            labels: ["UCI", "Urgência", "Bloco Operatório", "Neonatologia", "Cardiologia"],
+            datasets: [{
+                label: "Equipamentos de suporte de vida",
+                data: [8, 6, 4, 3, 2],
+                backgroundColor: "#f2a65a",
+                borderRadius: 10
+            }]
+        },
+        options: opcoesGraficos
+    });
+
+});

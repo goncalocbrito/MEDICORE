@@ -1456,3 +1456,217 @@ body {
         width: 0%;
     }
 }
+
+/* Dashboard de Gestão - alteração feita por mim */
+
+.dashboard-header {
+    background: linear-gradient(135deg, #ffffff 0%, #f4fbfb 100%);
+    border: 1px solid #d6ece8;
+    border-left: 8px solid var(--cor-secundaria);
+    border-radius: 24px;
+    padding: 34px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 26px rgba(18, 60, 70, 0.08);
+}
+
+.dashboard-header h2 {
+    color: var(--cor-principal);
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.dashboard-header p {
+    color: var(--cor-texto);
+    margin-bottom: 0;
+    line-height: 1.6;
+}
+
+.dashboard-indicadores {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 22px;
+    margin-bottom: 26px;
+}
+
+.dashboard-indicadores-secundarios {
+    margin-bottom: 34px;
+}
+
+.indicador-card {
+    background-color: var(--cor-branco);
+    border: 1px solid #d6ece8;
+    border-radius: 22px;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    box-shadow: 0 8px 24px rgba(18, 60, 70, 0.08);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.indicador-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 14px 32px rgba(18, 60, 70, 0.14);
+}
+
+.indicador-icone {
+    width: 58px;
+    height: 58px;
+    min-width: 58px;
+    border-radius: 18px;
+    background-color: #eaf6f6;
+    color: var(--cor-secundaria);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.7rem;
+}
+
+.indicador-verde {
+    background-color: #dff7f0;
+    color: #24796e;
+}
+
+.indicador-amarelo {
+    background-color: #fff3cd;
+    color: #9a6a00;
+}
+
+.indicador-vermelho {
+    background-color: #fdeaea;
+    color: #c0392b;
+}
+
+.indicador-roxo {
+    background-color: #e8e5ff;
+    color: #4b3f8f;
+}
+
+.indicador-azul {
+    background-color: #e4f0ff;
+    color: #2463a6;
+}
+
+.indicador-card span {
+    color: var(--cor-texto);
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.indicador-card h3 {
+    color: var(--cor-principal);
+    font-size: 2.2rem;
+    font-weight: 900;
+    margin: 4px 0;
+}
+
+.indicador-card p {
+    margin-bottom: 0;
+    color: #6b7c8f;
+    font-size: 0.92rem;
+}
+
+.dashboard-graficos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 26px;
+    margin-bottom: 34px;
+}
+
+.grafico-card {
+    background-color: var(--cor-branco);
+    border: 1px solid #d6ece8;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 8px 24px rgba(18, 60, 70, 0.08);
+}
+
+.grafico-card h4 {
+    color: var(--cor-principal);
+    font-weight: 800;
+    margin-bottom: 24px;
+}
+
+.grafico-card h4 i {
+    color: var(--cor-secundaria);
+}
+
+.grafico-card canvas {
+    width: 100% !important;
+    max-height: 320px;
+}
+
+.dashboard-alertas {
+    background-color: var(--cor-branco);
+    border: 1px solid #d6ece8;
+    border-radius: 24px;
+    padding: 28px;
+    margin-bottom: 40px;
+    box-shadow: 0 8px 24px rgba(18, 60, 70, 0.08);
+}
+
+.dashboard-alertas h4 {
+    color: var(--cor-principal);
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
+.dashboard-alertas h4 i {
+    color: var(--cor-secundaria);
+}
+
+.dashboard-alertas p {
+    margin-bottom: 0;
+    color: var(--cor-texto);
+}
+
+.tabela-dashboard {
+    margin-bottom: 0;
+}
+
+.tabela-dashboard thead th {
+    background-color: #eaf6f6;
+    color: var(--cor-principal);
+    font-weight: 700;
+    border-bottom: none;
+    white-space: nowrap;
+}
+
+.tabela-dashboard tbody td {
+    color: var(--cor-texto);
+    vertical-align: middle;
+}
+
+.tabela-dashboard tbody tr:hover {
+    background-color: #f4fbfb;
+}
+
+@media (max-width: 1200px) {
+    .dashboard-indicadores {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 991px) {
+    .dashboard-graficos {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-indicadores {
+        grid-template-columns: 1fr;
+    }
+
+    .indicador-card {
+        align-items: flex-start;
+    }
+
+    .dashboard-header {
+        padding: 26px;
+    }
+
+    .grafico-card {
+        padding: 22px;
+    }
+}
