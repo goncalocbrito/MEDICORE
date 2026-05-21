@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEDICORE | Ficha do Equipamento</title>
+
+    <!-- favicon -->
+    <link rel="shortcut icon" href="../../assets/img/MEDICORE_icon.png" type="image/png">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="../../assets/bootstrap/bootstrap.min.css">
+
+    <!-- CSS individual do aluno -->
+    <link rel="stylesheet" href="../../assets/css/1230404.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="../../assets/fontawesome/all.min.css">
+</head>
+
+<body>
+
+    <!-- Navbar superior -->
+    <header class="container-fluid top-header">
+        <div class="row align-items-center">
+
+            <div class="col-md-4 d-flex align-items-center p-3">
+                <a href="../../index.html">
+                    <img src="../../assets/img/MEDICORE_logotipo_branco.png"
+                         alt="Logo da MEDICORE"
+                         class="logo-private">
+                </a>
+            </div>
+
+            <div class="col-md-4 text-center p-3">
+                <div class="mensagem-topo">
+                    <i class="fa-solid fa-user-doctor me-2"></i>
+                    <span>Bem-vindo, Sr. Engenheiro Gonçalo</span>
+                </div>
+            </div>
+
+            <div class="col-md-4 text-md-end p-3">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle user-button"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        <i class="fa-regular fa-user me-2"></i> Eng. Biomédico
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="perfil.php">
+                                <i class="fa-solid fa-user-gear me-2"></i> Perfil técnico
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item" href="alterar_password.php">
+                                <i class="fa-solid fa-key me-2"></i> Alterar password
+                            </a>
+                        </li>
+
+                        <li><hr class="dropdown-divider"></li>
+
+                        <li>
+                            <a class="dropdown-item" href="logout.php">
+                                <i class="fa-solid fa-right-from-bracket me-2"></i> Sair
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- Menu horizontal da área privada -->
+    <nav class="navbar navbar-expand-lg menu-horizontal">
+        <div class="container-fluid">
+
+            <button class="navbar-toggler bg-light"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#menuPrivado"
+                    aria-controls="menuPrivado"
+                    aria-expanded="false"
+                    aria-label="Abrir menu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse justify-content-center" id="menuPrivado">
+                <ul class="navbar-nav">
+
+                    <li class="nav-item">
+                        <a href="../../index.html" class="nav-link">
+                            <i class="fa-solid fa-chart-line me-2"></i> Dashboard Técnico
+                        </a>
+                    </li>
+
+                    <li class="nav-item menu-dropdown-hover">
+                        <a href="lista_equipamentos.html" class="nav-link active">
+                            <i class="fa-solid fa-stethoscope me-2"></i> Equipamentos
+                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
+                        </a>
+
+                        <ul class="submenu-equipamentos">
+                            <li>
+                                <a href="lista_equipamentos.html">
+                                    <i class="fa-solid fa-list me-2"></i> Lista de Equipamentos
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="novo_equipamento.html">
+                                    <i class="fa-solid fa-plus me-2"></i> Adicionar Equipamento
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="../manutencoes/lista.html" class="nav-link">
+                            <i class="fa-solid fa-screwdriver-wrench me-2"></i> Manutenções
+                        </a>
+                    </li>
+
+                    <li class="nav-item menu-dropdown-hover-localizacoes">
+                        <a href="../localizacoes/lista_localizacoes.html" class="nav-link">
+                            <i class="fa-solid fa-location-dot me-2"></i> Localizações
+                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
+                        </a>
+
+                        <ul class="submenu-localizacoes">
+                            <li>
+                                <a href="../localizacoes/lista_localizacoes.html">
+                                    <i class="fa-solid fa-list me-2"></i> Lista de Localizações
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="../localizacoes/nova_localizacao.html">
+                                    <i class="fa-solid fa-plus me-2"></i> Adicionar Localização
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item menu-dropdown-hover-fornecedores">
+                        <a href="../fornecedores/lista_fornecedores.html" class="nav-link">
+                            <i class="fa-solid fa-truck-medical me-2"></i> Fornecedores
+                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
+                        </a>
+
+                        <ul class="submenu-fornecedores">
+                            <li>
+                                <a href="../fornecedores/lista_fornecedores.html">
+                                    <i class="fa-solid fa-list me-2"></i> Lista de Fornecedores
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="../fornecedores/novo_fornecedor.html">
+                                    <i class="fa-solid fa-plus me-2"></i> Adicionar Fornecedor
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="../relatorios/index.html" class="nav-link">
+                            <i class="fa-solid fa-file-medical me-2"></i> Relatórios
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="conteudo-private ficha-equipamento-page">
+
+        <!-- Botão Voltar -->
+        <div class="ficha-toolbar">
+            <a href="lista_equipamentos.html" class="btn btn-voltar">
+                <i class="fa-solid fa-arrow-left me-2"></i> Voltar à Lista
+            </a>
+        </div>
+
+        <!-- Formulário único com separadores Bootstrap -->
+        <form class="form-equipamento" id="formFichaEquipamento" action="processa_equipamento.php" method="post" enctype="multipart/form-data">
+
+            <input type="hidden" id="idEquipamento" name="idEquipamento" value="EQ-001">
+            <input type="hidden" id="modoFormulario" name="modoFormulario" value="editar">
+
+            <div class="ficha-area">
+                <ul class="nav nav-tabs ficha-tabs" id="tabsFichaEquipamento" role="tablist">
+
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active"
+                                id="identificacao-tab"
+                                data-bs-toggle="tab"
+                                data-bs-target="#identificacao"
+                                type="button"
+                                role="tab"
+                                aria-controls="identificacao"
+                                aria-selected="true">
+                            <i class="fa-solid fa-circle-info me-2"></i>
+                            Identificação
+                        </button>
+                    </li>
+
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link"
+                                id="localizacao-tab"
+                                data-bs-toggle="tab"
+                                data-bs-target="#localizacao"
+                                type="button"
+                                role="tab"
+                                aria-controls="localizacao"
+                                aria-selected="false">
+                            <i class="fa-solid fa-location-dot me-2"></i>
+                            Localização e Estado
+                        </button>
+                    </li>
+
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link"
+                                id="aquisicao-tab"
+                                data-bs-toggle="tab"
+                                data-bs-target="#aquisicao"
+                                type="button"
+                                role="tab"
+                                aria-controls="aquisicao"
+                                aria-selected="false">
+                            <i class="fa-solid fa-truck-medical me-2"></i>
+                            Aquisição
+                        </button>
+                    </li>
+
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link"
+                                id="manutencao-tab"
+                                data-bs-toggle="tab"
+                                data-bs-target="#manutencao"
+                                type="button"
+                                role="tab"
+                                aria-controls="manutencao"
+                                aria-selected="false">
+                            <i class="fa-solid fa-screwdriver-wrench me-2"></i>
+                            Manutenção
+                        </button>
+                    </li>
+
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link"
+                                id="documentos-tab"
+                                data-bs-toggle="tab"
+                                data-bs-target="#documentos"
+                                type="button"
+                                role="tab"
+                                aria-controls="documentos"
+                                aria-selected="false">
+                            <i class="fa-solid fa-folder-open me-2"></i>
+                            Documentos
+                        </button>
+                    </li>
+
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link"
+                                id="observacoes-tab"
+                                data-bs-toggle="tab"
+                                data-bs-target="#observacoes-tab-pane"
+                                type="button"
+                                role="tab"
+                                aria-controls="observacoes-tab-pane"
+                                aria-selected="false">
+                            <i class="fa-solid fa-clipboard-list me-2"></i>
+                            Observações
+                        </button>
+                    </li>
+
+                </ul>
+
+    <div class="tab-content ficha-tab-content" id="tabsFichaEquipamentoContent">
+
+            <div class="tab-content ficha-tab-content rounded-top-0" id="tabsEquipamentoConteudo">
+
+                <!-- Separador: Identificação -->
+                <div class="tab-pane fade show active" id="identificacao" role="tabpanel" aria-labelledby="identificacao-tab" tabindex="0">
+                    <h4>
+                        <i class="fa-solid fa-circle-info me-2"></i>
+                        Identificação do Equipamento
+                    </h4>
+
+                    <p class="texto-ajuda-form mb-4">
+                        Dados principais de rastreabilidade do equipamento. O código interno deve ser único.
+                    </p>
+
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <label for="codigoInventario" class="form-label">Código de Inventário *</label>
+                            <input type="text" class="form-control campo-ficha campo-bloqueado" id="codigoInventario" name="codigoInventario" value="EQ-001" readonly>
+                        </div>
+
+                        <div class="col-md-8">
+                            <label for="nomeEquipamento" class="form-label">Designação do Equipamento *</label>
+                            <input type="text" class="form-control campo-ficha" id="nomeEquipamento" name="nomeEquipamento" value="Monitor Multiparamétrico" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="categoria" class="form-label">Categoria *</label>
+                            <select class="form-select campo-ficha" id="categoria" name="categoria" required>
+                                <option value="">Selecionar categoria</option>
+                                <option value="Monitorização">Monitorização</option>
+                                <option value="Suporte de Vida">Suporte de Vida</option>
+                                <option value="Terapia">Terapia</option>
+                                <option value="Diagnóstico">Diagnóstico</option>
+                                <option value="Laboratório">Laboratório</option>
+                                <option value="Esterilização">Esterilização</option>
+                                <option value="Reabilitação">Reabilitação</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="fabricante" class="form-label">Fabricante / Marca *</label>
+                            <input type="text" class="form-control campo-ficha" id="fabricante" name="fabricante" value="Philips" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="modelo" class="form-label">Modelo *</label>
+                            <input type="text" class="form-control campo-ficha" id="modelo" name="modelo" value="IntelliVue MX450" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="numeroSerie" class="form-label">Número de Série *</label>
+                            <input type="text" class="form-control campo-ficha" id="numeroSerie" name="numeroSerie" value="SN-MX450-2024" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="anoFabrico" class="form-label">Ano de Fabrico</label>
+                            <input type="number" class="form-control campo-ficha" id="anoFabrico" name="anoFabrico" value="2024" min="1980" max="2030">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="tipoEntrada" class="form-label">Tipo de Entrada</label>
+                            <select class="form-select campo-ficha" id="tipoEntrada" name="tipoEntrada">
+                                <option value="">Selecionar tipo</option>
+                                <option value="Compra">Compra</option>
+                                <option value="Doação">Doação</option>
+                                <option value="Aluguer">Aluguer</option>
+                                <option value="Empréstimo">Empréstimo</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Separador: Localização e Estado -->
+                <div class="tab-pane fade" id="localizacao" role="tabpanel" aria-labelledby="localizacao-tab" tabindex="0">
+                    <h4>
+                        <i class="fa-solid fa-location-dot me-2"></i>
+                        Localização e Estado
+                    </h4>
+
+                    <p class="texto-ajuda-form mb-4">
+                        Indica onde o equipamento se encontra atualmente e qual é o seu estado operacional.
+                    </p>
+
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <label for="departamento" class="form-label">Departamento / Serviço *</label>
+                            <select class="form-select campo-ficha" id="departamento" name="departamento" required>
+                                <option value="">Selecionar departamento</option>
+                                <option value="Urgência">Urgência</option>
+                                <option value="Unidade de Cuidados Intensivos">Unidade de Cuidados Intensivos</option>
+                                <option value="Bloco Operatório">Bloco Operatório</option>
+                                <option value="Cardiologia">Cardiologia</option>
+                                <option value="Radiologia">Radiologia</option>
+                                <option value="Laboratório">Laboratório</option>
+                                <option value="Consulta Externa">Consulta Externa</option>
+                                <option value="Pediatria">Pediatria</option>
+                                <option value="Neonatologia">Neonatologia</option>
+                                <option value="Medicina Interna">Medicina Interna</option>
+                                <option value="Cirurgia Geral">Cirurgia Geral</option>
+                                <option value="Central de Esterilização">Central de Esterilização</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="edificio" class="form-label">Edifício *</label>
+                            <select class="form-select campo-ficha" id="edificio" name="edificio" required>
+                                <option value="">Selecionar edifício</option>
+                                <option value="Edifício A">Edifício A</option>
+                                <option value="Edifício B">Edifício B</option>
+                                <option value="Edifício C">Edifício C</option>
+                                <option value="Edifício D">Edifício D</option>
+                                <option value="Edifício Técnico">Edifício Técnico</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label for="piso" class="form-label">Piso *</label>
+                            <select class="form-select campo-ficha" id="piso" name="piso" required>
+                                <option value="">Selecionar piso</option>
+                                <option value="-1">Piso -1</option>
+                                <option value="0">Piso 0</option>
+                                <option value="1">Piso 1</option>
+                                <option value="2">Piso 2</option>
+                                <option value="3">Piso 3</option>
+                                <option value="4">Piso 4</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="sala" class="form-label">Sala *</label>
+                            <input type="text" class="form-control campo-ficha" id="sala" name="sala" value="UCI - Sala 2" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="estado" class="form-label">Estado do Equipamento *</label>
+                            <select class="form-select campo-ficha" id="estado" name="estado" required>
+                                <option value="">Selecionar estado</option>
+                                <option value="Ativo">Ativo</option>
+                                <option value="Em manutenção">Em manutenção</option>
+                                <option value="Inativo">Inativo</option>
+                                <option value="Em calibração">Em calibração</option>
+                                <option value="Em quarentena">Em quarentena</option>
+                                <option value="Abatido">Abatido</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="criticidade" class="form-label">Criticidade *</label>
+                            <select class="form-select campo-ficha" id="criticidade" name="criticidade" required>
+                                <option value="">Selecionar criticidade</option>
+                                <option value="Baixa">Baixa</option>
+                                <option value="Média">Média</option>
+                                <option value="Alta">Alta</option>
+                                <option value="Suporte de vida">Suporte de vida</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label d-block">Equipamento Operacional?</label>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input campo-ficha" type="radio" name="operacional" id="operacionalSim" value="Operacional" checked>
+                                <label class="form-check-label" for="operacionalSim">Sim</label>
+                            </div>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input campo-ficha" type="radio" name="operacional" id="operacionalNao" value="Não operacional">
+                                <label class="form-check-label" for="operacionalNao">Não</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Separador: Aquisição -->
+                <div class="tab-pane fade" id="aquisicao" role="tabpanel" aria-labelledby="aquisicao-tab" tabindex="0">
+                    <h4>
+                        <i class="fa-solid fa-truck-medical me-2"></i>
+                        Aquisição, Garantia e Fornecedor
+                    </h4>
+
+                    <p class="texto-ajuda-form mb-4">
+                        Informação administrativa associada à entrada do equipamento no inventário.
+                    </p>
+
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <label for="fornecedor" class="form-label">Fornecedor</label>
+                            <select class="form-select campo-ficha" id="fornecedor" name="fornecedor">
+                                <option value="">Selecionar fornecedor</option>
+                                <option value="MedSupply Portugal">MedSupply Portugal</option>
+                                <option value="Biomedical Solutions">Biomedical Solutions</option>
+                                <option value="ClinicalTech Equipamentos">ClinicalTech Equipamentos</option>
+                                <option value="Outro">Outro</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="dataAquisicao" class="form-label">Data de Aquisição</label>
+                            <input type="date" class="form-control campo-ficha" id="dataAquisicao" name="dataAquisicao" value="2024-01-15">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="dataInstalacao" class="form-label">Data de Instalação</label>
+                            <input type="date" class="form-control campo-ficha" id="dataInstalacao" name="dataInstalacao" value="2024-01-20">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="valorAquisicao" class="form-label">Custo de Aquisição (€)</label>
+                            <input type="number" class="form-control campo-ficha" id="valorAquisicao" name="valorAquisicao" min="0" step="0.01" value="8750.00">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="inicioGarantia" class="form-label">Início da Garantia</label>
+                            <input type="date" class="form-control campo-ficha" id="inicioGarantia" name="inicioGarantia" value="2024-01-20">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="fimGarantia" class="form-label">Fim da Garantia</label>
+                            <input type="date" class="form-control campo-ficha" id="fimGarantia" name="fimGarantia" value="2027-01-20">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="contratoManutencao" class="form-label">Contrato de Manutenção</label>
+                            <select class="form-select campo-ficha" id="contratoManutencao" name="contratoManutencao">
+                                <option value="">Selecionar opção</option>
+                                <option value="Sim">Sim</option>
+                                <option value="Não">Não</option>
+                                <option value="Em análise">Em análise</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="tipoContrato" class="form-label">Tipo de Contrato</label>
+                            <input type="text" class="form-control campo-ficha" id="tipoContrato" name="tipoContrato" value="Manutenção preventiva anual">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="entidadeContrato" class="form-label">Entidade Responsável</label>
+                            <input type="text" class="form-control campo-ficha" id="entidadeContrato" name="entidadeContrato" value="MedSupply Portugal">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Separador: Manutenção -->
+                <div class="tab-pane fade" id="manutencao" role="tabpanel" aria-labelledby="manutencao-tab" tabindex="0">
+                    <h4>
+                        <i class="fa-solid fa-screwdriver-wrench me-2"></i>
+                        Manutenção, Calibração e Acompanhamento Técnico
+                    </h4>
+
+                    <p class="texto-ajuda-form mb-4">
+                        Registo das datas de manutenção, calibração e acompanhamento técnico do equipamento.
+                    </p>
+
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <label for="ultimaManutencao" class="form-label">Última Manutenção</label>
+                            <input type="date" class="form-control campo-ficha" id="ultimaManutencao" name="ultimaManutencao" value="2026-03-12">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="proximaManutencao" class="form-label">Próxima Manutenção</label>
+                            <input type="date" class="form-control campo-ficha" id="proximaManutencao" name="proximaManutencao" value="2027-03-12">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="periodicidade" class="form-label">Periodicidade</label>
+                            <select class="form-select campo-ficha" id="periodicidade" name="periodicidade">
+                                <option value="">Selecionar periodicidade</option>
+                                <option value="Mensal">Mensal</option>
+                                <option value="Trimestral">Trimestral</option>
+                                <option value="Semestral">Semestral</option>
+                                <option value="Anual">Anual</option>
+                                <option value="Sob pedido">Sob pedido</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="ultimaCalibracao" class="form-label">Última Calibração</label>
+                            <input type="date" class="form-control campo-ficha" id="ultimaCalibracao" name="ultimaCalibracao" value="2026-03-12">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="proximaCalibracao" class="form-label">Próxima Calibração</label>
+                            <input type="date" class="form-control campo-ficha" id="proximaCalibracao" name="proximaCalibracao" value="2027-03-12">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="responsavelTecnico" class="form-label">Responsável Técnico</label>
+                            <input type="text" class="form-control campo-ficha" id="responsavelTecnico" name="responsavelTecnico" value="Eng. Gonçalo">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Separador: Documentos -->
+                <div class="tab-pane fade" id="documentos" role="tabpanel" aria-labelledby="documentos-tab" tabindex="0">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                        <div>
+                            <h4 class="mb-1">
+                                <i class="fa-solid fa-folder-open me-2"></i>
+                                Documentos do Equipamento
+                            </h4>
+                            <p class="texto-ajuda-form mb-0">
+                                Consulta e associação de documentos técnicos, administrativos ou certificados.
+                            </p>
+                        </div>
+
+                        <button type="button" class="btn btn-adicionar-documento botao-edicao" id="btnAdicionarDocumento">
+                            <i class="fa-solid fa-plus me-2"></i> Adicionar Documento
+                        </button>
+                    </div>
+
+                    <div class="documentos-lista mb-4">
+                        <div class="documento-item">
+                            <div class="documento-info">
+                                <i class="fa-solid fa-file-pdf documento-icone"></i>
+                                <div>
+                                    <h5>Manual de Instruções</h5>
+                                    <p>Documento técnico com instruções de utilização do equipamento.</p>
+                                </div>
+                            </div>
+
+                            <div class="documento-acoes">
+                                <a href="#" class="btn-documento-ver">
+                                    <i class="fa-solid fa-eye me-1"></i> Ver
+                                </a>
+                                <a href="#" class="btn-documento-download">
+                                    <i class="fa-solid fa-download me-1"></i> Download
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="documento-item">
+                            <div class="documento-info">
+                                <i class="fa-solid fa-file-shield documento-icone"></i>
+                                <div>
+                                    <h5>Certificado de Calibração</h5>
+                                    <p>Registo associado à calibração e validação técnica do equipamento.</p>
+                                </div>
+                            </div>
+
+                            <div class="documento-acoes">
+                                <a href="#" class="btn-documento-ver">
+                                    <i class="fa-solid fa-eye me-1"></i> Ver
+                                </a>
+                                <a href="#" class="btn-documento-download">
+                                    <i class="fa-solid fa-download me-1"></i> Download
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="listaDocumentosNovos" class="botao-edicao">
+                        <div class="documento-form-item">
+                            <div class="row g-4 align-items-end">
+                                <div class="col-md-4">
+                                    <label class="form-label">Tipo de Documento</label>
+                                    <select class="form-select campo-ficha" name="tipoDocumento[]">
+                                        <option value="manual">Manual de Instruções</option>
+                                        <option value="manual_servico">Manual de Serviço</option>
+                                        <option value="certificado_calibracao">Certificado de Calibração</option>
+                                        <option value="contrato_manutencao">Contrato de Manutenção</option>
+                                        <option value="fatura">Fatura / Guia de Aquisição</option>
+                                        <option value="declaracao_conformidade">Declaração de Conformidade</option>
+                                        <option value="relatorio_tecnico">Relatório Técnico</option>
+                                        <option value="outro">Outro</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label">Nome do Documento</label>
+                                    <input type="text" class="form-control campo-ficha" name="nomeDocumento[]" placeholder="Ex.: Manual técnico Philips MX450">
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label">Ficheiro</label>
+                                    <input type="file" class="form-control campo-ficha" name="ficheiroDocumento[]" accept=".pdf,.png,.jpg,.jpeg">
+                                </div>
+
+                                <div class="col-md-1 text-end">
+                                    <button type="button" class="btn btn-remover-documento" title="Remover documento">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Separador: Observações -->
+                <div class="tab-pane fade" id="observacoesTab" role="tabpanel" aria-labelledby="observacoes-tab" tabindex="0">
+                    <h4>
+                        <i class="fa-solid fa-clipboard-list me-2"></i>
+                        Observações Técnicas
+                    </h4>
+
+                    <p class="texto-ajuda-form mb-4">
+                        Campo livre para observações relevantes sobre o estado, histórico ou utilização do equipamento.
+                    </p>
+
+                    <textarea class="form-control campo-ficha"
+                              id="observacoes"
+                              name="observacoes"
+                              rows="7"
+                              placeholder="Indique observações técnicas relevantes.">Equipamento operacional e com contrato de manutenção ativo. Sem ocorrências críticas registadas.</textarea>
+                </div>
+
+            </div>
+
+            <!-- Botões finais -->
+            <div class="form-actions mt-4" id="acoesFormulario">
+                <button type="button" class="btn btn-cancelar" id="btnCancelarEdicao">
+                    <i class="fa-solid fa-xmark me-2"></i> Cancelar
+                </button>
+
+                <button type="submit" class="btn btn-guardar">
+                    <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Alterações
+                </button>
+            </div>
+
+        </form>
+
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="../../assets/bootstrap/bootstrap.bundle.min.js"></script>
+
+    <!-- JavaScript do projeto -->
+    <script src="../../assets/js/1230404.js"></script>
+</body>
+</html>

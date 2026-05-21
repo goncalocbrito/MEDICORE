@@ -224,17 +224,6 @@ body {
 
 /* Página de Equipamentos - alteração feita por mim */
 
-.titulo-pagina {
-    color: var(--cor-principal);
-    font-weight: 800;
-    margin-bottom: 6px;
-}
-
-.subtitulo-pagina {
-    color: var(--cor-texto);
-    margin-bottom: 0;
-}
-
 .btn-adicionar {
     background-color: var(--cor-secundaria);
     color: var(--cor-branco);
@@ -587,14 +576,6 @@ body {
     box-shadow: 0 0 0 3px rgba(79, 179, 164, 0.18);
 }
 
-.texto-ajuda-form {
-    display: block;
-    margin-top: 8px;
-    color: #6b7c8f;
-    font-size: 0.92rem;
-    line-height: 1.4;
-}
-
 /* Documentos no formulário de novo equipamento - alteração feita por mim */
 
 .btn-adicionar-documento {
@@ -931,7 +912,7 @@ body {
     }
 }
 
-/* editar_equipamento.html
+/* editar_equipamento.html */
 /* Campos bloqueados na edição - alteração feita por mim */
 .form-card-bloqueado {
     border-left-color: #9fbec4;
@@ -1795,5 +1776,303 @@ body {
         box-shadow: none;
         border-radius: 0;
         background-color: rgba(255, 255, 255, 0.04);
+    }
+}
+
+/* =========================================================
+   BOTÃO DA FICHA NA LISTA DE EQUIPAMENTOS
+   Substitui os antigos botões de ver/editar por um único botão
+   ========================================================= */
+
+.btn-ficha {
+    background-color: #eaf6f6;
+    color: var(--cor-principal);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 3px;
+    border: none;
+}
+
+.btn-ficha:hover {
+    background-color: var(--cor-secundaria);
+    color: var(--cor-branco);
+}
+
+
+/* =========================================================
+   PÁGINA DA FICHA DO EQUIPAMENTO
+   Faz a página ocupar a largura disponível do ecrã
+   ========================================================= */
+
+.ficha-equipamento-page {
+    width: 100%;
+    padding: 34px 42px 46px 42px;
+}
+
+
+/* Remove o limite de largura antigo do formulário só nesta página */
+
+.ficha-equipamento-page .form-equipamento,
+.form-ficha-equipamento {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+}
+
+
+/* Barra superior com o botão Voltar à Lista */
+
+.ficha-toolbar {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 18px;
+}
+
+
+/* =========================================================
+   ÁREA PRINCIPAL DA FICHA
+   Caixa única que contém os separadores e o conteúdo
+   ========================================================= */
+
+.ficha-area {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    background-color: #ffffff;
+    border: 1px solid #d6ece8;
+    border-radius: 22px;
+    box-shadow: 0 8px 24px rgba(18, 60, 70, 0.08);
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   SEPARADORES BOOTSTRAP DA FICHA
+   Identificação, Localização, Aquisição, Manutenção, etc.
+   ========================================================= */
+
+.ficha-tabs {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    background-color: #f4fbfb;
+    border-bottom: 1px solid #d6ece8;
+    padding: 0;
+}
+
+.ficha-tabs .nav-item {
+    flex: 1 1 0;
+}
+
+.ficha-tabs .nav-link {
+    width: 100%;
+    min-height: 74px;
+    border: none;
+    border-right: 1px solid #d6ece8;
+    border-radius: 0;
+    background-color: transparent;
+    color: var(--cor-principal);
+    font-weight: 800;
+    padding: 18px 14px;
+    text-align: center;
+    white-space: nowrap;
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.ficha-tabs .nav-item:last-child .nav-link {
+    border-right: none;
+}
+
+.ficha-tabs .nav-link i {
+    color: var(--cor-secundaria);
+}
+
+.ficha-tabs .nav-link:hover {
+    background-color: #eaf6f6;
+    color: var(--cor-principal);
+}
+
+.ficha-tabs .nav-link.active {
+    background-color: var(--cor-principal);
+    color: #ffffff;
+}
+
+.ficha-tabs .nav-link.active i {
+    color: #ffffff;
+}
+
+
+/* =========================================================
+   CONTEÚDO DOS SEPARADORES
+   Área onde aparecem os campos da ficha
+   ========================================================= */
+
+.ficha-tab-content {
+    width: 100%;
+    max-width: none;
+    padding: 42px 48px 34px 48px;
+}
+
+.ficha-tab-content .tab-pane {
+    width: 100%;
+}
+
+.ficha-tab-content .row {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+
+/* Título interno de cada separador */
+
+.secao-ficha-titulo {
+    width: 100%;
+    border-bottom: 1px solid #e1eeee;
+    margin-bottom: 30px;
+    padding-bottom: 16px;
+}
+
+.secao-ficha-titulo h4 {
+    color: var(--cor-principal);
+    font-weight: 900;
+    margin-bottom: 6px;
+}
+
+.secao-ficha-titulo p {
+    color: #6b7c8f;
+    margin-bottom: 0;
+}
+
+
+/* Campos bloqueados, usados para dados que não devem ser alterados */
+
+.campo-bloqueado,
+.campo-bloqueado[readonly] {
+    background-color: #eef5f5 !important;
+    color: #556b73;
+    cursor: not-allowed;
+}
+
+.form-control[readonly],
+textarea[readonly] {
+    background-color: #eef5f5;
+    color: #5c6f78;
+}
+
+
+/* Documentos adicionados dinamicamente */
+
+#listaDocumentosNovos .documento-form-item {
+    margin-bottom: 18px;
+}
+
+
+/* =========================================================
+   BOTÕES FINAIS DA FICHA
+   Cancelar / Guardar Alterações
+   ========================================================= */
+
+.ficha-equipamento-page .form-actions {
+    width: 100%;
+    max-width: none;
+    border-top: 1px solid #e1eeee;
+    padding-top: 24px;
+    margin-top: 28px;
+}
+
+
+/* =========================================================
+   MENU HORIZONTAL PRINCIPAL
+   Distribui melhor os itens do menu pela largura da página
+   ========================================================= */
+
+.menu-horizontal .navbar-collapse {
+    width: 100%;
+}
+
+.menu-horizontal .navbar-nav {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    justify-content: space-between;
+}
+
+.menu-horizontal .nav-item {
+    text-align: center;
+}
+
+.menu-horizontal .nav-link {
+    min-width: 170px;
+}
+
+
+/* =========================================================
+   RESPONSIVIDADE
+   Ajustes para tablets e telemóveis
+   ========================================================= */
+
+@media (max-width: 1200px) {
+    .ficha-equipamento-page {
+        padding: 28px 28px 40px 28px;
+    }
+
+    .ficha-tabs {
+        flex-wrap: wrap;
+    }
+
+    .ficha-tabs .nav-item {
+        flex: 1 1 33.333%;
+    }
+
+    .ficha-tabs .nav-link {
+        border-bottom: 1px solid #d6ece8;
+    }
+}
+
+@media (max-width: 991px) {
+    .menu-horizontal .navbar-nav {
+        max-width: none;
+        width: 100%;
+    }
+
+    .menu-horizontal .nav-link {
+        min-width: 0;
+        text-align: left;
+    }
+}
+
+@media (max-width: 768px) {
+    .ficha-equipamento-page {
+        padding: 22px 18px 34px 18px;
+    }
+
+    .ficha-toolbar {
+        justify-content: stretch;
+    }
+
+    .ficha-toolbar .btn {
+        width: 100%;
+    }
+
+    .ficha-tabs .nav-item {
+        flex: 1 1 100%;
+    }
+
+    .ficha-tabs .nav-link {
+        min-height: auto;
+        text-align: left;
+        padding: 15px 18px;
+        border-right: none;
+        border-bottom: 1px solid #d6ece8;
+    }
+
+    .ficha-tab-content {
+        padding: 26px 20px;
     }
 }

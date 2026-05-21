@@ -1,499 +1,456 @@
 // JavaScript Gonçalo Brito 1230404
 // Funcionalidades da área privada MEDICORE
 
-document.addEventListener("DOMContentLoaded", function () {
+// Dados temporários dos equipamentos.
+// Quando o backend estiver implementado, estes dados passam a vir da base de dados MySQL.
+const equipamentosMEDICORE = {
+    "EQ-001": {
+        codigo: "EQ-001",
+        nome: "Monitor Multiparamétrico",
+        categoria: "Monitorização",
+        fabricante: "Philips",
+        modelo: "IntelliVue MX450",
+        serie: "SN-MX450-2024",
+        anoFabrico: "2023",
+        tipoEntrada: "Compra",
+        departamento: "Unidade de Cuidados Intensivos",
+        edificio: "Edifício A",
+        piso: "2",
+        sala: "Sala 2",
+        localizacao: "UCI - Sala 2",
+        estado: "Ativo",
+        criticidade: "Crítica",
+        operacional: "Operacional",
+        fornecedor: "MedSupply Portugal",
+        dataFabrico: "2023-11-10",
+        dataAquisicao: "2024-01-15",
+        dataInstalacao: "2024-01-20",
+        valorAquisicao: "3500.00",
+        inicioGarantia: "2024-01-20",
+        fimGarantia: "2027-01-20",
+        contratoManutencao: "Sim",
+        tipoContrato: "Manutenção preventiva anual",
+        entidadeContrato: "MedSupply Portugal",
+        ultimaManutencao: "2026-03-12",
+        proximaManutencao: "2026-09-12",
+        ultimaCalibracao: "2026-03-12",
+        proximaCalibracao: "2026-09-12",
+        periodicidade: "Semestral",
+        responsavelTecnico: "Eng. Gonçalo Brito",
+        observacoes: "Equipamento essencial para monitorização contínua de parâmetros vitais em contexto de cuidados intensivos."
+    },
 
-    // Ativar popovers do Bootstrap
-    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+    "EQ-002": {
+        codigo: "EQ-002",
+        nome: "Ventilador Pulmonar",
+        categoria: "Suporte de Vida",
+        fabricante: "Dräger",
+        modelo: "Evita V300",
+        serie: "SN-EV300-1198",
+        anoFabrico: "2022",
+        tipoEntrada: "Compra",
+        departamento: "Urgência",
+        edificio: "Edifício B",
+        piso: "0",
+        sala: "Sala 1",
+        localizacao: "Urgência - Sala 1",
+        estado: "Em manutenção",
+        criticidade: "Crítica",
+        operacional: "Não operacional",
+        fornecedor: "Biomedical Solutions",
+        dataFabrico: "2022-12-05",
+        dataAquisicao: "2023-06-10",
+        dataInstalacao: "2023-06-18",
+        valorAquisicao: "12500.00",
+        inicioGarantia: "2023-06-18",
+        fimGarantia: "2026-06-18",
+        contratoManutencao: "Sim",
+        tipoContrato: "Manutenção preventiva e corretiva",
+        entidadeContrato: "Biomedical Solutions",
+        ultimaManutencao: "2026-02-28",
+        proximaManutencao: "2026-08-28",
+        ultimaCalibracao: "2026-02-28",
+        proximaCalibracao: "2026-08-28",
+        periodicidade: "Semestral",
+        responsavelTecnico: "Eng. Gonçalo Brito",
+        observacoes: "Equipamento em manutenção preventiva. Deve ser validado antes de regressar ao serviço clínico."
+    },
 
-    popoverTriggerList.forEach(function (popoverTriggerEl) {
-        new bootstrap.Popover(popoverTriggerEl, {
-            container: "body"
-        });
-    });
-
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    // Ativar popovers do Bootstrap
-    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
-
-    popoverTriggerList.forEach(function (popoverTriggerEl) {
-        new bootstrap.Popover(popoverTriggerEl, {
-            container: "body"
-        });
-    });
-
-
-    // Descrição automática da criticidade
-    const campoCriticidade = document.getElementById("criticidade");
-    const descricaoCriticidade = document.getElementById("descricaoCriticidade");
-
-    if (campoCriticidade && descricaoCriticidade) {
-
-        campoCriticidade.addEventListener("change", function () {
-
-            const valor = campoCriticidade.value;
-
-            if (valor === "baixa") {
-                descricaoCriticidade.textContent = "Baixa: falha com impacto reduzido. Exemplos: balança clínica, termómetro digital ou otoscópio.";
-            } 
-            else if (valor === "media") {
-                descricaoCriticidade.textContent = "Média: pode atrasar o serviço, mas existem alternativas. Exemplos: eletrocardiógrafo de rotina, aspirador portátil ou equipamento de fisioterapia.";
-            } 
-            else if (valor === "alta") {
-                descricaoCriticidade.textContent = "Alta: impacto significativo na prestação de cuidados. Exemplos: monitor multiparamétrico de urgência, ecógrafo ou incubadora neonatal.";
-            } 
-            else if (valor === "critica") {
-                descricaoCriticidade.textContent = "Crítica: equipamento essencial para suporte de vida ou emergência. Exemplos: ventilador pulmonar, desfibrilhador ou máquina de anestesia.";
-            } 
-            else {
-                descricaoCriticidade.textContent = "Selecione uma criticidade para ver a descrição.";
-            }
-
-        });
+    "EQ-003": {
+        codigo: "EQ-003",
+        nome: "Desfibrilhador",
+        categoria: "Emergência",
+        fabricante: "Zoll",
+        modelo: "R Series",
+        serie: "SN-ZOLL-8821",
+        anoFabrico: "2021",
+        tipoEntrada: "Compra",
+        departamento: "Bloco Operatório",
+        edificio: "Edifício C",
+        piso: "1",
+        sala: "Bloco Operatório",
+        localizacao: "Bloco Operatório",
+        estado: "Avariado",
+        criticidade: "Crítica",
+        operacional: "Não operacional",
+        fornecedor: "ClinicalTech Equipamentos",
+        dataFabrico: "2021-05-20",
+        dataAquisicao: "2022-09-02",
+        dataInstalacao: "2022-09-08",
+        valorAquisicao: "8900.00",
+        inicioGarantia: "2022-09-08",
+        fimGarantia: "2025-09-08",
+        contratoManutencao: "Em análise",
+        tipoContrato: "Por definir",
+        entidadeContrato: "ClinicalTech Equipamentos",
+        ultimaManutencao: "2026-01-05",
+        proximaManutencao: "",
+        ultimaCalibracao: "2026-01-05",
+        proximaCalibracao: "",
+        periodicidade: "Anual",
+        responsavelTecnico: "Eng. Gonçalo Brito",
+        observacoes: "Equipamento sinalizado como avariado. Deve permanecer indisponível até avaliação técnica e reparação."
     }
+};
 
-});
+function $(id) {
+    return document.getElementById(id);
+}
 
-// Dados temporários dos equipamentos
-// Alteração feita por mim: permite preencher a página detalhes_equipamento.html através do parâmetro id no URL
+function obterParametroURL(nome) {
+    return new URLSearchParams(window.location.search).get(nome);
+}
 
-document.addEventListener("DOMContentLoaded", function () {
+function obterEquipamentoSelecionado() {
+    const id = obterParametroURL("id") || "EQ-001";
+    return equipamentosMEDICORE[id] || null;
+}
 
-    const equipamentos = {
-        "EQ-001": {
-            nome: "Monitor Multiparamétrico",
-            codigo: "EQ-001",
-            categoria: "Monitorização",
-            fabricante: "Philips",
-            modelo: "IntelliVue MX450",
-            serie: "SN-MX450-2024",
-            departamento: "Unidade de Cuidados Intensivos",
-            localizacao: "UCI - Sala 2",
-            estado: "Ativo",
-            estadoClasse: "estado-ativo",
-            criticidade: "Crítica",
-            operacional: "Operacional",
-            fornecedor: "MedSupply Portugal",
-            aquisicao: "15/01/2024",
-            instalacao: "20/01/2024",
-            garantia: "20/01/2027",
-            ultimaManutencao: "12/03/2026",
-            proximaManutencao: "12/09/2026",
-            periodicidade: "Semestral",
-            responsavel: "Eng. Gonçalo Brito",
-            observacoes: "Equipamento essencial para monitorização contínua de parâmetros vitais em contexto de cuidados intensivos."
-        },
-
-        "EQ-002": {
-            nome: "Ventilador Pulmonar",
-            codigo: "EQ-002",
-            categoria: "Suporte de Vida",
-            fabricante: "Dräger",
-            modelo: "Evita V300",
-            serie: "SN-EV300-1198",
-            departamento: "Urgência",
-            localizacao: "Urgência - Sala 1",
-            estado: "Em manutenção",
-            estadoClasse: "estado-manutencao",
-            criticidade: "Crítica",
-            operacional: "Não operacional",
-            fornecedor: "Biomedical Solutions",
-            aquisicao: "10/06/2023",
-            instalacao: "18/06/2023",
-            garantia: "18/06/2026",
-            ultimaManutencao: "28/02/2026",
-            proximaManutencao: "28/08/2026",
-            periodicidade: "Semestral",
-            responsavel: "Eng. Gonçalo Brito",
-            observacoes: "Equipamento em manutenção preventiva. Deve ser validado antes de regressar ao serviço clínico."
-        },
-
-        "EQ-003": {
-            nome: "Desfibrilhador",
-            codigo: "EQ-003",
-            categoria: "Emergência",
-            fabricante: "Zoll",
-            modelo: "R Series",
-            serie: "SN-ZOLL-8821",
-            departamento: "Bloco Operatório",
-            localizacao: "Bloco Operatório",
-            estado: "Avariado",
-            estadoClasse: "estado-avariado",
-            criticidade: "Crítica",
-            operacional: "Não operacional",
-            fornecedor: "ClinicalTech Equipamentos",
-            aquisicao: "02/09/2022",
-            instalacao: "08/09/2022",
-            garantia: "08/09/2025",
-            ultimaManutencao: "05/01/2026",
-            proximaManutencao: "Por definir",
-            periodicidade: "Anual",
-            responsavel: "Eng. Gonçalo Brito",
-            observacoes: "Equipamento sinalizado como avariado. Deve permanecer indisponível até avaliação técnica e reparação."
-        }
+function classeEstado(estado) {
+    const classes = {
+        "Ativo": "estado-ativo",
+        "Em manutenção": "estado-manutencao",
+        "Avariado": "estado-avariado",
+        "Inativo": "estado-inativo",
+        "Em calibração": "estado-manutencao",
+        "Em quarentena": "estado-manutencao",
+        "Abatido": "estado-abatido"
     };
 
-    const paginaDetalhes = document.getElementById("detalheNome");
+    return classes[estado] || "estado-inativo";
+}
 
-    if (paginaDetalhes) {
-        const parametros = new URLSearchParams(window.location.search);
-        const idEquipamento = parametros.get("id");
+function formatarDataPT(dataISO) {
+    if (!dataISO) return "Por definir";
 
-        const equipamento = equipamentos[idEquipamento];
+    const partes = dataISO.split("-");
+    if (partes.length !== 3) return dataISO;
 
-        if (!equipamento) {
-            document.getElementById("detalheNome").textContent = "Equipamento não encontrado";
-            document.getElementById("detalheTituloEquipamento").textContent = "Sem dados disponíveis";
-            document.getElementById("detalheResumo").textContent = "Não foi possível encontrar dados para o equipamento selecionado.";
-            return;
-        }
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+}
 
-        document.getElementById("detalheNome").textContent = "Detalhes do Equipamento";
-        document.getElementById("detalheTituloEquipamento").textContent = equipamento.nome;
-        document.getElementById("detalheResumo").textContent = `${equipamento.nome} localizado em ${equipamento.localizacao}, atualmente com estado ${equipamento.estado}.`;
+function definirTexto(id, valor) {
+    const elemento = $(id);
+    if (elemento) elemento.textContent = valor || "---";
+}
 
-        document.getElementById("detalheCodigo").textContent = equipamento.codigo;
-        document.getElementById("detalheCategoria").textContent = equipamento.categoria;
-        document.getElementById("detalheFabricante").textContent = equipamento.fabricante;
-        document.getElementById("detalheModelo").textContent = equipamento.modelo;
-        document.getElementById("detalheSerie").textContent = equipamento.serie;
+function definirValor(id, valor) {
+    const campo = $(id);
+    if (!campo) return;
 
-        document.getElementById("detalheDepartamento").textContent = equipamento.departamento;
-        document.getElementById("detalheLocalizacao").textContent = equipamento.localizacao;
-        document.getElementById("detalheEstadoTexto").textContent = equipamento.estado;
-        document.getElementById("detalheCriticidadeTexto").textContent = equipamento.criticidade;
-
-        document.getElementById("detalheFornecedor").textContent = equipamento.fornecedor;
-        document.getElementById("detalheAquisicao").textContent = equipamento.aquisicao;
-        document.getElementById("detalheInstalacao").textContent = equipamento.instalacao;
-        document.getElementById("detalheGarantia").textContent = equipamento.garantia;
-
-        document.getElementById("detalheUltimaManutencao").textContent = equipamento.ultimaManutencao;
-        document.getElementById("detalheProximaManutencao").textContent = equipamento.proximaManutencao;
-        document.getElementById("detalhePeriodicidade").textContent = equipamento.periodicidade;
-        document.getElementById("detalheResponsavel").textContent = equipamento.responsavel;
-
-        document.getElementById("detalheObservacoes").textContent = equipamento.observacoes;
-
-        const estadoBadge = document.getElementById("detalheEstado");
-        estadoBadge.textContent = equipamento.estado;
-        estadoBadge.className = `estado ${equipamento.estadoClasse}`;
-
-        document.getElementById("detalheCriticidade").textContent = `Criticidade: ${equipamento.criticidade}`;
-        document.getElementById("detalheOperacional").textContent = equipamento.operacional;
+    if (campo.tagName === "SELECT") {
+        selecionarOpcao(campo, valor);
+        return;
     }
 
-});
+    campo.value = valor || "";
+}
 
-// Temporário
-// Adicionar vários documentos ao formulário de novo equipamento
+function selecionarOpcao(select, valor) {
+    const valorFinal = valor || "";
+    const opcoes = Array.from(select.options);
 
-document.addEventListener("DOMContentLoaded", function () {
+    const opcaoPorValor = opcoes.find(function (opcao) {
+        return opcao.value === valorFinal;
+    });
 
-    const btnAdicionarDocumento = document.getElementById("btnAdicionarDocumento");
-    const listaDocumentos = document.getElementById("listaDocumentos");
+    if (opcaoPorValor) {
+        select.value = valorFinal;
+        return;
+    }
+
+    const opcaoPorTexto = opcoes.find(function (opcao) {
+        return opcao.textContent.trim() === valorFinal;
+    });
+
+    if (opcaoPorTexto) {
+        select.value = opcaoPorTexto.value;
+        return;
+    }
+
+    if (valorFinal !== "") {
+        const novaOpcao = new Option(valorFinal, valorFinal, true, true);
+        select.add(novaOpcao);
+    }
+}
+
+function definirEstadoRadio(operacional) {
+    const sim = $("operacionalSim");
+    const nao = $("operacionalNao");
+
+    if (!sim || !nao) return;
+
+    sim.checked = operacional === "Operacional";
+    nao.checked = operacional !== "Operacional";
+}
+
+function preencherCamposEquipamento(equipamento) {
+    if (!equipamento) return;
+
+    definirValor("idEquipamento", equipamento.codigo);
+    definirValor("codigoInventario", equipamento.codigo);
+    definirValor("nomeEquipamento", equipamento.nome);
+    definirValor("categoria", equipamento.categoria);
+    definirValor("fabricante", equipamento.fabricante);
+    definirValor("modelo", equipamento.modelo);
+    definirValor("numeroSerie", equipamento.serie);
+    definirValor("anoFabrico", equipamento.anoFabrico);
+    definirValor("tipoEntrada", equipamento.tipoEntrada);
+
+    definirValor("departamento", equipamento.departamento);
+    definirValor("edificio", equipamento.edificio);
+    definirValor("piso", equipamento.piso);
+    definirValor("sala", equipamento.sala);
+    definirValor("estado", equipamento.estado);
+    definirValor("criticidade", equipamento.criticidade);
+    definirEstadoRadio(equipamento.operacional);
+
+    definirValor("fornecedor", equipamento.fornecedor);
+    definirValor("dataFabrico", equipamento.dataFabrico);
+    definirValor("dataAquisicao", equipamento.dataAquisicao);
+    definirValor("dataInstalacao", equipamento.dataInstalacao);
+    definirValor("valorAquisicao", equipamento.valorAquisicao);
+    definirValor("inicioGarantia", equipamento.inicioGarantia);
+    definirValor("fimGarantia", equipamento.fimGarantia);
+    definirValor("contratoManutencao", equipamento.contratoManutencao);
+    definirValor("tipoContrato", equipamento.tipoContrato);
+    definirValor("entidadeContrato", equipamento.entidadeContrato);
+
+    definirValor("ultimaManutencao", equipamento.ultimaManutencao);
+    definirValor("proximaManutencao", equipamento.proximaManutencao);
+    definirValor("ultimaCalibracao", equipamento.ultimaCalibracao);
+    definirValor("proximaCalibracao", equipamento.proximaCalibracao);
+    definirValor("periodicidade", equipamento.periodicidade);
+    definirValor("responsavelTecnico", equipamento.responsavelTecnico);
+    definirValor("observacoes", equipamento.observacoes);
+}
+
+function atualizarResumoFicha() {
+    const codigo = $("codigoInventario")?.value || "---";
+    const nome = $("nomeEquipamento")?.value || "Equipamento Médico";
+    const fabricante = $("fabricante")?.value || "";
+    const modelo = $("modelo")?.value || "";
+    const localizacao = $("sala")?.value || $("departamento")?.value || "localização por definir";
+    const estado = $("estado")?.value || "Estado";
+    const criticidade = $("criticidade")?.value || "Criticidade";
+    const operacional = $("operacionalSim")?.checked ? "Operacional" : "Não operacional";
+
+    definirTexto("resumoNomeEquipamento", nome);
+    definirTexto("tituloPaginaEquipamento", `Ficha do Equipamento - ${codigo}`);
+    definirTexto("badgeEstado", estado);
+    definirTexto("badgeCriticidade", `Criticidade: ${criticidade}`);
+    definirTexto("badgeOperacional", operacional);
+    definirTexto("resumoDescricao", `${codigo} | ${fabricante} ${modelo} | ${localizacao}`);
+
+    const badgeEstado = $("badgeEstado");
+    if (badgeEstado) {
+        badgeEstado.className = `estado ${classeEstado(estado)}`;
+    }
+}
+
+function aplicarModoFicha(modo) {
+    const form = $("formFichaEquipamento");
+    const modoFormulario = $("modoFormulario");
+
+    if (!form) return;
+
+    const campos = form.querySelectorAll(".campo-ficha");
+
+    campos.forEach(function (campo) {
+        const bloqueado = campo.classList.contains("campo-bloqueado");
+
+        if (campo.tagName === "SELECT" || campo.type === "radio" || campo.type === "file") {
+            campo.disabled = bloqueado;
+        } else {
+            campo.readOnly = bloqueado;
+        }
+    });
+
+    if (modoFormulario) modoFormulario.value = "editar";
+}
+
+function inicializarFichaEquipamento() {
+    const form = $("formFichaEquipamento");
+    if (!form) return;
+
+    const equipamento = obterEquipamentoSelecionado();
+
+    if (!equipamento) {
+        alert("Equipamento não encontrado.");
+        window.location.href = "lista_equipamentos.html";
+        return;
+    }
+
+    preencherCamposEquipamento(equipamento);
+    atualizarResumoFicha();
+
+    aplicarModoFicha("editar");
+
+    const btnCancelarEdicao = $("btnCancelarEdicao");
+
+    if (btnCancelarEdicao) {
+        btnCancelarEdicao.addEventListener("click", function () {
+            window.location.href = "lista_equipamentos.html";
+        });
+    }
+
+    form.addEventListener("input", atualizarResumoFicha);
+    form.addEventListener("change", atualizarResumoFicha);
+
+    form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        alert("Alterações registadas com sucesso.");
+        aplicarModoFicha("editar");
+    });
+}
+
+function preencherPaginaDetalhesEquipamento() {
+    const paginaDetalhes = $("detalheNome");
+    if (!paginaDetalhes) return;
+
+    const equipamento = obterEquipamentoSelecionado();
+
+    if (!equipamento) {
+        definirTexto("detalheNome", "Equipamento não encontrado");
+        definirTexto("detalheTituloEquipamento", "Sem dados disponíveis");
+        definirTexto("detalheResumo", "Não foi possível encontrar dados para o equipamento selecionado.");
+        return;
+    }
+
+    definirTexto("detalheNome", "Detalhes do Equipamento");
+    definirTexto("detalheTituloEquipamento", equipamento.nome);
+    definirTexto("detalheResumo", `${equipamento.nome} localizado em ${equipamento.localizacao}, atualmente com estado ${equipamento.estado}.`);
+
+    definirTexto("detalheCodigo", equipamento.codigo);
+    definirTexto("detalheCategoria", equipamento.categoria);
+    definirTexto("detalheFabricante", equipamento.fabricante);
+    definirTexto("detalheModelo", equipamento.modelo);
+    definirTexto("detalheSerie", equipamento.serie);
+
+    definirTexto("detalheDepartamento", equipamento.departamento);
+    definirTexto("detalheLocalizacao", equipamento.localizacao);
+    definirTexto("detalheEstadoTexto", equipamento.estado);
+    definirTexto("detalheCriticidadeTexto", equipamento.criticidade);
+
+    definirTexto("detalheFornecedor", equipamento.fornecedor);
+    definirTexto("detalheAquisicao", formatarDataPT(equipamento.dataAquisicao));
+    definirTexto("detalheInstalacao", formatarDataPT(equipamento.dataInstalacao));
+    definirTexto("detalheGarantia", formatarDataPT(equipamento.fimGarantia));
+
+    definirTexto("detalheUltimaManutencao", formatarDataPT(equipamento.ultimaManutencao));
+    definirTexto("detalheProximaManutencao", formatarDataPT(equipamento.proximaManutencao));
+    definirTexto("detalhePeriodicidade", equipamento.periodicidade);
+    definirTexto("detalheResponsavel", equipamento.responsavelTecnico);
+    definirTexto("detalheObservacoes", equipamento.observacoes);
+
+    const estadoBadge = $("detalheEstado");
+    if (estadoBadge) {
+        estadoBadge.textContent = equipamento.estado;
+        estadoBadge.className = `estado ${classeEstado(equipamento.estado)}`;
+    }
+
+    definirTexto("detalheCriticidade", `Criticidade: ${equipamento.criticidade}`);
+    definirTexto("detalheOperacional", equipamento.operacional);
+}
+
+function inicializarFormularioEditarEquipamento() {
+    const formEditar = $("formEditarEquipamento");
+    if (!formEditar) return;
+
+    const equipamento = obterEquipamentoSelecionado();
+
+    if (!equipamento) {
+        alert("Equipamento não encontrado.");
+        window.location.href = "lista_equipamentos.html";
+        return;
+    }
+
+    preencherCamposEquipamento(equipamento);
+
+    formEditar.addEventListener("submit", function (event) {
+        event.preventDefault();
+        alert("Alterações registadas com sucesso.");
+        window.location.href = "lista_equipamentos.html";
+    });
+}
+
+function inicializarDocumentosEquipamento() {
+    const btnAdicionarDocumento = $("btnAdicionarDocumento");
+    const listaDocumentos = $("listaDocumentosNovos") || $("listaDocumentos");
+
+    if (!btnAdicionarDocumento || !listaDocumentos) return;
 
     function atualizarBotoesRemoverDocumento() {
-        if (!listaDocumentos) return;
-
         const documentos = listaDocumentos.querySelectorAll(".documento-form-item");
         const botoesRemover = listaDocumentos.querySelectorAll(".btn-remover-documento");
 
         botoesRemover.forEach(function (botao) {
-            if (documentos.length <= 1) {
-                botao.style.visibility = "hidden";
-                botao.disabled = true;
+            const bloquear = documentos.length <= 1;
+            botao.style.visibility = bloquear ? "hidden" : "visible";
+            botao.disabled = bloquear;
+        });
+    }
+
+    btnAdicionarDocumento.addEventListener("click", function () {
+        const primeiroDocumento = listaDocumentos.querySelector(".documento-form-item");
+        if (!primeiroDocumento) return;
+
+        const novoDocumento = primeiroDocumento.cloneNode(true);
+
+        novoDocumento.querySelectorAll("input, select").forEach(function (campo) {
+            if (campo.tagName === "SELECT") {
+                campo.selectedIndex = 0;
             } else {
-                botao.style.visibility = "visible";
-                botao.disabled = false;
+                campo.value = "";
             }
+
+            campo.disabled = false;
+            campo.readOnly = false;
         });
-    }
 
-    if (btnAdicionarDocumento && listaDocumentos) {
-
+        listaDocumentos.appendChild(novoDocumento);
         atualizarBotoesRemoverDocumento();
-
-        btnAdicionarDocumento.addEventListener("click", function () {
-
-            const novoDocumento = document.createElement("div");
-            novoDocumento.classList.add("documento-form-item");
-
-            novoDocumento.innerHTML = `
-                <div class="row g-4 align-items-end">
-
-                    <div class="col-md-4">
-                        <label class="form-label">Tipo de Documento</label>
-                        <select class="form-select" name="tipoDocumento[]">
-                            <option value="">Selecionar tipo</option>
-                            <option value="fotografia">Fotografia do Equipamento</option>
-                            <option value="manual">Manual de Instruções</option>
-                            <option value="certificado_calibracao">Certificado de Calibração</option>
-                            <option value="certificado_manutencao">Certificado de Manutenção</option>
-                            <option value="ficha_tecnica">Ficha Técnica</option>
-                            <option value="garantia">Documento de Garantia</option>
-                            <option value="outro">Outro</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label">Nome do Documento</label>
-                        <input type="text"
-                               class="form-control"
-                               name="nomeDocumento[]"
-                               placeholder="Ex: Certificado de calibração 2026">
-                    </div>
-
-                    <div class="col-md-3">
-                        <label class="form-label">Ficheiro</label>
-                        <input type="file"
-                               class="form-control"
-                               name="ficheiroDocumento[]">
-                    </div>
-
-                    <div class="col-md-1 text-end">
-                        <button type="button" class="btn btn-remover-documento" title="Remover documento">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
-
-                </div>
-            `;
-
-            listaDocumentos.appendChild(novoDocumento);
-            atualizarBotoesRemoverDocumento();
-        });
-
-
-        listaDocumentos.addEventListener("click", function (event) {
-
-            const botaoRemover = event.target.closest(".btn-remover-documento");
-
-            if (botaoRemover) {
-                const documento = botaoRemover.closest(".documento-form-item");
-                documento.remove();
-                atualizarBotoesRemoverDocumento();
-            }
-
-        });
-
-    }
-
-});
-
-// Preencher formulário de edição de equipamento
-// Alteração feita por mim
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    const formEditar = document.getElementById("formEditarEquipamento");
-
-    if (!formEditar) return;
-
-    const equipamentosEditar = {
-        "EQ-001": {
-            codigo: "EQ-001",
-            nome: "Monitor Multiparamétrico",
-            categoria: "Monitorização",
-            fabricante: "Philips",
-            modelo: "IntelliVue MX450",
-            serie: "SN-MX450-2024",
-            departamento: "Unidade de Cuidados Intensivos",
-            edificio: "Edifício A",
-            piso: "2",
-            sala: "Sala 2",
-            estado: "Ativo",
-            criticidade: "Crítica",
-            operacional: "Operacional",
-            fornecedor: "MedSupply Portugal",
-            dataFabrico: "2023-11-10",
-            dataAquisicao: "2024-01-15",
-            dataInstalacao: "2024-01-20",
-            valorAquisicao: "3500.00",
-            fimGarantia: "2027-01-20",
-            contratoManutencao: "Sim",
-            ultimaManutencao: "2026-03-12",
-            ultimaCalibracao: "2026-03-12",
-            proximaCalibracao: "2026-09-12",
-            periodicidade: "Semestral",
-            responsavelTecnico: "Eng. Gonçalo Brito",
-            observacoes: "Equipamento em funcionamento normal, localizado na UCI."
-        },
-
-        "EQ-002": {
-            codigo: "EQ-002",
-            nome: "Ventilador Pulmonar",
-            categoria: "Suporte de Vida",
-            fabricante: "Dräger",
-            modelo: "Evita V300",
-            serie: "SN-EV300-1198",
-            departamento: "Urgência",
-            edificio: "Edifício B",
-            piso: "0",
-            sala: "Sala 1",
-            estado: "Em manutenção",
-            criticidade: "Crítica",
-            operacional: "Não operacional",
-            fornecedor: "Biomedical Solutions",
-            dataFabrico: "2022-12-05",
-            dataAquisicao: "2023-06-10",
-            dataInstalacao: "2023-06-18",
-            valorAquisicao: "12500.00",
-            fimGarantia: "2026-06-18",
-            contratoManutencao: "Sim",
-            ultimaManutencao: "2026-02-28",
-            ultimaCalibracao: "2026-02-28",
-            proximaCalibracao: "2026-08-28",
-            periodicidade: "Semestral",
-            responsavelTecnico: "Eng. Gonçalo Brito",
-            observacoes: "Equipamento em manutenção preventiva."
-        },
-
-        "EQ-003": {
-            codigo: "EQ-003",
-            nome: "Desfibrilhador",
-            categoria: "Emergência",
-            fabricante: "Zoll",
-            modelo: "R Series",
-            serie: "SN-ZOLL-8821",
-            departamento: "Bloco Operatório",
-            edificio: "Edifício C",
-            piso: "1",
-            sala: "Bloco Operatório",
-            estado: "Avariado",
-            criticidade: "Crítica",
-            operacional: "Não operacional",
-            fornecedor: "ClinicalTech Equipamentos",
-            dataFabrico: "2021-05-20",
-            dataAquisicao: "2022-09-02",
-            dataInstalacao: "2022-09-08",
-            valorAquisicao: "8900.00",
-            fimGarantia: "2025-09-08",
-            contratoManutencao: "Em análise",
-            ultimaManutencao: "2026-01-05",
-            ultimaCalibracao: "2026-01-05",
-            proximaCalibracao: "",
-            periodicidade: "Anual",
-            responsavelTecnico: "Eng. Gonçalo Brito",
-            observacoes: "Equipamento sinalizado como avariado. Deve permanecer indisponível até avaliação técnica."
-        }
-    };
-
-    const parametros = new URLSearchParams(window.location.search);
-    const idEquipamento = parametros.get("id");
-    const equipamento = equipamentosEditar[idEquipamento];
-
-    if (!equipamento) {
-        alert("Equipamento não encontrado.");
-        window.location.href = "lista_equipamentos.html";
-        return;
-    }
-
-    document.getElementById("codigoInventario").value = equipamento.codigo;
-    document.getElementById("nomeEquipamento").value = equipamento.nome;
-    document.getElementById("categoria").value = equipamento.categoria;
-    document.getElementById("fabricante").value = equipamento.fabricante;
-    document.getElementById("modelo").value = equipamento.modelo;
-    document.getElementById("numeroSerie").value = equipamento.serie;
-
-    document.getElementById("departamento").value = equipamento.departamento;
-    document.getElementById("edificio").value = equipamento.edificio;
-    document.getElementById("piso").value = equipamento.piso;
-    document.getElementById("sala").value = equipamento.sala;
-    document.getElementById("estado").value = equipamento.estado;
-    document.getElementById("criticidade").value = equipamento.criticidade;
-
-    if (equipamento.operacional === "Operacional") {
-        document.getElementById("operacionalSim").checked = true;
-    } else {
-        document.getElementById("operacionalNao").checked = true;
-    }
-
-    document.getElementById("fornecedor").value = equipamento.fornecedor;
-    document.getElementById("dataFabrico").value = equipamento.dataFabrico;
-    document.getElementById("dataAquisicao").value = equipamento.dataAquisicao;
-    document.getElementById("dataInstalacao").value = equipamento.dataInstalacao;
-    document.getElementById("valorAquisicao").value = equipamento.valorAquisicao;
-    document.getElementById("fimGarantia").value = equipamento.fimGarantia;
-    document.getElementById("contratoManutencao").value = equipamento.contratoManutencao;
-
-    document.getElementById("ultimaManutencao").value = equipamento.ultimaManutencao;
-    document.getElementById("ultimaCalibracao").value = equipamento.ultimaCalibracao;
-    document.getElementById("proximaCalibracao").value = equipamento.proximaCalibracao;
-    document.getElementById("periodicidade").value = equipamento.periodicidade;
-    document.getElementById("responsavelTecnico").value = equipamento.responsavelTecnico;
-    document.getElementById("observacoes").value = equipamento.observacoes;
-
-    formEditar.addEventListener("submit", function (event) {
-        event.preventDefault();
-
-        alert("Alterações registadas com sucesso.");
-
-        window.location.href = "lista_equipamentos.html";
     });
 
-});
+    listaDocumentos.addEventListener("click", function (event) {
+        const botaoRemover = event.target.closest(".btn-remover-documento");
+        if (!botaoRemover) return;
 
-// Página apagar_equipamento.html
-// Preencher dados do equipamento e confirmar remoção
-// TEMPORÁRIO
+        const documentos = listaDocumentos.querySelectorAll(".documento-form-item");
+        if (documentos.length <= 1) return;
 
-document.addEventListener("DOMContentLoaded", function () {
+        botaoRemover.closest(".documento-form-item").remove();
+        atualizarBotoesRemoverDocumento();
+    });
 
-    const paginaRemover = document.getElementById("btnConfirmarRemocao");
+    atualizarBotoesRemoverDocumento();
+}
 
-    if (!paginaRemover) return;
+function inicializarRemoverEquipamento() {
+    const botaoConfirmar = $("btnConfirmarRemocao");
+    if (!botaoConfirmar) return;
 
-    const equipamentosRemover = {
-        "EQ-001": {
-            codigo: "EQ-001",
-            nome: "Monitor Multiparamétrico",
-            categoria: "Monitorização",
-            fabricante: "Philips",
-            modelo: "IntelliVue MX450",
-            serie: "SN-MX450-2024",
-            localizacao: "UCI - Sala 2",
-            estado: "Ativo",
-            estadoClasse: "estado-ativo",
-            criticidade: "Crítica",
-            ultimaManutencao: "12/03/2026"
-        },
-
-        "EQ-002": {
-            codigo: "EQ-002",
-            nome: "Ventilador Pulmonar",
-            categoria: "Suporte de Vida",
-            fabricante: "Dräger",
-            modelo: "Evita V300",
-            serie: "SN-EV300-1198",
-            localizacao: "Urgência - Sala 1",
-            estado: "Em manutenção",
-            estadoClasse: "estado-manutencao",
-            criticidade: "Crítica",
-            ultimaManutencao: "28/02/2026"
-        },
-
-        "EQ-003": {
-            codigo: "EQ-003",
-            nome: "Desfibrilhador",
-            categoria: "Emergência",
-            fabricante: "Zoll",
-            modelo: "R Series",
-            serie: "SN-ZOLL-8821",
-            localizacao: "Bloco Operatório",
-            estado: "Avariado",
-            estadoClasse: "estado-avariado",
-            criticidade: "Crítica",
-            ultimaManutencao: "05/01/2026"
-        }
-    };
-
-    const parametros = new URLSearchParams(window.location.search);
-    const idEquipamento = parametros.get("id");
-    const equipamento = equipamentosRemover[idEquipamento];
+    const equipamento = obterEquipamentoSelecionado();
 
     if (!equipamento) {
         alert("Equipamento não encontrado.");
@@ -501,22 +458,24 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    document.getElementById("removerCodigo").textContent = equipamento.codigo;
-    document.getElementById("removerNome").textContent = equipamento.nome;
-    document.getElementById("removerCategoria").textContent = equipamento.categoria;
-    document.getElementById("removerFabricante").textContent = equipamento.fabricante;
-    document.getElementById("removerModelo").textContent = equipamento.modelo;
-    document.getElementById("removerSerie").textContent = equipamento.serie;
-    document.getElementById("removerLocalizacao").textContent = equipamento.localizacao;
-    document.getElementById("removerCriticidade").textContent = equipamento.criticidade;
-    document.getElementById("removerUltimaManutencao").textContent = equipamento.ultimaManutencao;
+    definirTexto("removerCodigo", equipamento.codigo);
+    definirTexto("removerNome", equipamento.nome);
+    definirTexto("removerCategoria", equipamento.categoria);
+    definirTexto("removerFabricante", equipamento.fabricante);
+    definirTexto("removerModelo", equipamento.modelo);
+    definirTexto("removerSerie", equipamento.serie);
+    definirTexto("removerLocalizacao", equipamento.localizacao);
+    definirTexto("removerCriticidade", equipamento.criticidade);
+    definirTexto("removerUltimaManutencao", formatarDataPT(equipamento.ultimaManutencao));
 
-    const estado = document.getElementById("removerEstado");
-    estado.textContent = equipamento.estado;
-    estado.className = `estado ${equipamento.estadoClasse}`;
+    const estado = $("removerEstado");
+    if (estado) {
+        estado.textContent = equipamento.estado;
+        estado.className = `estado ${classeEstado(equipamento.estado)}`;
+    }
 
-    const checkbox = document.getElementById("confirmarRemocao");
-    const botaoConfirmar = document.getElementById("btnConfirmarRemocao");
+    const checkbox = $("confirmarRemocao");
+    if (!checkbox) return;
 
     checkbox.addEventListener("change", function () {
         botaoConfirmar.disabled = !checkbox.checked;
@@ -531,8 +490,53 @@ document.addEventListener("DOMContentLoaded", function () {
             "lista_equipamentos.html"
         );
     });
+}
 
+function inicializarCriticidade() {
+    const campoCriticidade = $("criticidade");
+    const descricaoCriticidade = $("descricaoCriticidade");
+
+    if (!campoCriticidade || !descricaoCriticidade) return;
+
+    const descricoes = {
+        baixa: "Baixa: falha com impacto reduzido. Exemplos: balança clínica, termómetro digital ou otoscópio.",
+        media: "Média: pode atrasar o serviço, mas existem alternativas. Exemplos: eletrocardiógrafo de rotina, aspirador portátil ou equipamento de fisioterapia.",
+        média: "Média: pode atrasar o serviço, mas existem alternativas. Exemplos: eletrocardiógrafo de rotina, aspirador portátil ou equipamento de fisioterapia.",
+        alta: "Alta: impacto significativo na prestação de cuidados. Exemplos: monitor multiparamétrico de urgência, ecógrafo ou incubadora neonatal.",
+        critica: "Crítica: equipamento essencial para suporte de vida ou emergência. Exemplos: ventilador pulmonar, desfibrilhador ou máquina de anestesia.",
+        crítica: "Crítica: equipamento essencial para suporte de vida ou emergência. Exemplos: ventilador pulmonar, desfibrilhador ou máquina de anestesia.",
+        "suporte de vida": "Suporte de vida: falha pode colocar em risco imediato a vida do doente. Exemplos: ventilador pulmonar ou desfibrilhador."
+    };
+
+    function atualizarDescricao() {
+        const chave = campoCriticidade.value.toLowerCase();
+        descricaoCriticidade.textContent = descricoes[chave] || "Selecione uma criticidade para ver a descrição.";
+    }
+
+    campoCriticidade.addEventListener("change", atualizarDescricao);
+    atualizarDescricao();
+}
+
+function inicializarPopovers() {
+    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+
+    popoverTriggerList.forEach(function (popoverTriggerEl) {
+        new bootstrap.Popover(popoverTriggerEl, {
+            container: "body"
+        });
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    inicializarPopovers();
+    inicializarCriticidade();
+    preencherPaginaDetalhesEquipamento();
+    inicializarFormularioEditarEquipamento();
+    inicializarFichaEquipamento();
+    inicializarDocumentosEquipamento();
+    inicializarRemoverEquipamento();
 });
+
 
 // Dados temporários dos fornecedores
 
