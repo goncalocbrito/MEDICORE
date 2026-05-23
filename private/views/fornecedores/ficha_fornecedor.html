@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MEDICORE | Novo Fornecedor</title>
+    <title>MEDICORE | Ficha do Fornecedor</title>
 
     <link rel="shortcut icon" href="../../assets/img/MEDICORE_icon.png" type="image/png">
     <link rel="stylesheet" href="../../assets/bootstrap/bootstrap.min.css">
@@ -154,7 +154,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="novo_fornecedor.html" class="submenu-active">
+                                <a href="novo_fornecedor.html">
                                     <i class="fa-solid fa-plus me-2"></i> Adicionar Fornecedor
                                 </a>
                             </li>
@@ -172,54 +172,73 @@
     </nav>
 
     <!-- =========================================================
-         CONTEÚDO PRINCIPAL DO NOVO FORNECEDOR
-         Usa a mesma base visual do novo equipamento: ações no topo,
-         formulário em separadores e área de documentos dinâmica.
+         CONTEÚDO PRINCIPAL DA FICHA DO FORNECEDOR
+         Usa as mesmas classes visuais da ficha do equipamento para
+         manter largura, separadores, botões e comportamento consistentes.
          ========================================================= -->
-    <main class="conteudo-private ficha-equipamento-page novo-equipamento-page ficha-fornecedor-page">
+    <main class="conteudo-private ficha-equipamento-page ficha-fornecedor-page">
 
         <!-- =====================================================
-             BOTÕES PRINCIPAIS DO FORMULÁRIO
-             Cancelar volta à lista, Limpar repõe os campos e Guardar
-             dispara o pop-up visual de sucesso via JavaScript.
+             ELEMENTOS OCULTOS PARA COMPATIBILIDADE COM O JS
+             Estes campos guardam textos de resumo/badges que podem
+             ser atualizados dinamicamente sem aparecerem no ecrã.
              ===================================================== -->
-        <div class="form-actions">
-            <a href="lista_fornecedores.html" class="btn btn-cancelar">
-                <i class="fa-solid fa-xmark me-2"></i> Cancelar
+        <div class="d-none" aria-hidden="true">
+            <h2 id="tituloPaginaFornecedor">Ficha do Fornecedor</h2>
+            <span id="resumoNomeFornecedor">Fornecedor</span>
+            <span id="resumoDescricaoFornecedor">NIF | Localidade | Contacto</span>
+            <span id="badgeEstadoFornecedor">Estado</span>
+            <span id="badgeTiposFornecedor">Tipo</span>
+            <span id="badgeContratoFornecedor">Contrato</span>
+        </div>
+
+        <!-- =====================================================
+             BARRA DE AÇÕES DA FICHA
+             Em modo consulta mostra Voltar + Editar.
+             Em modo edição mostra Cancelar + Guardar Alterações.
+             ===================================================== -->
+        <div class="ficha-toolbar">
+            <a href="lista_fornecedores.html" class="btn btn-voltar botao-consulta">
+                <i class="fa-solid fa-arrow-left me-2"></i> Voltar à Lista
             </a>
 
-            <button type="button" class="btn btn-limpar" id="btnLimparNovoFornecedor">
-                <i class="fa-solid fa-eraser me-2"></i> Limpar
+            <button type="button" class="btn btn-editar-ficha botao-consulta" id="btnAtivarEdicaoFornecedor">
+                <i class="fa-solid fa-pen me-2"></i> Editar
             </button>
 
-            <button type="submit" class="btn btn-guardar" form="formNovoFornecedor">
-                <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Fornecedor
+            <button type="button" class="btn btn-cancelar botao-edicao d-none" id="btnCancelarEdicaoFornecedor">
+                <i class="fa-solid fa-xmark me-2"></i> Cancelar
+            </button>
+
+            <button type="submit" class="btn btn-guardar botao-edicao d-none" form="formFichaFornecedor">
+                <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Alterações
             </button>
         </div>
 
         <!-- =====================================================
-             FORMULÁRIO DE NOVO FORNECEDOR
-             Recolhe os dados necessários para criar uma nova entidade
-             fornecedora e permite anexar documentos.
+             FORMULÁRIO ÚNICO DA FICHA DO FORNECEDOR
+             Serve para consulta e edição. O JavaScript bloqueia ou
+             liberta os campos conforme o modo ativo.
              ===================================================== -->
         <form class="form-equipamento form-ficha-equipamento"
-              id="formNovoFornecedor"
-              action="processa_novo_fornecedor.php"
+              id="formFichaFornecedor"
+              action="processa_fornecedor.php"
               method="post"
               enctype="multipart/form-data">
 
-            <input type="hidden" name="acao" value="inserir">
+            <input type="hidden" id="idFornecedor" name="idFornecedor" value="FOR-001">
+            <input type="hidden" id="modoFormularioFornecedor" name="modoFormulario" value="ver">
 
             <!-- =================================================
-                 ÁREA PRINCIPAL DO FORMULÁRIO
-                 Caixa que contém os separadores e respetivos campos.
+                 ÁREA PRINCIPAL DA FICHA
+                 Caixa que contém os separadores Bootstrap e o conteúdo.
                  ================================================= -->
             <div class="ficha-area">
                 <!-- =============================================
-                     SEPARADORES DO FORMULÁRIO
-                     Mantêm o registo organizado numa única página.
+                     SEPARADORES DA FICHA
+                     Organizam a ficha numa única página.
                      ============================================= -->
-                <ul class="nav nav-tabs ficha-tabs" id="tabsNovoFornecedor" role="tablist">
+                <ul class="nav nav-tabs ficha-tabs" id="tabsFichaFornecedor" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active"
                                 id="identificacao-tab"
@@ -307,12 +326,12 @@
 
                 <!-- =============================================
                      CONTEÚDO DOS SEPARADORES
-                     Cada secção agrupa uma área funcional do fornecedor.
+                     Cada tab-pane corresponde a uma secção do fornecedor.
                      ============================================= -->
-                <div class="tab-content ficha-tab-content" id="tabsNovoFornecedorContent">
+                <div class="tab-content ficha-tab-content" id="tabsFichaFornecedorContent">
                     <!-- =========================================
                          SEPARADOR 1: IDENTIFICAÇÃO
-                         Dados principais e classificação do fornecedor.
+                         Dados principais da entidade fornecedora.
                          ========================================= -->
                     <div class="tab-pane fade show active"
                          id="identificacao"
@@ -322,75 +341,111 @@
 
                         <div class="secao-ficha-titulo">
                             <h4>Identificação do Fornecedor</h4>
-                            <p>Preencha os dados principais da entidade fornecedora.</p>
+                            <p>Dados principais da entidade fornecedora e respetiva classificação.</p>
                         </div>
 
                         <div class="row g-4">
+                            <div class="col-md-4">
+                                <label for="codigoFornecedor" class="form-label">Código do Fornecedor *</label>
+                                <input type="text"
+                                       class="form-control campo-ficha campo-bloqueado"
+                                       id="codigoFornecedor"
+                                       name="codigoFornecedor"
+                                       value="FOR-001"
+                                       readonly>
+                            </div>
+
                             <div class="col-md-8">
                                 <label for="nomeFornecedor" class="form-label">Nome do Fornecedor *</label>
                                 <input type="text"
-                                       class="form-control"
+                                       class="form-control campo-ficha campo-editavel"
                                        id="nomeFornecedor"
                                        name="nomeFornecedor"
-                                       placeholder="Ex: MedSupply Portugal"
+                                       value="Philips Medical Systems"
                                        required>
                             </div>
 
                             <div class="col-md-4">
                                 <label for="nifFornecedor" class="form-label">NIF *</label>
                                 <input type="text"
-                                       class="form-control"
+                                       class="form-control campo-ficha campo-editavel"
                                        id="nifFornecedor"
                                        name="nifFornecedor"
-                                       placeholder="Ex: 514987321"
+                                       value="509123456"
                                        required>
-                            </div>
-
-                            <div class="col-md-8">
-                                <label class="form-label d-block">Tipo de Fornecedor *</label>
-
-                                <div class="tipos-fornecedor-opcoes">
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" id="tipoFabricante" name="tipoFornecedor[]" value="Fabricante">
-                                        <label class="form-check-label" for="tipoFabricante">Fabricante</label>
-                                    </div>
-
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" id="tipoDistribuidor" name="tipoFornecedor[]" value="Distribuidor">
-                                        <label class="form-check-label" for="tipoDistribuidor">Vendedor / Distribuidor</label>
-                                    </div>
-
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" id="tipoManutencao" name="tipoFornecedor[]" value="Manutenção">
-                                        <label class="form-check-label" for="tipoManutencao">Manutenção</label>
-                                    </div>
-
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" id="tipoCalibracao" name="tipoFornecedor[]" value="Calibração">
-                                        <label class="form-check-label" for="tipoCalibracao">Calibração</label>
-                                    </div>
-                                </div>
-
-                                <small class="texto-ajuda-form">
-                                    Um fornecedor pode acumular funções, por exemplo distribuidor e manutenção.
-                                </small>
                             </div>
 
                             <div class="col-md-4">
                                 <label for="estadoFornecedor" class="form-label">Estado *</label>
-                                <select class="form-select" id="estadoFornecedor" name="estadoFornecedor" required>
+                                <select class="form-select campo-ficha campo-editavel"
+                                        id="estadoFornecedor"
+                                        name="estadoFornecedor"
+                                        required>
                                     <option value="">Selecionar estado</option>
-                                    <option value="Ativo">Ativo</option>
+                                    <option value="Ativo" selected>Ativo</option>
                                     <option value="Inativo">Inativo</option>
                                     <option value="Em avaliação">Em avaliação</option>
                                 </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="qtdEquipamentosFornecedor" class="form-label">Equipamentos Associados</label>
+                                <input type="number"
+                                       class="form-control campo-ficha campo-editavel"
+                                       id="qtdEquipamentosFornecedor"
+                                       name="qtdEquipamentosFornecedor"
+                                       min="0"
+                                       value="12">
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label d-block">Tipo de Fornecedor *</label>
+
+                                <div class="tipos-fornecedor-opcoes">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input campo-ficha campo-editavel"
+                                               type="checkbox"
+                                               id="tipoFabricante"
+                                               name="tipoFornecedor[]"
+                                               value="Fabricante"
+                                               checked>
+                                        <label class="form-check-label" for="tipoFabricante">Fabricante</label>
+                                    </div>
+
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input campo-ficha campo-editavel"
+                                               type="checkbox"
+                                               id="tipoDistribuidor"
+                                               name="tipoFornecedor[]"
+                                               value="Distribuidor">
+                                        <label class="form-check-label" for="tipoDistribuidor">Vendedor / Distribuidor</label>
+                                    </div>
+
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input campo-ficha campo-editavel"
+                                               type="checkbox"
+                                               id="tipoManutencao"
+                                               name="tipoFornecedor[]"
+                                               value="Manutenção">
+                                        <label class="form-check-label" for="tipoManutencao">Manutenção</label>
+                                    </div>
+
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input campo-ficha campo-editavel"
+                                               type="checkbox"
+                                               id="tipoCalibracao"
+                                               name="tipoFornecedor[]"
+                                               value="Calibração">
+                                        <label class="form-check-label" for="tipoCalibracao">Calibração</label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- =========================================
                          SEPARADOR 2: CONTACTOS
-                         Dados de contacto geral e contacto responsável.
+                         Contactos gerais e pessoa responsável.
                          ========================================= -->
                     <div class="tab-pane fade"
                          id="contactos"
@@ -399,72 +454,72 @@
                          tabindex="0">
 
                         <div class="secao-ficha-titulo">
-                            <h4>Contactos</h4>
-                            <p>Indique os contactos gerais e o responsável preferencial.</p>
+                            <h4>Contactos do Fornecedor</h4>
+                            <p>Contactos gerais e pessoa responsável para acompanhamento técnico ou comercial.</p>
                         </div>
 
                         <div class="row g-4">
                             <div class="col-md-4">
                                 <label for="emailFornecedor" class="form-label">Email Geral *</label>
                                 <input type="email"
-                                       class="form-control"
+                                       class="form-control campo-ficha campo-editavel"
                                        id="emailFornecedor"
                                        name="emailFornecedor"
-                                       placeholder="Ex: comercial@fornecedor.pt"
+                                       value="suporte@philips-med.pt"
                                        required>
                             </div>
 
                             <div class="col-md-4">
                                 <label for="telefoneFornecedor" class="form-label">Telefone *</label>
                                 <input type="text"
-                                       class="form-control"
+                                       class="form-control campo-ficha campo-editavel"
                                        id="telefoneFornecedor"
                                        name="telefoneFornecedor"
-                                       placeholder="Ex: +351 221 234 567"
+                                       value="+351 220 000 111"
                                        required>
                             </div>
 
                             <div class="col-md-4">
                                 <label for="websiteFornecedor" class="form-label">Website</label>
                                 <input type="url"
-                                       class="form-control"
+                                       class="form-control campo-ficha campo-editavel"
                                        id="websiteFornecedor"
                                        name="websiteFornecedor"
-                                       placeholder="Ex: https://www.fornecedor.pt">
+                                       value="https://www.philips.pt">
                             </div>
 
                             <div class="col-md-4">
                                 <label for="contactoResponsavel" class="form-label">Pessoa de Contacto</label>
                                 <input type="text"
-                                       class="form-control"
+                                       class="form-control campo-ficha campo-editavel"
                                        id="contactoResponsavel"
                                        name="contactoResponsavel"
-                                       placeholder="Ex: Ana Martins">
+                                       value="Carlos Almeida">
                             </div>
 
                             <div class="col-md-4">
                                 <label for="cargoContacto" class="form-label">Cargo / Função</label>
                                 <input type="text"
-                                       class="form-control"
+                                       class="form-control campo-ficha campo-editavel"
                                        id="cargoContacto"
                                        name="cargoContacto"
-                                       placeholder="Ex: Responsável Técnico">
+                                       value="Suporte Técnico">
                             </div>
 
                             <div class="col-md-4">
                                 <label for="emailContacto" class="form-label">Email do Contacto</label>
                                 <input type="email"
-                                       class="form-control"
+                                       class="form-control campo-ficha campo-editavel"
                                        id="emailContacto"
                                        name="emailContacto"
-                                       placeholder="Ex: tecnico@fornecedor.pt">
+                                       value="carlos.almeida@philips-med.pt">
                             </div>
                         </div>
                     </div>
 
                     <!-- =========================================
                          SEPARADOR 3: MORADA
-                         Morada e localização da entidade.
+                         Informação postal e localização do fornecedor.
                          ========================================= -->
                     <div class="tab-pane fade"
                          id="morada"
@@ -473,43 +528,43 @@
                          tabindex="0">
 
                         <div class="secao-ficha-titulo">
-                            <h4>Morada</h4>
-                            <p>Registe a morada principal da entidade fornecedora.</p>
+                            <h4>Morada e Localização</h4>
+                            <p>Informação postal da entidade fornecedora.</p>
                         </div>
 
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <label for="moradaFornecedor" class="form-label">Morada</label>
                                 <input type="text"
-                                       class="form-control"
+                                       class="form-control campo-ficha campo-editavel"
                                        id="moradaFornecedor"
                                        name="moradaFornecedor"
-                                       placeholder="Ex: Rua da Tecnologia, nº 120">
+                                       value="Rua da Tecnologia Médica, 45">
                             </div>
 
                             <div class="col-md-2">
                                 <label for="codigoPostalFornecedor" class="form-label">Código Postal</label>
                                 <input type="text"
-                                       class="form-control"
+                                       class="form-control campo-ficha campo-editavel"
                                        id="codigoPostalFornecedor"
                                        name="codigoPostalFornecedor"
-                                       placeholder="Ex: 4000-000">
+                                       value="4100-000">
                             </div>
 
                             <div class="col-md-2">
                                 <label for="localidadeFornecedor" class="form-label">Localidade *</label>
                                 <input type="text"
-                                       class="form-control"
+                                       class="form-control campo-ficha campo-editavel"
                                        id="localidadeFornecedor"
                                        name="localidadeFornecedor"
-                                       placeholder="Ex: Porto"
+                                       value="Porto"
                                        required>
                             </div>
 
                             <div class="col-md-2">
                                 <label for="paisFornecedor" class="form-label">País</label>
                                 <input type="text"
-                                       class="form-control"
+                                       class="form-control campo-ficha campo-editavel"
                                        id="paisFornecedor"
                                        name="paisFornecedor"
                                        value="Portugal">
@@ -519,7 +574,7 @@
 
                     <!-- =========================================
                          SEPARADOR 4: SERVIÇOS E CONTRATO
-                         Contrato ativo, datas e área de atuação.
+                         Relação contratual, área de atuação e marcas.
                          ========================================= -->
                     <div class="tab-pane fade"
                          id="contrato"
@@ -529,15 +584,17 @@
 
                         <div class="secao-ficha-titulo">
                             <h4>Serviços, Contrato e Associação Técnica</h4>
-                            <p>Registe o âmbito da relação técnica e contratual com o fornecedor.</p>
+                            <p>Âmbito de atuação, contrato ativo e equipamentos ou marcas associados.</p>
                         </div>
 
                         <div class="row g-4">
                             <div class="col-md-4">
                                 <label for="contratoFornecedor" class="form-label">Contrato Ativo?</label>
-                                <select class="form-select" id="contratoFornecedor" name="contratoFornecedor">
+                                <select class="form-select campo-ficha campo-editavel"
+                                        id="contratoFornecedor"
+                                        name="contratoFornecedor">
                                     <option value="">Selecionar opção</option>
-                                    <option value="Sim">Sim</option>
+                                    <option value="Sim" selected>Sim</option>
                                     <option value="Não">Não</option>
                                     <option value="Em análise">Em análise</option>
                                 </select>
@@ -546,43 +603,43 @@
                             <div class="col-md-4">
                                 <label for="inicioContratoFornecedor" class="form-label">Início do Contrato</label>
                                 <input type="date"
-                                       class="form-control"
+                                       class="form-control campo-ficha campo-editavel"
                                        id="inicioContratoFornecedor"
-                                       name="inicioContratoFornecedor">
+                                       name="inicioContratoFornecedor"
+                                       value="2024-01-01">
                             </div>
 
                             <div class="col-md-4">
                                 <label for="fimContratoFornecedor" class="form-label">Fim do Contrato</label>
                                 <input type="date"
-                                       class="form-control"
+                                       class="form-control campo-ficha campo-editavel"
                                        id="fimContratoFornecedor"
-                                       name="fimContratoFornecedor">
+                                       name="fimContratoFornecedor"
+                                       value="2027-01-01">
                             </div>
 
                             <div class="col-md-6">
                                 <label for="areaAtuacaoFornecedor" class="form-label">Área de Atuação</label>
-                                <textarea class="form-control"
+                                <textarea class="form-control campo-ficha campo-editavel"
                                           id="areaAtuacaoFornecedor"
                                           name="areaAtuacaoFornecedor"
-                                          rows="5"
-                                          placeholder="Ex: venda de equipamentos médicos, manutenção preventiva, calibração de dispositivos clínicos..."></textarea>
+                                          rows="5">Fabrico e suporte técnico de equipamentos de monitorização clínica.</textarea>
                             </div>
 
                             <div class="col-md-6">
                                 <label for="equipamentosAssociadosFornecedor" class="form-label">Equipamentos / Marcas Associadas</label>
-                                <textarea class="form-control"
+                                <textarea class="form-control campo-ficha campo-editavel"
                                           id="equipamentosAssociadosFornecedor"
                                           name="equipamentosAssociadosFornecedor"
-                                          rows="5"
-                                          placeholder="Ex: monitores multiparamétricos Philips, ventiladores Dräger, desfibrilhadores Zoll..."></textarea>
+                                          rows="5">Monitores multiparamétricos Philips IntelliVue.</textarea>
                             </div>
                         </div>
                     </div>
 
                     <!-- =========================================
                          SEPARADOR 5: DOCUMENTOS
-                         Permite adicionar contratos, certificados e
-                         outros ficheiros associados ao fornecedor.
+                         Lista documentos existentes e permite adicionar
+                         novos ficheiros quando a ficha está em edição.
                          ========================================= -->
                     <div class="tab-pane fade"
                          id="documentos"
@@ -593,22 +650,62 @@
                         <div class="secao-ficha-titulo d-flex justify-content-between align-items-start gap-3 flex-wrap">
                             <div>
                                 <h4>Documentos do Fornecedor</h4>
-                                <p>Associe contratos, certificados, catálogos ou outros ficheiros relevantes.</p>
+                                <p>Contratos, certificados, catálogos, comprovativos e documentação técnica associada.</p>
                             </div>
 
                             <button type="button"
-                                    class="btn btn-adicionar-documento"
+                                    class="btn btn-adicionar-documento botao-edicao d-none"
                                     id="btnAdicionarDocumento">
                                 <i class="fa-solid fa-plus me-2"></i> Adicionar Documento
                             </button>
                         </div>
 
-                        <div id="listaDocumentos">
-                            <div class="documento-form-item">
+                        <div class="documentos-lista mb-4">
+                            <div class="documento-item">
+                                <div class="documento-info">
+                                    <i class="fa-solid fa-file-contract documento-icone"></i>
+                                    <div>
+                                        <h5>Contrato de Fornecimento</h5>
+                                        <p>Contrato ativo com condições comerciais e técnicas do fornecedor.</p>
+                                    </div>
+                                </div>
+
+                                <div class="documento-acoes">
+                                    <a href="#" class="btn-documento-ver">
+                                        <i class="fa-solid fa-eye me-1"></i> Ver
+                                    </a>
+                                    <a href="#" class="btn-documento-download">
+                                        <i class="fa-solid fa-download me-1"></i> Download
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="documento-item">
+                                <div class="documento-info">
+                                    <i class="fa-solid fa-file-shield documento-icone"></i>
+                                    <div>
+                                        <h5>Certificado Técnico</h5>
+                                        <p>Certificado de conformidade ou qualificação técnica do fornecedor.</p>
+                                    </div>
+                                </div>
+
+                                <div class="documento-acoes">
+                                    <a href="#" class="btn-documento-ver">
+                                        <i class="fa-solid fa-eye me-1"></i> Ver
+                                    </a>
+                                    <a href="#" class="btn-documento-download">
+                                        <i class="fa-solid fa-download me-1"></i> Download
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="listaDocumentosNovos">
+                            <div class="documento-form-item botao-edicao d-none">
                                 <div class="row g-4 align-items-end">
                                     <div class="col-md-4">
                                         <label class="form-label">Tipo de Documento</label>
-                                        <select class="form-select" name="tipoDocumento[]">
+                                        <select class="form-select campo-ficha campo-editavel" name="tipoDocumento[]">
                                             <option value="">Selecionar tipo</option>
                                             <option value="contrato">Contrato</option>
                                             <option value="certificado">Certificado técnico</option>
@@ -622,15 +719,15 @@
                                     <div class="col-md-4">
                                         <label class="form-label">Nome do Documento</label>
                                         <input type="text"
-                                               class="form-control"
+                                               class="form-control campo-ficha campo-editavel"
                                                name="nomeDocumento[]"
-                                               placeholder="Ex: Contrato de fornecimento 2026">
+                                               placeholder="Ex: Contrato de manutenção 2026">
                                     </div>
 
                                     <div class="col-md-3">
                                         <label class="form-label">Ficheiro</label>
                                         <input type="file"
-                                               class="form-control"
+                                               class="form-control campo-ficha campo-editavel"
                                                name="ficheiroDocumento[]"
                                                accept=".pdf,.png,.jpg,.jpeg">
                                     </div>
@@ -649,7 +746,7 @@
 
                     <!-- =========================================
                          SEPARADOR 6: OBSERVAÇÕES
-                         Notas livres sobre o fornecedor.
+                         Campo livre para notas técnicas ou administrativas.
                          ========================================= -->
                     <div class="tab-pane fade"
                          id="observacoes-tab-pane"
@@ -659,14 +756,13 @@
 
                         <div class="secao-ficha-titulo">
                             <h4>Observações</h4>
-                            <p>Registe notas relevantes sobre qualidade do serviço, tempos de resposta ou histórico técnico.</p>
+                            <p>Notas sobre qualidade do serviço, tempos de resposta, histórico ou acompanhamento técnico.</p>
                         </div>
 
-                        <textarea class="form-control"
+                        <textarea class="form-control campo-ficha campo-editavel"
                                   id="observacoesFornecedor"
                                   name="observacoesFornecedor"
-                                  rows="7"
-                                  placeholder="Indique informações relevantes sobre o fornecedor, qualidade do serviço, tempos de resposta ou notas técnicas."></textarea>
+                                  rows="7">Fornecedor associado a equipamentos de monitorização em unidades críticas.</textarea>
                     </div>
                 </div>
             </div>
@@ -676,8 +772,8 @@
 
     <!-- =========================================================
          SCRIPTS DA PÁGINA
-         Bootstrap ativa tabs/dropdowns e 1230404.js trata limpar,
-         documentos dinâmicos e pop-up de sucesso.
+         Bootstrap ativa tabs/dropdowns e 1230404.js trata edição,
+         documentos dinâmicos e pop-ups.
          ========================================================= -->
     <script src="../../assets/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../assets/js/1230404.js"></script>

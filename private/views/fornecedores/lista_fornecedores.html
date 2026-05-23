@@ -5,32 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MEDICORE | Fornecedores</title>
 
-    <!-- favicon -->
     <link rel="shortcut icon" href="../../assets/img/MEDICORE_icon.png" type="image/png">
-
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="../../assets/bootstrap/bootstrap.min.css">
-
-    <!-- CSS individual do aluno -->
     <link rel="stylesheet" href="../../assets/css/1230404.css">
 
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700;900&display=swap" rel="stylesheet">
 
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="../../assets/fontawesome/all.min.css">
 </head>
 
 <body>
 
-    <!-- Navbar superior -->
+    <!-- =========================================================
+         CABEÇALHO SUPERIOR DA ÁREA PRIVADA
+         Contém o logótipo, mensagem de boas-vindas e menu do utilizador.
+         ========================================================= -->
     <header class="container-fluid top-header">
-
         <div class="row align-items-center">
-
-            <!-- Logo e Nome -->
             <div class="col-md-4 d-flex align-items-center p-3">
                 <a href="../../index.html">
                     <img src="../../assets/img/MEDICORE_logotipo_branco.png"
@@ -39,7 +32,6 @@
                 </a>
             </div>
 
-            <!-- Mensagem central -->
             <div class="col-md-4 text-center p-3">
                 <div class="mensagem-topo">
                     <i class="fa-solid fa-user-doctor me-2"></i>
@@ -47,7 +39,6 @@
                 </div>
             </div>
 
-            <!-- Utilizador -->
             <div class="col-md-4 text-md-end p-3">
                 <div class="dropdown">
                     <button class="btn btn-secondary dropdown-toggle user-button"
@@ -59,38 +50,33 @@
 
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
-                            <a class="dropdown-item" href="#">
+                            <a class="dropdown-item" href="perfil.php">
                                 <i class="fa-solid fa-user-gear me-2"></i> Perfil técnico
                             </a>
                         </li>
-
                         <li>
-                            <a class="dropdown-item" href="#">
+                            <a class="dropdown-item" href="alterar_password.php">
                                 <i class="fa-solid fa-key me-2"></i> Alterar password
                             </a>
                         </li>
-
+                        <li><hr class="dropdown-divider"></li>
                         <li>
-                            <hr class="dropdown-divider">
-                        </li>
-
-                        <li>
-                            <a class="dropdown-item" href="../../index.html">
+                            <a class="dropdown-item" href="logout.php">
                                 <i class="fa-solid fa-right-from-bracket me-2"></i> Sair
                             </a>
                         </li>
                     </ul>
                 </div>
             </div>
-
         </div>
-
     </header>
 
-    <!-- Menu horizontal da área privada -->
+    <!-- =========================================================
+         MENU HORIZONTAL DA ÁREA PRIVADA
+         Navegação principal. O menu Fornecedores fica ativo nesta página.
+         ========================================================= -->
     <nav class="navbar navbar-expand-lg menu-horizontal">
         <div class="container-fluid">
-
             <button class="navbar-toggler bg-light"
                     type="button"
                     data-bs-toggle="collapse"
@@ -103,7 +89,6 @@
 
             <div class="collapse navbar-collapse justify-content-center" id="menuPrivado">
                 <ul class="navbar-nav">
-
                     <li class="nav-item">
                         <a href="../../index.html" class="nav-link">
                             <i class="fa-solid fa-chart-line me-2"></i> Dashboard Técnico
@@ -122,7 +107,6 @@
                                     <i class="fa-solid fa-list me-2"></i> Lista de Equipamentos
                                 </a>
                             </li>
-
                             <li>
                                 <a href="../equipamentos/novo_equipamento.html">
                                     <i class="fa-solid fa-plus me-2"></i> Adicionar Equipamento
@@ -149,7 +133,6 @@
                                     <i class="fa-solid fa-list me-2"></i> Lista de Localizações
                                 </a>
                             </li>
-
                             <li>
                                 <a href="../localizacoes/nova_localizacao.html">
                                     <i class="fa-solid fa-plus me-2"></i> Adicionar Localização
@@ -170,7 +153,6 @@
                                     <i class="fa-solid fa-list me-2"></i> Lista de Fornecedores
                                 </a>
                             </li>
-
                             <li>
                                 <a href="novo_fornecedor.html">
                                     <i class="fa-solid fa-plus me-2"></i> Adicionar Fornecedor
@@ -184,16 +166,22 @@
                             <i class="fa-solid fa-file-medical me-2"></i> Relatórios
                         </a>
                     </li>
-
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Conteúdo Principal -->
+    <!-- =========================================================
+         CONTEÚDO PRINCIPAL DA LISTA DE FORNECEDORES
+         Mostra a tabela de fornecedores e o botão para criar novo registo.
+         ========================================================= -->
     <main class="conteudo-private">
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <!-- =====================================================
+             TÍTULO E AÇÃO PRINCIPAL
+             Mantém o mesmo padrão visual da lista de equipamentos.
+             ===================================================== -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
             <div>
                 <h2 class="titulo-pagina">Gestão de Fornecedores</h2>
                 <p class="subtitulo-pagina">
@@ -204,45 +192,18 @@
             <a href="novo_fornecedor.html" class="btn btn-adicionar">
                 <i class="fa-solid fa-plus me-2"></i> Adicionar Fornecedor
             </a>
-        </div>        
+        </div>
 
-        <!-- Filtros simples -->
-        <section class="filtros-fornecedores mb-4">
-            <div class="row g-3 align-items-end">
-
-                <div class="col-md-6">
-                    <label for="pesquisaFornecedor" class="form-label">Pesquisar fornecedor</label>
-                    <input type="text"
-                           id="pesquisaFornecedor"
-                           class="form-control"
-                           placeholder="Pesquisar por nome, NIF, email ou contacto...">
-                </div>
-
-                <div class="col-md-4">
-                    <label for="filtroTipoFornecedor" class="form-label">Tipo de fornecedor</label>
-                    <select id="filtroTipoFornecedor" class="form-select">
-                        <option value="">Todos os tipos</option>
-                        <option value="fabricante">Fabricante</option>
-                        <option value="distribuidor">Vendedor / Distribuidor</option>
-                        <option value="manutencao">Manutenção</option>
-                        <option value="calibracao">Calibração</option>
-                    </select>
-                </div>
-
-                <div class="col-md-2">
-                    <button type="button" class="btn btn-limpar-filtros w-100">
-                        <i class="fa-solid fa-filter-circle-xmark me-2"></i> Limpar
-                    </button>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- Tabela de fornecedores -->
+        <!-- =====================================================
+             TABELA DE FORNECEDORES
+             Cada linha tem um botão para abrir a ficha e outro para
+             abrir o modal de remoção com os dados preenchidos.
+             ===================================================== -->
         <div class="table-responsive tabela-container">
             <table class="table table-hover align-middle tabela-fornecedores">
                 <thead>
                     <tr>
+                        <th>Código</th>
                         <th>Fornecedor</th>
                         <th>Tipo</th>
                         <th>NIF</th>
@@ -256,115 +217,139 @@
                 </thead>
 
                 <tbody>
-                    <tr data-tipo="fabricante">
+                    <tr>
+                        <td>FOR-001</td>
                         <td>Philips Medical Systems</td>
-                        <td>
-                            <span class="tipo-fornecedor tipo-fabricante">Fabricante</span>
-                        </td>
+                        <td><span class="tipo-fornecedor tipo-fabricante">Fabricante</span></td>
                         <td>509123456</td>
                         <td>suporte@philips-med.pt</td>
                         <td>+351 220 000 111</td>
                         <td>Porto</td>
-                        <td>
-                            <span class="estado estado-ativo">Ativo</span>
-                        </td>
+                        <td><span class="estado estado-ativo">Ativo</span></td>
                         <td>12</td>
                         <td class="text-center">
-                            <a href="detalhes_fornecedor.html?id=FOR-001" class="btn btn-sm btn-detalhes" title="Ver detalhes">
-                                <i class="fa-solid fa-eye"></i>
+                            <a href="ficha_fornecedor.html?id=FOR-001" class="btn btn-sm btn-ficha" title="Abrir ficha do fornecedor">
+                                <i class="fa-solid fa-file-lines"></i>
                             </a>
 
-                            <a href="editar_fornecedor.html?id=FOR-001" class="btn btn-sm btn-editar" title="Editar fornecedor">
-                                <i class="fa-solid fa-pen"></i>
-                            </a>
-
-                            <a href="apagar_fornecedor.html?id=FOR-001" class="btn btn-sm btn-eliminar" title="Remover fornecedor">
+                            <button type="button"
+                                    class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-fornecedor"
+                                    title="Eliminar fornecedor"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalApagarFornecedor"
+                                    data-codigo="FOR-001"
+                                    data-nome="Philips Medical Systems"
+                                    data-tipo="Fabricante"
+                                    data-nif="509123456"
+                                    data-email="suporte@philips-med.pt"
+                                    data-telefone="+351 220 000 111"
+                                    data-localidade="Porto"
+                                    data-estado="Ativo"
+                                    data-equipamentos="12">
                                 <i class="fa-solid fa-trash"></i>
-                            </a>
+                            </button>
                         </td>
                     </tr>
 
-                    <tr data-tipo="distribuidor">
+                    <tr>
+                        <td>FOR-002</td>
                         <td>MedSupply Portugal</td>
-                        <td>
-                            <span class="tipo-fornecedor tipo-distribuidor">Distribuidor</span>
-                        </td>
+                        <td><span class="tipo-fornecedor tipo-distribuidor">Distribuidor</span></td>
                         <td>514987321</td>
                         <td>comercial@medsupply.pt</td>
                         <td>+351 221 234 567</td>
                         <td>Lisboa</td>
-                        <td>
-                            <span class="estado estado-ativo">Ativo</span>
-                        </td>
+                        <td><span class="estado estado-ativo">Ativo</span></td>
                         <td>8</td>
                         <td class="text-center">
-                            <a href="detalhes_fornecedor.html?id=FOR-002" class="btn btn-sm btn-detalhes" title="Ver detalhes">
-                                <i class="fa-solid fa-eye"></i>
+                            <a href="ficha_fornecedor.html?id=FOR-002" class="btn btn-sm btn-ficha" title="Abrir ficha do fornecedor">
+                                <i class="fa-solid fa-file-lines"></i>
                             </a>
 
-                            <a href="editar_fornecedor.html?id=FOR-002" class="btn btn-sm btn-editar" title="Editar fornecedor">
-                                <i class="fa-solid fa-pen"></i>
-                            </a>
-
-                            <a href="apagar_fornecedor.html?id=FOR-002" class="btn btn-sm btn-eliminar" title="Remover fornecedor">
+                            <button type="button"
+                                    class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-fornecedor"
+                                    title="Eliminar fornecedor"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalApagarFornecedor"
+                                    data-codigo="FOR-002"
+                                    data-nome="MedSupply Portugal"
+                                    data-tipo="Distribuidor"
+                                    data-nif="514987321"
+                                    data-email="comercial@medsupply.pt"
+                                    data-telefone="+351 221 234 567"
+                                    data-localidade="Lisboa"
+                                    data-estado="Ativo"
+                                    data-equipamentos="8">
                                 <i class="fa-solid fa-trash"></i>
-                            </a>
+                            </button>
                         </td>
                     </tr>
 
-                    <tr data-tipo="manutencao">
+                    <tr>
+                        <td>FOR-003</td>
                         <td>Biomedical Solutions</td>
-                        <td>
-                            <span class="tipo-fornecedor tipo-manutencao">Manutenção</span>
-                        </td>
+                        <td><span class="tipo-fornecedor tipo-manutencao">Manutenção</span></td>
                         <td>507654789</td>
                         <td>tecnica@biomedicalsolutions.pt</td>
                         <td>+351 222 456 789</td>
                         <td>Maia</td>
-                        <td>
-                            <span class="estado estado-ativo">Ativo</span>
-                        </td>
+                        <td><span class="estado estado-ativo">Ativo</span></td>
                         <td>5</td>
                         <td class="text-center">
-                            <a href="detalhes_fornecedor.html?id=FOR-003" class="btn btn-sm btn-detalhes" title="Ver detalhes">
-                                <i class="fa-solid fa-eye"></i>
+                            <a href="ficha_fornecedor.html?id=FOR-003" class="btn btn-sm btn-ficha" title="Abrir ficha do fornecedor">
+                                <i class="fa-solid fa-file-lines"></i>
                             </a>
 
-                            <a href="editar_fornecedor.html?id=FOR-003" class="btn btn-sm btn-editar" title="Editar fornecedor">
-                                <i class="fa-solid fa-pen"></i>
-                            </a>
-
-                            <a href="apagar_fornecedor.html?id=FOR-003" class="btn btn-sm btn-eliminar" title="Remover fornecedor">
+                            <button type="button"
+                                    class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-fornecedor"
+                                    title="Eliminar fornecedor"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalApagarFornecedor"
+                                    data-codigo="FOR-003"
+                                    data-nome="Biomedical Solutions"
+                                    data-tipo="Manutenção"
+                                    data-nif="507654789"
+                                    data-email="tecnica@biomedicalsolutions.pt"
+                                    data-telefone="+351 222 456 789"
+                                    data-localidade="Maia"
+                                    data-estado="Ativo"
+                                    data-equipamentos="5">
                                 <i class="fa-solid fa-trash"></i>
-                            </a>
+                            </button>
                         </td>
                     </tr>
 
-                    <tr data-tipo="calibracao">
+                    <tr>
+                        <td>FOR-004</td>
                         <td>CalibraMed</td>
-                        <td>
-                            <span class="tipo-fornecedor tipo-calibracao">Calibração</span>
-                        </td>
+                        <td><span class="tipo-fornecedor tipo-calibracao">Calibração</span></td>
                         <td>515321987</td>
                         <td>calibracao@calibramed.pt</td>
                         <td>+351 223 987 654</td>
                         <td>Braga</td>
-                        <td>
-                            <span class="estado estado-inativo">Inativo</span>
-                        </td>
+                        <td><span class="estado estado-inativo">Inativo</span></td>
                         <td>3</td>
                         <td class="text-center">
-                            <a href="detalhes_fornecedor.html?id=FOR-004" class="btn btn-sm btn-detalhes" title="Ver detalhes">
-                                <i class="fa-solid fa-eye"></i>
+                            <a href="ficha_fornecedor.html?id=FOR-004" class="btn btn-sm btn-ficha" title="Abrir ficha do fornecedor">
+                                <i class="fa-solid fa-file-lines"></i>
                             </a>
 
-                            <a href="editar_fornecedor.html?id=FOR-004" class="btn btn-sm btn-editar" title="Editar fornecedor">
-                                <i class="fa-solid fa-pen"></i>
-                            </a>
-
-                            <a href="apagar_fornecedor.html?id=FOR-004" class="btn btn-sm btn-eliminar" title="Remover fornecedor">
+                            <button type="button"
+                                    class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-fornecedor"
+                                    title="Eliminar fornecedor"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalApagarFornecedor"
+                                    data-codigo="FOR-004"
+                                    data-nome="CalibraMed"
+                                    data-tipo="Calibração"
+                                    data-nif="515321987"
+                                    data-email="calibracao@calibramed.pt"
+                                    data-telefone="+351 223 987 654"
+                                    data-localidade="Braga"
+                                    data-estado="Inativo"
+                                    data-equipamentos="3">
                                 <i class="fa-solid fa-trash"></i>
-                            </a>
+                            </button>
                         </td>
                     </tr>
                 </tbody>
@@ -373,10 +358,113 @@
 
     </main>
 
-    <!-- Bootstrap JS -->
-    <script src="../../assets/bootstrap/bootstrap.bundle.min.js"></script>
+    <!-- =========================================================
+         MODAL PARA CONFIRMAR REMOÇÃO DO FORNECEDOR
+         Abre ao clicar no botão eliminar e mostra os dados principais
+         antes de confirmar a remoção visual da linha.
+         ========================================================= -->
+    <div class="modal fade"
+         id="modalApagarFornecedor"
+         tabindex="-1"
+         aria-labelledby="modalApagarFornecedorLabel"
+         aria-hidden="true">
 
-    <!-- JavaScript individual do aluno -->
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-remocao-dialog">
+            <div class="modal-content modal-apagar-equipamento">
+                <div class="modal-header modal-remocao-header">
+                    <div>
+                        <h5 class="modal-title" id="modalApagarFornecedorLabel">
+                            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                            Confirmar remoção
+                        </h5>
+
+                        <p class="modal-remocao-subtitulo">
+                            Confirme os dados antes de remover o fornecedor.
+                        </p>
+                    </div>
+
+                    <button type="button"
+                            class="btn-close btn-close-white"
+                            data-bs-dismiss="modal"
+                            aria-label="Fechar">
+                    </button>
+                </div>
+
+                <div class="modal-body modal-remocao-body">
+                    <div class="modal-resumo-equipamento modal-resumo-remocao">
+                        <div class="modal-linha">
+                            <strong>Código</strong>
+                            <span id="modalApagarFornecedorCodigo">---</span>
+                        </div>
+
+                        <div class="modal-linha">
+                            <strong>Fornecedor</strong>
+                            <span id="modalApagarFornecedorNome">---</span>
+                        </div>
+
+                        <div class="modal-linha">
+                            <strong>Tipo</strong>
+                            <span id="modalApagarFornecedorTipo">---</span>
+                        </div>
+
+                        <div class="modal-linha">
+                            <strong>NIF</strong>
+                            <span id="modalApagarFornecedorNif">---</span>
+                        </div>
+
+                        <div class="modal-linha">
+                            <strong>Email</strong>
+                            <span id="modalApagarFornecedorEmail">---</span>
+                        </div>
+
+                        <div class="modal-linha">
+                            <strong>Telefone</strong>
+                            <span id="modalApagarFornecedorTelefone">---</span>
+                        </div>
+
+                        <div class="modal-linha">
+                            <strong>Localidade</strong>
+                            <span id="modalApagarFornecedorLocalidade">---</span>
+                        </div>
+
+                        <div class="modal-linha">
+                            <strong>Estado</strong>
+                            <span id="modalApagarFornecedorEstado">---</span>
+                        </div>
+
+                        <div class="modal-linha">
+                            <strong>Equipamentos</strong>
+                            <span id="modalApagarFornecedorEquipamentos">---</span>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="modalApagarIdFornecedor">
+                </div>
+
+                <div class="modal-footer modal-remocao-footer">
+                    <button type="button"
+                            class="btn btn-cancelar-modal"
+                            data-bs-dismiss="modal">
+                        <i class="fa-solid fa-xmark me-2"></i>
+                        Cancelar
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-confirmar-remocao"
+                            id="btnConfirmarApagarFornecedor">
+                        <i class="fa-solid fa-trash me-2"></i>
+                        Guardar Alteração
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         SCRIPTS DA PÁGINA
+         Bootstrap ativa o modal e 1230404.js preenche/confirma a remoção.
+         ========================================================= -->
+    <script src="../../assets/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../assets/js/1230404.js"></script>
 
 </body>

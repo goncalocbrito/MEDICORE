@@ -328,6 +328,8 @@ function inicializarDocumentosEquipamento() {
 
 function mostrarPopupSucesso(titulo, mensagem, paginaDestino) {
 
+    // Cria um overlay visual reutilizável para confirmações de sucesso.
+    // O destino recebido define também o texto da lista para onde o utilizador será redirecionado.
     const overlay = document.createElement("div");
     overlay.classList.add("popup-sucesso-overlay");
 
@@ -343,7 +345,7 @@ function mostrarPopupSucesso(titulo, mensagem, paginaDestino) {
             <p>${mensagem}</p>
 
             <p class="popup-sucesso-redirecionar">
-                A redirecionar para a lista de equipamentos...
+                A redirecionar para a lista ${paginaDestino.includes("fornecedores") ? "de fornecedores" : "de equipamentos"}...
             </p>
 
             <div class="popup-sucesso-barra">
@@ -714,15 +716,57 @@ document.addEventListener("DOMContentLoaded", function () {
 // Novo fornecedor
 document.addEventListener("DOMContentLoaded", function () {
 
+    // Inicializa apenas a página novo_fornecedor.html.
+    // Se o formulário não existir na página atual, esta função termina sem fazer nada.
     const formNovoFornecedor = document.getElementById("formNovoFornecedor");
+    const btnLimparNovoFornecedor = document.getElementById("btnLimparNovoFornecedor");
 
     if (!formNovoFornecedor) return;
 
+    // Limpa manualmente todos os campos do novo fornecedor.
+    // Também repõe Portugal como país por defeito e remove documentos extra clonados.
+    if (btnLimparNovoFornecedor) {
+        btnLimparNovoFornecedor.addEventListener("click", function () {
+            formNovoFornecedor.querySelectorAll("input, select, textarea").forEach(function (campo) {
+                if (campo.type === "radio" || campo.type === "checkbox") {
+                    campo.checked = false;
+                } else if (campo.type === "file") {
+                    campo.value = "";
+                } else if (campo.tagName === "SELECT") {
+                    campo.selectedIndex = 0;
+                } else {
+                    campo.value = "";
+                }
+            });
+
+            const paisFornecedor = document.getElementById("paisFornecedor");
+            if (paisFornecedor) {
+                paisFornecedor.value = "Portugal";
+            }
+
+            const listaDocumentos = document.getElementById("listaDocumentos");
+            if (listaDocumentos) {
+                const documentos = listaDocumentos.querySelectorAll(".documento-form-item");
+
+                documentos.forEach(function (documento, index) {
+                    if (index > 0) {
+                        documento.remove();
+                    }
+                });
+            }
+        });
+    }
+
+    // Interceta o submit para mostrar o mesmo pop-up visual usado nos equipamentos.
+    // Quando o backend existir, esta zona pode ser ligada ao processamento real.
     formNovoFornecedor.addEventListener("submit", function (event) {
         event.preventDefault();
 
-        alert("Fornecedor registado com sucesso.");
-        window.location.href = "lista_fornecedores.html";
+        mostrarPopupSucesso(
+            "Novo fornecedor guardado",
+            "O novo fornecedor foi registado com sucesso.",
+            "lista_fornecedores.html"
+        );
     });
 
 });
@@ -1290,6 +1334,324 @@ document.addEventListener("DOMContentLoaded", function () {
             "Localização",
             `${localizacao.departamento} — ${localizacao.edificio}, Piso ${localizacao.piso}, ${localizacao.sala}`,
             "lista_localizacoes.html"
+        );
+    });
+
+});
+
+/* =========================================================
+   FICHA DO FORNECEDOR
+   Mesmo comportamento da ficha do equipamento:
+   consulta por defeito + edição controlada pelo botão Editar.
+   ========================================================= */
+
+function obterFornecedorSelecionado() {
+    // Lê o id do fornecedor na query string.
+    // Se não existir id, usa FOR-001 como exemplo para a página não ficar vazia.
+    const id = obterParametroURL("id") || "FOR-001";
+    return {
+        id: id,
+        dados: fornecedoresMEDICORE[id] || null
+    };
+}
+
+function definirCheckboxFornecedor(id, tipos, valor) {
+    // Marca ou desmarca uma checkbox de tipo de fornecedor conforme os dados carregados.
+    const campo = document.getElementById(id);
+    if (campo) {
+        campo.checked = tipos.includes(valor);
+    }
+}
+
+function obterTiposFornecedorSelecionados() {
+    // Recolhe todos os tipos atualmente selecionados nas checkboxes do formulário.
+    // É usado para atualizar o resumo oculto da ficha.
+    const tipos = [];
+
+    document.querySelectorAll('input[name="tipoFornecedor[]"]:checked').forEach(function (campo) {
+        tipos.push(campo.value);
+    });
+
+    return tipos;
+}
+
+function preencherCamposFornecedor(idFornecedor, fornecedor) {
+    // Copia os dados temporários de fornecedoresMEDICORE para os campos da ficha.
+    // Mantém a página preparada para receber dados reais vindos do backend no futuro.
+    if (!fornecedor) return;
+
+    definirValor("idFornecedor", idFornecedor);
+    definirValor("codigoFornecedor", idFornecedor);
+    definirValor("nomeFornecedor", fornecedor.nome);
+    definirValor("nifFornecedor", fornecedor.nif);
+    definirValor("estadoFornecedor", fornecedor.estado);
+    definirValor("qtdEquipamentosFornecedor", fornecedor.qtdEquipamentos);
+
+    definirCheckboxFornecedor("tipoFabricante", fornecedor.tipos, "Fabricante");
+    definirCheckboxFornecedor("tipoDistribuidor", fornecedor.tipos, "Distribuidor");
+    definirCheckboxFornecedor("tipoManutencao", fornecedor.tipos, "Manutenção");
+    definirCheckboxFornecedor("tipoCalibracao", fornecedor.tipos, "Calibração");
+
+    definirValor("emailFornecedor", fornecedor.email);
+    definirValor("telefoneFornecedor", fornecedor.telefone);
+    definirValor("websiteFornecedor", fornecedor.website);
+    definirValor("contactoResponsavel", fornecedor.contacto);
+    definirValor("cargoContacto", fornecedor.cargo);
+    definirValor("emailContacto", fornecedor.emailContacto);
+
+    definirValor("moradaFornecedor", fornecedor.morada);
+    definirValor("codigoPostalFornecedor", fornecedor.codigoPostal);
+    definirValor("localidadeFornecedor", fornecedor.localidade);
+    definirValor("paisFornecedor", fornecedor.pais);
+
+    definirValor("contratoFornecedor", fornecedor.contrato);
+    definirValor("inicioContratoFornecedor", fornecedor.inicioContrato);
+    definirValor("fimContratoFornecedor", fornecedor.fimContrato);
+    definirValor("areaAtuacaoFornecedor", fornecedor.area);
+    definirValor("equipamentosAssociadosFornecedor", fornecedor.equipamentos);
+    definirValor("observacoesFornecedor", fornecedor.observacoes);
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Inicializa apenas a página ficha_fornecedor.html.
+    // Esta ficha começa em modo consulta e só permite edição após clicar em Editar.
+    const formFicha = document.getElementById("formFichaFornecedor");
+
+    if (!formFicha) return;
+
+    const fornecedorSelecionado = obterFornecedorSelecionado();
+    const fornecedor = fornecedorSelecionado.dados;
+
+    if (!fornecedor) {
+        alert("Fornecedor não encontrado.");
+        window.location.href = "lista_fornecedores.html";
+        return;
+    }
+
+    preencherCamposFornecedor(fornecedorSelecionado.id, fornecedor);
+
+    const btnAtivarEdicao = document.getElementById("btnAtivarEdicaoFornecedor");
+    const btnCancelarEdicao = document.getElementById("btnCancelarEdicaoFornecedor");
+    const botoesEdicao = document.querySelectorAll(".botao-edicao");
+    const botoesConsulta = document.querySelectorAll(".botao-consulta");
+    const camposFicha = formFicha.querySelectorAll(".campo-ficha");
+    const camposEditaveis = formFicha.querySelectorAll(".campo-editavel");
+
+    let valoresOriginais = {};
+
+    function guardarValoresOriginais() {
+        // Guarda uma cópia dos valores atuais antes de entrar em modo edição.
+        // Assim o botão Cancelar consegue restaurar tudo como estava.
+        valoresOriginais = {};
+
+        camposFicha.forEach(function (campo) {
+            if (!campo.id) return;
+
+            if (campo.type === "radio" || campo.type === "checkbox") {
+                valoresOriginais[campo.id] = campo.checked;
+            } else {
+                valoresOriginais[campo.id] = campo.value;
+            }
+        });
+    }
+
+    function restaurarValoresOriginais() {
+        // Repõe os valores guardados quando o utilizador cancela a edição.
+        // Campos de ficheiro não são restaurados por segurança do browser.
+        camposFicha.forEach(function (campo) {
+            if (!campo.id || !(campo.id in valoresOriginais)) return;
+
+            if (campo.type === "radio" || campo.type === "checkbox") {
+                campo.checked = valoresOriginais[campo.id];
+            } else if (campo.type !== "file") {
+                campo.value = valoresOriginais[campo.id];
+            }
+        });
+
+        atualizarResumoFornecedor();
+    }
+
+    function aplicarModoConsulta() {
+        // Bloqueia todos os campos editáveis e mostra apenas os botões de consulta.
+        // Este é o modo inicial da ficha, igual ao comportamento da ficha de equipamento.
+        camposEditaveis.forEach(function (campo) {
+            if (campo.tagName === "SELECT" || campo.type === "radio" || campo.type === "checkbox" || campo.type === "file") {
+                campo.disabled = true;
+            } else {
+                campo.readOnly = true;
+            }
+        });
+
+        document.querySelectorAll(".campo-bloqueado").forEach(function (campo) {
+            campo.readOnly = true;
+            campo.disabled = false;
+        });
+
+        botoesEdicao.forEach(function (elemento) {
+            elemento.classList.add("d-none");
+        });
+
+        botoesConsulta.forEach(function (elemento) {
+            elemento.classList.remove("d-none");
+        });
+
+        formFicha.classList.remove("modo-edicao");
+        formFicha.classList.add("modo-consulta");
+
+        document.getElementById("modoFormularioFornecedor").value = "ver";
+    }
+
+    function aplicarModoEdicao() {
+        // Liberta os campos editáveis e troca os botões para Cancelar/Guardar.
+        // Campos bloqueados, como o código do fornecedor, continuam só de leitura.
+        camposEditaveis.forEach(function (campo) {
+            if (campo.tagName === "SELECT" || campo.type === "radio" || campo.type === "checkbox" || campo.type === "file") {
+                campo.disabled = false;
+            } else {
+                campo.readOnly = false;
+            }
+        });
+
+        document.querySelectorAll(".campo-bloqueado").forEach(function (campo) {
+            campo.readOnly = true;
+        });
+
+        botoesEdicao.forEach(function (elemento) {
+            elemento.classList.remove("d-none");
+        });
+
+        botoesConsulta.forEach(function (elemento) {
+            elemento.classList.add("d-none");
+        });
+
+        formFicha.classList.remove("modo-consulta");
+        formFicha.classList.add("modo-edicao");
+
+        document.getElementById("modoFormularioFornecedor").value = "editar";
+    }
+
+    function atualizarResumoFornecedor() {
+        // Atualiza textos auxiliares da ficha sempre que algum campo muda.
+        // Estes elementos estão ocultos no HTML, mas ficam prontos para badges/resumos futuros.
+        const codigo = document.getElementById("codigoFornecedor")?.value || "";
+        const nome = document.getElementById("nomeFornecedor")?.value || "Fornecedor";
+        const nif = document.getElementById("nifFornecedor")?.value || "NIF por definir";
+        const localidade = document.getElementById("localidadeFornecedor")?.value || "localidade por definir";
+        const telefone = document.getElementById("telefoneFornecedor")?.value || "contacto por definir";
+        const estado = document.getElementById("estadoFornecedor")?.value || "Estado";
+        const contrato = document.getElementById("contratoFornecedor")?.value || "Contrato";
+        const tipos = obterTiposFornecedorSelecionados();
+
+        definirTexto("tituloPaginaFornecedor", `Ficha do Fornecedor - ${codigo}`);
+        definirTexto("resumoNomeFornecedor", nome);
+        definirTexto("resumoDescricaoFornecedor", `${nif} | ${localidade} | ${telefone}`);
+        definirTexto("badgeEstadoFornecedor", estado);
+        definirTexto("badgeTiposFornecedor", tipos.length ? tipos.join(", ") : "Tipo por definir");
+        definirTexto("badgeContratoFornecedor", contrato ? `Contrato: ${contrato}` : "Contrato");
+
+        const badgeEstado = document.getElementById("badgeEstadoFornecedor");
+        if (badgeEstado) {
+            badgeEstado.className = `estado ${classeEstado(estado)}`;
+        }
+    }
+
+    if (btnAtivarEdicao) {
+        btnAtivarEdicao.addEventListener("click", function () {
+            guardarValoresOriginais();
+            aplicarModoEdicao();
+        });
+    }
+
+    if (btnCancelarEdicao) {
+        btnCancelarEdicao.addEventListener("click", function () {
+            restaurarValoresOriginais();
+            aplicarModoConsulta();
+        });
+    }
+
+    formFicha.addEventListener("input", atualizarResumoFornecedor);
+    formFicha.addEventListener("change", atualizarResumoFornecedor);
+
+    formFicha.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        mostrarPopupSucesso(
+            "Alterações registadas",
+            "As alterações no fornecedor foram registadas com sucesso.",
+            "lista_fornecedores.html"
+        );
+    });
+
+    guardarValoresOriginais();
+    atualizarResumoFornecedor();
+    aplicarModoConsulta();
+
+});
+
+/* =========================================================
+   MODAL DE REMOÇÃO DE FORNECEDOR
+   Usa o mesmo padrão visual e funcional da lista de equipamentos.
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Inicializa apenas a lista_fornecedores.html.
+    // O modal usa os data-attributes do botão eliminar para mostrar o fornecedor escolhido.
+    const modalApagar = document.getElementById("modalApagarFornecedor");
+    const btnConfirmarApagar = document.getElementById("btnConfirmarApagarFornecedor");
+
+    let linhaFornecedorSelecionada = null;
+
+    if (!modalApagar || !btnConfirmarApagar) return;
+
+    // Antes do modal abrir, preenche cada linha do resumo com os dados do botão clicado.
+    modalApagar.addEventListener("show.bs.modal", function (event) {
+        const botao = event.relatedTarget;
+
+        if (!botao) return;
+
+        linhaFornecedorSelecionada = botao.closest("tr");
+
+        const codigo = botao.getAttribute("data-codigo");
+        const nome = botao.getAttribute("data-nome");
+        const tipo = botao.getAttribute("data-tipo");
+        const nif = botao.getAttribute("data-nif");
+        const email = botao.getAttribute("data-email");
+        const telefone = botao.getAttribute("data-telefone");
+        const localidade = botao.getAttribute("data-localidade");
+        const estado = botao.getAttribute("data-estado");
+        const equipamentos = botao.getAttribute("data-equipamentos");
+
+        document.getElementById("modalApagarIdFornecedor").value = codigo;
+        document.getElementById("modalApagarFornecedorCodigo").textContent = codigo;
+        document.getElementById("modalApagarFornecedorNome").textContent = nome;
+        document.getElementById("modalApagarFornecedorTipo").textContent = tipo;
+        document.getElementById("modalApagarFornecedorNif").textContent = nif;
+        document.getElementById("modalApagarFornecedorEmail").textContent = email;
+        document.getElementById("modalApagarFornecedorTelefone").textContent = telefone;
+        document.getElementById("modalApagarFornecedorLocalidade").textContent = localidade;
+        document.getElementById("modalApagarFornecedorEstado").textContent = estado;
+        document.getElementById("modalApagarFornecedorEquipamentos").textContent = equipamentos;
+    });
+
+    // Confirma a remoção: fecha o modal, remove a linha da tabela e mostra o pop-up.
+    // Atualmente é uma remoção visual; no backend será substituída por DELETE/UPDATE real.
+    btnConfirmarApagar.addEventListener("click", function () {
+        const codigo = document.getElementById("modalApagarIdFornecedor").value;
+        const nome = document.getElementById("modalApagarFornecedorNome").textContent;
+        const modalBootstrap = bootstrap.Modal.getInstance(modalApagar);
+
+        modalBootstrap.hide();
+
+        if (linhaFornecedorSelecionada) {
+            linhaFornecedorSelecionada.remove();
+        }
+
+        mostrarPopupSucesso(
+            "Fornecedor removido",
+            `O fornecedor ${codigo} - ${nome} foi removido com sucesso.`,
+            "lista_fornecedores.html"
         );
     });
 
