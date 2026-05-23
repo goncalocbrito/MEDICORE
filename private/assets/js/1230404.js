@@ -310,7 +310,8 @@ function inicializarFichaEquipamento() {
 
     if (btnCancelarEdicao) {
         btnCancelarEdicao.addEventListener("click", function () {
-            window.location.href = "lista_equipamentos.html";
+            restaurarValoresOriginais();
+            aplicarModoConsulta();
         });
     }
 
@@ -319,7 +320,6 @@ function inicializarFichaEquipamento() {
 
     form.addEventListener("submit", function (event) {
         event.preventDefault();
-        alert("Alterações registadas com sucesso.");
         aplicarModoFicha("editar");
     });
 }
@@ -490,6 +490,45 @@ function inicializarRemoverEquipamento() {
             "lista_equipamentos.html"
         );
     });
+}
+
+/* =========================================================
+   POP-UP VISUAL DE SUCESSO
+   Usado para confirmações como guardar alterações, registos, etc.
+   ========================================================= */
+
+function mostrarPopupSucesso(titulo, mensagem, paginaDestino) {
+
+    const overlay = document.createElement("div");
+    overlay.classList.add("popup-sucesso-overlay");
+
+    overlay.innerHTML = `
+        <div class="popup-sucesso-card">
+
+            <div class="popup-sucesso-icone">
+                <i class="fa-solid fa-check"></i>
+            </div>
+
+            <h3>${titulo}</h3>
+
+            <p>${mensagem}</p>
+
+            <p class="popup-sucesso-redirecionar">
+                A redirecionar para a lista de equipamentos...
+            </p>
+
+            <div class="popup-sucesso-barra">
+                <span></span>
+            </div>
+
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    setTimeout(function () {
+        window.location.href = paginaDestino;
+    }, 2600);
 }
 
 function inicializarCriticidade() {
@@ -1429,5 +1468,188 @@ document.addEventListener("DOMContentLoaded", function () {
             "lista_localizacoes.html"
         );
     });
+
+});
+
+/* =========================================================
+   FICHA DO EQUIPAMENTO
+   Modo consulta por defeito + modo edição ao clicar em Editar
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const formFicha = document.getElementById("formFichaEquipamento");
+
+    if (!formFicha) return;
+
+    const btnAtivarEdicao = document.getElementById("btnAtivarEdicao");
+    const btnCancelarEdicao = document.getElementById("btnCancelarEdicao");
+    const botoesEdicao = document.querySelectorAll(".botao-edicao");
+
+    const camposFicha = formFicha.querySelectorAll(".campo-ficha");
+    const camposEditaveis = formFicha.querySelectorAll(".campo-editavel");
+    const botoesConsulta = document.querySelectorAll(".botao-consulta");
+
+    let valoresOriginais = {};
+
+    function guardarValoresOriginais() {
+        valoresOriginais = {};
+
+        camposFicha.forEach(function (campo) {
+            if (campo.type === "radio" || campo.type === "checkbox") {
+                valoresOriginais[campo.id] = campo.checked;
+            } else {
+                valoresOriginais[campo.id] = campo.value;
+            }
+        });
+    }
+
+    function restaurarValoresOriginais() {
+        camposFicha.forEach(function (campo) {
+            if (!(campo.id in valoresOriginais)) return;
+
+            if (campo.type === "radio" || campo.type === "checkbox") {
+                campo.checked = valoresOriginais[campo.id];
+            } else if (campo.type !== "file") {
+                campo.value = valoresOriginais[campo.id];
+            }
+        });
+
+        atualizarResumoFicha();
+    }
+
+    function aplicarModoConsulta() {
+        camposEditaveis.forEach(function (campo) {
+            if (campo.tagName === "SELECT" || campo.type === "radio" || campo.type === "checkbox" || campo.type === "file") {
+                campo.disabled = true;
+            } else {
+                campo.readOnly = true;
+            }
+        });
+
+        document.querySelectorAll(".campo-bloqueado").forEach(function (campo) {
+            campo.readOnly = true;
+            campo.disabled = false;
+        });
+
+        // Esconde botões de edição: Cancelar e Guardar
+        botoesEdicao.forEach(function (elemento) {
+            elemento.classList.add("d-none");
+        });
+
+        // Mostra botões de consulta: Voltar à Lista e Editar
+        botoesConsulta.forEach(function (elemento) {
+            elemento.classList.remove("d-none");
+        });
+
+        formFicha.classList.remove("modo-edicao");
+        formFicha.classList.add("modo-consulta");
+
+        document.getElementById("modoFormulario").value = "ver";
+    }
+
+    function aplicarModoEdicao() {
+        camposEditaveis.forEach(function (campo) {
+            if (campo.tagName === "SELECT" || campo.type === "radio" || campo.type === "checkbox" || campo.type === "file") {
+                campo.disabled = false;
+            } else {
+                campo.readOnly = false;
+            }
+        });
+
+        document.querySelectorAll(".campo-bloqueado").forEach(function (campo) {
+            campo.readOnly = true;
+        });
+
+        // Mostra botões de edição: Cancelar e Guardar
+        botoesEdicao.forEach(function (elemento) {
+            elemento.classList.remove("d-none");
+        });
+
+        // Esconde botões de consulta: Voltar à Lista e Editar
+        document.querySelectorAll(".botao-consulta").forEach(function (elemento) {
+            elemento.classList.add("d-none");
+        });
+
+        formFicha.classList.remove("modo-consulta");
+        formFicha.classList.add("modo-edicao");
+
+        document.getElementById("modoFormulario").value = "editar";
+    }
+
+    function atualizarResumoFicha() {
+        const codigo = document.getElementById("codigoInventario")?.value || "";
+        const nome = document.getElementById("nomeEquipamento")?.value || "Equipamento Médico";
+        const fabricante = document.getElementById("fabricante")?.value || "";
+        const modelo = document.getElementById("modelo")?.value || "";
+        const sala = document.getElementById("sala")?.value || "";
+
+        const titulo = document.getElementById("tituloPaginaEquipamento");
+        const resumoNome = document.getElementById("resumoNomeEquipamento");
+        const resumoDescricao = document.getElementById("resumoDescricao");
+
+        if (titulo) {
+            titulo.textContent = `Ficha do Equipamento - ${codigo}`;
+        }
+
+        if (resumoNome) {
+            resumoNome.textContent = nome;
+        }
+
+        if (resumoDescricao) {
+            resumoDescricao.textContent = `${codigo} | ${fabricante} ${modelo} | ${sala}`;
+        }
+
+        const estado = document.getElementById("estado");
+        const criticidade = document.getElementById("criticidade");
+        const operacionalSim = document.getElementById("operacionalSim");
+
+        const badgeEstado = document.getElementById("badgeEstado");
+        const badgeCriticidade = document.getElementById("badgeCriticidade");
+        const badgeOperacional = document.getElementById("badgeOperacional");
+
+        if (badgeEstado && estado) {
+            badgeEstado.textContent = estado.value || "Estado";
+        }
+
+        if (badgeCriticidade && criticidade) {
+            badgeCriticidade.textContent = criticidade.value ? `Criticidade: ${criticidade.value}` : "Criticidade";
+        }
+
+        if (badgeOperacional && operacionalSim) {
+            badgeOperacional.textContent = operacionalSim.checked ? "Operacional" : "Não operacional";
+        }
+    }
+
+    if (btnAtivarEdicao) {
+        btnAtivarEdicao.addEventListener("click", function () {
+            guardarValoresOriginais();
+            aplicarModoEdicao();
+        });
+    }
+
+    if (btnCancelarEdicao) {
+        btnCancelarEdicao.addEventListener("click", function () {
+            restaurarValoresOriginais();
+            aplicarModoConsulta();
+        });
+    }
+
+    formFicha.addEventListener("input", atualizarResumoFicha);
+    formFicha.addEventListener("change", atualizarResumoFicha);
+
+    formFicha.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        mostrarPopupSucesso(
+            "Alterações registadas",
+            "As alterações no equipamento foram registadas com sucesso.",
+            "lista_equipamentos.html"
+        );
+    });
+
+    guardarValoresOriginais();
+    atualizarResumoFicha();
+    aplicarModoConsulta();
 
 });
