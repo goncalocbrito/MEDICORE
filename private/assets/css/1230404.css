@@ -442,11 +442,6 @@ body {
     color: var(--cor-branco);
 }
 
-.form-equipamento {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
 .form-card {
     background-color: var(--cor-branco);
     border: 1px solid #d6ece8;
@@ -627,41 +622,6 @@ body {
 
 /* Página Detalhes do Equipamento - alteração feita por mim */
 
-.detalhes-resumo {
-    background: linear-gradient(135deg, #ffffff 0%, #f4fbfb 100%);
-    border-radius: 24px;
-    padding: 32px;
-    margin-bottom: 30px;
-    border: 1px solid #d6ece8;
-    border-left: 8px solid var(--cor-secundaria);
-    box-shadow: 0 10px 26px rgba(18, 60, 70, 0.08);
-}
-
-.icone-detalhes {
-    width: 120px;
-    height: 120px;
-    border-radius: 28px;
-    background-color: #eaf6f6;
-    color: var(--cor-secundaria);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 4rem;
-}
-
-.detalhes-resumo h3 {
-    color: var(--cor-principal);
-    font-weight: 800;
-    margin-bottom: 14px;
-}
-
-.detalhes-badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 14px;
-}
-
 .badge-detalhe {
     display: inline-block;
     padding: 6px 12px;
@@ -727,18 +687,6 @@ body {
     line-height: 1.7;
 }
 
-.btn-editar-detalhes {
-    background-color: #fff3cd;
-    color: #9a6a00;
-    border-radius: 24px;
-    padding: 10px 20px;
-    font-weight: 700;
-}
-
-.btn-editar-detalhes:hover {
-    background-color: #f2a65a;
-    color: #ffffff;
-}
 
 /* Responsividade dos detalhes */
 @media (max-width: 991px) {
@@ -753,20 +701,6 @@ body {
 
     .detalhe-linha span {
         text-align: left;
-    }
-}
-
-@media (max-width: 768px) {
-    .detalhes-resumo {
-        text-align: center;
-    }
-
-    .detalhes-badges {
-        justify-content: center;
-    }
-
-    .icone-detalhes {
-        margin-bottom: 20px;
     }
 }
 
@@ -909,183 +843,6 @@ body {
     .btn-documento-download {
         flex: 1;
         text-align: center;
-    }
-}
-
-/* editar_equipamento.html */
-/* Campos bloqueados na edição - alteração feita por mim */
-.form-card-bloqueado {
-    border-left-color: #9fbec4;
-    background: linear-gradient(135deg, #ffffff 0%, #f7fbfb 100%);
-}
-
-.form-card-bloqueado input[readonly] {
-    background-color: #eef5f5;
-    color: #5c6f78;
-    cursor: not-allowed;
-}
-
-/* Página Remover Equipamento - alteração feita por mim */
-
-/* Aviso vermelho na página Remover Equipamento - alteração feita por mim */
-.remover-alerta {
-    display: flex;
-    gap: 20px;
-    align-items: flex-start;
-    background: linear-gradient(135deg, #fdeaea 0%, #ffffff 100%);
-    border: 1px solid #efb7b7;
-    border-left: 8px solid #c0392b;
-    border-radius: 24px;
-    padding: 28px;
-    margin-bottom: 28px;
-    box-shadow: 0 8px 24px rgba(18, 60, 70, 0.08);
-}
-
-.remover-alerta-icone {
-    width: 58px;
-    height: 58px;
-    min-width: 58px;
-    border-radius: 50%;
-    background-color: #fdeaea;
-    color: #c0392b;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.8rem;
-}
-
-.remover-alerta h3 {
-    color: #9f2534;
-    font-weight: 800;
-    margin-bottom: 8px;
-}
-
-.remover-alerta p {
-    color: #7a2f2f;
-    margin-bottom: 0;
-    line-height: 1.6;
-}
-
-.remover-card,
-.remover-confirmacao {
-    background-color: var(--cor-branco);
-    border: 1px solid #d6ece8;
-    border-radius: 24px;
-    padding: 30px;
-    margin-bottom: 28px;
-    box-shadow: 0 8px 24px rgba(18, 60, 70, 0.08);
-}
-
-.remover-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    margin-bottom: 24px;
-}
-
-.remover-card-header h4,
-.remover-confirmacao h4 {
-    color: var(--cor-principal);
-    font-weight: 800;
-    margin-bottom: 0;
-}
-
-.remover-card-header h4 i,
-.remover-confirmacao h4 i {
-    color: var(--cor-secundaria);
-}
-
-.remover-resumo {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0 28px;
-}
-
-.remover-linha {
-    display: flex;
-    justify-content: space-between;
-    gap: 18px;
-    padding: 14px 0;
-    border-bottom: 1px solid #e8f1f1;
-}
-
-.remover-linha strong {
-    color: var(--cor-principal);
-    font-weight: 700;
-}
-
-.remover-linha span {
-    color: var(--cor-texto);
-    text-align: right;
-}
-
-.remover-confirmacao {
-    border-left: 8px solid #c0392b;
-}
-
-.remover-confirmacao p {
-    color: var(--cor-texto);
-    line-height: 1.6;
-    margin-top: 14px;
-}
-
-.remover-check {
-    background-color: #f8fbfb;
-    border: 1px solid #d6ece8;
-    border-radius: 18px;
-    padding: 18px 18px 18px 46px;
-    margin: 24px 0;
-}
-
-.remover-check label {
-    color: var(--cor-principal);
-    font-weight: 700;
-}
-
-.btn-confirmar-remocao {
-    background-color: #c0392b;
-    color: #ffffff;
-    border-radius: 24px;
-    padding: 10px 20px;
-    font-weight: 700;
-    border: none;
-}
-
-.btn-confirmar-remocao:hover {
-    background-color: #9f2534;
-    color: #ffffff;
-}
-
-.btn-confirmar-remocao:disabled {
-    background-color: #d8a5a0;
-    cursor: not-allowed;
-    opacity: 0.7;
-}
-
-@media (max-width: 991px) {
-    .remover-resumo {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 768px) {
-    .remover-alerta {
-        flex-direction: column;
-    }
-
-    .remover-card-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .remover-linha {
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .remover-linha span {
-        text-align: left;
     }
 }
 
@@ -1824,16 +1581,6 @@ body {
 }
 
 
-/* Barra superior com o botão Voltar à Lista */
-
-.ficha-toolbar {
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 18px;
-}
-
-
 /* =========================================================
    ÁREA PRINCIPAL DA FICHA
    Caixa única que contém os separadores e o conteúdo
@@ -2037,14 +1784,6 @@ textarea[readonly] {
         padding: 22px 18px 34px 18px;
     }
 
-    .ficha-toolbar {
-        justify-content: stretch;
-    }
-
-    .ficha-toolbar .btn {
-        width: 100%;
-    }
-
     .ficha-tabs .nav-item {
         flex: 1 1 100%;
     }
@@ -2065,11 +1804,6 @@ textarea[readonly] {
 /* =========================================================
    MODO CONSULTA / EDIÇÃO DA FICHA DO EQUIPAMENTO
    ========================================================= */
-
-.ficha-toolbar {
-    gap: 12px;
-}
-
 .btn-editar-ficha {
     background-color: #fff3cd;
     color: #9a6a00;
@@ -2102,13 +1836,6 @@ textarea[readonly] {
     background-color: #ffffff;
 }
 
-.campo-bloqueado,
-.campo-bloqueado[readonly] {
-    background-color: #eef5f5 !important;
-    color: #556b73;
-    cursor: not-allowed;
-}
-
 /* =========================================================
    NOVO EQUIPAMENTO - AÇÕES NO TOPO
    Remove a linha superior e aproxima os botões do menu horizontal
@@ -2135,6 +1862,7 @@ textarea[readonly] {
    ========================================================= */
 
 .ficha-toolbar {
+    width: 100%;
     display: flex;
     justify-content: flex-end;
     align-items: center;
@@ -2237,17 +1965,20 @@ textarea[readonly] {
 
 /* =========================================================
    MODAL DE REMOÇÃO DE EQUIPAMENTO
-   Versão compacta em tons de vermelho
+   Versão compacta, sem separações entre tabela e botões
    ========================================================= */
 
+/* Largura do modal */
 .modal-remocao-dialog {
     max-width: 620px;
 }
 
+/* Caixa geral do modal */
 .modal-apagar-equipamento {
     border: none;
     border-radius: 24px;
     overflow: hidden;
+    background-color: #fff1f1;
     box-shadow: 0 22px 55px rgba(80, 0, 0, 0.35);
 }
 
@@ -2256,7 +1987,7 @@ textarea[readonly] {
     background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 55%, #dc2626 100%);
     color: #ffffff;
     border-bottom: none;
-    padding: 22px 26px;
+    padding: 24px 30px;
 }
 
 .modal-remocao-header .modal-title {
@@ -2276,25 +2007,31 @@ textarea[readonly] {
     font-weight: 600;
 }
 
-/* Corpo do modal */
-.modal-remocao-body {
-    background: linear-gradient(180deg, #fff7f7 0%, #ffffff 100%);
-    padding: 24px 26px 18px 26px;
+/* Corpo e rodapé com o mesmo fundo */
+.modal-remocao-body,
+.modal-remocao-footer {
+    background-color: #fff1f1;
 }
 
-/* Tabela/resumo dos dados */
+/* Corpo do modal */
+.modal-remocao-body {
+    padding: 26px 32px 10px 32px;
+}
+
+/* Área dos dados do equipamento */
 .modal-resumo-remocao {
     border: 1px solid #fecaca;
     border-radius: 18px;
     overflow: hidden;
-    background-color: #ffffff;
+    background-color: #fffafa;
 }
 
+/* Linhas da informação */
 .modal-resumo-remocao .modal-linha {
     display: grid;
     grid-template-columns: 145px 1fr;
     gap: 16px;
-    padding: 11px 16px;
+    padding: 12px 18px;
     border-bottom: 1px solid #fee2e2;
 }
 
@@ -2302,35 +2039,32 @@ textarea[readonly] {
     border-bottom: none;
 }
 
+/* Títulos dos campos */
 .modal-resumo-remocao .modal-linha strong {
     color: #7f1d1d;
     font-weight: 900;
 }
 
+/* Valores dos campos */
 .modal-resumo-remocao .modal-linha span {
-    color: #243b53;
-    font-weight: 600;
-}
-
-/* Mensagem curta por baixo dos dados */
-.texto-confirmacao-remocao {
-    margin: 18px 0 0 0;
-    padding: 14px 16px;
-    background-color: #fee2e2;
-    color: #7f1d1d;
-    border-left: 5px solid #dc2626;
-    border-radius: 14px;
+    color: #0f3440;
     font-weight: 700;
 }
 
-/* Rodapé sempre compacto e visível */
+/* Texto de confirmação, caso ainda exista no HTML */
+.texto-confirmacao-remocao {
+    margin: 14px 0 0 0;
+    color: #7f1d1d;
+    font-weight: 800;
+}
+
+/* Rodapé dos botões — sem linha */
 .modal-remocao-footer {
-    background-color: #fff1f1;
-    border-top: 1px solid #fecaca;
-    padding: 18px 26px;
+    border-top: none !important;
+    padding: 12px 32px 28px 32px;
     display: flex;
     justify-content: flex-end;
-    gap: 12px;
+    gap: 14px;
 }
 
 /* Botão cancelar */
@@ -2339,7 +2073,7 @@ textarea[readonly] {
     color: #7f1d1d;
     border: 1px solid #fecaca;
     border-radius: 24px;
-    padding: 10px 20px;
+    padding: 10px 22px;
     font-weight: 800;
 }
 
@@ -2354,7 +2088,7 @@ textarea[readonly] {
     color: #ffffff;
     border: none;
     border-radius: 24px;
-    padding: 10px 22px;
+    padding: 10px 24px;
     font-weight: 900;
     box-shadow: 0 8px 20px rgba(220, 38, 38, 0.3);
 }
@@ -2364,23 +2098,37 @@ textarea[readonly] {
     color: #ffffff;
 }
 
-/* Responsividade do modal */
+/* Remove qualquer linha herdada do Bootstrap */
+.modal-apagar-equipamento .modal-footer {
+    border-top: none !important;
+}
+
+/* Responsividade */
 @media (max-width: 768px) {
     .modal-remocao-dialog {
         max-width: 94%;
         margin: 12px auto;
     }
 
-    .modal-resumo-remocao .modal-linha {
-        grid-template-columns: 1fr;
-        gap: 3px;
+    .modal-remocao-header {
+        padding: 22px 24px;
+    }
+
+    .modal-remocao-body {
+        padding: 22px 24px 8px 24px;
     }
 
     .modal-remocao-footer {
+        padding: 10px 24px 24px 24px;
         flex-direction: column;
     }
 
     .modal-remocao-footer .btn {
         width: 100%;
+    }
+
+    .modal-resumo-remocao .modal-linha {
+        grid-template-columns: 1fr;
+        gap: 4px;
     }
 }

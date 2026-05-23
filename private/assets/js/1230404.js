@@ -268,132 +268,6 @@ function atualizarResumoFicha() {
     }
 }
 
-function aplicarModoFicha(modo) {
-    const form = $("formFichaEquipamento");
-    const modoFormulario = $("modoFormulario");
-
-    if (!form) return;
-
-    const campos = form.querySelectorAll(".campo-ficha");
-
-    campos.forEach(function (campo) {
-        const bloqueado = campo.classList.contains("campo-bloqueado");
-
-        if (campo.tagName === "SELECT" || campo.type === "radio" || campo.type === "file") {
-            campo.disabled = bloqueado;
-        } else {
-            campo.readOnly = bloqueado;
-        }
-    });
-
-    if (modoFormulario) modoFormulario.value = "editar";
-}
-
-function inicializarFichaEquipamento() {
-    const form = $("formFichaEquipamento");
-    if (!form) return;
-
-    const equipamento = obterEquipamentoSelecionado();
-
-    if (!equipamento) {
-        alert("Equipamento não encontrado.");
-        window.location.href = "lista_equipamentos.html";
-        return;
-    }
-
-    preencherCamposEquipamento(equipamento);
-    atualizarResumoFicha();
-
-    aplicarModoFicha("editar");
-
-    const btnCancelarEdicao = $("btnCancelarEdicao");
-
-    if (btnCancelarEdicao) {
-        btnCancelarEdicao.addEventListener("click", function () {
-            restaurarValoresOriginais();
-            aplicarModoConsulta();
-        });
-    }
-
-    form.addEventListener("input", atualizarResumoFicha);
-    form.addEventListener("change", atualizarResumoFicha);
-
-    form.addEventListener("submit", function (event) {
-        event.preventDefault();
-        aplicarModoFicha("editar");
-    });
-}
-
-function preencherPaginaDetalhesEquipamento() {
-    const paginaDetalhes = $("detalheNome");
-    if (!paginaDetalhes) return;
-
-    const equipamento = obterEquipamentoSelecionado();
-
-    if (!equipamento) {
-        definirTexto("detalheNome", "Equipamento não encontrado");
-        definirTexto("detalheTituloEquipamento", "Sem dados disponíveis");
-        definirTexto("detalheResumo", "Não foi possível encontrar dados para o equipamento selecionado.");
-        return;
-    }
-
-    definirTexto("detalheNome", "Detalhes do Equipamento");
-    definirTexto("detalheTituloEquipamento", equipamento.nome);
-    definirTexto("detalheResumo", `${equipamento.nome} localizado em ${equipamento.localizacao}, atualmente com estado ${equipamento.estado}.`);
-
-    definirTexto("detalheCodigo", equipamento.codigo);
-    definirTexto("detalheCategoria", equipamento.categoria);
-    definirTexto("detalheFabricante", equipamento.fabricante);
-    definirTexto("detalheModelo", equipamento.modelo);
-    definirTexto("detalheSerie", equipamento.serie);
-
-    definirTexto("detalheDepartamento", equipamento.departamento);
-    definirTexto("detalheLocalizacao", equipamento.localizacao);
-    definirTexto("detalheEstadoTexto", equipamento.estado);
-    definirTexto("detalheCriticidadeTexto", equipamento.criticidade);
-
-    definirTexto("detalheFornecedor", equipamento.fornecedor);
-    definirTexto("detalheAquisicao", formatarDataPT(equipamento.dataAquisicao));
-    definirTexto("detalheInstalacao", formatarDataPT(equipamento.dataInstalacao));
-    definirTexto("detalheGarantia", formatarDataPT(equipamento.fimGarantia));
-
-    definirTexto("detalheUltimaManutencao", formatarDataPT(equipamento.ultimaManutencao));
-    definirTexto("detalheProximaManutencao", formatarDataPT(equipamento.proximaManutencao));
-    definirTexto("detalhePeriodicidade", equipamento.periodicidade);
-    definirTexto("detalheResponsavel", equipamento.responsavelTecnico);
-    definirTexto("detalheObservacoes", equipamento.observacoes);
-
-    const estadoBadge = $("detalheEstado");
-    if (estadoBadge) {
-        estadoBadge.textContent = equipamento.estado;
-        estadoBadge.className = `estado ${classeEstado(equipamento.estado)}`;
-    }
-
-    definirTexto("detalheCriticidade", `Criticidade: ${equipamento.criticidade}`);
-    definirTexto("detalheOperacional", equipamento.operacional);
-}
-
-function inicializarFormularioEditarEquipamento() {
-    const formEditar = $("formEditarEquipamento");
-    if (!formEditar) return;
-
-    const equipamento = obterEquipamentoSelecionado();
-
-    if (!equipamento) {
-        alert("Equipamento não encontrado.");
-        window.location.href = "lista_equipamentos.html";
-        return;
-    }
-
-    preencherCamposEquipamento(equipamento);
-
-    formEditar.addEventListener("submit", function (event) {
-        event.preventDefault();
-        alert("Alterações registadas com sucesso.");
-        window.location.href = "lista_equipamentos.html";
-    });
-}
-
 function inicializarDocumentosEquipamento() {
     const btnAdicionarDocumento = $("btnAdicionarDocumento");
     const listaDocumentos = $("listaDocumentosNovos") || $("listaDocumentos");
@@ -446,51 +320,6 @@ function inicializarDocumentosEquipamento() {
     atualizarBotoesRemoverDocumento();
 }
 
-function inicializarRemoverEquipamento() {
-    const botaoConfirmar = $("btnConfirmarRemocao");
-    if (!botaoConfirmar) return;
-
-    const equipamento = obterEquipamentoSelecionado();
-
-    if (!equipamento) {
-        alert("Equipamento não encontrado.");
-        window.location.href = "lista_equipamentos.html";
-        return;
-    }
-
-    definirTexto("removerCodigo", equipamento.codigo);
-    definirTexto("removerNome", equipamento.nome);
-    definirTexto("removerCategoria", equipamento.categoria);
-    definirTexto("removerFabricante", equipamento.fabricante);
-    definirTexto("removerModelo", equipamento.modelo);
-    definirTexto("removerSerie", equipamento.serie);
-    definirTexto("removerLocalizacao", equipamento.localizacao);
-    definirTexto("removerCriticidade", equipamento.criticidade);
-    definirTexto("removerUltimaManutencao", formatarDataPT(equipamento.ultimaManutencao));
-
-    const estado = $("removerEstado");
-    if (estado) {
-        estado.textContent = equipamento.estado;
-        estado.className = `estado ${classeEstado(equipamento.estado)}`;
-    }
-
-    const checkbox = $("confirmarRemocao");
-    if (!checkbox) return;
-
-    checkbox.addEventListener("change", function () {
-        botaoConfirmar.disabled = !checkbox.checked;
-    });
-
-    botaoConfirmar.addEventListener("click", function () {
-        botaoConfirmar.disabled = true;
-
-        mostrarCardConfirmacaoRemocao(
-            "Equipamento",
-            equipamento.nome,
-            "lista_equipamentos.html"
-        );
-    });
-}
 
 /* =========================================================
    POP-UP VISUAL DE SUCESSO
@@ -569,13 +398,8 @@ function inicializarPopovers() {
 document.addEventListener("DOMContentLoaded", function () {
     inicializarPopovers();
     inicializarCriticidade();
-    preencherPaginaDetalhesEquipamento();
-    inicializarFormularioEditarEquipamento();
-    inicializarFichaEquipamento();
     inicializarDocumentosEquipamento();
-    inicializarRemoverEquipamento();
 });
-
 
 // Dados temporários dos fornecedores
 
@@ -1482,6 +1306,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!formFicha) return;
 
+    const equipamento = obterEquipamentoSelecionado();
+
+    if (!equipamento) {
+        alert("Equipamento não encontrado.");
+        window.location.href = "lista_equipamentos.html";
+        return;
+    }
+
+    preencherCamposEquipamento(equipamento);
+
     const btnAtivarEdicao = document.getElementById("btnAtivarEdicao");
     const btnCancelarEdicao = document.getElementById("btnCancelarEdicao");
     const botoesEdicao = document.querySelectorAll(".botao-edicao");
@@ -1722,9 +1556,80 @@ document.addEventListener("DOMContentLoaded", function () {
                 `O equipamento ${codigo} — ${nome} foi removido com sucesso.`,
                 "lista_equipamentos.html"
             );
-        } else {
-            alert("Equipamento removido com sucesso.");
         }
+    });
+
+});
+
+/* =========================================================
+   NOVO EQUIPAMENTO
+   Limpar formulário e guardar com pop-up visual
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const formNovoEquipamento = document.getElementById("formNovoEquipamento");
+    const btnLimparNovoEquipamento = document.getElementById("btnLimparNovoEquipamento");
+
+    if (!formNovoEquipamento) return;
+
+    // Limpa manualmente todos os campos do formulário
+    if (btnLimparNovoEquipamento) {
+        btnLimparNovoEquipamento.addEventListener("click", function () {
+
+            // Limpar inputs, selects e textareas
+            formNovoEquipamento.querySelectorAll("input, select, textarea").forEach(function (campo) {
+
+                if (campo.type === "radio" || campo.type === "checkbox") {
+                    campo.checked = false;
+                } 
+                else if (campo.type === "file") {
+                    campo.value = "";
+                } 
+                else if (campo.tagName === "SELECT") {
+                    campo.selectedIndex = 0;
+                } 
+                else {
+                    campo.value = "";
+                }
+
+            });
+
+            // Repor opção "Sim" do campo operacional, se existir
+            const operacionalSim = document.getElementById("operacionalSim");
+            if (operacionalSim) {
+                operacionalSim.checked = true;
+            }
+
+            // Repor descrição da criticidade
+            const descricaoCriticidade = document.getElementById("descricaoCriticidade");
+            if (descricaoCriticidade) {
+                descricaoCriticidade.textContent = "Selecione uma criticidade para ver a descrição.";
+            }
+
+            // Se existirem documentos dinâmicos, deixa apenas o primeiro
+            const listaDocumentos = document.getElementById("listaDocumentos");
+            if (listaDocumentos) {
+                const documentos = listaDocumentos.querySelectorAll(".documento-form-item");
+
+                documentos.forEach(function (documento, index) {
+                    if (index > 0) {
+                        documento.remove();
+                    }
+                });
+            }
+        });
+    }
+
+    // Guardar novo equipamento com pop-up visual
+    formNovoEquipamento.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        mostrarPopupSucesso(
+            "Novo equipamento guardado",
+            "O novo equipamento foi registado com sucesso no inventário.",
+            "lista_equipamentos.html"
+        );
     });
 
 });
