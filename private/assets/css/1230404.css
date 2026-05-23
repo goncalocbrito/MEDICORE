@@ -2234,3 +2234,153 @@ textarea[readonly] {
     border-radius: 20px;
     animation: diminuirBarra 2.6s linear forwards;
 }
+
+/* =========================================================
+   MODAL DE REMOÇÃO DE EQUIPAMENTO
+   Versão compacta em tons de vermelho
+   ========================================================= */
+
+.modal-remocao-dialog {
+    max-width: 620px;
+}
+
+.modal-apagar-equipamento {
+    border: none;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 22px 55px rgba(80, 0, 0, 0.35);
+}
+
+/* Cabeçalho vermelho */
+.modal-remocao-header {
+    background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 55%, #dc2626 100%);
+    color: #ffffff;
+    border-bottom: none;
+    padding: 22px 26px;
+}
+
+.modal-remocao-header .modal-title {
+    font-weight: 900;
+    font-size: 1.35rem;
+    margin-bottom: 4px;
+}
+
+.modal-remocao-header .modal-title i {
+    color: #fecaca;
+}
+
+.modal-remocao-subtitulo {
+    margin: 0;
+    color: #fee2e2;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+/* Corpo do modal */
+.modal-remocao-body {
+    background: linear-gradient(180deg, #fff7f7 0%, #ffffff 100%);
+    padding: 24px 26px 18px 26px;
+}
+
+/* Tabela/resumo dos dados */
+.modal-resumo-remocao {
+    border: 1px solid #fecaca;
+    border-radius: 18px;
+    overflow: hidden;
+    background-color: #ffffff;
+}
+
+.modal-resumo-remocao .modal-linha {
+    display: grid;
+    grid-template-columns: 145px 1fr;
+    gap: 16px;
+    padding: 11px 16px;
+    border-bottom: 1px solid #fee2e2;
+}
+
+.modal-resumo-remocao .modal-linha:last-child {
+    border-bottom: none;
+}
+
+.modal-resumo-remocao .modal-linha strong {
+    color: #7f1d1d;
+    font-weight: 900;
+}
+
+.modal-resumo-remocao .modal-linha span {
+    color: #243b53;
+    font-weight: 600;
+}
+
+/* Mensagem curta por baixo dos dados */
+.texto-confirmacao-remocao {
+    margin: 18px 0 0 0;
+    padding: 14px 16px;
+    background-color: #fee2e2;
+    color: #7f1d1d;
+    border-left: 5px solid #dc2626;
+    border-radius: 14px;
+    font-weight: 700;
+}
+
+/* Rodapé sempre compacto e visível */
+.modal-remocao-footer {
+    background-color: #fff1f1;
+    border-top: 1px solid #fecaca;
+    padding: 18px 26px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* Botão cancelar */
+.btn-cancelar-modal {
+    background-color: #ffffff;
+    color: #7f1d1d;
+    border: 1px solid #fecaca;
+    border-radius: 24px;
+    padding: 10px 20px;
+    font-weight: 800;
+}
+
+.btn-cancelar-modal:hover {
+    background-color: #fee2e2;
+    color: #7f1d1d;
+}
+
+/* Botão confirmar remoção */
+.btn-confirmar-remocao {
+    background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 24px;
+    padding: 10px 22px;
+    font-weight: 900;
+    box-shadow: 0 8px 20px rgba(220, 38, 38, 0.3);
+}
+
+.btn-confirmar-remocao:hover {
+    background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%);
+    color: #ffffff;
+}
+
+/* Responsividade do modal */
+@media (max-width: 768px) {
+    .modal-remocao-dialog {
+        max-width: 94%;
+        margin: 12px auto;
+    }
+
+    .modal-resumo-remocao .modal-linha {
+        grid-template-columns: 1fr;
+        gap: 3px;
+    }
+
+    .modal-remocao-footer {
+        flex-direction: column;
+    }
+
+    .modal-remocao-footer .btn {
+        width: 100%;
+    }
+}

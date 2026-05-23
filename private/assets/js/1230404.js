@@ -1653,3 +1653,78 @@ document.addEventListener("DOMContentLoaded", function () {
     aplicarModoConsulta();
 
 });
+
+/* =========================================================
+   MODAL DE REMOÇÃO DE EQUIPAMENTO
+   Preenche o modal com os dados do equipamento selecionado
+   e confirma a remoção sem usar uma página separada.
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const modalApagar = document.getElementById("modalApagarEquipamento");
+    const btnConfirmarApagar = document.getElementById("btnConfirmarApagarEquipamento");
+
+    let linhaEquipamentoSelecionada = null;
+
+    if (!modalApagar || !btnConfirmarApagar) return;
+
+    // Quando o modal abre, vai buscar os dados ao botão clicado
+    modalApagar.addEventListener("show.bs.modal", function (event) {
+
+        const botao = event.relatedTarget;
+
+        if (!botao) return;
+
+        linhaEquipamentoSelecionada = botao.closest("tr");
+
+        const codigo = botao.getAttribute("data-codigo");
+        const nome = botao.getAttribute("data-nome");
+        const categoria = botao.getAttribute("data-categoria");
+        const fabricante = botao.getAttribute("data-fabricante");
+        const modelo = botao.getAttribute("data-modelo");
+        const serie = botao.getAttribute("data-serie");
+        const localizacao = botao.getAttribute("data-localizacao");
+        const estado = botao.getAttribute("data-estado");
+
+        document.getElementById("modalApagarIdEquipamento").value = codigo;
+
+        document.getElementById("modalApagarCodigo").textContent = codigo;
+        document.getElementById("modalApagarNome").textContent = nome;
+        document.getElementById("modalApagarCategoria").textContent = categoria;
+        document.getElementById("modalApagarFabricante").textContent = fabricante;
+        document.getElementById("modalApagarModelo").textContent = modelo;
+        document.getElementById("modalApagarSerie").textContent = serie;
+        document.getElementById("modalApagarLocalizacao").textContent = localizacao;
+        document.getElementById("modalApagarEstado").textContent = estado;
+    });
+
+    // Quando o utilizador confirma a remoção
+    btnConfirmarApagar.addEventListener("click", function () {
+
+        const codigo = document.getElementById("modalApagarIdEquipamento").value;
+        const nome = document.getElementById("modalApagarNome").textContent;
+
+        // Fecha o modal Bootstrap
+        const modalBootstrap = bootstrap.Modal.getInstance(modalApagar);
+        modalBootstrap.hide();
+
+        // Remove a linha da tabela apenas visualmente
+        // Mais tarde, em PHP/MySQL, esta parte será substituída pelo UPDATE/DELETE na base de dados
+        if (linhaEquipamentoSelecionada) {
+            linhaEquipamentoSelecionada.remove();
+        }
+
+        // Mostra o pop-up visual de sucesso, se já tiveres esta função criada
+        if (typeof mostrarPopupSucesso === "function") {
+            mostrarPopupSucesso(
+                "Equipamento removido",
+                `O equipamento ${codigo} — ${nome} foi removido com sucesso.`,
+                "lista_equipamentos.html"
+            );
+        } else {
+            alert("Equipamento removido com sucesso.");
+        }
+    });
+
+});
