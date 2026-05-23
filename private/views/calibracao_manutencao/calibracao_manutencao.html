@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEDICORE | Calibrações e Manutenções</title>
+
+    <!-- =========================================================
+         RECURSOS DA PÁGINA
+         Carrega favicon, Bootstrap, CSS do projeto, fonte Titillium
+         Web e Font Awesome para ícones.
+         ========================================================= -->
+    <link rel="shortcut icon" href="../../assets/img/MEDICORE_icon.png" type="image/png">
+    <link rel="stylesheet" href="../../assets/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="../../assets/css/1230404.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../assets/fontawesome/all.min.css">
+</head>
+
+<body>
+
+    <!-- =========================================================
+         CABEÇALHO SUPERIOR DA ÁREA PRIVADA
+         Contém o logótipo, mensagem de boas-vindas e menu do utilizador.
+         Mantém a estrutura usada nas outras páginas privadas.
+         ========================================================= -->
+    <header class="container-fluid top-header">
+        <div class="row align-items-center">
+
+            <!-- Logótipo MEDICORE -->
+            <div class="col-md-4 d-flex align-items-center p-3">
+                <a href="../../index.html">
+                    <img src="../../assets/img/MEDICORE_logotipo_branco.png"
+                         alt="Logo da MEDICORE"
+                         class="logo-private">
+                </a>
+            </div>
+
+            <!-- Mensagem central do utilizador -->
+            <div class="col-md-4 text-center p-3">
+                <div class="mensagem-topo">
+                    <i class="fa-solid fa-user-doctor me-2"></i>
+                    <span>Bem-vindo, Sr. Engenheiro Gonçalo</span>
+                </div>
+            </div>
+
+            <!-- Dropdown do perfil técnico -->
+            <div class="col-md-4 text-md-end p-3">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle user-button"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        <i class="fa-regular fa-user me-2"></i> Eng. Biomédico
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="perfil.php">
+                                <i class="fa-solid fa-user-gear me-2"></i> Perfil técnico
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="alterar_password.php">
+                                <i class="fa-solid fa-key me-2"></i> Alterar password
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="logout.php">
+                                <i class="fa-solid fa-right-from-bracket me-2"></i> Sair
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- =========================================================
+         MENU HORIZONTAL DA ÁREA PRIVADA
+         Navegação principal. A opção Calibrações/Manutenções fica
+         ativa porque esta página pertence a esse módulo.
+         ========================================================= -->
+    <nav class="navbar navbar-expand-lg menu-horizontal">
+        <div class="container-fluid">
+
+            <!-- Botão hamburguer para ecrãs pequenos -->
+            <button class="navbar-toggler bg-light"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#menuPrivado"
+                    aria-controls="menuPrivado"
+                    aria-expanded="false"
+                    aria-label="Abrir menu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse justify-content-center" id="menuPrivado">
+                <ul class="navbar-nav">
+
+                    <li class="nav-item">
+                        <a href="../../index.html" class="nav-link">
+                            <i class="fa-solid fa-chart-line me-2"></i> Dashboard Técnico
+                        </a>
+                    </li>
+
+                    <!-- Menu Equipamentos -->
+                    <li class="nav-item menu-dropdown-hover">
+                        <a href="../equipamentos/lista_equipamentos.html" class="nav-link">
+                            <i class="fa-solid fa-stethoscope me-2"></i> Equipamentos
+                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
+                        </a>
+
+                        <ul class="submenu-equipamentos">
+                            <li>
+                                <a href="../equipamentos/lista_equipamentos.html">
+                                    <i class="fa-solid fa-list me-2"></i> Lista de Equipamentos
+                                </a>
+                            </li>
+                            <li>
+                                <a href="../equipamentos/novo_equipamento.html">
+                                    <i class="fa-solid fa-plus me-2"></i> Adicionar Equipamento
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Menu ativo da página atual -->
+                    <li class="nav-item">
+                        <a href="calibracao_manutencao.html" class="nav-link active">
+                            <i class="fa-solid fa-screwdriver-wrench me-2"></i> Calibrações/Manutenções
+                        </a>
+                    </li>
+
+                    <!-- Menu Localizações -->
+                    <li class="nav-item menu-dropdown-hover-localizacoes">
+                        <a href="../localizacoes/lista_localizacoes.html" class="nav-link">
+                            <i class="fa-solid fa-location-dot me-2"></i> Localizações
+                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
+                        </a>
+
+                        <ul class="submenu-localizacoes">
+                            <li>
+                                <a href="../localizacoes/lista_localizacoes.html">
+                                    <i class="fa-solid fa-list me-2"></i> Lista de Localizações
+                                </a>
+                            </li>
+                            <li>
+                                <a href="../localizacoes/nova_localizacao.html">
+                                    <i class="fa-solid fa-plus me-2"></i> Adicionar Localização
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Menu Fornecedores -->
+                    <li class="nav-item menu-dropdown-hover-fornecedores">
+                        <a href="../fornecedores/lista_fornecedores.html" class="nav-link">
+                            <i class="fa-solid fa-truck-medical me-2"></i> Fornecedores
+                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
+                        </a>
+
+                        <ul class="submenu-fornecedores">
+                            <li>
+                                <a href="../fornecedores/lista_fornecedores.html">
+                                    <i class="fa-solid fa-list me-2"></i> Lista de Fornecedores
+                                </a>
+                            </li>
+                            <li>
+                                <a href="../fornecedores/novo_fornecedor.html">
+                                    <i class="fa-solid fa-plus me-2"></i> Adicionar Fornecedor
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="../relatorios/index.html" class="nav-link">
+                            <i class="fa-solid fa-file-medical me-2"></i> Relatórios
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- =========================================================
+         CONTEÚDO PRINCIPAL
+         Página de consulta operacional para acompanhar procedimentos
+         de calibração e manutenção dos equipamentos hospitalares.
+         ========================================================= -->
+    <main class="conteudo-private">
+
+        <!-- =====================================================
+             TÍTULO DA PÁGINA
+             Descreve o objetivo da listagem e segue o padrão das
+             páginas de equipamentos, fornecedores e localizações.
+             ===================================================== -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+                <h2 class="titulo-pagina">Calibrações e Manutenções</h2>
+                <p class="subtitulo-pagina">
+                    Acompanhamento dos procedimentos técnicos em curso ou efetuados nos equipamentos do hospital.
+                </p>
+            </div>
+
+            <!-- Botão para abrir o modal de novo pedido. -->
+            <button type="button"
+                    class="btn btn-adicionar"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalNovoPedidoCalibracaoManutencao">
+                <i class="fa-solid fa-plus me-2"></i> Novo Pedido
+            </button>
+        </div>
+
+        <!-- =====================================================
+             TABELA DE PROCEDIMENTOS
+             Mostra o equipamento, o tipo de intervenção, fornecedor
+             responsável, estado atual da operação e datas relevantes.
+             ===================================================== -->
+        <div class="table-responsive tabela-container">
+            <table class="table table-hover align-middle tabela-equipamentos">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Equipamento</th>
+                        <th>Categoria</th>
+                        <th>Localização</th>
+                        <th>Procedimento</th>
+                        <th>Fornecedor / Técnico</th>
+                        <th>Data Prevista</th>
+                        <th>Estado da Operação</th>
+                        <th>Observações</th>
+                    </tr>
+                </thead>
+
+                <tbody id="tabelaPedidosCalibracaoManutencao">
+                    <!-- Linha 1: manutenção preventiva programada -->
+                    <tr>
+                        <td>EQ-001</td>
+                        <td>Monitor Multiparamétrico</td>
+                        <td>Monitorização</td>
+                        <td>UCI - Sala 2</td>
+                        <td>
+                            <span class="tipo-fornecedor tipo-manutencao">Manutenção preventiva</span>
+                        </td>
+                        <td>MedSupply Portugal</td>
+                        <td>12/09/2026</td>
+                        <td>
+                            <span class="estado estado-manutencao">Aguarda fornecedor</span>
+                        </td>
+                        <td>Pedido enviado para confirmação de agenda.</td>
+                    </tr>
+
+                    <!-- Linha 2: manutenção corretiva em curso -->
+                    <tr>
+                        <td>EQ-002</td>
+                        <td>Ventilador Pulmonar</td>
+                        <td>Suporte de Vida</td>
+                        <td>Urgência - Sala 1</td>
+                        <td>
+                            <span class="tipo-localizacao tipo-urgencia">Manutenção corretiva</span>
+                        </td>
+                        <td>Biomedical Solutions</td>
+                        <td>28/05/2026</td>
+                        <td>
+                            <span class="estado estado-manutencao">Em manutenção</span>
+                        </td>
+                        <td>Intervenção técnica por falha no sistema de ventilação.</td>
+                    </tr>
+
+                    <!-- Linha 3: calibração em curso -->
+                    <tr>
+                        <td>EQ-003</td>
+                        <td>Desfibrilhador</td>
+                        <td>Emergência</td>
+                        <td>Bloco Operatório</td>
+                        <td>
+                            <span class="tipo-fornecedor tipo-calibracao">Calibração</span>
+                        </td>
+                        <td>CalibraMed</td>
+                        <td>30/05/2026</td>
+                        <td>
+                            <span class="estado estado-manutencao">Em calibração</span>
+                        </td>
+                        <td>A aguardar emissão do certificado de calibração.</td>
+                    </tr>
+
+                    <!-- Linha 4: procedimento já concluído -->
+                    <tr>
+                        <td>EQ-004</td>
+                        <td>Monitor de Sinais Vitais</td>
+                        <td>Monitorização</td>
+                        <td>Pediatria - Sala 3</td>
+                        <td>
+                            <span class="tipo-fornecedor tipo-manutencao">Manutenção preventiva</span>
+                        </td>
+                        <td>Eng. Gonçalo Brito</td>
+                        <td>15/05/2026</td>
+                        <td>
+                            <span class="estado estado-ativo">Efetuada</span>
+                        </td>
+                        <td>Equipamento validado e disponível para utilização.</td>
+                    </tr>
+
+                    <!-- Linha 5: calibração a aguardar entidade externa -->
+                    <tr>
+                        <td>EQ-005</td>
+                        <td>Bomba de Infusão</td>
+                        <td>Terapia</td>
+                        <td>Medicina Interna</td>
+                        <td>
+                            <span class="tipo-fornecedor tipo-calibracao">Calibração</span>
+                        </td>
+                        <td>CalibraMed</td>
+                        <td>05/06/2026</td>
+                        <td>
+                            <span class="estado estado-manutencao">Aguarda fornecedor</span>
+                        </td>
+                        <td>Fornecedor contactado para recolha do equipamento.</td>
+                    </tr>
+
+                    <!-- Linha 6: manutenção corretiva concluída -->
+                    <tr>
+                        <td>EQ-006</td>
+                        <td>Oxímetro de Pulso</td>
+                        <td>Monitorização</td>
+                        <td>Urgência - Triagem</td>
+                        <td>
+                            <span class="tipo-localizacao tipo-urgencia">Manutenção corretiva</span>
+                        </td>
+                        <td>Biomedical Solutions</td>
+                        <td>20/05/2026</td>
+                        <td>
+                            <span class="estado estado-ativo">Efetuada</span>
+                        </td>
+                        <td>Substituição de sensor e teste funcional realizado.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+
+    <!-- =========================================================
+         MODAL DE NOVO PEDIDO DE CALIBRAÇÃO/MANUTENÇÃO
+         Permite registar rapidamente uma nova intervenção técnica
+         sem sair da página principal deste módulo.
+         ========================================================= -->
+    <div class="modal fade"
+         id="modalNovoPedidoCalibracaoManutencao"
+         tabindex="-1"
+         aria-labelledby="modalNovoPedidoCalibracaoManutencaoLabel"
+         aria-hidden="true">
+
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+
+                <!-- Cabeçalho do modal -->
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title" id="modalNovoPedidoCalibracaoManutencaoLabel">
+                            <i class="fa-solid fa-screwdriver-wrench me-2"></i>
+                            Novo Pedido
+                        </h5>
+                        <p class="modal-remocao-subtitulo text-muted">
+                            Registe um pedido de calibração ou manutenção para um equipamento.
+                        </p>
+                    </div>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Fechar">
+                    </button>
+                </div>
+
+                <!-- Formulário do novo pedido -->
+                <form id="formNovoPedidoCalibracaoManutencao">
+                    <div class="modal-body">
+                        <div class="row g-4">
+
+                            <!-- Equipamento selecionado para intervenção -->
+                            <div class="col-md-6">
+                                <label for="pedidoEquipamento" class="form-label">Equipamento *</label>
+                                <select class="form-select"
+                                        id="pedidoEquipamento"
+                                        name="pedidoEquipamento"
+                                        required>
+                                    <option value="">Selecionar equipamento</option>
+                                    <option value="EQ-001"
+                                            data-nome="Monitor Multiparamétrico"
+                                            data-categoria="Monitorização"
+                                            data-localizacao="UCI - Sala 2">
+                                        EQ-001 | Monitor Multiparamétrico
+                                    </option>
+                                    <option value="EQ-002"
+                                            data-nome="Ventilador Pulmonar"
+                                            data-categoria="Suporte de Vida"
+                                            data-localizacao="Urgência - Sala 1">
+                                        EQ-002 | Ventilador Pulmonar
+                                    </option>
+                                    <option value="EQ-003"
+                                            data-nome="Desfibrilhador"
+                                            data-categoria="Emergência"
+                                            data-localizacao="Bloco Operatório">
+                                        EQ-003 | Desfibrilhador
+                                    </option>
+                                    <option value="EQ-004"
+                                            data-nome="Monitor de Sinais Vitais"
+                                            data-categoria="Monitorização"
+                                            data-localizacao="Pediatria - Sala 3">
+                                        EQ-004 | Monitor de Sinais Vitais
+                                    </option>
+                                    <option value="EQ-005"
+                                            data-nome="Bomba de Infusão"
+                                            data-categoria="Terapia"
+                                            data-localizacao="Medicina Interna">
+                                        EQ-005 | Bomba de Infusão
+                                    </option>
+                                    <option value="EQ-006"
+                                            data-nome="Oxímetro de Pulso"
+                                            data-categoria="Monitorização"
+                                            data-localizacao="Urgência - Triagem">
+                                        EQ-006 | Oxímetro de Pulso
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Tipo de procedimento técnico -->
+                            <div class="col-md-6">
+                                <label for="pedidoProcedimento" class="form-label">Procedimento *</label>
+                                <select class="form-select"
+                                        id="pedidoProcedimento"
+                                        name="pedidoProcedimento"
+                                        required>
+                                    <option value="">Selecionar procedimento</option>
+                                    <option value="Calibração">Calibração</option>
+                                    <option value="Manutenção preventiva">Manutenção preventiva</option>
+                                    <option value="Manutenção corretiva">Manutenção corretiva</option>
+                                </select>
+                            </div>
+
+                            <!-- Entidade responsável pelo pedido -->
+                            <div class="col-md-6">
+                                <label for="pedidoFornecedor" class="form-label">Fornecedor / Técnico *</label>
+                                <select class="form-select"
+                                        id="pedidoFornecedor"
+                                        name="pedidoFornecedor"
+                                        required>
+                                    <option value="">Selecionar responsável</option>
+                                    <option value="MedSupply Portugal">MedSupply Portugal</option>
+                                    <option value="Biomedical Solutions">Biomedical Solutions</option>
+                                    <option value="CalibraMed">CalibraMed</option>
+                                    <option value="Eng. Gonçalo Brito">Eng. Gonçalo Brito</option>
+                                </select>
+                            </div>
+
+                            <!-- Data prevista para execução -->
+                            <div class="col-md-3">
+                                <label for="pedidoDataPrevista" class="form-label">Data Prevista *</label>
+                                <input type="date"
+                                       class="form-control"
+                                       id="pedidoDataPrevista"
+                                       name="pedidoDataPrevista"
+                                       required>
+                            </div>
+
+                            <!-- Estado inicial da operação -->
+                            <div class="col-md-3">
+                                <label for="pedidoEstadoOperacao" class="form-label">Estado *</label>
+                                <select class="form-select"
+                                        id="pedidoEstadoOperacao"
+                                        name="pedidoEstadoOperacao"
+                                        required>
+                                    <option value="">Selecionar estado</option>
+                                    <option value="Aguarda fornecedor">Aguarda fornecedor</option>
+                                    <option value="Em manutenção">Em manutenção</option>
+                                    <option value="Em calibração">Em calibração</option>
+                                    <option value="Efetuada">Efetuada</option>
+                                </select>
+                            </div>
+
+                            <!-- Observações ou motivo do pedido -->
+                            <div class="col-12">
+                                <label for="pedidoObservacoes" class="form-label">Observações</label>
+                                <textarea class="form-control"
+                                          id="pedidoObservacoes"
+                                          name="pedidoObservacoes"
+                                          rows="4"
+                                          placeholder="Indique o motivo do pedido, sintomas, contexto clínico ou informação relevante para o fornecedor/técnico."></textarea>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Ações do modal -->
+                    <div class="modal-footer">
+                        <button type="button"
+                                class="btn btn-cancelar"
+                                data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark me-2"></i> Cancelar
+                        </button>
+
+                        <button type="submit" class="btn btn-guardar">
+                            <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Pedido
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         SCRIPTS DA PÁGINA
+         Bootstrap ativa dropdowns e componentes visuais. O ficheiro
+         1230404.js mantém as funcionalidades gerais do projeto.
+         ========================================================= -->
+    <script src="../../assets/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="../../assets/js/1230404.js"></script>
+
+</body>
+</html>

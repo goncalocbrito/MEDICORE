@@ -2351,3 +2351,116 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+
+/* =========================================================
+   NOVO PEDIDO DE CALIBRAÇÃO / MANUTENÇÃO
+   Regista visualmente um pedido criado no modal da página
+   calibracao_manutencao.html.
+   ========================================================= */
+
+function classeProcedimentoPedido(procedimento) {
+    // Define a cor visual do badge conforme o tipo de procedimento.
+    if (procedimento === "Calibração") {
+        return "tipo-fornecedor tipo-calibracao";
+    }
+
+    if (procedimento === "Manutenção corretiva") {
+        return "tipo-localizacao tipo-urgencia";
+    }
+
+    return "tipo-fornecedor tipo-manutencao";
+}
+
+function classeEstadoPedido(estado) {
+    // Procedimentos efetuados usam verde; os restantes ficam como operação em curso.
+    return estado === "Efetuada" ? "estado estado-ativo" : "estado estado-manutencao";
+}
+
+function mostrarPopupPedidoRegistado() {
+    // Mostra uma confirmação visual sem redirecionar nem perder a linha adicionada.
+    const overlay = document.createElement("div");
+    overlay.classList.add("popup-sucesso-overlay");
+
+    overlay.innerHTML = `
+        <div class="popup-sucesso-card">
+            <div class="popup-sucesso-icone">
+                <i class="fa-solid fa-check"></i>
+            </div>
+
+            <h3>Pedido registado</h3>
+
+            <p>O pedido de calibração/manutenção foi adicionado à tabela.</p>
+
+            <div class="popup-sucesso-barra">
+                <span></span>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    setTimeout(function () {
+        overlay.remove();
+    }, 2400);
+}
+
+function escaparTextoPedido(valor) {
+    // Evita inserir HTML vindo do campo de observações diretamente na tabela.
+    const div = document.createElement("div");
+    div.textContent = valor;
+    return div.innerHTML;
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const formNovoPedido = document.getElementById("formNovoPedidoCalibracaoManutencao");
+    const tabelaPedidos = document.getElementById("tabelaPedidosCalibracaoManutencao");
+
+    if (!formNovoPedido || !tabelaPedidos) return;
+
+    formNovoPedido.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const equipamentoSelect = document.getElementById("pedidoEquipamento");
+        const equipamentoSelecionado = equipamentoSelect.selectedOptions[0];
+        const procedimento = document.getElementById("pedidoProcedimento").value;
+        const fornecedor = document.getElementById("pedidoFornecedor").value;
+        const dataPrevista = document.getElementById("pedidoDataPrevista").value;
+        const estado = document.getElementById("pedidoEstadoOperacao").value;
+        const observacoes = document.getElementById("pedidoObservacoes").value.trim() || "Sem observações adicionais.";
+
+        const codigo = equipamentoSelect.value;
+        const nome = equipamentoSelecionado.dataset.nome;
+        const categoria = equipamentoSelecionado.dataset.categoria;
+        const localizacao = equipamentoSelecionado.dataset.localizacao;
+
+        const linha = document.createElement("tr");
+
+        linha.innerHTML = `
+            <td>${codigo}</td>
+            <td>${nome}</td>
+            <td>${categoria}</td>
+            <td>${localizacao}</td>
+            <td>
+                <span class="${classeProcedimentoPedido(procedimento)}">${procedimento}</span>
+            </td>
+            <td>${fornecedor}</td>
+            <td>${formatarDataPT(dataPrevista)}</td>
+            <td>
+                <span class="${classeEstadoPedido(estado)}">${estado}</span>
+            </td>
+            <td>${escaparTextoPedido(observacoes)}</td>
+        `;
+
+        tabelaPedidos.prepend(linha);
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById("modalNovoPedidoCalibracaoManutencao"));
+        if (modal) {
+            modal.hide();
+        }
+
+        formNovoPedido.reset();
+        mostrarPopupPedidoRegistado();
+    });
+
+});
