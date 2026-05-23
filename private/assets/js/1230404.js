@@ -129,9 +129,12 @@ function obterEquipamentoSelecionado() {
 function classeEstado(estado) {
     const classes = {
         "Ativo": "estado-ativo",
+        "Ativa": "estado-ativo",
         "Em manutenção": "estado-manutencao",
         "Avariado": "estado-avariado",
         "Inativo": "estado-inativo",
+        "Inativa": "estado-inativo",
+        "Indisponível": "estado-inativo",
         "Em calibração": "estado-manutencao",
         "Em quarentena": "estado-manutencao",
         "Abatido": "estado-abatido"
@@ -163,7 +166,7 @@ function definirValor(id, valor) {
         return;
     }
 
-    campo.value = valor || "";
+    campo.value = valor ?? "";
 }
 
 function selecionarOpcao(select, valor) {
@@ -330,6 +333,12 @@ function mostrarPopupSucesso(titulo, mensagem, paginaDestino) {
 
     // Cria um overlay visual reutilizável para confirmações de sucesso.
     // O destino recebido define também o texto da lista para onde o utilizador será redirecionado.
+    const textoListaDestino = paginaDestino.includes("fornecedores")
+        ? "de fornecedores"
+        : paginaDestino.includes("localizacoes")
+            ? "de localizações"
+            : "de equipamentos";
+
     const overlay = document.createElement("div");
     overlay.classList.add("popup-sucesso-overlay");
 
@@ -345,7 +354,7 @@ function mostrarPopupSucesso(titulo, mensagem, paginaDestino) {
             <p>${mensagem}</p>
 
             <p class="popup-sucesso-redirecionar">
-                A redirecionar para a lista ${paginaDestino.includes("fornecedores") ? "de fornecedores" : "de equipamentos"}...
+                A redirecionar para a lista ${textoListaDestino}...
             </p>
 
             <div class="popup-sucesso-barra">
@@ -994,14 +1003,38 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener("DOMContentLoaded", function () {
 
     const formNovaLocalizacao = document.getElementById("formNovaLocalizacao");
+    const btnLimparNovaLocalizacao = document.getElementById("btnLimparNovaLocalizacao");
 
     if (!formNovaLocalizacao) return;
+
+    if (btnLimparNovaLocalizacao) {
+        btnLimparNovaLocalizacao.addEventListener("click", function () {
+            formNovaLocalizacao.querySelectorAll("input, select, textarea").forEach(function (campo) {
+                if (campo.type === "radio" || campo.type === "checkbox") {
+                    campo.checked = false;
+                } else if (campo.tagName === "SELECT") {
+                    campo.selectedIndex = 0;
+                } else {
+                    campo.value = "";
+                }
+            });
+
+            const permiteCriticosSim = document.getElementById("permiteCriticosSim");
+            const suporteVidaNao = document.getElementById("suporteVidaNao");
+
+            if (permiteCriticosSim) permiteCriticosSim.checked = true;
+            if (suporteVidaNao) suporteVidaNao.checked = true;
+        });
+    }
 
     formNovaLocalizacao.addEventListener("submit", function (event) {
         event.preventDefault();
 
-        alert("Localização registada com sucesso.");
-        window.location.href = "lista_localizacoes.html";
+        mostrarPopupSucesso(
+            "Nova localização guardada",
+            "A nova localização foi registada com sucesso.",
+            "lista_localizacoes.html"
+        );
     });
 
 });
@@ -1337,6 +1370,329 @@ document.addEventListener("DOMContentLoaded", function () {
         );
     });
 
+});
+
+/* =========================================================
+   FICHA DA LOCALIZAÇÃO
+   Modo consulta por defeito + modo edição ao clicar em Editar.
+   ========================================================= */
+
+function obterLocalizacaoSelecionada() {
+    // Lê o id da localização na query string.
+    // Se não existir id, usa LOC-001 como exemplo para a ficha abrir preenchida.
+    const id = obterParametroURL("id") || "LOC-001";
+    return {
+        id: id,
+        dados: localizacoesMEDICORE[id] || null
+    };
+}
+
+function definirRadioPorNome(nome, valor) {
+    // Marca o radio button correspondente ao valor recebido.
+    const radio = document.querySelector(`input[name="${nome}"][value="${valor}"]`);
+    if (radio) radio.checked = true;
+}
+
+function preencherCamposLocalizacao(idLocalizacao, localizacao) {
+    // Copia os dados temporários de localizacoesMEDICORE para a ficha.
+    // Quando existir backend, esta função pode receber dados vindos da base de dados.
+    if (!localizacao) return;
+
+    definirValor("idLocalizacao", idLocalizacao);
+    definirValor("codigoLocalizacao", idLocalizacao);
+    definirValor("departamentoLocalizacao", localizacao.departamento);
+    definirValor("tipoEspaco", localizacao.tipoEspaco);
+    definirValor("edificioLocalizacao", localizacao.edificio);
+    definirValor("pisoLocalizacao", localizacao.piso);
+    definirValor("salaLocalizacao", localizacao.sala);
+    definirValor("estadoLocalizacao", localizacao.estado);
+
+    definirValor("responsavelLocalizacao", localizacao.responsavel);
+    definirValor("funcaoResponsavelLocalizacao", localizacao.funcao);
+    definirValor("contactoInternoLocalizacao", localizacao.contacto);
+    definirValor("emailResponsavelLocalizacao", localizacao.email);
+    definirValor("observacaoContactoLocalizacao", localizacao.notasContacto);
+
+    definirValor("acessoLocalizacao", localizacao.acesso);
+    definirValor("criticidadeLocalizacao", localizacao.criticidade);
+    definirValor("capacidadeEquipamentos", localizacao.capacidade);
+    definirRadioPorNome("permiteCriticos", localizacao.permiteCriticos);
+    definirRadioPorNome("suporteVidaLocalizacao", localizacao.suporteVida);
+
+    definirValor("qtdEquipamentosLocalizacao", localizacao.qtdEquipamentos);
+    definirValor("equipamentosAtivosLocalizacao", localizacao.equipamentosAtivos);
+    definirValor("equipamentosManutencaoLocalizacao", localizacao.equipamentosManutencao);
+    definirValor("equipamentosAvariadosLocalizacao", localizacao.equipamentosAvariados);
+    definirValor("ocupacaoLocalizacao", localizacao.ocupacao);
+    definirValor("observacoesLocalizacao", localizacao.observacoes);
+}
+
+function preencherTabelaEquipamentosFichaLocalizacao(localizacao) {
+    // Preenche a tabela de equipamentos associados dentro da ficha da localização.
+    const tabela = document.getElementById("tabelaEquipamentosFichaLocalizacao");
+    if (!tabela) return;
+
+    const equipamentos = localizacao.equipamentosAssociados || [];
+    tabela.innerHTML = "";
+
+    if (equipamentos.length === 0) {
+        tabela.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center text-muted">
+                    Não existem equipamentos associados a esta localização.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    equipamentos.forEach(function (equipamento) {
+        const linha = document.createElement("tr");
+
+        linha.innerHTML = `
+            <td>${equipamento.codigo}</td>
+            <td>${equipamento.nome}</td>
+            <td>${equipamento.categoria}</td>
+            <td>${equipamento.modelo}</td>
+            <td>${equipamento.serie}</td>
+            <td>${equipamento.criticidade}</td>
+            <td><span class="estado ${equipamento.estadoClasse}">${equipamento.estado}</span></td>
+        `;
+
+        tabela.appendChild(linha);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Inicializa apenas a página ficha_localizacao.html.
+    const formFicha = document.getElementById("formFichaLocalizacao");
+
+    if (!formFicha) return;
+
+    const localizacaoSelecionada = obterLocalizacaoSelecionada();
+    const localizacao = localizacaoSelecionada.dados;
+
+    if (!localizacao) {
+        alert("Localização não encontrada.");
+        window.location.href = "lista_localizacoes.html";
+        return;
+    }
+
+    preencherCamposLocalizacao(localizacaoSelecionada.id, localizacao);
+    preencherTabelaEquipamentosFichaLocalizacao(localizacao);
+
+    const btnAtivarEdicao = document.getElementById("btnAtivarEdicaoLocalizacao");
+    const btnCancelarEdicao = document.getElementById("btnCancelarEdicaoLocalizacao");
+    const botoesEdicao = document.querySelectorAll(".botao-edicao");
+    const botoesConsulta = document.querySelectorAll(".botao-consulta");
+    const camposFicha = formFicha.querySelectorAll(".campo-ficha");
+    const camposEditaveis = formFicha.querySelectorAll(".campo-editavel");
+
+    let valoresOriginais = {};
+
+    function guardarValoresOriginais() {
+        // Guarda os valores antes de editar para permitir cancelar alterações.
+        valoresOriginais = {};
+
+        camposFicha.forEach(function (campo) {
+            if (!campo.id) return;
+
+            if (campo.type === "radio" || campo.type === "checkbox") {
+                valoresOriginais[campo.id] = campo.checked;
+            } else {
+                valoresOriginais[campo.id] = campo.value;
+            }
+        });
+    }
+
+    function restaurarValoresOriginais() {
+        // Repõe os valores guardados quando o utilizador cancela a edição.
+        camposFicha.forEach(function (campo) {
+            if (!campo.id || !(campo.id in valoresOriginais)) return;
+
+            if (campo.type === "radio" || campo.type === "checkbox") {
+                campo.checked = valoresOriginais[campo.id];
+            } else {
+                campo.value = valoresOriginais[campo.id];
+            }
+        });
+
+        atualizarResumoLocalizacao();
+    }
+
+    function aplicarModoConsulta() {
+        // Bloqueia os campos editáveis e mostra Voltar + Editar.
+        camposEditaveis.forEach(function (campo) {
+            if (campo.tagName === "SELECT" || campo.type === "radio" || campo.type === "checkbox") {
+                campo.disabled = true;
+            } else {
+                campo.readOnly = true;
+            }
+        });
+
+        document.querySelectorAll(".campo-bloqueado").forEach(function (campo) {
+            campo.readOnly = true;
+            campo.disabled = false;
+        });
+
+        botoesEdicao.forEach(function (elemento) {
+            elemento.classList.add("d-none");
+        });
+
+        botoesConsulta.forEach(function (elemento) {
+            elemento.classList.remove("d-none");
+        });
+
+        formFicha.classList.remove("modo-edicao");
+        formFicha.classList.add("modo-consulta");
+
+        document.getElementById("modoFormularioLocalizacao").value = "ver";
+    }
+
+    function aplicarModoEdicao() {
+        // Liberta os campos editáveis e mostra Cancelar + Guardar.
+        camposEditaveis.forEach(function (campo) {
+            if (campo.tagName === "SELECT" || campo.type === "radio" || campo.type === "checkbox") {
+                campo.disabled = false;
+            } else {
+                campo.readOnly = false;
+            }
+        });
+
+        document.querySelectorAll(".campo-bloqueado").forEach(function (campo) {
+            campo.readOnly = true;
+        });
+
+        botoesEdicao.forEach(function (elemento) {
+            elemento.classList.remove("d-none");
+        });
+
+        botoesConsulta.forEach(function (elemento) {
+            elemento.classList.add("d-none");
+        });
+
+        formFicha.classList.remove("modo-consulta");
+        formFicha.classList.add("modo-edicao");
+
+        document.getElementById("modoFormularioLocalizacao").value = "editar";
+    }
+
+    function atualizarResumoLocalizacao() {
+        // Atualiza os elementos ocultos de resumo/badges sempre que a ficha muda.
+        const codigo = document.getElementById("codigoLocalizacao")?.value || "";
+        const departamento = document.getElementById("departamentoLocalizacao")?.value || "Localização";
+        const edificio = document.getElementById("edificioLocalizacao")?.value || "Edifício";
+        const piso = document.getElementById("pisoLocalizacao")?.value || "Piso";
+        const sala = document.getElementById("salaLocalizacao")?.value || "Sala";
+        const estado = document.getElementById("estadoLocalizacao")?.value || "Estado";
+        const tipo = document.getElementById("tipoEspaco")?.value || "Tipo";
+        const criticidade = document.getElementById("criticidadeLocalizacao")?.value || "Criticidade";
+
+        definirTexto("tituloPaginaLocalizacao", `Ficha da Localização - ${codigo}`);
+        definirTexto("resumoNomeLocalizacao", departamento);
+        definirTexto("resumoDescricaoLocalizacao", `${edificio} | Piso ${piso} | ${sala}`);
+        definirTexto("badgeEstadoLocalizacao", estado);
+        definirTexto("badgeTipoLocalizacao", tipo);
+        definirTexto("badgeCriticidadeLocalizacao", `Criticidade: ${criticidade}`);
+
+        const badgeEstado = document.getElementById("badgeEstadoLocalizacao");
+        if (badgeEstado) {
+            badgeEstado.className = `estado ${classeEstado(estado)}`;
+        }
+    }
+
+    if (btnAtivarEdicao) {
+        btnAtivarEdicao.addEventListener("click", function () {
+            guardarValoresOriginais();
+            aplicarModoEdicao();
+        });
+    }
+
+    if (btnCancelarEdicao) {
+        btnCancelarEdicao.addEventListener("click", function () {
+            restaurarValoresOriginais();
+            aplicarModoConsulta();
+        });
+    }
+
+    formFicha.addEventListener("input", atualizarResumoLocalizacao);
+    formFicha.addEventListener("change", atualizarResumoLocalizacao);
+
+    formFicha.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        mostrarPopupSucesso(
+            "Alterações registadas",
+            "As alterações na localização foram registadas com sucesso.",
+            "lista_localizacoes.html"
+        );
+    });
+
+    guardarValoresOriginais();
+    atualizarResumoLocalizacao();
+    aplicarModoConsulta();
+});
+
+/* =========================================================
+   MODAL DE REMOÇÃO DE LOCALIZAÇÃO
+   Preenche o modal da lista e remove a linha visualmente após confirmação.
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const modalApagar = document.getElementById("modalApagarLocalizacao");
+    const btnConfirmarApagar = document.getElementById("btnConfirmarApagarLocalizacao");
+
+    let linhaLocalizacaoSelecionada = null;
+
+    if (!modalApagar || !btnConfirmarApagar) return;
+
+    modalApagar.addEventListener("show.bs.modal", function (event) {
+        const botao = event.relatedTarget;
+        if (!botao) return;
+
+        linhaLocalizacaoSelecionada = botao.closest("tr");
+
+        const codigo = botao.getAttribute("data-codigo");
+        const departamento = botao.getAttribute("data-departamento");
+        const edificio = botao.getAttribute("data-edificio");
+        const piso = botao.getAttribute("data-piso");
+        const sala = botao.getAttribute("data-sala");
+        const tipo = botao.getAttribute("data-tipo");
+        const responsavel = botao.getAttribute("data-responsavel");
+        const estado = botao.getAttribute("data-estado");
+        const equipamentos = botao.getAttribute("data-equipamentos");
+
+        document.getElementById("modalApagarIdLocalizacao").value = codigo;
+        document.getElementById("modalApagarLocalizacaoCodigo").textContent = codigo;
+        document.getElementById("modalApagarLocalizacaoDepartamento").textContent = departamento;
+        document.getElementById("modalApagarLocalizacaoEdificio").textContent = edificio;
+        document.getElementById("modalApagarLocalizacaoPiso").textContent = piso;
+        document.getElementById("modalApagarLocalizacaoSala").textContent = sala;
+        document.getElementById("modalApagarLocalizacaoTipo").textContent = tipo;
+        document.getElementById("modalApagarLocalizacaoResponsavel").textContent = responsavel;
+        document.getElementById("modalApagarLocalizacaoEstado").textContent = estado;
+        document.getElementById("modalApagarLocalizacaoEquipamentos").textContent = equipamentos;
+    });
+
+    btnConfirmarApagar.addEventListener("click", function () {
+        const codigo = document.getElementById("modalApagarIdLocalizacao").value;
+        const departamento = document.getElementById("modalApagarLocalizacaoDepartamento").textContent;
+        const modalBootstrap = bootstrap.Modal.getInstance(modalApagar);
+
+        modalBootstrap.hide();
+
+        if (linhaLocalizacaoSelecionada) {
+            linhaLocalizacaoSelecionada.remove();
+        }
+
+        mostrarPopupSucesso(
+            "Localização removida",
+            `A localização ${codigo} - ${departamento} foi removida com sucesso.`,
+            "lista_localizacoes.html"
+        );
+    });
 });
 
 /* =========================================================
