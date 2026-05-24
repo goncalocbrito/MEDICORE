@@ -3403,3 +3403,67 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.addEventListener("DOMContentLoaded", carregarProcessosFinalizados);
+
+/* =========================================================
+   BACKOFFICE DA PÁGINA PÚBLICA
+   Pré-visualização simples e simulação de guardar conteúdos.
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Inicializa apenas a página private/views/backoffice/backoffice.html.
+    const formBackoffice = document.getElementById("formBackofficePublico");
+    const btnPreVisualizar = document.getElementById("btnPreVisualizarIndex");
+
+    if (!formBackoffice) return;
+
+    function atualizarPreviewPublico() {
+        // Atualiza a pré-visualização rápida com os campos principais.
+        definirTexto("previewTituloHero", document.getElementById("tituloHeroPublico")?.value || "Título por definir");
+        definirTexto("previewTextoHero", document.getElementById("textoHeroPublico")?.value || "Texto por definir.");
+        definirTexto("previewEmailRodape", document.getElementById("emailRodape")?.value || "email por definir");
+        definirTexto("previewTelefoneRodape", document.getElementById("telefoneRodape")?.value || "telefone por definir");
+    }
+
+    function obterDadosBackoffice() {
+        // Converte o formulário num objeto simples para simular persistência.
+        // No backend real, estes dados devem ir para MySQL ou para um ficheiro de configuração.
+        const dados = {};
+        const formData = new FormData(formBackoffice);
+
+        formData.forEach(function (valor, chave) {
+            if (valor instanceof File) {
+                dados[chave] = valor.name || "";
+                return;
+            }
+
+            dados[chave] = valor;
+        });
+
+        return dados;
+    }
+
+    formBackoffice.addEventListener("input", atualizarPreviewPublico);
+    formBackoffice.addEventListener("change", atualizarPreviewPublico);
+
+    if (btnPreVisualizar) {
+        btnPreVisualizar.addEventListener("click", function () {
+            // Abre a página pública atual. Quando o backend existir, esta pré-visualização pode usar dados temporários.
+            window.open("../../../public/index.php", "_blank");
+        });
+    }
+
+    formBackoffice.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        localStorage.setItem("medicoreConteudoPublico", JSON.stringify(obterDadosBackoffice()));
+
+        mostrarPopupPedido(
+            "Conteúdos guardados",
+            "As alterações da página pública foram guardadas no backoffice."
+        );
+    });
+
+    atualizarPreviewPublico();
+
+});

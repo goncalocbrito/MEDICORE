@@ -399,6 +399,13 @@ body {
     color: #ffffff;
 }
 
+/* Item ativo no submenu de Equipamentos */
+.submenu-equipamentos li a.submenu-active {
+    background-color: rgba(255, 255, 255, 0.10);
+    color: #ffffff;
+    border-left: 4px solid var(--cor-secundaria);
+}
+
 /* Página Novo Equipamento - alteração feita por mim */
 .titulo-pagina {
     color: var(--cor-principal);
@@ -1074,6 +1081,20 @@ body {
 
 .tabela-acessorios tbody tr:hover {
     background-color: #f4fbfb;
+}
+
+/* Ações da tabela de calibrações/manutenções */
+.tabela-calibracoes-manutencoes th:last-child,
+.tabela-calibracoes-manutencoes td:last-child {
+    min-width: 140px;
+    white-space: nowrap;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.tabela-calibracoes-manutencoes td:last-child .btn {
+    display: inline-flex;
+    vertical-align: middle;
 }
 
 .acessorio-form-rapido {
@@ -2425,6 +2446,82 @@ textarea[readonly] {
     border-left: 4px solid var(--cor-secundaria);
 }
 
+/* Menu horizontal em desktop: alinha cada submenu com a largura do menu pai. */
+@media (min-width: 992px) {
+    .menu-horizontal .navbar-nav {
+        max-width: none;
+        justify-content: center;
+        gap: 4px;
+        flex-wrap: nowrap;
+    }
+
+    .menu-horizontal .nav-item {
+        flex: 0 0 auto;
+    }
+
+    .menu-horizontal .nav-link {
+        min-width: 0;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 7px;
+        font-size: 0.84rem;
+    }
+
+    .menu-dropdown-hover,
+    .menu-dropdown-hover-calibracoes,
+    .menu-dropdown-hover-localizacoes,
+    .menu-dropdown-hover-fornecedores,
+    .menu-dropdown-hover-utilizadores {
+        position: relative;
+    }
+
+    .menu-dropdown-hover {
+        width: 190px;
+    }
+
+    .menu-dropdown-hover-calibracoes {
+        width: 250px;
+    }
+
+    .menu-dropdown-hover-localizacoes,
+    .menu-dropdown-hover-fornecedores,
+    .menu-dropdown-hover-utilizadores {
+        width: 205px;
+    }
+
+    .menu-dropdown-hover > .nav-link,
+    .menu-dropdown-hover-calibracoes > .nav-link,
+    .menu-dropdown-hover-localizacoes > .nav-link,
+    .menu-dropdown-hover-fornecedores > .nav-link,
+    .menu-dropdown-hover-utilizadores > .nav-link {
+        width: 100%;
+    }
+
+    .submenu-equipamentos,
+    .submenu-calibracoes,
+    .submenu-localizacoes,
+    .submenu-fornecedores,
+    .submenu-utilizadores {
+        left: 0;
+        right: auto;
+        min-width: 100%;
+        width: 100%;
+        max-width: none;
+    }
+
+    .submenu-equipamentos li a,
+    .submenu-calibracoes li a,
+    .submenu-localizacoes li a,
+    .submenu-fornecedores li a,
+    .submenu-utilizadores li a {
+        padding: 10px 10px;
+        font-size: 0.76rem;
+        white-space: nowrap;
+    }
+}
+
 @media (max-width: 768px) {
     .menu-dropdown-hover-utilizadores {
         width: 100%;
@@ -2437,5 +2534,109 @@ textarea[readonly] {
         box-shadow: none;
         border-radius: 0;
         background-color: rgba(255, 255, 255, 0.04);
+    }
+}
+
+/* =========================================================
+   BACKOFFICE DA PÁGINA PÚBLICA
+   Estilos para editar conteúdos do public/index.php.
+   ========================================================= */
+
+.backoffice-publico-page .backoffice-actions {
+    margin: 0;
+    padding: 0;
+    justify-content: flex-end;
+}
+
+.backoffice-grid-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+}
+
+.backoffice-editor-card,
+.backoffice-linha-card {
+    background-color: #f8fbfb;
+    border: 1px solid #d6ece8;
+    border-radius: 16px;
+    padding: 18px;
+}
+
+.backoffice-editor-card h4 {
+    color: var(--cor-principal);
+    font-size: 1.05rem;
+    font-weight: 900;
+    margin-bottom: 16px;
+}
+
+.backoffice-lista-editavel {
+    display: grid;
+    gap: 16px;
+}
+
+.backoffice-linha-card {
+    display: grid;
+    grid-template-columns: minmax(180px, 0.8fr) minmax(220px, 1fr) minmax(320px, 2fr);
+    gap: 14px;
+    align-items: start;
+}
+
+.backoffice-preview-publico {
+    margin-top: 26px;
+    background: linear-gradient(135deg, #123c46 0%, #176b5b 100%);
+    color: #ffffff;
+    border-radius: 18px;
+    padding: 24px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    box-shadow: 0 14px 32px rgba(18, 60, 70, 0.18);
+}
+
+.backoffice-preview-publico h3 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    margin: 8px 0;
+}
+
+.backoffice-preview-publico p {
+    margin: 0;
+    color: #dff7f0;
+    max-width: 780px;
+}
+
+.preview-etiqueta {
+    display: inline-block;
+    background-color: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+
+.preview-contactos {
+    display: grid;
+    gap: 10px;
+    min-width: 260px;
+}
+
+.preview-contactos span {
+    background-color: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 14px;
+    padding: 10px 14px;
+    white-space: nowrap;
+}
+
+@media (max-width: 992px) {
+    .backoffice-linha-card {
+        grid-template-columns: 1fr;
+    }
+
+    .backoffice-preview-publico {
+        align-items: flex-start;
+        flex-direction: column;
     }
 }

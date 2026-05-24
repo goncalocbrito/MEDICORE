@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEDICORE | Backoffice Página Pública</title>
+
+    <!-- =========================================================
+         RECURSOS DA PÁGINA
+         Usa os mesmos recursos visuais da área privada MEDICORE.
+         ========================================================= -->
+    <link rel="shortcut icon" href="../../assets/img/MEDICORE_icon.png" type="image/png">
+    <link rel="stylesheet" href="../../assets/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="../../assets/css/1230404.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../assets/fontawesome/all.min.css">
+</head>
+
+<body>
+
+    <!-- =========================================================
+         CABEÇALHO SUPERIOR DA ÁREA PRIVADA
+         Identifica o utilizador e mantém o padrão das restantes páginas.
+         ========================================================= -->
+    <header class="container-fluid top-header">
+        <div class="row align-items-center">
+            <div class="col-md-4 d-flex align-items-center p-3">
+                <a href="../../index.html">
+                    <img src="../../assets/img/MEDICORE_logotipo_branco.png"
+                         alt="Logo da MEDICORE"
+                         class="logo-private">
+                </a>
+            </div>
+
+            <div class="col-md-4 text-center p-3">
+                <div class="mensagem-topo">
+                    <i class="fa-solid fa-user-doctor me-2"></i>
+                    <span>Bem-vindo, Sr. Engenheiro Gonçalo</span>
+                </div>
+            </div>
+
+            <div class="col-md-4 text-md-end p-3">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle user-button"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        <i class="fa-regular fa-user me-2"></i> Eng. Biomédico
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="perfil.php"><i class="fa-solid fa-user-gear me-2"></i> Perfil</a></li>
+                        <li><a class="dropdown-item" href="alterar_password.php"><i class="fa-solid fa-key me-2"></i> Alterar password</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="logout.php"><i class="fa-solid fa-right-from-bracket me-2"></i> Sair</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- =========================================================
+         MENU HORIZONTAL DA ÁREA PRIVADA
+         Mantém a navegação interna e destaca o backoffice público.
+         ========================================================= -->
+    <nav class="navbar navbar-expand-lg menu-horizontal">
+        <div class="container-fluid">
+            <button class="navbar-toggler bg-light"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#menuPrivado"
+                    aria-controls="menuPrivado"
+                    aria-expanded="false"
+                    aria-label="Abrir menu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse justify-content-center" id="menuPrivado">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a href="../../index.html" class="nav-link">
+                            <i class="fa-solid fa-chart-line me-2"></i> Dashboard Técnico
+                        </a>
+                    </li>
+
+                    <li class="nav-item menu-dropdown-hover">
+                        <a href="../equipamentos/lista_equipamentos.html" class="nav-link">
+                            <i class="fa-solid fa-stethoscope me-2"></i> Equipamentos
+                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
+                        </a>
+                        <ul class="submenu-equipamentos">
+                            <li><a href="../equipamentos/lista_equipamentos.html"><i class="fa-solid fa-list me-2"></i> Lista de Equipamentos</a></li>
+                            <li><a href="../equipamentos/novo_equipamento.html"><i class="fa-solid fa-plus me-2"></i> Adicionar Equipamento</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item menu-dropdown-hover-calibracoes">
+                        <a href="../calibracao_manutencao/calibracao_manutencao.html" class="nav-link">
+                            <i class="fa-solid fa-screwdriver-wrench me-2"></i> Calibrações/Manutenções
+                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
+                        </a>
+                        <ul class="submenu-calibracoes">
+                            <li><a href="../calibracao_manutencao/calibracao_manutencao.html"><i class="fa-solid fa-list-check me-2"></i> Processos a Decorrer</a></li>
+                            <li><a href="../calibracao_manutencao/processos_finalizados.html"><i class="fa-solid fa-circle-check me-2"></i> Processos Finalizados</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item menu-dropdown-hover-localizacoes">
+                        <a href="../localizacoes/lista_localizacoes.html" class="nav-link">
+                            <i class="fa-solid fa-location-dot me-2"></i> Localizações
+                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
+                        </a>
+                        <ul class="submenu-localizacoes">
+                            <li><a href="../localizacoes/lista_localizacoes.html"><i class="fa-solid fa-list me-2"></i> Lista de Localizações</a></li>
+                            <li><a href="../localizacoes/nova_localizacao.html"><i class="fa-solid fa-plus me-2"></i> Adicionar Localização</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item menu-dropdown-hover-fornecedores">
+                        <a href="../fornecedores/lista_fornecedores.html" class="nav-link">
+                            <i class="fa-solid fa-truck-medical me-2"></i> Fornecedores
+                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
+                        </a>
+                        <ul class="submenu-fornecedores">
+                            <li><a href="../fornecedores/lista_fornecedores.html"><i class="fa-solid fa-list me-2"></i> Lista de Fornecedores</a></li>
+                            <li><a href="../fornecedores/novo_fornecedor.html"><i class="fa-solid fa-plus me-2"></i> Adicionar Fornecedor</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item menu-dropdown-hover-utilizadores">
+                        <a href="../utilizadores/lista_utilizadores.html" class="nav-link">
+                            <i class="fa-solid fa-user me-2"></i> Utilizadores
+                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
+                        </a>
+                        <ul class="submenu-utilizadores">
+                            <li><a href="../utilizadores/lista_utilizadores.html"><i class="fa-solid fa-list me-2"></i> Lista de Utilizadores</a></li>
+                            <li><a href="../utilizadores/novo_utilizador.html"><i class="fa-solid fa-plus me-2"></i> Adicionar Utilizador</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="backoffice.html" class="nav-link active">
+                            <i class="fa-solid fa-pen-to-square me-2"></i> Página Pública
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- =========================================================
+         CONTEÚDO PRINCIPAL DO BACKOFFICE
+         Formulário organizado por separadores para gerir o index.php.
+         ========================================================= -->
+    <main class="conteudo-private ficha-equipamento-page backoffice-publico-page">
+
+        <!-- =====================================================
+             CABEÇALHO E AÇÕES PRINCIPAIS
+             Pré-visualizar abre a página pública; guardar simula persistência.
+             ===================================================== -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+                <h2 class="titulo-pagina">Backoffice da Página Pública</h2>
+                <p class="subtitulo-pagina">
+                    Edite textos, imagens, cartões e contactos apresentados no ficheiro público <strong>index.php</strong>.
+                </p>
+            </div>
+
+            <div class="form-actions backoffice-actions">
+                <button type="button" class="btn btn-limpar" id="btnPreVisualizarIndex">
+                    <i class="fa-solid fa-eye me-2"></i> Pré-visualizar
+                </button>
+
+                <button type="submit" class="btn btn-guardar" form="formBackofficePublico">
+                    <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Conteúdos
+                </button>
+            </div>
+        </div>
+
+        <!-- =====================================================
+             FORMULÁRIO PRINCIPAL
+             A ação PHP fica preparada para ligação futura a backend.
+             ===================================================== -->
+        <form class="form-equipamento form-ficha-equipamento"
+              id="formBackofficePublico"
+              action="processa_backoffice_publico.php"
+              method="post"
+              enctype="multipart/form-data">
+
+            <input type="hidden" name="acao" value="atualizar_pagina_publica">
+
+            <div class="ficha-area">
+                <!-- =============================================
+                     SEPARADORES DO BACKOFFICE
+                     Cada separador corresponde a uma secção do index.php.
+                     ============================================= -->
+                <ul class="nav nav-tabs ficha-tabs" id="tabsBackofficePublico" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="navbar-tab" data-bs-toggle="tab" data-bs-target="#navbar" type="button" role="tab" aria-controls="navbar" aria-selected="true">
+                            <i class="fa-solid fa-bars me-2"></i> Navbar
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="sobre-tab" data-bs-toggle="tab" data-bs-target="#sobre-publico" type="button" role="tab" aria-controls="sobre-publico" aria-selected="false">
+                            <i class="fa-solid fa-image me-2"></i> Sobre e Slides
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="equipa-tab" data-bs-toggle="tab" data-bs-target="#equipa-publica" type="button" role="tab" aria-controls="equipa-publica" aria-selected="false">
+                            <i class="fa-solid fa-users me-2"></i> Equipa
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="funcionalidades-tab" data-bs-toggle="tab" data-bs-target="#funcionalidades-publicas" type="button" role="tab" aria-controls="funcionalidades-publicas" aria-selected="false">
+                            <i class="fa-solid fa-grid-2 me-2"></i> Funcionalidades
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="equipamentos-publicos-tab" data-bs-toggle="tab" data-bs-target="#equipamentos-publicos" type="button" role="tab" aria-controls="equipamentos-publicos" aria-selected="false">
+                            <i class="fa-solid fa-stethoscope me-2"></i> Equipamentos
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="gestao-tab" data-bs-toggle="tab" data-bs-target="#gestao-publica" type="button" role="tab" aria-controls="gestao-publica" aria-selected="false">
+                            <i class="fa-solid fa-chart-line me-2"></i> Gestão
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="contactos-tab" data-bs-toggle="tab" data-bs-target="#contactos-publicos" type="button" role="tab" aria-controls="contactos-publicos" aria-selected="false">
+                            <i class="fa-solid fa-address-book me-2"></i> Contactos
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content ficha-tab-content" id="tabsBackofficePublicoConteudo">
+
+                    <!-- =========================================
+                         NAVBAR
+                         Permite alterar texto dos links e botão principal.
+                         ========================================= -->
+                    <div class="tab-pane fade show active" id="navbar" role="tabpanel" aria-labelledby="navbar-tab">
+                        <h3 class="secao-ficha-titulo">Navegação pública</h3>
+
+                        <div class="row g-4">
+                            <div class="col-md-4">
+                                <label for="navbarLogo" class="form-label">Logótipo da navbar</label>
+                                <input type="file" class="form-control" id="navbarLogo" name="navbarLogo" accept=".png,.jpg,.jpeg,.webp,.svg">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="navbarLogoAtual" class="form-label">Imagem atual</label>
+                                <input type="text" class="form-control" id="navbarLogoAtual" name="navbarLogoAtual" value="assets/img/MEDICORE_logotipo_branco.png">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="textoAreaRestrita" class="form-label">Botão área restrita</label>
+                                <input type="text" class="form-control campo-preview-publico" id="textoAreaRestrita" name="textoAreaRestrita" value="Área Restrita">
+                            </div>
+
+                            <div class="col-md-2">
+                                <label for="navSobre" class="form-label">Link 1</label>
+                                <input type="text" class="form-control" id="navSobre" name="navSobre" value="Sobre">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="navEquipa" class="form-label">Link 2</label>
+                                <input type="text" class="form-control" id="navEquipa" name="navEquipa" value="Nossa Equipa">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="navFuncionalidades" class="form-label">Link 3</label>
+                                <input type="text" class="form-control" id="navFuncionalidades" name="navFuncionalidades" value="Funcionalidades">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="navEquipamentos" class="form-label">Link 4</label>
+                                <input type="text" class="form-control" id="navEquipamentos" name="navEquipamentos" value="Equipamentos">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="navGestao" class="form-label">Link 5</label>
+                                <input type="text" class="form-control" id="navGestao" name="navGestao" value="Gestão Hospitalar">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="navContacto" class="form-label">Link 6</label>
+                                <input type="text" class="form-control" id="navContacto" name="navContacto" value="Contacto">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- =========================================
+                         SOBRE E CARROSSEL
+                         Edita título, introdução e os três slides.
+                         ========================================= -->
+                    <div class="tab-pane fade" id="sobre-publico" role="tabpanel" aria-labelledby="sobre-tab">
+                        <h3 class="secao-ficha-titulo">Sobre e carrossel principal</h3>
+
+                        <div class="row g-4">
+                            <div class="col-md-5">
+                                <label for="tituloHeroPublico" class="form-label">Título principal</label>
+                                <input type="text" class="form-control campo-preview-publico" id="tituloHeroPublico" name="tituloHeroPublico" value="Gestão Inteligente do Inventário Hospitalar">
+                            </div>
+
+                            <div class="col-md-7">
+                                <label for="textoHeroPublico" class="form-label">Texto introdutório</label>
+                                <textarea class="form-control campo-preview-publico" id="textoHeroPublico" name="textoHeroPublico" rows="3">O MEDICORE é uma aplicação web para registo, organização e acompanhamento de equipamentos médicos em contexto hospitalar.</textarea>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="backoffice-grid-cards">
+                                    <div class="backoffice-editor-card">
+                                        <h4>Slide 1</h4>
+                                        <label for="slide1Imagem" class="form-label">Imagem</label>
+                                        <input type="text" class="form-control mb-3" id="slide1Imagem" name="slide1Imagem" value="assets/img/MEDICORE_Official_Logo.png">
+                                        <label for="slide1Titulo" class="form-label">Título</label>
+                                        <input type="text" class="form-control mb-3" id="slide1Titulo" name="slide1Titulo" value="Inventário Hospitalar Centralizado">
+                                        <label for="slide1Texto" class="form-label">Descrição</label>
+                                        <textarea class="form-control" id="slide1Texto" name="slide1Texto" rows="3">Organize equipamentos médicos, fornecedores, localizações e estados numa única plataforma.</textarea>
+                                    </div>
+
+                                    <div class="backoffice-editor-card">
+                                        <h4>Slide 2</h4>
+                                        <label for="slide2Imagem" class="form-label">Imagem</label>
+                                        <input type="text" class="form-control mb-3" id="slide2Imagem" name="slide2Imagem" value="assets/img/equipamentos_medicos.png">
+                                        <label for="slide2Titulo" class="form-label">Título</label>
+                                        <input type="text" class="form-control mb-3" id="slide2Titulo" name="slide2Titulo" value="Equipamentos Sempre Monitorizados">
+                                        <label for="slide2Texto" class="form-label">Descrição</label>
+                                        <textarea class="form-control" id="slide2Texto" name="slide2Texto" rows="3">Acompanhe o ciclo de vida dos equipamentos médicos de forma simples e eficiente.</textarea>
+                                    </div>
+
+                                    <div class="backoffice-editor-card">
+                                        <h4>Slide 3</h4>
+                                        <label for="slide3Imagem" class="form-label">Imagem</label>
+                                        <input type="text" class="form-control mb-3" id="slide3Imagem" name="slide3Imagem" value="assets/img/backoffice_hospitalar.png">
+                                        <label for="slide3Titulo" class="form-label">Título</label>
+                                        <input type="text" class="form-control mb-3" id="slide3Titulo" name="slide3Titulo" value="Backoffice Administrativo">
+                                        <label for="slide3Texto" class="form-label">Descrição</label>
+                                        <textarea class="form-control" id="slide3Texto" name="slide3Texto" rows="3">Atualize conteúdos públicos e faça a gestão interna através de uma área reservada.</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- =========================================
+                         EQUIPA
+                         Edita os cartões da secção "A Nossa Equipa".
+                         ========================================= -->
+                    <div class="tab-pane fade" id="equipa-publica" role="tabpanel" aria-labelledby="equipa-tab">
+                        <h3 class="secao-ficha-titulo">A Nossa Equipa</h3>
+
+                        <div class="backoffice-grid-cards">
+                            <div class="backoffice-editor-card">
+                                <h4>Cartão 1</h4>
+                                <input type="text" class="form-control mb-3" name="equipa1Icone" value="fa-solid fa-user-shield">
+                                <input type="text" class="form-control mb-3" name="equipa1Titulo" value="Administrador">
+                                <textarea class="form-control" name="equipa1Texto" rows="3">Responsável pela gestão dos conteúdos públicos e pelo acesso à área reservada.</textarea>
+                            </div>
+
+                            <div class="backoffice-editor-card">
+                                <h4>Cartão 2</h4>
+                                <input type="text" class="form-control mb-3" name="equipa2Icone" value="fa-solid fa-user-gear">
+                                <input type="text" class="form-control mb-3" name="equipa2Titulo" value="Técnico Biomédico">
+                                <textarea class="form-control" name="equipa2Texto" rows="3">Acompanha o estado, localização e funcionamento dos equipamentos médicos.</textarea>
+                            </div>
+
+                            <div class="backoffice-editor-card">
+                                <h4>Cartão 3</h4>
+                                <input type="text" class="form-control mb-3" name="equipa3Icone" value="fa-solid fa-hospital-user">
+                                <input type="text" class="form-control mb-3" name="equipa3Titulo" value="Gestor Hospitalar">
+                                <textarea class="form-control" name="equipa3Texto" rows="3">Consulta indicadores do inventário e apoia a tomada de decisão na unidade hospitalar.</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- =========================================
+                         FUNCIONALIDADES
+                         Edita os cartões da secção "Funcionalidades".
+                         ========================================= -->
+                    <div class="tab-pane fade" id="funcionalidades-publicas" role="tabpanel" aria-labelledby="funcionalidades-tab">
+                        <h3 class="secao-ficha-titulo">Funcionalidades</h3>
+
+                        <div class="backoffice-lista-editavel">
+                            <div class="backoffice-linha-card">
+                                <input type="text" class="form-control" name="func1Icone" value="fa-solid fa-boxes-stacked">
+                                <input type="text" class="form-control" name="func1Titulo" value="Gestão de Equipamentos">
+                                <textarea class="form-control" name="func1Texto" rows="2">Registo, edição, consulta e organização dos equipamentos médicos existentes.</textarea>
+                            </div>
+                            <div class="backoffice-linha-card">
+                                <input type="text" class="form-control" name="func2Icone" value="fa-solid fa-truck-medical">
+                                <input type="text" class="form-control" name="func2Titulo" value="Gestão de Fornecedores">
+                                <textarea class="form-control" name="func2Texto" rows="2">Armazenamento de dados dos fornecedores associados aos equipamentos hospitalares.</textarea>
+                            </div>
+                            <div class="backoffice-linha-card">
+                                <input type="text" class="form-control" name="func3Icone" value="fa-solid fa-location-dot">
+                                <input type="text" class="form-control" name="func3Titulo" value="Localizações Hospitalares">
+                                <textarea class="form-control" name="func3Texto" rows="2">Associação dos equipamentos a departamentos, pisos, salas e unidades clínicas.</textarea>
+                            </div>
+                            <div class="backoffice-linha-card">
+                                <input type="text" class="form-control" name="func4Icone" value="fa-solid fa-screwdriver-wrench">
+                                <input type="text" class="form-control" name="func4Titulo" value="Estados dos Equipamentos">
+                                <textarea class="form-control" name="func4Texto" rows="2">Controlo de equipamentos ativos, inativos, avariados ou em manutenção.</textarea>
+                            </div>
+                            <div class="backoffice-linha-card">
+                                <input type="text" class="form-control" name="func5Icone" value="fa-solid fa-chart-line">
+                                <input type="text" class="form-control" name="func5Titulo" value="Dashboard">
+                                <textarea class="form-control" name="func5Texto" rows="2">Visualização de indicadores estatísticos sobre o inventário hospitalar.</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- =========================================
+                         EQUIPAMENTOS
+                         Edita categorias públicas de equipamentos.
+                         ========================================= -->
+                    <div class="tab-pane fade" id="equipamentos-publicos" role="tabpanel" aria-labelledby="equipamentos-publicos-tab">
+                        <h3 class="secao-ficha-titulo">Categorias de Equipamentos Médicos</h3>
+
+                        <div class="backoffice-lista-editavel">
+                            <div class="backoffice-linha-card">
+                                <input type="text" class="form-control" name="cat1Icone" value="fa-solid fa-heart-pulse">
+                                <input type="text" class="form-control" name="cat1Titulo" value="Monitorização">
+                                <textarea class="form-control" name="cat1Texto" rows="2">Equipamentos como monitores multiparamétricos, oxímetros e sensores clínicos.</textarea>
+                            </div>
+                            <div class="backoffice-linha-card">
+                                <input type="text" class="form-control" name="cat2Icone" value="fa-solid fa-x-ray">
+                                <input type="text" class="form-control" name="cat2Titulo" value="Imagiologia">
+                                <textarea class="form-control" name="cat2Texto" rows="2">Equipamentos associados ao diagnóstico por imagem e apoio clínico.</textarea>
+                            </div>
+                            <div class="backoffice-linha-card">
+                                <input type="text" class="form-control" name="cat3Icone" value="fa-solid fa-lungs">
+                                <input type="text" class="form-control" name="cat3Titulo" value="Suporte de Vida">
+                                <textarea class="form-control" name="cat3Texto" rows="2">Ventiladores, desfibrilhadores e outros equipamentos críticos hospitalares.</textarea>
+                            </div>
+                            <div class="backoffice-linha-card">
+                                <input type="text" class="form-control" name="cat4Icone" value="fa-solid fa-vial-circle-check">
+                                <input type="text" class="form-control" name="cat4Titulo" value="Laboratório">
+                                <textarea class="form-control" name="cat4Texto" rows="2">Equipamentos utilizados em análises clínicas, testes e exames laboratoriais.</textarea>
+                            </div>
+                            <div class="backoffice-linha-card">
+                                <input type="text" class="form-control" name="cat5Icone" value="fa-solid fa-bed-pulse">
+                                <input type="text" class="form-control" name="cat5Titulo" value="Cuidados Clínicos">
+                                <textarea class="form-control" name="cat5Texto" rows="2">Dispositivos de apoio ao acompanhamento e tratamento dos utentes.</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- =========================================
+                         GESTÃO HOSPITALAR
+                         Edita os três cartões de gestão da página pública.
+                         ========================================= -->
+                    <div class="tab-pane fade" id="gestao-publica" role="tabpanel" aria-labelledby="gestao-tab">
+                        <h3 class="secao-ficha-titulo">Gestão Hospitalar</h3>
+
+                        <div class="backoffice-grid-cards">
+                            <div class="backoffice-editor-card">
+                                <h4>Bloco 1</h4>
+                                <input type="text" class="form-control mb-3" name="gestao1Titulo" value="Inventário Organizado">
+                                <input type="text" class="form-control mb-3" name="gestao1Etiqueta" value="Controlo">
+                                <textarea class="form-control" name="gestao1Lista" rows="4">Registo de equipamentos médicos&#10;Associação a categorias e fornecedores</textarea>
+                            </div>
+                            <div class="backoffice-editor-card">
+                                <h4>Bloco 2</h4>
+                                <input type="text" class="form-control mb-3" name="gestao2Titulo" value="Localização e Estado">
+                                <input type="text" class="form-control mb-3" name="gestao2Etiqueta" value="Rastreio">
+                                <textarea class="form-control" name="gestao2Lista" rows="4">Identificação da localização hospitalar&#10;Consulta do estado operacional&#10;Apoio à gestão de manutenção</textarea>
+                            </div>
+                            <div class="backoffice-editor-card">
+                                <h4>Bloco 3</h4>
+                                <input type="text" class="form-control mb-3" name="gestao3Titulo" value="Indicadores de Gestão">
+                                <input type="text" class="form-control mb-3" name="gestao3Etiqueta" value="Dashboard">
+                                <textarea class="form-control" name="gestao3Lista" rows="4">Total de equipamentos registados&#10;Equipamentos por categoria&#10;Equipamentos por localização&#10;Equipamentos ativos e inativos</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- =========================================
+                         CONTACTOS E RODAPÉ
+                         Edita contacto, localização, horário e dados finais.
+                         ========================================= -->
+                    <div class="tab-pane fade" id="contactos-publicos" role="tabpanel" aria-labelledby="contactos-tab">
+                        <h3 class="secao-ficha-titulo">Contacto e rodapé</h3>
+
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label for="textoContactoPublico" class="form-label">Texto da secção contacto</label>
+                                <textarea class="form-control campo-preview-publico" id="textoContactoPublico" name="textoContactoPublico" rows="3">Entre em contacto com a equipa responsável pela gestão do inventário hospitalar.</textarea>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="localizacaoRodape" class="form-label">Localização</label>
+                                <textarea class="form-control" id="localizacaoRodape" name="localizacaoRodape" rows="3">Instituto Superior de Engenharia do Porto&#10;Rua Dr. António Bernardino de Almeida&#10;Porto, Portugal</textarea>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="horarioSemana" class="form-label">Horário semanal</label>
+                                <input type="text" class="form-control" id="horarioSemana" name="horarioSemana" value="2ª a 6ª Feira: 9h — 18h">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="emailRodape" class="form-label">Email</label>
+                                <input type="email" class="form-control campo-preview-publico" id="emailRodape" name="emailRodape" value="geral@medicore.pt">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="telefoneRodape" class="form-label">Telefone</label>
+                                <input type="text" class="form-control campo-preview-publico" id="telefoneRodape" name="telefoneRodape" value="+351 9xx xxx xxx">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </form>
+
+        <!-- =====================================================
+             PRÉ-VISUALIZAÇÃO RÁPIDA
+             Mostra alguns textos chave sem sair do backoffice.
+             ===================================================== -->
+        <section class="backoffice-preview-publico" aria-label="Pré-visualização dos conteúdos públicos">
+            <div>
+                <span class="preview-etiqueta">Pré-visualização rápida</span>
+                <h3 id="previewTituloHero">Gestão Inteligente do Inventário Hospitalar</h3>
+                <p id="previewTextoHero">
+                    O MEDICORE é uma aplicação web para registo, organização e acompanhamento de equipamentos médicos em contexto hospitalar.
+                </p>
+            </div>
+
+            <div class="preview-contactos">
+                <span><i class="fa-solid fa-envelope me-2"></i><strong id="previewEmailRodape">geral@medicore.pt</strong></span>
+                <span><i class="fa-solid fa-phone me-2"></i><strong id="previewTelefoneRodape">+351 9xx xxx xxx</strong></span>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="../../assets/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="../../assets/js/1230404.js"></script>
+</body>
+</html>
