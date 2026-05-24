@@ -2359,6 +2359,19 @@ document.addEventListener("DOMContentLoaded", function () {
    ========================================================= */
 
 function classeProcedimentoPedido(procedimento) {
+    const procedimentoNormalizado = (procedimento || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+    if (procedimentoNormalizado === "calibracao") {
+        return "tipo-fornecedor tipo-calibracao";
+    }
+
+    if (procedimentoNormalizado === "manutencao corretiva") {
+        return "tipo-localizacao tipo-urgencia";
+    }
+
     // Define a cor visual do badge conforme o tipo de procedimento.
     if (procedimento === "Calibração") {
         return "tipo-fornecedor tipo-calibracao";
@@ -2411,12 +2424,133 @@ function escaparTextoPedido(valor) {
     return div.innerHTML;
 }
 
+function criarBotoesPedido() {
+    // Cria os três botões usados em cada pedido: ver/editar, finalizar e eliminar.
+    return `
+        <td class="text-center">
+            <button type="button" class="btn btn-sm btn-ficha btn-ver-editar-pedido" title="Ver/editar pedido">
+                <i class="fa-solid fa-file-lines"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-editar btn-finalizar-pedido" title="Finalizar pedido">
+                <i class="fa-solid fa-check"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-eliminar btn-eliminar-pedido" title="Eliminar pedido">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </td>
+    `;
+}
+
+function atualizarDadosLinhaPedido(linha, dados) {
+    // Guarda os dados do pedido na própria linha para os modais conseguirem reutilizá-los.
+    linha.dataset.codigo = dados.codigo;
+    linha.dataset.equipamento = dados.equipamento;
+    linha.dataset.categoria = dados.categoria;
+    linha.dataset.localizacao = dados.localizacao;
+    linha.dataset.procedimento = dados.procedimento;
+    linha.dataset.fornecedor = dados.fornecedor;
+    linha.dataset.data = dados.data;
+    linha.dataset.estado = dados.estado;
+    linha.dataset.observacoes = dados.observacoes;
+}
+
+function atualizarConteudoLinhaPedido(linha, dados) {
+    // Atualiza o conteúdo visível da linha depois de criar ou editar um pedido.
+    linha.innerHTML = `
+        <td>${dados.codigo}</td>
+        <td>${dados.equipamento}</td>
+        <td>${dados.categoria}</td>
+        <td>${dados.localizacao}</td>
+        <td>
+            <span class="${classeProcedimentoPedido(dados.procedimento)}">${dados.procedimento}</span>
+        </td>
+        <td>${dados.fornecedor}</td>
+        <td>${formatarDataPT(dados.data)}</td>
+        <td>
+            <span class="${classeEstadoPedido(dados.estado)}">${dados.estado}</span>
+        </td>
+        <td>${escaparTextoPedido(dados.observacoes)}</td>
+        ${criarBotoesPedido()}
+    `;
+}
+
+function mostrarPopupPedido(titulo, mensagem) {
+    // Mostra uma confirmação curta sem redirecionar.
+    const overlay = document.createElement("div");
+    overlay.classList.add("popup-sucesso-overlay");
+
+    overlay.innerHTML = `
+        <div class="popup-sucesso-card">
+            <div class="popup-sucesso-icone">
+                <i class="fa-solid fa-check"></i>
+            </div>
+
+            <h3>${titulo}</h3>
+            <p>${mensagem}</p>
+
+            <div class="popup-sucesso-barra">
+                <span></span>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    setTimeout(function () {
+        overlay.remove();
+    }, 2200);
+}
+
+function guardarPedidoFinalizado(dados) {
+    // Guarda pedidos finalizados no navegador para simular a página de histórico sem backend.
+    const chave = "medicoreProcessosFinalizados";
+    const processos = JSON.parse(localStorage.getItem(chave) || "[]");
+
+    processos.unshift({
+        ...dados,
+        estado: "Efetuada",
+        dataConclusao: new Date().toISOString().slice(0, 10)
+    });
+
+    localStorage.setItem(chave, JSON.stringify(processos));
+}
+
+function carregarProcessosFinalizados() {
+    // Carrega para a página processos_finalizados.html os pedidos finalizados nesta sessão/navegador.
+    const tabela = document.getElementById("tabelaProcessosFinalizados");
+    if (!tabela) return;
+
+    const processos = JSON.parse(localStorage.getItem("medicoreProcessosFinalizados") || "[]");
+
+    processos.forEach(function (processo) {
+        const linha = document.createElement("tr");
+
+        linha.innerHTML = `
+            <td>${processo.codigo}</td>
+            <td>${processo.equipamento}</td>
+            <td>${processo.categoria}</td>
+            <td>${processo.localizacao}</td>
+            <td><span class="${classeProcedimentoPedido(processo.procedimento)}">${processo.procedimento}</span></td>
+            <td>${processo.fornecedor}</td>
+            <td>${formatarDataPT(processo.dataConclusao)}</td>
+            <td><span class="estado estado-ativo">Efetuada</span></td>
+            <td>${escaparTextoPedido(processo.observacoes || "Sem observações adicionais.")}</td>
+        `;
+
+        tabela.prepend(linha);
+    });
+}
+
 document.addEventListener("DOMContentLoaded", function () {
 
     const formNovoPedido = document.getElementById("formNovoPedidoCalibracaoManutencao");
     const tabelaPedidos = document.getElementById("tabelaPedidosCalibracaoManutencao");
+    const formEditarPedido = document.getElementById("formEditarPedidoCalibracaoManutencao");
+    const btnConfirmarEliminarPedido = document.getElementById("btnConfirmarEliminarPedidoCalibracaoManutencao");
 
     if (!formNovoPedido || !tabelaPedidos) return;
+
+    let linhaPedidoSelecionada = null;
 
     formNovoPedido.addEventListener("submit", function (event) {
         event.preventDefault();
@@ -2429,28 +2563,22 @@ document.addEventListener("DOMContentLoaded", function () {
         const estado = document.getElementById("pedidoEstadoOperacao").value;
         const observacoes = document.getElementById("pedidoObservacoes").value.trim() || "Sem observações adicionais.";
 
-        const codigo = equipamentoSelect.value;
-        const nome = equipamentoSelecionado.dataset.nome;
-        const categoria = equipamentoSelecionado.dataset.categoria;
-        const localizacao = equipamentoSelecionado.dataset.localizacao;
+        const dados = {
+            codigo: equipamentoSelect.value,
+            equipamento: equipamentoSelecionado.dataset.nome,
+            categoria: equipamentoSelecionado.dataset.categoria,
+            localizacao: equipamentoSelecionado.dataset.localizacao,
+            procedimento: procedimento,
+            fornecedor: fornecedor,
+            data: dataPrevista,
+            estado: estado,
+            observacoes: observacoes
+        };
 
         const linha = document.createElement("tr");
 
-        linha.innerHTML = `
-            <td>${codigo}</td>
-            <td>${nome}</td>
-            <td>${categoria}</td>
-            <td>${localizacao}</td>
-            <td>
-                <span class="${classeProcedimentoPedido(procedimento)}">${procedimento}</span>
-            </td>
-            <td>${fornecedor}</td>
-            <td>${formatarDataPT(dataPrevista)}</td>
-            <td>
-                <span class="${classeEstadoPedido(estado)}">${estado}</span>
-            </td>
-            <td>${escaparTextoPedido(observacoes)}</td>
-        `;
+        atualizarDadosLinhaPedido(linha, dados);
+        atualizarConteudoLinhaPedido(linha, dados);
 
         tabelaPedidos.prepend(linha);
 
@@ -2463,4 +2591,105 @@ document.addEventListener("DOMContentLoaded", function () {
         mostrarPopupPedidoRegistado();
     });
 
+    tabelaPedidos.addEventListener("click", function (event) {
+        const botaoEditar = event.target.closest(".btn-ver-editar-pedido");
+        const botaoFinalizar = event.target.closest(".btn-finalizar-pedido");
+        const botaoEliminar = event.target.closest(".btn-eliminar-pedido");
+
+        if (botaoEditar) {
+            linhaPedidoSelecionada = botaoEditar.closest("tr");
+
+            document.getElementById("editarPedidoCodigo").value = linhaPedidoSelecionada.dataset.codigo;
+            document.getElementById("editarPedidoEquipamento").value = linhaPedidoSelecionada.dataset.equipamento;
+            document.getElementById("editarPedidoCategoria").value = linhaPedidoSelecionada.dataset.categoria;
+            document.getElementById("editarPedidoLocalizacao").value = linhaPedidoSelecionada.dataset.localizacao;
+            document.getElementById("editarPedidoProcedimento").value = linhaPedidoSelecionada.dataset.procedimento;
+            document.getElementById("editarPedidoFornecedor").value = linhaPedidoSelecionada.dataset.fornecedor;
+            document.getElementById("editarPedidoData").value = linhaPedidoSelecionada.dataset.data;
+            document.getElementById("editarPedidoEstado").value = linhaPedidoSelecionada.dataset.estado;
+            document.getElementById("editarPedidoObservacoes").value = linhaPedidoSelecionada.dataset.observacoes;
+
+            new bootstrap.Modal(document.getElementById("modalEditarPedidoCalibracaoManutencao")).show();
+        }
+
+        if (botaoFinalizar) {
+            const linha = botaoFinalizar.closest("tr");
+            const codigo = linha.dataset.codigo;
+            const equipamento = linha.dataset.equipamento;
+
+            guardarPedidoFinalizado({
+                codigo: linha.dataset.codigo,
+                equipamento: linha.dataset.equipamento,
+                categoria: linha.dataset.categoria,
+                localizacao: linha.dataset.localizacao,
+                procedimento: linha.dataset.procedimento,
+                fornecedor: linha.dataset.fornecedor,
+                data: linha.dataset.data,
+                estado: "Efetuada",
+                observacoes: linha.dataset.observacoes
+            });
+
+            linha.remove();
+
+            mostrarPopupPedido(
+                "Pedido finalizado",
+                `O pedido do equipamento ${codigo} - ${equipamento} foi marcado como finalizado.`
+            );
+        }
+
+        if (botaoEliminar) {
+            linhaPedidoSelecionada = botaoEliminar.closest("tr");
+
+            document.getElementById("modalEliminarPedidoCodigo").textContent = linhaPedidoSelecionada.dataset.codigo;
+            document.getElementById("modalEliminarPedidoEquipamento").textContent = linhaPedidoSelecionada.dataset.equipamento;
+            document.getElementById("modalEliminarPedidoProcedimento").textContent = linhaPedidoSelecionada.dataset.procedimento;
+            document.getElementById("modalEliminarPedidoEstado").textContent = linhaPedidoSelecionada.dataset.estado;
+
+            new bootstrap.Modal(document.getElementById("modalEliminarPedidoCalibracaoManutencao")).show();
+        }
+    });
+
+    if (formEditarPedido) {
+        formEditarPedido.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            if (!linhaPedidoSelecionada) return;
+
+            const dados = {
+                codigo: linhaPedidoSelecionada.dataset.codigo,
+                equipamento: linhaPedidoSelecionada.dataset.equipamento,
+                categoria: linhaPedidoSelecionada.dataset.categoria,
+                localizacao: linhaPedidoSelecionada.dataset.localizacao,
+                procedimento: document.getElementById("editarPedidoProcedimento").value,
+                fornecedor: document.getElementById("editarPedidoFornecedor").value,
+                data: document.getElementById("editarPedidoData").value,
+                estado: document.getElementById("editarPedidoEstado").value,
+                observacoes: document.getElementById("editarPedidoObservacoes").value.trim() || "Sem observações adicionais."
+            };
+
+            atualizarDadosLinhaPedido(linhaPedidoSelecionada, dados);
+            atualizarConteudoLinhaPedido(linhaPedidoSelecionada, dados);
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById("modalEditarPedidoCalibracaoManutencao"));
+            if (modal) modal.hide();
+
+            mostrarPopupPedido("Pedido atualizado", "As alterações do pedido foram guardadas com sucesso.");
+        });
+    }
+
+    if (btnConfirmarEliminarPedido) {
+        btnConfirmarEliminarPedido.addEventListener("click", function () {
+            if (!linhaPedidoSelecionada) return;
+
+            linhaPedidoSelecionada.remove();
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById("modalEliminarPedidoCalibracaoManutencao"));
+            if (modal) modal.hide();
+
+            mostrarPopupPedido("Pedido removido", "O pedido foi removido da lista de processos a decorrer.");
+        });
+    }
+
 });
+
+document.addEventListener("DOMContentLoaded", carregarProcessosFinalizados);

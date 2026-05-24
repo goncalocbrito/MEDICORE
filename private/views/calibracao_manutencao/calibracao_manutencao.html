@@ -131,11 +131,25 @@
                         </ul>
                     </li>
 
-                    <!-- Menu ativo da página atual -->
-                    <li class="nav-item">
+                    <!-- Menu Calibrações/Manutenções ativo nesta página -->
+                    <li class="nav-item menu-dropdown-hover-calibracoes">
                         <a href="calibracao_manutencao.html" class="nav-link active">
                             <i class="fa-solid fa-screwdriver-wrench me-2"></i> Calibrações/Manutenções
+                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
                         </a>
+
+                        <ul class="submenu-calibracoes">
+                            <li>
+                                <a href="calibracao_manutencao.html" class="submenu-active">
+                                    <i class="fa-solid fa-list-check me-2"></i> Processos a Decorrer
+                                </a>
+                            </li>
+                            <li>
+                                <a href="processos_finalizados.html">
+                                    <i class="fa-solid fa-circle-check me-2"></i> Processos Finalizados
+                                </a>
+                            </li>
+                        </ul>
                     </li>
 
                     <!-- Menu Localizações -->
@@ -253,12 +267,21 @@
                         <th>Data Prevista</th>
                         <th>Estado da Operação</th>
                         <th>Observações</th>
+                        <th class="text-center">Ações</th>
                     </tr>
                 </thead>
 
                 <tbody id="tabelaPedidosCalibracaoManutencao">
                     <!-- Linha 1: manutenção preventiva programada -->
-                    <tr>
+                    <tr data-codigo="EQ-001"
+                        data-equipamento="Monitor Multiparamétrico"
+                        data-categoria="Monitorização"
+                        data-localizacao="UCI - Sala 2"
+                        data-procedimento="Manutenção preventiva"
+                        data-fornecedor="MedSupply Portugal"
+                        data-data="2026-09-12"
+                        data-estado="Aguarda fornecedor"
+                        data-observacoes="Pedido enviado para confirmação de agenda.">
                         <td>EQ-001</td>
                         <td>Monitor Multiparamétrico</td>
                         <td>Monitorização</td>
@@ -272,10 +295,29 @@
                             <span class="estado estado-manutencao">Aguarda fornecedor</span>
                         </td>
                         <td>Pedido enviado para confirmação de agenda.</td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-sm btn-ficha btn-ver-editar-pedido" title="Ver/editar pedido">
+                                <i class="fa-solid fa-file-lines"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-editar btn-finalizar-pedido" title="Finalizar pedido">
+                                <i class="fa-solid fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-eliminar btn-eliminar-pedido" title="Eliminar pedido">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
                     </tr>
 
                     <!-- Linha 2: manutenção corretiva em curso -->
-                    <tr>
+                    <tr data-codigo="EQ-002"
+                        data-equipamento="Ventilador Pulmonar"
+                        data-categoria="Suporte de Vida"
+                        data-localizacao="Urgência - Sala 1"
+                        data-procedimento="Manutenção corretiva"
+                        data-fornecedor="Biomedical Solutions"
+                        data-data="2026-05-28"
+                        data-estado="Em manutenção"
+                        data-observacoes="Intervenção técnica por falha no sistema de ventilação.">
                         <td>EQ-002</td>
                         <td>Ventilador Pulmonar</td>
                         <td>Suporte de Vida</td>
@@ -289,10 +331,29 @@
                             <span class="estado estado-manutencao">Em manutenção</span>
                         </td>
                         <td>Intervenção técnica por falha no sistema de ventilação.</td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-sm btn-ficha btn-ver-editar-pedido" title="Ver/editar pedido">
+                                <i class="fa-solid fa-file-lines"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-editar btn-finalizar-pedido" title="Finalizar pedido">
+                                <i class="fa-solid fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-eliminar btn-eliminar-pedido" title="Eliminar pedido">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
                     </tr>
 
                     <!-- Linha 3: calibração em curso -->
-                    <tr>
+                    <tr data-codigo="EQ-003"
+                        data-equipamento="Desfibrilhador"
+                        data-categoria="Emergência"
+                        data-localizacao="Bloco Operatório"
+                        data-procedimento="Calibração"
+                        data-fornecedor="CalibraMed"
+                        data-data="2026-05-30"
+                        data-estado="Em calibração"
+                        data-observacoes="A aguardar emissão do certificado de calibração.">
                         <td>EQ-003</td>
                         <td>Desfibrilhador</td>
                         <td>Emergência</td>
@@ -306,27 +367,29 @@
                             <span class="estado estado-manutencao">Em calibração</span>
                         </td>
                         <td>A aguardar emissão do certificado de calibração.</td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-sm btn-ficha btn-ver-editar-pedido" title="Ver/editar pedido">
+                                <i class="fa-solid fa-file-lines"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-editar btn-finalizar-pedido" title="Finalizar pedido">
+                                <i class="fa-solid fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-eliminar btn-eliminar-pedido" title="Eliminar pedido">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
                     </tr>
 
-                    <!-- Linha 4: procedimento já concluído -->
-                    <tr>
-                        <td>EQ-004</td>
-                        <td>Monitor de Sinais Vitais</td>
-                        <td>Monitorização</td>
-                        <td>Pediatria - Sala 3</td>
-                        <td>
-                            <span class="tipo-fornecedor tipo-manutencao">Manutenção preventiva</span>
-                        </td>
-                        <td>Eng. Gonçalo Brito</td>
-                        <td>15/05/2026</td>
-                        <td>
-                            <span class="estado estado-ativo">Efetuada</span>
-                        </td>
-                        <td>Equipamento validado e disponível para utilização.</td>
-                    </tr>
-
-                    <!-- Linha 5: calibração a aguardar entidade externa -->
-                    <tr>
+                    <!-- Linha 4: calibração a aguardar entidade externa -->
+                    <tr data-codigo="EQ-005"
+                        data-equipamento="Bomba de Infusão"
+                        data-categoria="Terapia"
+                        data-localizacao="Medicina Interna"
+                        data-procedimento="Calibração"
+                        data-fornecedor="CalibraMed"
+                        data-data="2026-06-05"
+                        data-estado="Aguarda fornecedor"
+                        data-observacoes="Fornecedor contactado para recolha do equipamento.">
                         <td>EQ-005</td>
                         <td>Bomba de Infusão</td>
                         <td>Terapia</td>
@@ -340,29 +403,178 @@
                             <span class="estado estado-manutencao">Aguarda fornecedor</span>
                         </td>
                         <td>Fornecedor contactado para recolha do equipamento.</td>
-                    </tr>
-
-                    <!-- Linha 6: manutenção corretiva concluída -->
-                    <tr>
-                        <td>EQ-006</td>
-                        <td>Oxímetro de Pulso</td>
-                        <td>Monitorização</td>
-                        <td>Urgência - Triagem</td>
-                        <td>
-                            <span class="tipo-localizacao tipo-urgencia">Manutenção corretiva</span>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-sm btn-ficha btn-ver-editar-pedido" title="Ver/editar pedido">
+                                <i class="fa-solid fa-file-lines"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-editar btn-finalizar-pedido" title="Finalizar pedido">
+                                <i class="fa-solid fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-eliminar btn-eliminar-pedido" title="Eliminar pedido">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
                         </td>
-                        <td>Biomedical Solutions</td>
-                        <td>20/05/2026</td>
-                        <td>
-                            <span class="estado estado-ativo">Efetuada</span>
-                        </td>
-                        <td>Substituição de sensor e teste funcional realizado.</td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
     </main>
+
+    <!-- =========================================================
+         MODAL DE DETALHES / EDIÇÃO DO PEDIDO
+         Abre ao clicar no botão de ficha. Permite consultar os dados
+         do pedido e alterar procedimento, fornecedor, data, estado
+         e observações.
+         ========================================================= -->
+    <div class="modal fade"
+         id="modalEditarPedidoCalibracaoManutencao"
+         tabindex="-1"
+         aria-labelledby="modalEditarPedidoCalibracaoManutencaoLabel"
+         aria-hidden="true">
+
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title" id="modalEditarPedidoCalibracaoManutencaoLabel">
+                            <i class="fa-solid fa-file-lines me-2"></i>
+                            Detalhes do Pedido
+                        </h5>
+                        <p class="modal-remocao-subtitulo text-muted">
+                            Consulte ou altere os dados do pedido selecionado.
+                        </p>
+                    </div>
+
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+
+                <form id="formEditarPedidoCalibracaoManutencao">
+                    <div class="modal-body">
+                        <input type="hidden" id="editarPedidoLinhaIndice">
+
+                        <div class="row g-4">
+                            <div class="col-md-3">
+                                <label for="editarPedidoCodigo" class="form-label">Código</label>
+                                <input type="text" class="form-control campo-bloqueado" id="editarPedidoCodigo" readonly>
+                            </div>
+
+                            <div class="col-md-5">
+                                <label for="editarPedidoEquipamento" class="form-label">Equipamento</label>
+                                <input type="text" class="form-control campo-bloqueado" id="editarPedidoEquipamento" readonly>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="editarPedidoCategoria" class="form-label">Categoria</label>
+                                <input type="text" class="form-control campo-bloqueado" id="editarPedidoCategoria" readonly>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="editarPedidoLocalizacao" class="form-label">Localização</label>
+                                <input type="text" class="form-control campo-bloqueado" id="editarPedidoLocalizacao" readonly>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="editarPedidoProcedimento" class="form-label">Procedimento *</label>
+                                <select class="form-select" id="editarPedidoProcedimento" required>
+                                    <option value="Calibração">Calibração</option>
+                                    <option value="Manutenção preventiva">Manutenção preventiva</option>
+                                    <option value="Manutenção corretiva">Manutenção corretiva</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="editarPedidoFornecedor" class="form-label">Fornecedor / Técnico *</label>
+                                <select class="form-select" id="editarPedidoFornecedor" required>
+                                    <option value="MedSupply Portugal">MedSupply Portugal</option>
+                                    <option value="Biomedical Solutions">Biomedical Solutions</option>
+                                    <option value="CalibraMed">CalibraMed</option>
+                                    <option value="Eng. Gonçalo Brito">Eng. Gonçalo Brito</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="editarPedidoData" class="form-label">Data Prevista *</label>
+                                <input type="date" class="form-control" id="editarPedidoData" required>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="editarPedidoEstado" class="form-label">Estado *</label>
+                                <select class="form-select" id="editarPedidoEstado" required>
+                                    <option value="Aguarda fornecedor">Aguarda fornecedor</option>
+                                    <option value="Em manutenção">Em manutenção</option>
+                                    <option value="Em calibração">Em calibração</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="editarPedidoObservacoes" class="form-label">Observações</label>
+                                <textarea class="form-control" id="editarPedidoObservacoes" rows="4"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-cancelar" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark me-2"></i> Cancelar
+                        </button>
+
+                        <button type="submit" class="btn btn-guardar">
+                            <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         MODAL DE REMOÇÃO DO PEDIDO
+         Confirma a eliminação visual do pedido selecionado.
+         ========================================================= -->
+    <div class="modal fade"
+         id="modalEliminarPedidoCalibracaoManutencao"
+         tabindex="-1"
+         aria-labelledby="modalEliminarPedidoCalibracaoManutencaoLabel"
+         aria-hidden="true">
+
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-remocao-dialog">
+            <div class="modal-content modal-apagar-equipamento">
+                <div class="modal-header modal-remocao-header">
+                    <div>
+                        <h5 class="modal-title" id="modalEliminarPedidoCalibracaoManutencaoLabel">
+                            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                            Confirmar remoção
+                        </h5>
+                        <p class="modal-remocao-subtitulo">
+                            Confirme os dados antes de remover o pedido.
+                        </p>
+                    </div>
+
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+
+                <div class="modal-body modal-remocao-body">
+                    <div class="modal-resumo-equipamento modal-resumo-remocao">
+                        <div class="modal-linha"><strong>Código</strong><span id="modalEliminarPedidoCodigo">---</span></div>
+                        <div class="modal-linha"><strong>Equipamento</strong><span id="modalEliminarPedidoEquipamento">---</span></div>
+                        <div class="modal-linha"><strong>Procedimento</strong><span id="modalEliminarPedidoProcedimento">---</span></div>
+                        <div class="modal-linha"><strong>Estado</strong><span id="modalEliminarPedidoEstado">---</span></div>
+                    </div>
+                </div>
+
+                <div class="modal-footer modal-remocao-footer">
+                    <button type="button" class="btn btn-cancelar-modal" data-bs-dismiss="modal">
+                        <i class="fa-solid fa-xmark me-2"></i> Cancelar
+                    </button>
+
+                    <button type="button" class="btn btn-confirmar-remocao" id="btnConfirmarEliminarPedidoCalibracaoManutencao">
+                        <i class="fa-solid fa-trash me-2"></i> Guardar Alteração
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- =========================================================
          MODAL DE NOVO PEDIDO DE CALIBRAÇÃO/MANUTENÇÃO
@@ -499,7 +711,6 @@
                                     <option value="Aguarda fornecedor">Aguarda fornecedor</option>
                                     <option value="Em manutenção">Em manutenção</option>
                                     <option value="Em calibração">Em calibração</option>
-                                    <option value="Efetuada">Efetuada</option>
                                 </select>
                             </div>
 
