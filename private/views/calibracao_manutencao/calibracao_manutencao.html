@@ -259,7 +259,8 @@
                 <thead>
                     <tr>
                         <th>Código</th>
-                        <th>Equipamento</th>
+                        <th>Alvo</th>
+                        <th>Associado a</th>
                         <th>Categoria</th>
                         <th>Localização</th>
                         <th>Procedimento</th>
@@ -275,6 +276,8 @@
                     <!-- Linha 1: manutenção preventiva programada -->
                     <tr data-codigo="EQ-001"
                         data-equipamento="Monitor Multiparamétrico"
+                        data-tipo-alvo="Equipamento"
+                        data-equipamento-associado="Equipamento principal"
                         data-categoria="Monitorização"
                         data-localizacao="UCI - Sala 2"
                         data-procedimento="Manutenção preventiva"
@@ -284,6 +287,7 @@
                         data-observacoes="Pedido enviado para confirmação de agenda.">
                         <td>EQ-001</td>
                         <td>Monitor Multiparamétrico</td>
+                        <td>Equipamento principal</td>
                         <td>Monitorização</td>
                         <td>UCI - Sala 2</td>
                         <td>
@@ -311,6 +315,8 @@
                     <!-- Linha 2: manutenção corretiva em curso -->
                     <tr data-codigo="EQ-002"
                         data-equipamento="Ventilador Pulmonar"
+                        data-tipo-alvo="Equipamento"
+                        data-equipamento-associado="Equipamento principal"
                         data-categoria="Suporte de Vida"
                         data-localizacao="Urgência - Sala 1"
                         data-procedimento="Manutenção corretiva"
@@ -320,6 +326,7 @@
                         data-observacoes="Intervenção técnica por falha no sistema de ventilação.">
                         <td>EQ-002</td>
                         <td>Ventilador Pulmonar</td>
+                        <td>Equipamento principal</td>
                         <td>Suporte de Vida</td>
                         <td>Urgência - Sala 1</td>
                         <td>
@@ -347,6 +354,8 @@
                     <!-- Linha 3: calibração em curso -->
                     <tr data-codigo="EQ-003"
                         data-equipamento="Desfibrilhador"
+                        data-tipo-alvo="Equipamento"
+                        data-equipamento-associado="Equipamento principal"
                         data-categoria="Emergência"
                         data-localizacao="Bloco Operatório"
                         data-procedimento="Calibração"
@@ -356,6 +365,7 @@
                         data-observacoes="A aguardar emissão do certificado de calibração.">
                         <td>EQ-003</td>
                         <td>Desfibrilhador</td>
+                        <td>Equipamento principal</td>
                         <td>Emergência</td>
                         <td>Bloco Operatório</td>
                         <td>
@@ -383,6 +393,8 @@
                     <!-- Linha 4: calibração a aguardar entidade externa -->
                     <tr data-codigo="EQ-005"
                         data-equipamento="Bomba de Infusão"
+                        data-tipo-alvo="Equipamento"
+                        data-equipamento-associado="Equipamento principal"
                         data-categoria="Terapia"
                         data-localizacao="Medicina Interna"
                         data-procedimento="Calibração"
@@ -392,6 +404,7 @@
                         data-observacoes="Fornecedor contactado para recolha do equipamento.">
                         <td>EQ-005</td>
                         <td>Bomba de Infusão</td>
+                        <td>Equipamento principal</td>
                         <td>Terapia</td>
                         <td>Medicina Interna</td>
                         <td>
@@ -460,8 +473,13 @@
                             </div>
 
                             <div class="col-md-5">
-                                <label for="editarPedidoEquipamento" class="form-label">Equipamento</label>
+                                <label for="editarPedidoEquipamento" class="form-label">Alvo</label>
                                 <input type="text" class="form-control campo-bloqueado" id="editarPedidoEquipamento" readonly>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="editarPedidoEquipamentoAssociado" class="form-label">Associado a</label>
+                                <input type="text" class="form-control campo-bloqueado" id="editarPedidoEquipamentoAssociado" readonly>
                             </div>
 
                             <div class="col-md-4">
@@ -618,50 +636,103 @@
                     <div class="modal-body">
                         <div class="row g-4">
 
-                            <!-- Equipamento selecionado para intervenção -->
-                            <div class="col-md-6">
-                                <label for="pedidoEquipamento" class="form-label">Equipamento *</label>
+                            <!-- Tipo de alvo selecionado para intervenção -->
+                            <div class="col-md-4">
+                                <label for="pedidoTipoAlvo" class="form-label">Tipo de alvo *</label>
+                                <select class="form-select"
+                                        id="pedidoTipoAlvo"
+                                        name="pedidoTipoAlvo"
+                                        required>
+                                    <option value="Equipamento">Equipamento</option>
+                                    <option value="Acessório">Acessório</option>
+                                </select>
+                            </div>
+
+                            <!-- Equipamento ou acessório selecionado para intervenção -->
+                            <div class="col-md-8">
+                                <label for="pedidoEquipamento" class="form-label">Equipamento / Acessório *</label>
                                 <select class="form-select"
                                         id="pedidoEquipamento"
                                         name="pedidoEquipamento"
                                         required>
-                                    <option value="">Selecionar equipamento</option>
+                                    <option value="">Selecionar alvo</option>
+                                    <optgroup label="Equipamentos">
                                     <option value="EQ-001"
+                                            data-tipo-alvo="Equipamento"
                                             data-nome="Monitor Multiparamétrico"
                                             data-categoria="Monitorização"
-                                            data-localizacao="UCI - Sala 2">
+                                            data-localizacao="UCI - Sala 2"
+                                            data-associado="Equipamento principal">
                                         EQ-001 | Monitor Multiparamétrico
                                     </option>
                                     <option value="EQ-002"
+                                            data-tipo-alvo="Equipamento"
                                             data-nome="Ventilador Pulmonar"
                                             data-categoria="Suporte de Vida"
-                                            data-localizacao="Urgência - Sala 1">
+                                            data-localizacao="Urgência - Sala 1"
+                                            data-associado="Equipamento principal">
                                         EQ-002 | Ventilador Pulmonar
                                     </option>
                                     <option value="EQ-003"
+                                            data-tipo-alvo="Equipamento"
                                             data-nome="Desfibrilhador"
                                             data-categoria="Emergência"
-                                            data-localizacao="Bloco Operatório">
+                                            data-localizacao="Bloco Operatório"
+                                            data-associado="Equipamento principal">
                                         EQ-003 | Desfibrilhador
                                     </option>
                                     <option value="EQ-004"
+                                            data-tipo-alvo="Equipamento"
                                             data-nome="Monitor de Sinais Vitais"
                                             data-categoria="Monitorização"
-                                            data-localizacao="Pediatria - Sala 3">
+                                            data-localizacao="Pediatria - Sala 3"
+                                            data-associado="Equipamento principal">
                                         EQ-004 | Monitor de Sinais Vitais
                                     </option>
                                     <option value="EQ-005"
+                                            data-tipo-alvo="Equipamento"
                                             data-nome="Bomba de Infusão"
                                             data-categoria="Terapia"
-                                            data-localizacao="Medicina Interna">
+                                            data-localizacao="Medicina Interna"
+                                            data-associado="Equipamento principal">
                                         EQ-005 | Bomba de Infusão
                                     </option>
                                     <option value="EQ-006"
+                                            data-tipo-alvo="Equipamento"
                                             data-nome="Oxímetro de Pulso"
                                             data-categoria="Monitorização"
-                                            data-localizacao="Urgência - Triagem">
+                                            data-localizacao="Urgência - Triagem"
+                                            data-associado="Equipamento principal">
                                         EQ-006 | Oxímetro de Pulso
                                     </option>
+                                    </optgroup>
+
+                                    <optgroup label="Acessórios">
+                                    <option value="ACC-002"
+                                            data-tipo-alvo="Acessório"
+                                            data-nome="Sensor SpO2"
+                                            data-categoria="Sensor"
+                                            data-localizacao="UCI - Sala 2"
+                                            data-associado="EQ-001 | Monitor Multiparamétrico">
+                                        ACC-002 | Sensor SpO2
+                                    </option>
+                                    <option value="ACC-003"
+                                            data-tipo-alvo="Acessório"
+                                            data-nome="Braçadeira NIBP adulto"
+                                            data-categoria="Consumível reutilizável"
+                                            data-localizacao="UCI - Sala 2"
+                                            data-associado="EQ-001 | Monitor Multiparamétrico">
+                                        ACC-003 | Braçadeira NIBP adulto
+                                    </option>
+                                    <option value="ACC-004"
+                                            data-tipo-alvo="Acessório"
+                                            data-nome="Circuito respiratório reutilizável"
+                                            data-categoria="Módulo"
+                                            data-localizacao="Urgência - Sala 1"
+                                            data-associado="EQ-002 | Ventilador Pulmonar">
+                                        ACC-004 | Circuito respiratório reutilizável
+                                    </option>
+                                    </optgroup>
                                 </select>
                             </div>
 

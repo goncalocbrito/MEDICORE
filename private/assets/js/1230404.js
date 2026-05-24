@@ -37,6 +37,35 @@ const equipamentosMEDICORE = {
         proximaCalibracao: "2026-09-12",
         periodicidade: "Semestral",
         responsavelTecnico: "Eng. Gonçalo Brito",
+        acessorios: [
+            {
+                codigo: "ACC-001",
+                nome: "Cabo ECG 5 derivações",
+                tipo: "Cabo",
+                serie: "ECG-5D-2024",
+                estado: "Ativo",
+                intervencao: "Não aplicável",
+                proximaIntervencao: "Por definir"
+            },
+            {
+                codigo: "ACC-002",
+                nome: "Sensor SpO2",
+                tipo: "Sensor",
+                serie: "SPO2-4482",
+                estado: "Ativo",
+                intervencao: "Calibração",
+                proximaIntervencao: "2026-09-12"
+            },
+            {
+                codigo: "ACC-003",
+                nome: "Braçadeira NIBP adulto",
+                tipo: "Consumível reutilizável",
+                serie: "NIBP-1120",
+                estado: "Ativo",
+                intervencao: "Manutenção preventiva",
+                proximaIntervencao: "2026-09-12"
+            }
+        ],
         observacoes: "Equipamento essencial para monitorização contínua de parâmetros vitais em contexto de cuidados intensivos."
     },
 
@@ -73,6 +102,17 @@ const equipamentosMEDICORE = {
         proximaCalibracao: "2026-08-28",
         periodicidade: "Semestral",
         responsavelTecnico: "Eng. Gonçalo Brito",
+        acessorios: [
+            {
+                codigo: "ACC-004",
+                nome: "Circuito respiratório reutilizável",
+                tipo: "Módulo",
+                serie: "CIR-2201",
+                estado: "Ativo",
+                intervencao: "Manutenção preventiva",
+                proximaIntervencao: "2026-08-28"
+            }
+        ],
         observacoes: "Equipamento em manutenção preventiva. Deve ser validado antes de regressar ao serviço clínico."
     },
 
@@ -109,6 +149,17 @@ const equipamentosMEDICORE = {
         proximaCalibracao: "",
         periodicidade: "Anual",
         responsavelTecnico: "Eng. Gonçalo Brito",
+        acessorios: [
+            {
+                codigo: "ACC-005",
+                nome: "Pás adulto",
+                tipo: "Módulo",
+                serie: "PAS-8821",
+                estado: "Avariado",
+                intervencao: "Manutenção e calibração",
+                proximaIntervencao: "Por definir"
+            }
+        ],
         observacoes: "Equipamento sinalizado como avariado. Deve permanecer indisponível até avaliação técnica e reparação."
     }
 };
@@ -246,6 +297,45 @@ function preencherCamposEquipamento(equipamento) {
     definirValor("periodicidade", equipamento.periodicidade);
     definirValor("responsavelTecnico", equipamento.responsavelTecnico);
     definirValor("observacoes", equipamento.observacoes);
+}
+
+function criarLinhaAcessorioEquipamento(acessorio) {
+    // Cria uma linha visual para a tabela de acessórios da ficha.
+    // O código do acessório é independente, mas a associação fica no contexto do equipamento aberto.
+    const linha = document.createElement("tr");
+
+    linha.innerHTML = `
+        <td>${escaparTextoPedido(acessorio.codigo || "---")}</td>
+        <td>${escaparTextoPedido(acessorio.nome || "---")}</td>
+        <td>${escaparTextoPedido(acessorio.tipo || "---")}</td>
+        <td>${escaparTextoPedido(acessorio.serie || "---")}</td>
+        <td><span class="estado ${classeEstado(acessorio.estado || "Ativo")}">${escaparTextoPedido(acessorio.estado || "Ativo")}</span></td>
+        <td>${escaparTextoPedido(acessorio.intervencao || "Não aplicável")}</td>
+        <td>${formatarDataPT(acessorio.proximaIntervencao || "")}</td>
+    `;
+
+    return linha;
+}
+
+function preencherAcessoriosEquipamento(equipamento) {
+    // Preenche a tabela de acessórios da ficha do equipamento selecionado.
+    const tabela = $("tabelaAcessoriosEquipamento");
+    if (!tabela) return;
+
+    tabela.innerHTML = "";
+
+    const acessorios = equipamento.acessorios || [];
+
+    if (!acessorios.length) {
+        const linhaVazia = document.createElement("tr");
+        linhaVazia.innerHTML = `<td colspan="7" class="text-center text-muted">Sem acessórios associados a este equipamento.</td>`;
+        tabela.appendChild(linhaVazia);
+        return;
+    }
+
+    acessorios.forEach(function (acessorio) {
+        tabela.appendChild(criarLinhaAcessorioEquipamento(acessorio));
+    });
 }
 
 function atualizarResumoFicha() {
@@ -2035,9 +2125,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     preencherCamposEquipamento(equipamento);
+    preencherAcessoriosEquipamento(equipamento);
 
     const btnAtivarEdicao = document.getElementById("btnAtivarEdicao");
     const btnCancelarEdicao = document.getElementById("btnCancelarEdicao");
+    const btnAdicionarAcessorio = document.getElementById("btnAdicionarAcessorioEquipamento");
     const botoesEdicao = document.querySelectorAll(".botao-edicao");
 
     const camposFicha = formFicha.querySelectorAll(".campo-ficha");
@@ -2186,6 +2278,46 @@ document.addEventListener("DOMContentLoaded", function () {
         btnCancelarEdicao.addEventListener("click", function () {
             restaurarValoresOriginais();
             aplicarModoConsulta();
+        });
+    }
+
+    if (btnAdicionarAcessorio) {
+        btnAdicionarAcessorio.addEventListener("click", function () {
+            const codigo = $("novoAcessorioCodigo")?.value.trim();
+            const nome = $("novoAcessorioNome")?.value.trim();
+            const tipo = $("novoAcessorioTipo")?.value;
+            const serie = $("novoAcessorioSerie")?.value.trim();
+            const intervencao = $("novoAcessorioIntervencao")?.value;
+            const tabela = $("tabelaAcessoriosEquipamento");
+
+            if (!codigo || !nome) {
+                alert("Indique pelo menos o código e o nome do acessório.");
+                return;
+            }
+
+            if (!tabela) return;
+
+            const linhaVazia = tabela.querySelector("td[colspan]");
+            if (linhaVazia) {
+                tabela.innerHTML = "";
+            }
+
+            tabela.appendChild(criarLinhaAcessorioEquipamento({
+                codigo: codigo,
+                nome: nome,
+                tipo: tipo || "Outro",
+                serie: serie || "---",
+                estado: "Ativo",
+                intervencao: intervencao || "Não aplicável",
+                proximaIntervencao: "Por definir"
+            }));
+
+            ["novoAcessorioCodigo", "novoAcessorioNome", "novoAcessorioTipo", "novoAcessorioSerie"].forEach(function (id) {
+                const campo = $(id);
+                if (campo) campo.value = "";
+            });
+
+            definirValor("novoAcessorioIntervencao", "Não aplicável");
         });
     }
 
@@ -2447,6 +2579,8 @@ function atualizarDadosLinhaPedido(linha, dados) {
     // Guarda os dados do pedido na própria linha para os modais conseguirem reutilizá-los.
     linha.dataset.codigo = dados.codigo;
     linha.dataset.equipamento = dados.equipamento;
+    linha.dataset.tipoAlvo = dados.tipoAlvo || "Equipamento";
+    linha.dataset.equipamentoAssociado = dados.equipamentoAssociado || "Equipamento principal";
     linha.dataset.categoria = dados.categoria;
     linha.dataset.localizacao = dados.localizacao;
     linha.dataset.procedimento = dados.procedimento;
@@ -2461,6 +2595,7 @@ function atualizarConteudoLinhaPedido(linha, dados) {
     linha.innerHTML = `
         <td>${dados.codigo}</td>
         <td>${dados.equipamento}</td>
+        <td>${escaparTextoPedido(dados.equipamentoAssociado || "Equipamento principal")}</td>
         <td>${dados.categoria}</td>
         <td>${dados.localizacao}</td>
         <td>
@@ -2530,6 +2665,7 @@ function carregarProcessosFinalizados() {
         linha.innerHTML = `
             <td>${processo.codigo}</td>
             <td>${processo.equipamento}</td>
+            <td>${escaparTextoPedido(processo.equipamentoAssociado || "Equipamento principal")}</td>
             <td>${processo.categoria}</td>
             <td>${processo.localizacao}</td>
             <td><span class="${classeProcedimentoPedido(processo.procedimento)}">${processo.procedimento}</span></td>
@@ -2549,10 +2685,31 @@ document.addEventListener("DOMContentLoaded", function () {
     const tabelaPedidos = document.getElementById("tabelaPedidosCalibracaoManutencao");
     const formEditarPedido = document.getElementById("formEditarPedidoCalibracaoManutencao");
     const btnConfirmarEliminarPedido = document.getElementById("btnConfirmarEliminarPedidoCalibracaoManutencao");
+    const tipoAlvoPedido = document.getElementById("pedidoTipoAlvo");
+    const alvoPedidoSelect = document.getElementById("pedidoEquipamento");
 
     if (!formNovoPedido || !tabelaPedidos) return;
 
     let linhaPedidoSelecionada = null;
+
+    function filtrarAlvosPedido() {
+        // Mostra no select apenas equipamentos ou acessórios, conforme o tipo de alvo escolhido.
+        if (!tipoAlvoPedido || !alvoPedidoSelect) return;
+
+        const tipoEscolhido = tipoAlvoPedido.value;
+
+        Array.from(alvoPedidoSelect.options).forEach(function (opcao) {
+            if (!opcao.value) return;
+            opcao.hidden = opcao.dataset.tipoAlvo !== tipoEscolhido;
+        });
+
+        alvoPedidoSelect.value = "";
+    }
+
+    if (tipoAlvoPedido) {
+        tipoAlvoPedido.addEventListener("change", filtrarAlvosPedido);
+        filtrarAlvosPedido();
+    }
 
     formNovoPedido.addEventListener("submit", function (event) {
         event.preventDefault();
@@ -2568,6 +2725,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const dados = {
             codigo: equipamentoSelect.value,
             equipamento: equipamentoSelecionado.dataset.nome,
+            tipoAlvo: equipamentoSelecionado.dataset.tipoAlvo || "Equipamento",
+            equipamentoAssociado: equipamentoSelecionado.dataset.associado || "Equipamento principal",
             categoria: equipamentoSelecionado.dataset.categoria,
             localizacao: equipamentoSelecionado.dataset.localizacao,
             procedimento: procedimento,
@@ -2603,6 +2762,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             document.getElementById("editarPedidoCodigo").value = linhaPedidoSelecionada.dataset.codigo;
             document.getElementById("editarPedidoEquipamento").value = linhaPedidoSelecionada.dataset.equipamento;
+            document.getElementById("editarPedidoEquipamentoAssociado").value = linhaPedidoSelecionada.dataset.equipamentoAssociado || "Equipamento principal";
             document.getElementById("editarPedidoCategoria").value = linhaPedidoSelecionada.dataset.categoria;
             document.getElementById("editarPedidoLocalizacao").value = linhaPedidoSelecionada.dataset.localizacao;
             document.getElementById("editarPedidoProcedimento").value = linhaPedidoSelecionada.dataset.procedimento;
@@ -2622,6 +2782,8 @@ document.addEventListener("DOMContentLoaded", function () {
             guardarPedidoFinalizado({
                 codigo: linha.dataset.codigo,
                 equipamento: linha.dataset.equipamento,
+                tipoAlvo: linha.dataset.tipoAlvo || "Equipamento",
+                equipamentoAssociado: linha.dataset.equipamentoAssociado || "Equipamento principal",
                 categoria: linha.dataset.categoria,
                 localizacao: linha.dataset.localizacao,
                 procedimento: linha.dataset.procedimento,
@@ -2660,6 +2822,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const dados = {
                 codigo: linhaPedidoSelecionada.dataset.codigo,
                 equipamento: linhaPedidoSelecionada.dataset.equipamento,
+                tipoAlvo: linhaPedidoSelecionada.dataset.tipoAlvo || "Equipamento",
+                equipamentoAssociado: linhaPedidoSelecionada.dataset.equipamentoAssociado || "Equipamento principal",
                 categoria: linhaPedidoSelecionada.dataset.categoria,
                 localizacao: linhaPedidoSelecionada.dataset.localizacao,
                 procedimento: document.getElementById("editarPedidoProcedimento").value,
