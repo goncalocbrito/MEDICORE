@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEDICORE | Utilizadores</title>
+
+    <!-- =========================================================
+         RECURSOS DA PÁGINA
+         Carrega favicon, Bootstrap, CSS do projeto, fonte e ícones.
+         ========================================================= -->
+    <link rel="shortcut icon" href="../../assets/img/MEDICORE_icon.png" type="image/png">
+    <link rel="stylesheet" href="../../assets/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="../../assets/css/1230404.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../assets/fontawesome/all.min.css">
+</head>
+
+<body>
+
+    <!-- =========================================================
+         CABEÇALHO SUPERIOR DA ÁREA PRIVADA
+         Contém logótipo, mensagem de boas-vindas e menu do utilizador.
+         ========================================================= -->
+    <header class="container-fluid top-header">
+        <div class="row align-items-center">
+            <div class="col-md-4 d-flex align-items-center p-3">
+                <a href="../../index.html">
+                    <img src="../../assets/img/MEDICORE_logotipo_branco.png"
+                         alt="Logo da MEDICORE"
+                         class="logo-private">
+                </a>
+            </div>
+
+            <div class="col-md-4 text-center p-3">
+                <div class="mensagem-topo">
+                    <i class="fa-solid fa-user-doctor me-2"></i>
+                    <span>Bem-vindo, Sr. Engenheiro Gonçalo</span>
+                </div>
+            </div>
+
+            <div class="col-md-4 text-md-end p-3">
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle user-button"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        <i class="fa-regular fa-user me-2"></i> Eng. Biomédico
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="perfil.php">
+                                <i class="fa-solid fa-user-gear me-2"></i> Perfil técnico
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="alterar_password.php">
+                                <i class="fa-solid fa-key me-2"></i> Alterar password
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="logout.php">
+                                <i class="fa-solid fa-right-from-bracket me-2"></i> Sair
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- =========================================================
+         MENU HORIZONTAL DA ÁREA PRIVADA
+         Navegação principal. O menu Utilizadores fica ativo aqui.
+         ========================================================= -->
+    <nav class="navbar navbar-expand-lg menu-horizontal">
+        <div class="container-fluid">
+            <button class="navbar-toggler bg-light"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#menuPrivado"
+                    aria-controls="menuPrivado"
+                    aria-expanded="false"
+                    aria-label="Abrir menu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse justify-content-center" id="menuPrivado">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a href="../../index.html" class="nav-link">
+                            <i class="fa-solid fa-chart-line me-2"></i> Dashboard Técnico
+                        </a>
+                    </li>
+
+                    <li class="nav-item menu-dropdown-hover">
+                        <a href="../equipamentos/lista_equipamentos.html" class="nav-link">
+                            <i class="fa-solid fa-stethoscope me-2"></i> Equipamentos
+                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
+                        </a>
+                        <ul class="submenu-equipamentos">
+                            <li><a href="../equipamentos/lista_equipamentos.html"><i class="fa-solid fa-list me-2"></i> Lista de Equipamentos</a></li>
+                            <li><a href="../equipamentos/novo_equipamento.html"><i class="fa-solid fa-plus me-2"></i> Adicionar Equipamento</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item menu-dropdown-hover-calibracoes">
+                        <a href="../calibracao_manutencao/calibracao_manutencao.html" class="nav-link">
+                            <i class="fa-solid fa-screwdriver-wrench me-2"></i> Calibrações/Manutenções
+                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
+                        </a>
+                        <ul class="submenu-calibracoes">
+                            <li><a href="../calibracao_manutencao/calibracao_manutencao.html"><i class="fa-solid fa-list-check me-2"></i> Processos a Decorrer</a></li>
+                            <li><a href="../calibracao_manutencao/processos_finalizados.html"><i class="fa-solid fa-circle-check me-2"></i> Processos Finalizados</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item menu-dropdown-hover-localizacoes">
+                        <a href="../localizacoes/lista_localizacoes.html" class="nav-link">
+                            <i class="fa-solid fa-location-dot me-2"></i> Localizações
+                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
+                        </a>
+                        <ul class="submenu-localizacoes">
+                            <li><a href="../localizacoes/lista_localizacoes.html"><i class="fa-solid fa-list me-2"></i> Lista de Localizações</a></li>
+                            <li><a href="../localizacoes/nova_localizacao.html"><i class="fa-solid fa-plus me-2"></i> Adicionar Localização</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item menu-dropdown-hover-fornecedores">
+                        <a href="../fornecedores/lista_fornecedores.html" class="nav-link">
+                            <i class="fa-solid fa-truck-medical me-2"></i> Fornecedores
+                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
+                        </a>
+                        <ul class="submenu-fornecedores">
+                            <li><a href="../fornecedores/lista_fornecedores.html"><i class="fa-solid fa-list me-2"></i> Lista de Fornecedores</a></li>
+                            <li><a href="../fornecedores/novo_fornecedor.html"><i class="fa-solid fa-plus me-2"></i> Adicionar Fornecedor</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item menu-dropdown-hover-utilizadores">
+                        <a href="lista_utilizadores.html" class="nav-link active">
+                            <i class="fa-solid fa-user me-2"></i> Utilizadores
+                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
+                        </a>
+                        <ul class="submenu-utilizadores">
+                            <li><a href="lista_utilizadores.html" class="submenu-active"><i class="fa-solid fa-list me-2"></i> Lista de Utilizadores</a></li>
+                            <li><a href="novo_utilizador.html"><i class="fa-solid fa-plus me-2"></i> Adicionar Utilizador</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- =========================================================
+         CONTEÚDO PRINCIPAL DA LISTA DE UTILIZADORES
+         Mostra a equipa registada no sistema e as ações disponíveis.
+         ========================================================= -->
+    <main class="conteudo-private">
+
+        <!-- =====================================================
+             TÍTULO E AÇÃO PRINCIPAL
+             Mantém o mesmo padrão usado nas listas dos outros módulos.
+             ===================================================== -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+                <h2 class="titulo-pagina">Gestão de Utilizadores</h2>
+                <p class="subtitulo-pagina">
+                    Consulta, criação e gestão dos acessos dos administradores, engenheiros e enfermeiros.
+                </p>
+            </div>
+
+            <a href="novo_utilizador.html" class="btn btn-adicionar">
+                <i class="fa-solid fa-plus me-2"></i> Adicionar Utilizador
+            </a>
+        </div>
+
+        <!-- =====================================================
+             TABELA DE UTILIZADORES
+             Cada linha apresenta a identificação essencial e permite
+             editar ou abrir o modal de remoção do utilizador.
+             ===================================================== -->
+        <div class="table-responsive tabela-container">
+            <table class="table table-hover align-middle tabela-utilizadores">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nome</th>
+                        <th>Tipo</th>
+                        <th>Nº Cartão Cidadão</th>
+                        <th>Email</th>
+                        <th>Telefone</th>
+                        <th>Serviço</th>
+                        <th>Estado</th>
+                        <th>Último acesso</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>USR-001</td>
+                        <td>Ana Martins</td>
+                        <td><span class="tipo-utilizador tipo-administrador">Administrador</span></td>
+                        <td>12345678</td>
+                        <td>ana.martins@medicore.pt</td>
+                        <td>+351 220 000 100</td>
+                        <td>Administração</td>
+                        <td><span class="estado estado-ativo">Ativo</span></td>
+                        <td>23/05/2026</td>
+                        <td class="text-center">
+                            <a href="ficha_utilizador.html?id=USR-001" class="btn btn-sm btn-ficha" title="Abrir ficha do utilizador">
+                                <i class="fa-solid fa-file-lines"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-utilizador" title="Eliminar utilizador" data-bs-toggle="modal" data-bs-target="#modalApagarUtilizador" data-codigo="USR-001" data-nome="Ana Martins" data-tipo="Administrador" data-cartao="12345678" data-email="ana.martins@medicore.pt" data-telefone="+351 220 000 100" data-servico="Administração" data-estado="Ativo">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>USR-002</td>
+                        <td>Gonçalo Brito</td>
+                        <td><span class="tipo-utilizador tipo-engenheiro">Engenheiro</span></td>
+                        <td>87654321</td>
+                        <td>g.brito@medicore.pt</td>
+                        <td>+351 220 000 200</td>
+                        <td>Engenharia Biomédica</td>
+                        <td><span class="estado estado-ativo">Ativo</span></td>
+                        <td>24/05/2026</td>
+                        <td class="text-center">
+                            <a href="ficha_utilizador.html?id=USR-002" class="btn btn-sm btn-ficha" title="Abrir ficha do utilizador">
+                                <i class="fa-solid fa-file-lines"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-utilizador" title="Eliminar utilizador" data-bs-toggle="modal" data-bs-target="#modalApagarUtilizador" data-codigo="USR-002" data-nome="Gonçalo Brito" data-tipo="Engenheiro" data-cartao="87654321" data-email="g.brito@medicore.pt" data-telefone="+351 220 000 200" data-servico="Engenharia Biomédica" data-estado="Ativo">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>USR-003</td>
+                        <td>Maria Costa</td>
+                        <td><span class="tipo-utilizador tipo-enfermeiro">Enfermeiro</span></td>
+                        <td>23456789</td>
+                        <td>maria.costa@medicore.pt</td>
+                        <td>+351 220 000 300</td>
+                        <td>Unidade de Cuidados Intensivos</td>
+                        <td><span class="estado estado-ativo">Ativo</span></td>
+                        <td>22/05/2026</td>
+                        <td class="text-center">
+                            <a href="ficha_utilizador.html?id=USR-003" class="btn btn-sm btn-ficha" title="Abrir ficha do utilizador">
+                                <i class="fa-solid fa-file-lines"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-utilizador" title="Eliminar utilizador" data-bs-toggle="modal" data-bs-target="#modalApagarUtilizador" data-codigo="USR-003" data-nome="Maria Costa" data-tipo="Enfermeiro" data-cartao="23456789" data-email="maria.costa@medicore.pt" data-telefone="+351 220 000 300" data-servico="Unidade de Cuidados Intensivos" data-estado="Ativo">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>USR-004</td>
+                        <td>Ricardo Silva</td>
+                        <td><span class="tipo-utilizador tipo-enfermeiro">Enfermeiro</span></td>
+                        <td>34567890</td>
+                        <td>ricardo.silva@medicore.pt</td>
+                        <td>+351 220 000 301</td>
+                        <td>Bloco Operatório</td>
+                        <td><span class="estado estado-inativo">Inativo</span></td>
+                        <td>10/05/2026</td>
+                        <td class="text-center">
+                            <a href="ficha_utilizador.html?id=USR-004" class="btn btn-sm btn-ficha" title="Abrir ficha do utilizador">
+                                <i class="fa-solid fa-file-lines"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-utilizador" title="Eliminar utilizador" data-bs-toggle="modal" data-bs-target="#modalApagarUtilizador" data-codigo="USR-004" data-nome="Ricardo Silva" data-tipo="Enfermeiro" data-cartao="34567890" data-email="ricardo.silva@medicore.pt" data-telefone="+351 220 000 301" data-servico="Bloco Operatório" data-estado="Inativo">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- =========================================================
+         MODAL DE REMOÇÃO DE UTILIZADOR
+         Confirma a eliminação antes de remover visualmente a linha.
+         ========================================================= -->
+    <div class="modal fade" id="modalApagarUtilizador" tabindex="-1" aria-labelledby="modalApagarUtilizadorLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-remocao-dialog">
+            <div class="modal-content modal-apagar-equipamento">
+                <div class="modal-header modal-remocao-header">
+                    <div>
+                        <h5 class="modal-title" id="modalApagarUtilizadorLabel">
+                            <i class="fa-solid fa-triangle-exclamation me-2"></i> Remover utilizador
+                        </h5>
+
+                        <p class="modal-remocao-subtitulo">
+                            Confirme os dados antes de remover o utilizador.
+                        </p>
+                    </div>
+
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+
+                <div class="modal-body modal-remocao-body">
+                    <input type="hidden" id="modalApagarIdUtilizador">
+
+                    <div class="modal-resumo-remocao">
+                        <div class="modal-linha">
+                            <strong>Código</strong>
+                            <span id="modalApagarUtilizadorCodigo">---</span>
+                        </div>
+                        <div class="modal-linha">
+                            <strong>Nome</strong>
+                            <span id="modalApagarUtilizadorNome">---</span>
+                        </div>
+                        <div class="modal-linha">
+                            <strong>Tipo</strong>
+                            <span id="modalApagarUtilizadorTipo">---</span>
+                        </div>
+                        <div class="modal-linha">
+                            <strong>Nº CC</strong>
+                            <span id="modalApagarUtilizadorCartao">---</span>
+                        </div>
+                        <div class="modal-linha">
+                            <strong>Email</strong>
+                            <span id="modalApagarUtilizadorEmail">---</span>
+                        </div>
+                        <div class="modal-linha">
+                            <strong>Telefone</strong>
+                            <span id="modalApagarUtilizadorTelefone">---</span>
+                        </div>
+                        <div class="modal-linha">
+                            <strong>Serviço</strong>
+                            <span id="modalApagarUtilizadorServico">---</span>
+                        </div>
+                        <div class="modal-linha">
+                            <strong>Estado</strong>
+                            <span id="modalApagarUtilizadorEstado">---</span>
+                        </div>
+                    </div>
+
+                    <p class="texto-confirmacao-remocao">
+                        Confirma que pretende remover este utilizador da lista?
+                    </p>
+                </div>
+
+                <div class="modal-footer modal-remocao-footer">
+                    <button type="button" class="btn btn-cancelar-modal" data-bs-dismiss="modal">
+                        <i class="fa-solid fa-xmark me-2"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-confirmar-remocao" id="btnConfirmarApagarUtilizador">
+                        <i class="fa-solid fa-trash me-2"></i> Remover Utilizador
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../assets/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="../../assets/js/1230404.js"></script>
+</body>
+</html>

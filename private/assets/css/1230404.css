@@ -1008,6 +1008,84 @@ body {
     color: #4b3f8f;
 }
 
+/* Tabela e etiquetas do menu Utilizadores */
+.tabela-utilizadores {
+    margin-bottom: 0;
+}
+
+.tabela-utilizadores thead th {
+    background-color: #eaf6f6;
+    color: var(--cor-principal);
+    font-weight: 700;
+    border-bottom: none;
+    white-space: nowrap;
+}
+
+.tabela-utilizadores tbody td {
+    color: var(--cor-texto);
+    vertical-align: middle;
+}
+
+.tabela-utilizadores tbody tr:hover {
+    background-color: #f4fbfb;
+}
+
+.tipo-utilizador {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.86rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.tipo-administrador {
+    background-color: #e8e5ff;
+    color: #4b3f8f;
+}
+
+.tipo-engenheiro {
+    background-color: #dff7f0;
+    color: #24796e;
+}
+
+.tipo-enfermeiro {
+    background-color: #e4f0ff;
+    color: #2463a6;
+}
+
+/* Caixa de permissões do utilizador */
+.permissoes-utilizador-opcoes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 12px;
+    background-color: #f8fbfb;
+    border: 1px solid #d6ece8;
+    border-radius: 16px;
+    padding: 16px;
+}
+
+.permissao-utilizador-item {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    margin-bottom: 0;
+    background-color: #ffffff;
+    border: 1px solid #e3f1ef;
+    border-radius: 12px;
+    padding: 10px 12px;
+}
+
+.permissao-utilizador-item .form-check-input {
+    margin-top: 0;
+}
+
+.permissao-utilizador-item .form-check-label {
+    color: var(--cor-principal);
+    font-weight: 700;
+    margin-left: 8px;
+}
+
 @media (max-width: 768px) {
     .menu-dropdown-hover-fornecedores {
         width: 100%;
@@ -2256,4 +2334,19 @@ textarea[readonly] {
     background-color: rgba(255, 255, 255, 0.10);
     color: #ffffff;
     border-left: 4px solid var(--cor-secundaria);
+}
+
+@media (max-width: 768px) {
+    .menu-dropdown-hover-utilizadores {
+        width: 100%;
+    }
+
+    .submenu-utilizadores {
+        position: static;
+        display: block;
+        width: 100%;
+        box-shadow: none;
+        border-radius: 0;
+        background-color: rgba(255, 255, 255, 0.04);
+    }
 }

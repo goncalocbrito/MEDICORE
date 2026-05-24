@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MEDICORE | Novo Utilizador</title>
+    <title>MEDICORE | Ficha do Utilizador</title>
 
     <!-- =========================================================
          RECURSOS DA PÁGINA
-         Carrega os mesmos ficheiros usados nos restantes módulos.
+         Carrega favicon, Bootstrap, estilos do projeto, fonte e ícones.
          ========================================================= -->
     <link rel="shortcut icon" href="../../assets/img/MEDICORE_icon.png" type="image/png">
     <link rel="stylesheet" href="../../assets/bootstrap/bootstrap.min.css">
@@ -24,15 +24,13 @@
 
     <!-- =========================================================
          CABEÇALHO SUPERIOR DA ÁREA PRIVADA
-         Contém logótipo, mensagem central e menu da conta.
+         Contém logótipo, mensagem de boas-vindas e menu da conta.
          ========================================================= -->
     <header class="container-fluid top-header">
         <div class="row align-items-center">
             <div class="col-md-4 d-flex align-items-center p-3">
                 <a href="../../index.html">
-                    <img src="../../assets/img/MEDICORE_logotipo_branco.png"
-                         alt="Logo da MEDICORE"
-                         class="logo-private">
+                    <img src="../../assets/img/MEDICORE_logotipo_branco.png" alt="Logo da MEDICORE" class="logo-private">
                 </a>
             </div>
 
@@ -45,10 +43,7 @@
 
             <div class="col-md-4 text-md-end p-3">
                 <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle user-button"
-                            type="button"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
+                    <button class="btn btn-secondary dropdown-toggle user-button" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fa-regular fa-user me-2"></i> Eng. Biomédico
                     </button>
 
@@ -65,26 +60,18 @@
 
     <!-- =========================================================
          MENU HORIZONTAL DA ÁREA PRIVADA
-         O menu Utilizadores fica ativo nesta página.
+         O menu Utilizadores fica ativo por esta ficha pertencer a esse módulo.
          ========================================================= -->
     <nav class="navbar navbar-expand-lg menu-horizontal">
         <div class="container-fluid">
-            <button class="navbar-toggler bg-light"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#menuPrivado"
-                    aria-controls="menuPrivado"
-                    aria-expanded="false"
-                    aria-label="Abrir menu">
+            <button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrivado" aria-controls="menuPrivado" aria-expanded="false" aria-label="Abrir menu">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <div class="collapse navbar-collapse justify-content-center" id="menuPrivado">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a href="../../index.html" class="nav-link">
-                            <i class="fa-solid fa-chart-line me-2"></i> Dashboard Técnico
-                        </a>
+                        <a href="../../index.html" class="nav-link"><i class="fa-solid fa-chart-line me-2"></i> Dashboard Técnico</a>
                     </li>
 
                     <li class="nav-item menu-dropdown-hover">
@@ -137,8 +124,8 @@
                             <i class="fa-solid fa-chevron-down ms-1 small"></i>
                         </a>
                         <ul class="submenu-utilizadores">
-                            <li><a href="lista_utilizadores.html"><i class="fa-solid fa-list me-2"></i> Lista de Utilizadores</a></li>
-                            <li><a href="novo_utilizador.html" class="submenu-active"><i class="fa-solid fa-plus me-2"></i> Adicionar Utilizador</a></li>
+                            <li><a href="lista_utilizadores.html" class="submenu-active"><i class="fa-solid fa-list me-2"></i> Lista de Utilizadores</a></li>
+                            <li><a href="novo_utilizador.html"><i class="fa-solid fa-plus me-2"></i> Adicionar Utilizador</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -147,47 +134,65 @@
     </nav>
 
     <!-- =========================================================
-         CONTEÚDO PRINCIPAL DO NOVO UTILIZADOR
-         Usa ações no topo e formulário por separadores.
+         CONTEÚDO PRINCIPAL DA FICHA DO UTILIZADOR
+         A ficha começa em modo observação e passa a edição pelo botão Editar.
          ========================================================= -->
-    <main class="conteudo-private ficha-equipamento-page novo-equipamento-page ficha-utilizador-page">
+    <main class="conteudo-private ficha-equipamento-page ficha-utilizador-page">
 
         <!-- =====================================================
-             BOTÕES PRINCIPAIS DO FORMULÁRIO
-             Cancelar volta à lista, Limpar repõe os campos e Guardar
-             mostra o pop-up de confirmação.
+             ELEMENTOS OCULTOS PARA RESUMOS DINÂMICOS
+             O JavaScript atualiza estes textos para compatibilidade
+             com o padrão usado nas outras fichas.
              ===================================================== -->
-        <div class="form-actions">
-            <a href="lista_utilizadores.html" class="btn btn-cancelar">
-                <i class="fa-solid fa-xmark me-2"></i> Cancelar
+        <div class="d-none" aria-hidden="true">
+            <h2 id="tituloPaginaUtilizador">Ficha do Utilizador</h2>
+            <span id="resumoNomeUtilizador">Utilizador</span>
+            <span id="resumoDescricaoUtilizador">Código | Tipo | Serviço</span>
+            <span id="badgeEstadoUtilizador">Estado</span>
+            <span id="badgeTipoUtilizador">Tipo</span>
+        </div>
+
+        <!-- =====================================================
+             BARRA DE AÇÕES DA FICHA
+             Em modo observação mostra Voltar + Editar.
+             Em modo edição mostra Cancelar + Guardar Alterações.
+             ===================================================== -->
+        <div class="ficha-toolbar">
+            <a href="lista_utilizadores.html" class="btn btn-voltar botao-consulta">
+                <i class="fa-solid fa-arrow-left me-2"></i> Voltar à Lista
             </a>
 
-            <button type="button" class="btn btn-limpar" id="btnLimparNovoUtilizador">
-                <i class="fa-solid fa-eraser me-2"></i> Limpar
+            <button type="button" class="btn btn-editar-ficha botao-consulta" id="btnAtivarEdicaoUtilizador">
+                <i class="fa-solid fa-pen me-2"></i> Editar
             </button>
 
-            <button type="submit" class="btn btn-guardar" form="formNovoUtilizador">
-                <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Utilizador
+            <button type="button" class="btn btn-cancelar botao-edicao d-none" id="btnCancelarEdicaoUtilizador">
+                <i class="fa-solid fa-xmark me-2"></i> Cancelar
+            </button>
+
+            <button type="submit" class="btn btn-guardar botao-edicao d-none" form="formFichaUtilizador">
+                <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Alterações
             </button>
         </div>
 
         <!-- =====================================================
-             FORMULÁRIO DE NOVO UTILIZADOR
-             Recolhe identificação, contactos, permissões e serviço.
+             FORMULÁRIO DA FICHA DO UTILIZADOR
+             Os campos usam classes para o JS bloquear/desbloquear.
              ===================================================== -->
         <form class="form-equipamento form-ficha-equipamento"
-              id="formNovoUtilizador"
-              action="processa_novo_utilizador.php"
+              id="formFichaUtilizador"
+              action="processa_utilizador.php"
               method="post">
 
-            <input type="hidden" name="acao" value="inserir">
+            <input type="hidden" id="idUtilizador" name="idUtilizador" value="">
+            <input type="hidden" id="modoFormularioUtilizador" name="modoFormulario" value="ver">
 
             <div class="ficha-area">
                 <!-- =============================================
-                     SEPARADORES DO FORMULÁRIO
-                     Organizam os dados em grupos lógicos.
+                     SEPARADORES DA FICHA
+                     Organizam a informação tal como no formulário novo.
                      ============================================= -->
-                <ul class="nav nav-tabs ficha-tabs" id="tabsNovoUtilizador" role="tablist">
+                <ul class="nav nav-tabs ficha-tabs" id="tabsFichaUtilizador" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="identificacao-tab" data-bs-toggle="tab" data-bs-target="#identificacao" type="button" role="tab" aria-controls="identificacao" aria-selected="true">
                             <i class="fa-solid fa-id-card me-2"></i> Identificação
@@ -215,11 +220,11 @@
                     </li>
                 </ul>
 
-                <div class="tab-content ficha-tab-content" id="tabsNovoUtilizadorConteudo">
+                <div class="tab-content ficha-tab-content" id="tabsFichaUtilizadorConteudo">
 
                     <!-- =========================================
                          SEPARADOR IDENTIFICAÇÃO
-                         Dados pessoais e categoria do utilizador.
+                         Dados pessoais e tipo de utilizador.
                          ========================================= -->
                     <div class="tab-pane fade show active" id="identificacao" role="tabpanel" aria-labelledby="identificacao-tab">
                         <h3 class="secao-ficha-titulo">Identificação do utilizador</h3>
@@ -227,17 +232,17 @@
                         <div class="row g-4">
                             <div class="col-md-3">
                                 <label for="codigoUtilizador" class="form-label">Código interno</label>
-                                <input type="text" class="form-control" id="codigoUtilizador" name="codigoUtilizador" placeholder="USR-005" required>
+                                <input type="text" class="form-control campo-ficha campo-bloqueado" id="codigoUtilizador" name="codigoUtilizador" readonly>
                             </div>
 
                             <div class="col-md-5">
                                 <label for="nomeUtilizador" class="form-label">Nome completo</label>
-                                <input type="text" class="form-control" id="nomeUtilizador" name="nomeUtilizador" placeholder="Nome do utilizador" required>
+                                <input type="text" class="form-control campo-ficha campo-editavel" id="nomeUtilizador" name="nomeUtilizador" required>
                             </div>
 
                             <div class="col-md-2">
                                 <label for="tipoUtilizador" class="form-label">Tipo</label>
-                                <select class="form-select" id="tipoUtilizador" name="tipoUtilizador" required>
+                                <select class="form-select campo-ficha campo-editavel" id="tipoUtilizador" name="tipoUtilizador" required>
                                     <option value="">Selecionar</option>
                                     <option value="Administrador">Administrador</option>
                                     <option value="Engenheiro">Engenheiro</option>
@@ -247,7 +252,7 @@
 
                             <div class="col-md-2">
                                 <label for="estadoUtilizador" class="form-label">Estado</label>
-                                <select class="form-select" id="estadoUtilizador" name="estadoUtilizador" required>
+                                <select class="form-select campo-ficha campo-editavel" id="estadoUtilizador" name="estadoUtilizador" required>
                                     <option value="Ativo">Ativo</option>
                                     <option value="Inativo">Inativo</option>
                                     <option value="Pendente">Pendente</option>
@@ -256,29 +261,29 @@
 
                             <div class="col-md-3">
                                 <label for="cartaoCidadaoUtilizador" class="form-label">Nº cartão de cidadão</label>
-                                <input type="text" class="form-control" id="cartaoCidadaoUtilizador" name="cartaoCidadaoUtilizador" placeholder="12345678" required>
+                                <input type="text" class="form-control campo-ficha campo-editavel" id="cartaoCidadaoUtilizador" name="cartaoCidadaoUtilizador" required>
                             </div>
 
                             <div class="col-md-3">
                                 <label for="nifUtilizador" class="form-label">NIF</label>
-                                <input type="text" class="form-control" id="nifUtilizador" name="nifUtilizador" placeholder="123456789">
+                                <input type="text" class="form-control campo-ficha campo-editavel" id="nifUtilizador" name="nifUtilizador">
                             </div>
 
                             <div class="col-md-3">
                                 <label for="dataNascimentoUtilizador" class="form-label">Data de nascimento</label>
-                                <input type="date" class="form-control" id="dataNascimentoUtilizador" name="dataNascimentoUtilizador">
+                                <input type="date" class="form-control campo-ficha campo-editavel" id="dataNascimentoUtilizador" name="dataNascimentoUtilizador">
                             </div>
 
                             <div class="col-md-3">
                                 <label for="numeroMecanograficoUtilizador" class="form-label">Nº mecanográfico</label>
-                                <input type="text" class="form-control" id="numeroMecanograficoUtilizador" name="numeroMecanograficoUtilizador" placeholder="MEC-0001">
+                                <input type="text" class="form-control campo-ficha campo-editavel" id="numeroMecanograficoUtilizador" name="numeroMecanograficoUtilizador">
                             </div>
                         </div>
                     </div>
 
                     <!-- =========================================
                          SEPARADOR CONTACTOS
-                         Informação de contacto profissional.
+                         Contactos e morada profissional.
                          ========================================= -->
                     <div class="tab-pane fade" id="contactos" role="tabpanel" aria-labelledby="contactos-tab">
                         <h3 class="secao-ficha-titulo">Contactos</h3>
@@ -286,39 +291,39 @@
                         <div class="row g-4">
                             <div class="col-md-4">
                                 <label for="emailUtilizador" class="form-label">Email institucional</label>
-                                <input type="email" class="form-control" id="emailUtilizador" name="emailUtilizador" placeholder="nome@medicore.pt" required>
+                                <input type="email" class="form-control campo-ficha campo-editavel" id="emailUtilizador" name="emailUtilizador" required>
                             </div>
 
                             <div class="col-md-4">
                                 <label for="telefoneUtilizador" class="form-label">Telefone</label>
-                                <input type="tel" class="form-control" id="telefoneUtilizador" name="telefoneUtilizador" placeholder="+351 220 000 000">
+                                <input type="tel" class="form-control campo-ficha campo-editavel" id="telefoneUtilizador" name="telefoneUtilizador">
                             </div>
 
                             <div class="col-md-4">
                                 <label for="extensaoUtilizador" class="form-label">Extensão interna</label>
-                                <input type="text" class="form-control" id="extensaoUtilizador" name="extensaoUtilizador" placeholder="Ext. 2200">
+                                <input type="text" class="form-control campo-ficha campo-editavel" id="extensaoUtilizador" name="extensaoUtilizador">
                             </div>
 
                             <div class="col-md-6">
                                 <label for="moradaUtilizador" class="form-label">Morada</label>
-                                <input type="text" class="form-control" id="moradaUtilizador" name="moradaUtilizador" placeholder="Rua, avenida ou localidade">
+                                <input type="text" class="form-control campo-ficha campo-editavel" id="moradaUtilizador" name="moradaUtilizador">
                             </div>
 
                             <div class="col-md-3">
                                 <label for="codigoPostalUtilizador" class="form-label">Código postal</label>
-                                <input type="text" class="form-control" id="codigoPostalUtilizador" name="codigoPostalUtilizador" placeholder="0000-000">
+                                <input type="text" class="form-control campo-ficha campo-editavel" id="codigoPostalUtilizador" name="codigoPostalUtilizador">
                             </div>
 
                             <div class="col-md-3">
                                 <label for="localidadeUtilizador" class="form-label">Localidade</label>
-                                <input type="text" class="form-control" id="localidadeUtilizador" name="localidadeUtilizador" placeholder="Porto">
+                                <input type="text" class="form-control campo-ficha campo-editavel" id="localidadeUtilizador" name="localidadeUtilizador">
                             </div>
                         </div>
                     </div>
 
                     <!-- =========================================
                          SEPARADOR ACESSO
-                         Credenciais e permissões aplicadas no sistema.
+                         Dados de login e permissões da aplicação.
                          ========================================= -->
                     <div class="tab-pane fade" id="acesso" role="tabpanel" aria-labelledby="acesso-tab">
                         <h3 class="secao-ficha-titulo">Acesso ao sistema</h3>
@@ -326,22 +331,22 @@
                         <div class="row g-4">
                             <div class="col-md-4">
                                 <label for="usernameUtilizador" class="form-label">Nome de utilizador</label>
-                                <input type="text" class="form-control" id="usernameUtilizador" name="usernameUtilizador" placeholder="ana.martins" required>
+                                <input type="text" class="form-control campo-ficha campo-editavel" id="usernameUtilizador" name="usernameUtilizador" required>
                             </div>
 
                             <div class="col-md-4">
-                                <label for="passwordUtilizador" class="form-label">Password temporária</label>
-                                <input type="password" class="form-control" id="passwordUtilizador" name="passwordUtilizador" required>
+                                <label for="passwordUtilizador" class="form-label">Nova password</label>
+                                <input type="password" class="form-control campo-ficha campo-editavel" id="passwordUtilizador" name="passwordUtilizador" placeholder="Preencher apenas se pretender alterar">
                             </div>
 
                             <div class="col-md-4">
-                                <label for="confirmarPasswordUtilizador" class="form-label">Confirmar password</label>
-                                <input type="password" class="form-control" id="confirmarPasswordUtilizador" name="confirmarPasswordUtilizador" required>
+                                <label for="confirmarPasswordUtilizador" class="form-label">Confirmar nova password</label>
+                                <input type="password" class="form-control campo-ficha campo-editavel" id="confirmarPasswordUtilizador" name="confirmarPasswordUtilizador" placeholder="Confirmar apenas se alterar">
                             </div>
 
                             <div class="col-md-4">
                                 <label for="perfilAcessoUtilizador" class="form-label">Perfil de permissões</label>
-                                <select class="form-select" id="perfilAcessoUtilizador" name="perfilAcessoUtilizador">
+                                <select class="form-select campo-ficha campo-editavel" id="perfilAcessoUtilizador" name="perfilAcessoUtilizador">
                                     <option value="">Selecionar</option>
                                     <option value="Acesso total">Acesso total</option>
                                     <option value="Gestão técnica">Gestão técnica</option>
@@ -351,59 +356,59 @@
 
                             <div class="col-md-4">
                                 <label for="dataAtivacaoUtilizador" class="form-label">Data de ativação</label>
-                                <input type="date" class="form-control" id="dataAtivacaoUtilizador" name="dataAtivacaoUtilizador">
+                                <input type="date" class="form-control campo-ficha campo-editavel" id="dataAtivacaoUtilizador" name="dataAtivacaoUtilizador">
                             </div>
 
                             <div class="col-md-4">
                                 <label for="validadeAcessoUtilizador" class="form-label">Validade do acesso</label>
-                                <input type="date" class="form-control" id="validadeAcessoUtilizador" name="validadeAcessoUtilizador">
+                                <input type="date" class="form-control campo-ficha campo-editavel" id="validadeAcessoUtilizador" name="validadeAcessoUtilizador">
                             </div>
 
                             <!-- =================================
                                  PERMISSÕES POR MENU
-                                 Define que módulos aparecem para este utilizador.
+                                 Em modo consulta ficam bloqueadas; em edição podem ser alteradas.
                                  ================================= -->
                             <div class="col-12">
                                 <label class="form-label">Acessos aos menus do sistema</label>
 
                                 <div class="permissoes-utilizador-opcoes">
                                     <div class="form-check permissao-utilizador-item">
-                                        <input class="form-check-input permissao-utilizador" type="checkbox" id="acessoDashboardUtilizador" name="permissoesUtilizador[]" value="dashboard">
+                                        <input class="form-check-input campo-ficha campo-editavel permissao-utilizador" type="checkbox" id="acessoDashboardUtilizador" name="permissoesUtilizador[]" value="dashboard">
                                         <label class="form-check-label" for="acessoDashboardUtilizador">
                                             <i class="fa-solid fa-chart-line me-2"></i> Dashboard Técnico
                                         </label>
                                     </div>
 
                                     <div class="form-check permissao-utilizador-item">
-                                        <input class="form-check-input permissao-utilizador" type="checkbox" id="acessoEquipamentosUtilizador" name="permissoesUtilizador[]" value="equipamentos">
+                                        <input class="form-check-input campo-ficha campo-editavel permissao-utilizador" type="checkbox" id="acessoEquipamentosUtilizador" name="permissoesUtilizador[]" value="equipamentos">
                                         <label class="form-check-label" for="acessoEquipamentosUtilizador">
                                             <i class="fa-solid fa-stethoscope me-2"></i> Equipamentos
                                         </label>
                                     </div>
 
                                     <div class="form-check permissao-utilizador-item">
-                                        <input class="form-check-input permissao-utilizador" type="checkbox" id="acessoCalibracoesUtilizador" name="permissoesUtilizador[]" value="calibracoes">
+                                        <input class="form-check-input campo-ficha campo-editavel permissao-utilizador" type="checkbox" id="acessoCalibracoesUtilizador" name="permissoesUtilizador[]" value="calibracoes">
                                         <label class="form-check-label" for="acessoCalibracoesUtilizador">
                                             <i class="fa-solid fa-screwdriver-wrench me-2"></i> Calibrações/Manutenções
                                         </label>
                                     </div>
 
                                     <div class="form-check permissao-utilizador-item">
-                                        <input class="form-check-input permissao-utilizador" type="checkbox" id="acessoLocalizacoesUtilizador" name="permissoesUtilizador[]" value="localizacoes">
+                                        <input class="form-check-input campo-ficha campo-editavel permissao-utilizador" type="checkbox" id="acessoLocalizacoesUtilizador" name="permissoesUtilizador[]" value="localizacoes">
                                         <label class="form-check-label" for="acessoLocalizacoesUtilizador">
                                             <i class="fa-solid fa-location-dot me-2"></i> Localizações
                                         </label>
                                     </div>
 
                                     <div class="form-check permissao-utilizador-item">
-                                        <input class="form-check-input permissao-utilizador" type="checkbox" id="acessoFornecedoresUtilizador" name="permissoesUtilizador[]" value="fornecedores">
+                                        <input class="form-check-input campo-ficha campo-editavel permissao-utilizador" type="checkbox" id="acessoFornecedoresUtilizador" name="permissoesUtilizador[]" value="fornecedores">
                                         <label class="form-check-label" for="acessoFornecedoresUtilizador">
                                             <i class="fa-solid fa-truck-medical me-2"></i> Fornecedores
                                         </label>
                                     </div>
 
                                     <div class="form-check permissao-utilizador-item">
-                                        <input class="form-check-input permissao-utilizador" type="checkbox" id="acessoUtilizadoresUtilizador" name="permissoesUtilizador[]" value="utilizadores">
+                                        <input class="form-check-input campo-ficha campo-editavel permissao-utilizador" type="checkbox" id="acessoUtilizadoresUtilizador" name="permissoesUtilizador[]" value="utilizadores">
                                         <label class="form-check-label" for="acessoUtilizadoresUtilizador">
                                             <i class="fa-solid fa-user me-2"></i> Utilizadores
                                         </label>
@@ -415,7 +420,7 @@
 
                     <!-- =========================================
                          SEPARADOR SERVIÇO
-                         Local de trabalho e responsabilidade interna.
+                         Enquadramento interno do utilizador no hospital.
                          ========================================= -->
                     <div class="tab-pane fade" id="servico" role="tabpanel" aria-labelledby="servico-tab">
                         <h3 class="secao-ficha-titulo">Serviço hospitalar</h3>
@@ -423,39 +428,39 @@
                         <div class="row g-4">
                             <div class="col-md-4">
                                 <label for="departamentoUtilizador" class="form-label">Departamento / serviço</label>
-                                <input type="text" class="form-control" id="departamentoUtilizador" name="departamentoUtilizador" placeholder="Engenharia Biomédica">
+                                <input type="text" class="form-control campo-ficha campo-editavel" id="departamentoUtilizador" name="departamentoUtilizador">
                             </div>
 
                             <div class="col-md-4">
                                 <label for="funcaoUtilizador" class="form-label">Função</label>
-                                <input type="text" class="form-control" id="funcaoUtilizador" name="funcaoUtilizador" placeholder="Responsável técnico">
+                                <input type="text" class="form-control campo-ficha campo-editavel" id="funcaoUtilizador" name="funcaoUtilizador">
                             </div>
 
                             <div class="col-md-4">
                                 <label for="superiorUtilizador" class="form-label">Responsável hierárquico</label>
-                                <input type="text" class="form-control" id="superiorUtilizador" name="superiorUtilizador" placeholder="Nome do responsável">
+                                <input type="text" class="form-control campo-ficha campo-editavel" id="superiorUtilizador" name="superiorUtilizador">
                             </div>
 
                             <div class="col-md-4">
                                 <label for="edificioUtilizador" class="form-label">Edifício</label>
-                                <input type="text" class="form-control" id="edificioUtilizador" name="edificioUtilizador" placeholder="Edifício A">
+                                <input type="text" class="form-control campo-ficha campo-editavel" id="edificioUtilizador" name="edificioUtilizador">
                             </div>
 
                             <div class="col-md-4">
                                 <label for="pisoUtilizador" class="form-label">Piso</label>
-                                <input type="text" class="form-control" id="pisoUtilizador" name="pisoUtilizador" placeholder="2">
+                                <input type="text" class="form-control campo-ficha campo-editavel" id="pisoUtilizador" name="pisoUtilizador">
                             </div>
 
                             <div class="col-md-4">
                                 <label for="dataAdmissaoUtilizador" class="form-label">Data de admissão</label>
-                                <input type="date" class="form-control" id="dataAdmissaoUtilizador" name="dataAdmissaoUtilizador">
+                                <input type="date" class="form-control campo-ficha campo-editavel" id="dataAdmissaoUtilizador" name="dataAdmissaoUtilizador">
                             </div>
                         </div>
                     </div>
 
                     <!-- =========================================
                          SEPARADOR OBSERVAÇÕES
-                         Notas internas sobre o utilizador.
+                         Notas internas e informação adicional.
                          ========================================= -->
                     <div class="tab-pane fade" id="observacoes" role="tabpanel" aria-labelledby="observacoes-tab">
                         <h3 class="secao-ficha-titulo">Observações internas</h3>
@@ -463,7 +468,7 @@
                         <div class="row g-4">
                             <div class="col-12">
                                 <label for="observacoesUtilizador" class="form-label">Observações</label>
-                                <textarea class="form-control" id="observacoesUtilizador" name="observacoesUtilizador" rows="6" placeholder="Notas internas, restrições de acesso ou informação relevante."></textarea>
+                                <textarea class="form-control campo-ficha campo-editavel" id="observacoesUtilizador" name="observacoesUtilizador" rows="6"></textarea>
                             </div>
                         </div>
                     </div>

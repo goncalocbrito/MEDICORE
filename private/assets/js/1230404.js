@@ -337,7 +337,9 @@ function mostrarPopupSucesso(titulo, mensagem, paginaDestino) {
         ? "de fornecedores"
         : paginaDestino.includes("localizacoes")
             ? "de localizações"
-            : "de equipamentos";
+            : paginaDestino.includes("utilizadores")
+                ? "de utilizadores"
+                : "de equipamentos";
 
     const overlay = document.createElement("div");
     overlay.classList.add("popup-sucesso-overlay");
@@ -2689,6 +2691,550 @@ document.addEventListener("DOMContentLoaded", function () {
             mostrarPopupPedido("Pedido removido", "O pedido foi removido da lista de processos a decorrer.");
         });
     }
+
+});
+
+/* =========================================================
+   DADOS TEMPORÁRIOS DOS UTILIZADORES
+   Permitem preencher o formulário quando a lista envia um id pela URL.
+   ========================================================= */
+
+const utilizadoresMEDICORE = {
+    "USR-001": {
+        codigo: "USR-001",
+        nome: "Ana Martins",
+        tipo: "Administrador",
+        estado: "Ativo",
+        cartaoCidadao: "12345678",
+        nif: "219876543",
+        dataNascimento: "1988-04-12",
+        numeroMecanografico: "MEC-0001",
+        email: "ana.martins@medicore.pt",
+        telefone: "+351 220 000 100",
+        extensao: "Ext. 2100",
+        morada: "Rua Central, Porto",
+        codigoPostal: "4000-000",
+        localidade: "Porto",
+        username: "ana.martins",
+        permissoes: ["dashboard", "equipamentos", "calibracoes", "localizacoes", "fornecedores", "utilizadores"],
+        perfil: "Acesso total",
+        dataAtivacao: "2025-01-10",
+        validadeAcesso: "2027-01-10",
+        departamento: "Administração",
+        funcao: "Gestora do sistema",
+        superior: "Direção Técnica",
+        edificio: "Edifício A",
+        piso: "1",
+        dataAdmissao: "2024-09-01",
+        observacoes: "Utilizadora com permissões administrativas completas."
+    },
+    "USR-002": {
+        codigo: "USR-002",
+        nome: "Gonçalo Brito",
+        tipo: "Engenheiro",
+        estado: "Ativo",
+        cartaoCidadao: "87654321",
+        nif: "245678901",
+        dataNascimento: "1999-06-18",
+        numeroMecanografico: "MEC-0002",
+        email: "g.brito@medicore.pt",
+        telefone: "+351 220 000 200",
+        extensao: "Ext. 2200",
+        morada: "Avenida da Saúde, Porto",
+        codigoPostal: "4200-000",
+        localidade: "Porto",
+        username: "g.brito",
+        permissoes: ["dashboard", "equipamentos", "calibracoes", "localizacoes", "fornecedores"],
+        perfil: "Gestão técnica",
+        dataAtivacao: "2025-02-01",
+        validadeAcesso: "2027-02-01",
+        departamento: "Engenharia Biomédica",
+        funcao: "Engenheiro biomédico",
+        superior: "Coordenação Técnica",
+        edificio: "Edifício B",
+        piso: "0",
+        dataAdmissao: "2025-01-15",
+        observacoes: "Acesso orientado para equipamentos, fornecedores e calibrações/manutenções."
+    },
+    "USR-003": {
+        codigo: "USR-003",
+        nome: "Maria Costa",
+        tipo: "Enfermeiro",
+        estado: "Ativo",
+        cartaoCidadao: "23456789",
+        nif: "256789012",
+        dataNascimento: "1991-11-04",
+        numeroMecanografico: "MEC-0003",
+        email: "maria.costa@medicore.pt",
+        telefone: "+351 220 000 300",
+        extensao: "Ext. 2301",
+        morada: "Rua do Hospital, Porto",
+        codigoPostal: "4300-000",
+        localidade: "Porto",
+        username: "maria.costa",
+        permissoes: ["dashboard", "equipamentos", "localizacoes"],
+        perfil: "Consulta clínica",
+        dataAtivacao: "2025-03-12",
+        validadeAcesso: "2027-03-12",
+        departamento: "Unidade de Cuidados Intensivos",
+        funcao: "Enfermeira responsável",
+        superior: "Coordenação de Enfermagem",
+        edificio: "Edifício A",
+        piso: "2",
+        dataAdmissao: "2024-05-20",
+        observacoes: "Acesso focado na consulta de equipamentos do serviço."
+    },
+    "USR-004": {
+        codigo: "USR-004",
+        nome: "Ricardo Silva",
+        tipo: "Enfermeiro",
+        estado: "Inativo",
+        cartaoCidadao: "34567890",
+        nif: "267890123",
+        dataNascimento: "1986-02-22",
+        numeroMecanografico: "MEC-0004",
+        email: "ricardo.silva@medicore.pt",
+        telefone: "+351 220 000 301",
+        extensao: "Ext. 2401",
+        morada: "Rua do Bloco, Porto",
+        codigoPostal: "4100-000",
+        localidade: "Porto",
+        username: "ricardo.silva",
+        permissoes: ["dashboard", "equipamentos", "localizacoes"],
+        perfil: "Consulta clínica",
+        dataAtivacao: "2024-10-05",
+        validadeAcesso: "2026-10-05",
+        departamento: "Bloco Operatório",
+        funcao: "Enfermeiro",
+        superior: "Coordenação de Enfermagem",
+        edificio: "Edifício C",
+        piso: "1",
+        dataAdmissao: "2024-03-10",
+        observacoes: "Conta inativa até validação do responsável do serviço."
+    }
+};
+
+function preencherFormularioUtilizador(utilizador) {
+    if (!utilizador) return;
+
+    definirValor("codigoUtilizador", utilizador.codigo);
+    definirValor("nomeUtilizador", utilizador.nome);
+    definirValor("tipoUtilizador", utilizador.tipo);
+    definirValor("estadoUtilizador", utilizador.estado);
+    definirValor("cartaoCidadaoUtilizador", utilizador.cartaoCidadao);
+    definirValor("nifUtilizador", utilizador.nif);
+    definirValor("dataNascimentoUtilizador", utilizador.dataNascimento);
+    definirValor("numeroMecanograficoUtilizador", utilizador.numeroMecanografico);
+    definirValor("emailUtilizador", utilizador.email);
+    definirValor("telefoneUtilizador", utilizador.telefone);
+    definirValor("extensaoUtilizador", utilizador.extensao);
+    definirValor("moradaUtilizador", utilizador.morada);
+    definirValor("codigoPostalUtilizador", utilizador.codigoPostal);
+    definirValor("localidadeUtilizador", utilizador.localidade);
+    definirValor("usernameUtilizador", utilizador.username);
+    definirValor("perfilAcessoUtilizador", utilizador.perfil);
+    definirValor("dataAtivacaoUtilizador", utilizador.dataAtivacao);
+    definirValor("validadeAcessoUtilizador", utilizador.validadeAcesso);
+    definirValor("departamentoUtilizador", utilizador.departamento);
+    definirValor("funcaoUtilizador", utilizador.funcao);
+    definirValor("superiorUtilizador", utilizador.superior);
+    definirValor("edificioUtilizador", utilizador.edificio);
+    definirValor("pisoUtilizador", utilizador.piso);
+    definirValor("dataAdmissaoUtilizador", utilizador.dataAdmissao);
+    definirValor("observacoesUtilizador", utilizador.observacoes);
+    definirPermissoesUtilizador(utilizador.permissoes || []);
+}
+
+function definirPermissoesUtilizador(permissoes) {
+    // Marca os checkboxes dos menus que o utilizador pode consultar.
+    // Os valores correspondem aos values dos inputs permissoesUtilizador[] no HTML.
+    const permissoesAtivas = Array.isArray(permissoes) ? permissoes : [];
+
+    document.querySelectorAll(".permissao-utilizador").forEach(function (checkbox) {
+        checkbox.checked = permissoesAtivas.includes(checkbox.value);
+    });
+}
+
+function permissoesPorTipoUtilizador(tipo) {
+    // Sugere acessos iniciais conforme o tipo de utilizador selecionado.
+    // O utilizador ainda pode ajustar manualmente os checkboxes antes de guardar.
+    const permissoes = {
+        "Administrador": ["dashboard", "equipamentos", "calibracoes", "localizacoes", "fornecedores", "utilizadores"],
+        "Engenheiro": ["dashboard", "equipamentos", "calibracoes", "localizacoes", "fornecedores"],
+        "Enfermeiro": ["dashboard", "equipamentos", "localizacoes"]
+    };
+
+    return permissoes[tipo] || [];
+}
+
+function perfilPorTipoUtilizador(tipo) {
+    // Alinha o perfil geral com o tipo escolhido no novo utilizador.
+    const perfis = {
+        "Administrador": "Acesso total",
+        "Engenheiro": "Gestão técnica",
+        "Enfermeiro": "Consulta clínica"
+    };
+
+    return perfis[tipo] || "";
+}
+
+/* =========================================================
+   NOVO / EDITAR UTILIZADOR
+   Limpa o formulário, valida passwords e mostra o pop-up de sucesso.
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Inicializa apenas a página novo_utilizador.html.
+    // Se o formulário não existir na página atual, a função termina.
+    const formNovoUtilizador = document.getElementById("formNovoUtilizador");
+    const btnLimparNovoUtilizador = document.getElementById("btnLimparNovoUtilizador");
+    const tipoUtilizador = document.getElementById("tipoUtilizador");
+    const perfilAcessoUtilizador = document.getElementById("perfilAcessoUtilizador");
+    const idUtilizador = obterParametroURL("id");
+
+    if (!formNovoUtilizador) return;
+
+    if (idUtilizador && utilizadoresMEDICORE[idUtilizador]) {
+        preencherFormularioUtilizador(utilizadoresMEDICORE[idUtilizador]);
+
+        const passwordUtilizador = document.getElementById("passwordUtilizador");
+        const confirmarPasswordUtilizador = document.getElementById("confirmarPasswordUtilizador");
+
+        if (passwordUtilizador && confirmarPasswordUtilizador) {
+            passwordUtilizador.required = false;
+            confirmarPasswordUtilizador.required = false;
+            passwordUtilizador.placeholder = "Preencher apenas se pretender alterar";
+            confirmarPasswordUtilizador.placeholder = "Confirmar apenas se alterar";
+        }
+    }
+
+    // Limpa todos os campos do formulário e repõe o estado por defeito como Ativo.
+    // Mantém o comportamento igual aos outros formulários de criação.
+    if (btnLimparNovoUtilizador) {
+        btnLimparNovoUtilizador.addEventListener("click", function () {
+            formNovoUtilizador.querySelectorAll("input, select, textarea").forEach(function (campo) {
+                if (campo.type === "radio" || campo.type === "checkbox") {
+                    campo.checked = false;
+                } else if (campo.type === "file") {
+                    campo.value = "";
+                } else if (campo.tagName === "SELECT") {
+                    campo.selectedIndex = 0;
+                } else {
+                    campo.value = "";
+                }
+            });
+
+            const estadoUtilizador = document.getElementById("estadoUtilizador");
+            if (estadoUtilizador) {
+                estadoUtilizador.value = "Ativo";
+            }
+
+            definirPermissoesUtilizador([]);
+        });
+    }
+
+    // Ao escolher o tipo de utilizador, sugere o perfil e os acessos mais comuns.
+    // Estes acessos continuam editáveis através dos checkboxes.
+    if (tipoUtilizador && !idUtilizador) {
+        tipoUtilizador.addEventListener("change", function () {
+            definirPermissoesUtilizador(permissoesPorTipoUtilizador(tipoUtilizador.value));
+
+            if (perfilAcessoUtilizador) {
+                perfilAcessoUtilizador.value = perfilPorTipoUtilizador(tipoUtilizador.value);
+            }
+        });
+    }
+
+    // Interceta o submit para simular o registo enquanto não existe backend.
+    // Antes do pop-up, confirma se a password e a confirmação são iguais.
+    formNovoUtilizador.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const password = document.getElementById("passwordUtilizador")?.value || "";
+        const confirmarPassword = document.getElementById("confirmarPasswordUtilizador")?.value || "";
+
+        if ((password || confirmarPassword) && password !== confirmarPassword) {
+            alert("A password e a confirmação da password não coincidem.");
+            return;
+        }
+
+        mostrarPopupSucesso(
+            idUtilizador ? "Utilizador atualizado" : "Novo utilizador guardado",
+            idUtilizador ? "Os dados do utilizador foram atualizados com sucesso." : "O novo utilizador foi registado com sucesso.",
+            "lista_utilizadores.html"
+        );
+    });
+
+});
+
+/* =========================================================
+   MODAL DE REMOÇÃO DE UTILIZADOR
+   Preenche o modal com os dados da linha e remove o registo visualmente.
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Inicializa apenas a lista_utilizadores.html.
+    // O modal usa os data-attributes do botão eliminar para mostrar o utilizador escolhido.
+    const modalApagar = document.getElementById("modalApagarUtilizador");
+    const btnConfirmarApagar = document.getElementById("btnConfirmarApagarUtilizador");
+
+    let linhaUtilizadorSelecionada = null;
+
+    if (!modalApagar || !btnConfirmarApagar) return;
+
+    // Antes do modal abrir, copia os dados do botão clicado para o resumo do modal.
+    modalApagar.addEventListener("show.bs.modal", function (event) {
+        const botao = event.relatedTarget;
+
+        if (!botao) return;
+
+        linhaUtilizadorSelecionada = botao.closest("tr");
+
+        const codigo = botao.getAttribute("data-codigo");
+        const nome = botao.getAttribute("data-nome");
+        const tipo = botao.getAttribute("data-tipo");
+        const cartao = botao.getAttribute("data-cartao");
+        const email = botao.getAttribute("data-email");
+        const telefone = botao.getAttribute("data-telefone");
+        const servico = botao.getAttribute("data-servico");
+        const estado = botao.getAttribute("data-estado");
+
+        document.getElementById("modalApagarIdUtilizador").value = codigo;
+        document.getElementById("modalApagarUtilizadorCodigo").textContent = codigo;
+        document.getElementById("modalApagarUtilizadorNome").textContent = nome;
+        document.getElementById("modalApagarUtilizadorTipo").textContent = tipo;
+        document.getElementById("modalApagarUtilizadorCartao").textContent = cartao;
+        document.getElementById("modalApagarUtilizadorEmail").textContent = email;
+        document.getElementById("modalApagarUtilizadorTelefone").textContent = telefone;
+        document.getElementById("modalApagarUtilizadorServico").textContent = servico;
+        document.getElementById("modalApagarUtilizadorEstado").textContent = estado;
+    });
+
+    // Confirma a remoção visual e mostra o mesmo pop-up usado nos outros módulos.
+    // Quando existir backend, esta zona deve ser ligada ao DELETE/UPDATE real.
+    btnConfirmarApagar.addEventListener("click", function () {
+        const codigo = document.getElementById("modalApagarIdUtilizador").value;
+        const nome = document.getElementById("modalApagarUtilizadorNome").textContent;
+        const modalBootstrap = bootstrap.Modal.getInstance(modalApagar);
+
+        function mostrarConfirmacaoRemocaoUtilizador() {
+            // Garante que o fundo visível atrás do pop-up volta a ser a lista.
+            // Esta limpeza evita que o backdrop do modal Bootstrap fique por trás do pop-up de sucesso.
+            document.querySelectorAll(".modal-backdrop").forEach(function (backdrop) {
+                backdrop.remove();
+            });
+
+            document.body.classList.remove("modal-open");
+            document.body.style.removeProperty("overflow");
+            document.body.style.removeProperty("padding-right");
+
+            if (linhaUtilizadorSelecionada) {
+                linhaUtilizadorSelecionada.remove();
+            }
+
+            mostrarPopupSucesso(
+                "Utilizador removido",
+                `O utilizador ${codigo} - ${nome} foi removido com sucesso.`,
+                "lista_utilizadores.html"
+            );
+        }
+
+        if (modalBootstrap) {
+            modalApagar.addEventListener("hidden.bs.modal", mostrarConfirmacaoRemocaoUtilizador, { once: true });
+            modalBootstrap.hide();
+        } else {
+            mostrarConfirmacaoRemocaoUtilizador();
+        }
+    });
+
+});
+
+/* =========================================================
+   FICHA DO UTILIZADOR
+   Começa bloqueada em modo observação e só edita após clicar em Editar.
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Inicializa apenas a página ficha_utilizador.html.
+    // Se o formulário da ficha não existir, esta função termina sem afetar outras páginas.
+    const formFicha = document.getElementById("formFichaUtilizador");
+
+    if (!formFicha) return;
+
+    const idUtilizador = obterParametroURL("id") || "USR-001";
+    const utilizador = utilizadoresMEDICORE[idUtilizador];
+
+    if (!utilizador) {
+        alert("Utilizador não encontrado.");
+        window.location.href = "lista_utilizadores.html";
+        return;
+    }
+
+    preencherFormularioUtilizador(utilizador);
+    definirValor("idUtilizador", idUtilizador);
+
+    const btnAtivarEdicao = document.getElementById("btnAtivarEdicaoUtilizador");
+    const btnCancelarEdicao = document.getElementById("btnCancelarEdicaoUtilizador");
+    const botoesEdicao = document.querySelectorAll(".botao-edicao");
+    const botoesConsulta = document.querySelectorAll(".botao-consulta");
+    const camposFicha = formFicha.querySelectorAll(".campo-ficha");
+    const camposEditaveis = formFicha.querySelectorAll(".campo-editavel");
+
+    let valoresOriginais = {};
+
+    function guardarValoresOriginaisUtilizador() {
+        // Guarda os valores atuais antes de ativar edição.
+        // O botão Cancelar usa esta cópia para repor a ficha.
+        valoresOriginais = {};
+
+        camposFicha.forEach(function (campo) {
+            if (!campo.id) return;
+
+            if (campo.type === "radio" || campo.type === "checkbox") {
+                valoresOriginais[campo.id] = campo.checked;
+            } else {
+                valoresOriginais[campo.id] = campo.value;
+            }
+        });
+    }
+
+    function restaurarValoresOriginaisUtilizador() {
+        // Reverte os campos para o último estado guardado.
+        // Campos de password também voltam a vazio se não tinham valor anterior.
+        camposFicha.forEach(function (campo) {
+            if (!campo.id || !(campo.id in valoresOriginais)) return;
+
+            if (campo.type === "radio" || campo.type === "checkbox") {
+                campo.checked = valoresOriginais[campo.id];
+            } else if (campo.type !== "file") {
+                campo.value = valoresOriginais[campo.id];
+            }
+        });
+
+        atualizarResumoUtilizador();
+    }
+
+    function aplicarModoConsultaUtilizador() {
+        // Bloqueia os campos e mostra apenas os botões de observação.
+        // Este é o modo inicial da ficha do utilizador.
+        camposEditaveis.forEach(function (campo) {
+            if (campo.tagName === "SELECT" || campo.type === "radio" || campo.type === "checkbox" || campo.type === "file") {
+                campo.disabled = true;
+            } else {
+                campo.readOnly = true;
+            }
+        });
+
+        document.querySelectorAll(".campo-bloqueado").forEach(function (campo) {
+            campo.readOnly = true;
+            campo.disabled = false;
+        });
+
+        botoesEdicao.forEach(function (elemento) {
+            elemento.classList.add("d-none");
+        });
+
+        botoesConsulta.forEach(function (elemento) {
+            elemento.classList.remove("d-none");
+        });
+
+        formFicha.classList.remove("modo-edicao");
+        formFicha.classList.add("modo-consulta");
+
+        definirValor("modoFormularioUtilizador", "ver");
+    }
+
+    function aplicarModoEdicaoUtilizador() {
+        // Liberta os campos editáveis e troca os botões para Cancelar/Guardar.
+        // O código interno continua bloqueado para evitar alterar a referência.
+        camposEditaveis.forEach(function (campo) {
+            if (campo.tagName === "SELECT" || campo.type === "radio" || campo.type === "checkbox" || campo.type === "file") {
+                campo.disabled = false;
+            } else {
+                campo.readOnly = false;
+            }
+        });
+
+        document.querySelectorAll(".campo-bloqueado").forEach(function (campo) {
+            campo.readOnly = true;
+        });
+
+        botoesEdicao.forEach(function (elemento) {
+            elemento.classList.remove("d-none");
+        });
+
+        botoesConsulta.forEach(function (elemento) {
+            elemento.classList.add("d-none");
+        });
+
+        formFicha.classList.remove("modo-consulta");
+        formFicha.classList.add("modo-edicao");
+
+        definirValor("modoFormularioUtilizador", "editar");
+    }
+
+    function atualizarResumoUtilizador() {
+        // Atualiza os textos ocultos de resumo para manter o padrão das outras fichas.
+        // Também prepara badges caso sejam usados visualmente no futuro.
+        const codigo = document.getElementById("codigoUtilizador")?.value || "";
+        const nome = document.getElementById("nomeUtilizador")?.value || "Utilizador";
+        const tipo = document.getElementById("tipoUtilizador")?.value || "Tipo";
+        const servico = document.getElementById("departamentoUtilizador")?.value || "serviço por definir";
+        const estado = document.getElementById("estadoUtilizador")?.value || "Estado";
+
+        definirTexto("tituloPaginaUtilizador", `Ficha do Utilizador - ${codigo}`);
+        definirTexto("resumoNomeUtilizador", nome);
+        definirTexto("resumoDescricaoUtilizador", `${codigo} | ${tipo} | ${servico}`);
+        definirTexto("badgeEstadoUtilizador", estado);
+        definirTexto("badgeTipoUtilizador", tipo);
+
+        const badgeEstado = document.getElementById("badgeEstadoUtilizador");
+        if (badgeEstado) {
+            badgeEstado.className = `estado ${classeEstado(estado)}`;
+        }
+    }
+
+    if (btnAtivarEdicao) {
+        btnAtivarEdicao.addEventListener("click", function () {
+            guardarValoresOriginaisUtilizador();
+            aplicarModoEdicaoUtilizador();
+        });
+    }
+
+    if (btnCancelarEdicao) {
+        btnCancelarEdicao.addEventListener("click", function () {
+            restaurarValoresOriginaisUtilizador();
+            aplicarModoConsultaUtilizador();
+        });
+    }
+
+    formFicha.addEventListener("input", atualizarResumoUtilizador);
+    formFicha.addEventListener("change", atualizarResumoUtilizador);
+
+    formFicha.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const password = document.getElementById("passwordUtilizador")?.value || "";
+        const confirmarPassword = document.getElementById("confirmarPasswordUtilizador")?.value || "";
+
+        if ((password || confirmarPassword) && password !== confirmarPassword) {
+            alert("A password e a confirmação da password não coincidem.");
+            return;
+        }
+
+        mostrarPopupSucesso(
+            "Utilizador atualizado",
+            "As alterações do utilizador foram registadas com sucesso.",
+            "lista_utilizadores.html"
+        );
+    });
+
+    guardarValoresOriginaisUtilizador();
+    atualizarResumoUtilizador();
+    aplicarModoConsultaUtilizador();
 
 });
 
