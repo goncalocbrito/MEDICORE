@@ -129,6 +129,19 @@ body {
     line-height: 1.5;
 }
 
+.dashboard-card .numero-dashboard {
+    color: var(--cor-principal);
+    font-size: 2.1rem;
+    font-weight: 900;
+    line-height: 1;
+    margin: 8px 0 10px;
+}
+
+.dashboard-card span {
+    color: #637782;
+    font-size: 0.98rem;
+}
+
 /* Responsividade */
 @media (max-width: 991px) {
     .menu-horizontal .nav-link {
@@ -950,6 +963,41 @@ body {
     box-shadow: 0 8px 24px rgba(18, 60, 70, 0.06);
 }
 
+/* Bloco reutilizável de pesquisa e filtros das tabelas */
+.filtros-tabela {
+    background-color: var(--cor-branco);
+    border: 1px solid #d6ece8;
+    border-radius: 20px;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+    box-shadow: 0 8px 24px rgba(18, 60, 70, 0.06);
+}
+
+.filtros-tabela .form-label {
+    color: var(--cor-principal);
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
+.filtros-tabela .form-control,
+.filtros-tabela .form-select {
+    border-color: #cfe6e3;
+    border-radius: 14px;
+    min-height: 44px;
+}
+
+.filtros-tabela .form-control:focus,
+.filtros-tabela .form-select:focus {
+    border-color: var(--cor-secundaria);
+    box-shadow: 0 0 0 0.18rem rgba(84, 185, 172, 0.18);
+}
+
+.linha-sem-resultados td {
+    color: #6d7f87;
+    font-weight: 700;
+    padding: 24px !important;
+}
+
 .btn-limpar-filtros {
     background-color: #eaf6f6;
     color: var(--cor-principal);
@@ -1102,6 +1150,33 @@ body {
     border: 1px solid #d6ece8;
     border-radius: 16px;
     padding: 18px;
+}
+
+/* Cartão de resumo usado na página de acessórios. */
+.equipamento-selecionado-card {
+    background: linear-gradient(135deg, #123c46 0%, #176b5b 100%);
+    color: #ffffff;
+    border-radius: 18px;
+    padding: 22px 26px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 22px;
+    box-shadow: 0 14px 32px rgba(18, 60, 70, 0.16);
+}
+
+.equipamento-selecionado-card h3 {
+    margin: 8px 0;
+    font-weight: 900;
+}
+
+.equipamento-selecionado-card p {
+    margin: 0;
+    color: #dff7f0;
+}
+
+.tabela-acessorios .btn {
+    margin: 0 2px;
 }
 
 .subtitulo-bloco-form {
@@ -2478,7 +2553,7 @@ textarea[readonly] {
     }
 
     .menu-dropdown-hover {
-        width: 190px;
+        width: 230px;
     }
 
     .menu-dropdown-hover-calibracoes {
@@ -2638,5 +2713,132 @@ textarea[readonly] {
     .backoffice-preview-publico {
         align-items: flex-start;
         flex-direction: column;
+    }
+}
+
+/* =========================================================
+   TOPO E MENU COLAPSADO
+   Mantém o utilizador no canto superior direito e mostra submenus só por clique.
+   ========================================================= */
+
+@media (max-width: 991px) {
+    .top-header .row {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        min-height: 82px;
+    }
+
+    .top-header .col-md-4 {
+        width: auto;
+        max-width: none;
+        flex: none;
+    }
+
+    .top-header .text-center {
+        justify-content: center;
+        min-width: 0;
+    }
+
+    .top-header .text-md-end {
+        justify-self: end;
+        text-align: right !important;
+    }
+
+    .user-button {
+        margin-top: 0;
+        white-space: nowrap;
+    }
+
+    .mensagem-topo {
+        max-width: 100%;
+        font-size: 0.84rem;
+        padding: 8px 12px;
+        white-space: nowrap;
+    }
+
+    .menu-horizontal .navbar-collapse {
+        padding: 8px 0 14px;
+    }
+
+    .menu-horizontal .navbar-nav {
+        width: 100%;
+        gap: 0;
+        align-items: stretch;
+    }
+
+    .menu-horizontal .nav-item,
+    .menu-dropdown-hover,
+    .menu-dropdown-hover-calibracoes,
+    .menu-dropdown-hover-localizacoes,
+    .menu-dropdown-hover-fornecedores,
+    .menu-dropdown-hover-utilizadores {
+        width: 100%;
+        text-align: left;
+        position: relative;
+    }
+
+    .menu-horizontal .nav-link {
+        width: 100%;
+        min-width: 0;
+        justify-content: flex-start;
+        padding: 13px 18px;
+        border-bottom: 0;
+        border-left: 4px solid transparent;
+        font-size: 0.98rem;
+    }
+
+    .menu-horizontal .nav-link:hover,
+    .menu-horizontal .nav-link.active {
+        border-left-color: var(--cor-secundaria);
+        border-bottom-color: transparent;
+    }
+
+    .submenu-equipamentos,
+    .submenu-calibracoes,
+    .submenu-localizacoes,
+    .submenu-fornecedores,
+    .submenu-utilizadores {
+        position: static;
+        display: none !important;
+        width: 100%;
+        margin: 0;
+        padding: 4px 0 8px;
+        box-shadow: none;
+        border-radius: 0;
+        background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .menu-dropdown-hover.submenu-aberto .submenu-equipamentos,
+    .menu-dropdown-hover-calibracoes.submenu-aberto .submenu-calibracoes,
+    .menu-dropdown-hover-localizacoes.submenu-aberto .submenu-localizacoes,
+    .menu-dropdown-hover-fornecedores.submenu-aberto .submenu-fornecedores,
+    .menu-dropdown-hover-utilizadores.submenu-aberto .submenu-utilizadores {
+        display: block !important;
+    }
+
+    .submenu-equipamentos li a,
+    .submenu-calibracoes li a,
+    .submenu-localizacoes li a,
+    .submenu-fornecedores li a,
+    .submenu-utilizadores li a {
+        padding: 10px 34px;
+        font-size: 0.88rem;
+        white-space: normal;
+    }
+}
+
+@media (max-width: 576px) {
+    .logo-private {
+        height: 34px;
+    }
+
+    .mensagem-topo span {
+        display: none;
+    }
+
+    .user-button {
+        padding: 8px 12px;
+        font-size: 0.9rem;
     }
 }

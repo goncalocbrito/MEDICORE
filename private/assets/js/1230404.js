@@ -44,7 +44,7 @@ const equipamentosMEDICORE = {
                 tipo: "Cabo",
                 serie: "ECG-5D-2024",
                 estado: "Ativo",
-                intervencao: "Não aplicável",
+                intervencao: "Não",
                 proximaIntervencao: "Por definir"
             },
             {
@@ -53,7 +53,7 @@ const equipamentosMEDICORE = {
                 tipo: "Sensor",
                 serie: "SPO2-4482",
                 estado: "Ativo",
-                intervencao: "Calibração",
+                intervencao: "Sim",
                 proximaIntervencao: "2026-09-12"
             },
             {
@@ -62,7 +62,7 @@ const equipamentosMEDICORE = {
                 tipo: "Consumível reutilizável",
                 serie: "NIBP-1120",
                 estado: "Ativo",
-                intervencao: "Manutenção preventiva",
+                intervencao: "Sim",
                 proximaIntervencao: "2026-09-12"
             }
         ],
@@ -109,7 +109,7 @@ const equipamentosMEDICORE = {
                 tipo: "Módulo",
                 serie: "CIR-2201",
                 estado: "Ativo",
-                intervencao: "Manutenção preventiva",
+                intervencao: "Sim",
                 proximaIntervencao: "2026-08-28"
             }
         ],
@@ -156,7 +156,7 @@ const equipamentosMEDICORE = {
                 tipo: "Módulo",
                 serie: "PAS-8821",
                 estado: "Avariado",
-                intervencao: "Manutenção e calibração",
+                intervencao: "Sim",
                 proximaIntervencao: "Por definir"
             }
         ],
@@ -310,7 +310,7 @@ function criarLinhaAcessorioEquipamento(acessorio) {
         <td>${escaparTextoPedido(acessorio.tipo || "---")}</td>
         <td>${escaparTextoPedido(acessorio.serie || "---")}</td>
         <td><span class="estado ${classeEstado(acessorio.estado || "Ativo")}">${escaparTextoPedido(acessorio.estado || "Ativo")}</span></td>
-        <td>${escaparTextoPedido(acessorio.intervencao || "Não aplicável")}</td>
+        <td>${escaparTextoPedido(acessorio.intervencao || "Não")}</td>
         <td>${formatarDataPT(acessorio.proximaIntervencao || "")}</td>
     `;
 
@@ -2125,11 +2125,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     preencherCamposEquipamento(equipamento);
-    preencherAcessoriosEquipamento(equipamento);
 
     const btnAtivarEdicao = document.getElementById("btnAtivarEdicao");
     const btnCancelarEdicao = document.getElementById("btnCancelarEdicao");
-    const btnAdicionarAcessorio = document.getElementById("btnAdicionarAcessorioEquipamento");
     const botoesEdicao = document.querySelectorAll(".botao-edicao");
 
     const camposFicha = formFicha.querySelectorAll(".campo-ficha");
@@ -2278,46 +2276,6 @@ document.addEventListener("DOMContentLoaded", function () {
         btnCancelarEdicao.addEventListener("click", function () {
             restaurarValoresOriginais();
             aplicarModoConsulta();
-        });
-    }
-
-    if (btnAdicionarAcessorio) {
-        btnAdicionarAcessorio.addEventListener("click", function () {
-            const codigo = $("novoAcessorioCodigo")?.value.trim();
-            const nome = $("novoAcessorioNome")?.value.trim();
-            const tipo = $("novoAcessorioTipo")?.value;
-            const serie = $("novoAcessorioSerie")?.value.trim();
-            const intervencao = $("novoAcessorioIntervencao")?.value;
-            const tabela = $("tabelaAcessoriosEquipamento");
-
-            if (!codigo || !nome) {
-                alert("Indique pelo menos o código e o nome do acessório.");
-                return;
-            }
-
-            if (!tabela) return;
-
-            const linhaVazia = tabela.querySelector("td[colspan]");
-            if (linhaVazia) {
-                tabela.innerHTML = "";
-            }
-
-            tabela.appendChild(criarLinhaAcessorioEquipamento({
-                codigo: codigo,
-                nome: nome,
-                tipo: tipo || "Outro",
-                serie: serie || "---",
-                estado: "Ativo",
-                intervencao: intervencao || "Não aplicável",
-                proximaIntervencao: "Por definir"
-            }));
-
-            ["novoAcessorioCodigo", "novoAcessorioNome", "novoAcessorioTipo", "novoAcessorioSerie"].forEach(function (id) {
-                const campo = $(id);
-                if (campo) campo.value = "";
-            });
-
-            definirValor("novoAcessorioIntervencao", "Não aplicável");
         });
     }
 
@@ -3403,6 +3361,625 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.addEventListener("DOMContentLoaded", carregarProcessosFinalizados);
+
+/* =========================================================
+   PÁGINA DE CONSUMÍVEIS
+   Gere visualmente entradas e saídas de stock por sala.
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const tabelaConsumiveis = document.getElementById("tabelaConsumiveisSala");
+    const corpoConsumiveis = document.getElementById("corpoConsumiveisSala");
+    const formNovoConsumivel = document.getElementById("formNovoConsumivelSala");
+    const modalNovoConsumivel = document.getElementById("modalNovoConsumivel");
+
+    if (!tabelaConsumiveis || !corpoConsumiveis) return;
+
+    function separarQuantidade(texto) {
+        const resultado = String(texto || "").trim().match(/^(\d+)\s*(.*)$/);
+
+        return {
+            numero: resultado ? Number(resultado[1]) : 0,
+            unidade: resultado && resultado[2] ? resultado[2].trim() : "unidades"
+        };
+    }
+
+    function textoQuantidade(numero, unidade) {
+        return `${Math.max(0, Number(numero) || 0)} ${unidade || "unidades"}`;
+    }
+
+    function definirEstadoStock(linha) {
+        const quantidade = separarQuantidade(linha.cells[4]?.textContent);
+        const minimo = separarQuantidade(linha.cells[5]?.textContent);
+        const celulaEstado = linha.cells[6];
+
+        if (!celulaEstado) return;
+
+        if (quantidade.numero <= 0) {
+            celulaEstado.innerHTML = `<span class="estado estado-inativo">Esgotado</span>`;
+            return;
+        }
+
+        if (quantidade.numero <= minimo.numero) {
+            celulaEstado.innerHTML = `<span class="estado estado-manutencao">Stock baixo</span>`;
+            return;
+        }
+
+        celulaEstado.innerHTML = `<span class="estado estado-ativo">Disponível</span>`;
+    }
+
+    function criarAcoesConsumivel() {
+        return `
+            <td class="text-center">
+                <button type="button" class="btn btn-sm btn-editar btn-aumentar-stock" title="Adicionar uma unidade ao stock">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-eliminar btn-remover-stock" title="Remover uma unidade do stock">
+                    <i class="fa-solid fa-minus"></i>
+                </button>
+            </td>
+        `;
+    }
+
+    function prepararLinhaConsumivel(linha) {
+        if (linha.classList.contains("linha-sem-resultados")) return;
+
+        if (linha.cells.length === 8) {
+            linha.insertAdjacentHTML("beforeend", criarAcoesConsumivel());
+        }
+
+        definirEstadoStock(linha);
+    }
+
+    function atualizarResumoConsumiveis() {
+        const linhas = Array.from(corpoConsumiveis.rows).filter(function (linha) {
+            return !linha.classList.contains("linha-sem-resultados");
+        });
+
+        const salas = new Set(linhas.map(function (linha) {
+            return linha.cells[2]?.textContent.trim();
+        }).filter(Boolean));
+
+        const stockBaixo = linhas.filter(function (linha) {
+            const quantidade = separarQuantidade(linha.cells[4]?.textContent);
+            const minimo = separarQuantidade(linha.cells[5]?.textContent);
+            return quantidade.numero <= minimo.numero;
+        }).length;
+
+        definirTexto("totalSalasConsumiveis", salas.size);
+        definirTexto("totalItensConsumiveis", linhas.length);
+        definirTexto("totalStockBaixoConsumiveis", stockBaixo);
+    }
+
+    function alterarStock(linha, diferenca) {
+        const quantidade = separarQuantidade(linha.cells[4]?.textContent);
+        const novoValor = Math.max(0, quantidade.numero + diferenca);
+
+        linha.cells[4].textContent = textoQuantidade(novoValor, quantidade.unidade);
+        definirEstadoStock(linha);
+        atualizarResumoConsumiveis();
+    }
+
+    function criarLinhaNovoConsumivel(dados) {
+        const linha = document.createElement("tr");
+        linha.innerHTML = `
+            <td>${escaparTextoPedido(dados.codigo)}</td>
+            <td>${escaparTextoPedido(dados.item)}</td>
+            <td>${escaparTextoPedido(dados.sala)}</td>
+            <td>${escaparTextoPedido(dados.categoria)}</td>
+            <td>${textoQuantidade(dados.quantidade, dados.unidade)}</td>
+            <td>${textoQuantidade(dados.stockMinimo, dados.unidade)}</td>
+            <td><span class="estado estado-ativo">Disponível</span></td>
+            <td>${escaparTextoPedido(dados.observacoes || "Sem observações.")}</td>
+            ${criarAcoesConsumivel()}
+        `;
+
+        definirEstadoStock(linha);
+        return linha;
+    }
+
+    Array.from(corpoConsumiveis.rows).forEach(prepararLinhaConsumivel);
+    atualizarResumoConsumiveis();
+
+    tabelaConsumiveis.addEventListener("click", function (event) {
+        const linha = event.target.closest("tr");
+        if (!linha || linha.classList.contains("linha-sem-resultados")) return;
+
+        if (event.target.closest(".btn-aumentar-stock")) {
+            alterarStock(linha, 1);
+        }
+
+        if (event.target.closest(".btn-remover-stock")) {
+            alterarStock(linha, -1);
+        }
+    });
+
+    if (formNovoConsumivel) {
+        formNovoConsumivel.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            const dados = {
+                codigo: document.getElementById("novoConsumivelCodigo")?.value.trim(),
+                item: document.getElementById("novoConsumivelItem")?.value.trim(),
+                sala: document.getElementById("novoConsumivelSala")?.value,
+                categoria: document.getElementById("novoConsumivelCategoria")?.value,
+                quantidade: Number(document.getElementById("novoConsumivelQuantidade")?.value || 0),
+                unidade: document.getElementById("novoConsumivelUnidade")?.value.trim() || "unidades",
+                stockMinimo: Number(document.getElementById("novoConsumivelStockMinimo")?.value || 0),
+                observacoes: document.getElementById("novoConsumivelObservacoes")?.value.trim()
+            };
+
+            if (!dados.codigo || !dados.item || !dados.sala || !dados.categoria) {
+                alert("Preencha o código, material, sala e categoria.");
+                return;
+            }
+
+            corpoConsumiveis.appendChild(criarLinhaNovoConsumivel(dados));
+            atualizarResumoConsumiveis();
+
+            const modalBootstrap = bootstrap.Modal.getInstance(modalNovoConsumivel);
+            if (modalBootstrap) modalBootstrap.hide();
+
+            formNovoConsumivel.reset();
+            definirValor("novoConsumivelQuantidade", "1");
+            definirValor("novoConsumivelUnidade", "unidades");
+            definirValor("novoConsumivelStockMinimo", "1");
+        });
+    }
+
+});
+
+/* =========================================================
+   PESQUISA E FILTROS DAS TABELAS
+   Aplica pesquisa livre e filtros por coluna nas listas principais.
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Normaliza o texto para tornar a pesquisa indiferente a maiúsculas e acentos.
+    function normalizarTextoFiltro(texto) {
+        return String(texto || "")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .trim();
+    }
+
+    // Devolve o texto de uma célula da linha da tabela.
+    function textoCelula(linha, indiceColuna) {
+        const celula = linha.cells[indiceColuna];
+        return celula ? normalizarTextoFiltro(celula.textContent) : "";
+    }
+
+    // Cria ou reaproveita uma linha informativa quando não existem resultados visíveis.
+    function obterLinhaSemResultados(tabela) {
+        const corpo = tabela.tBodies[0];
+        let linha = corpo.querySelector(".linha-sem-resultados");
+
+        if (!linha) {
+            linha = document.createElement("tr");
+            linha.className = "linha-sem-resultados d-none";
+            linha.innerHTML = `<td colspan="${tabela.tHead.rows[0].cells.length}" class="text-center">Não foram encontrados resultados para os filtros aplicados.</td>`;
+            corpo.appendChild(linha);
+        }
+
+        return linha;
+    }
+
+    // Aplica todos os campos de pesquisa e filtros associados ao bloco atual.
+    function aplicarFiltros(blocoFiltros) {
+        const tabela = document.querySelector(blocoFiltros.dataset.tabela);
+        if (!tabela || !tabela.tBodies.length) return;
+
+        const pesquisa = normalizarTextoFiltro(blocoFiltros.querySelector("[data-filtro='texto']")?.value || "");
+        const filtrosColuna = Array.from(blocoFiltros.querySelectorAll("[data-filtro='coluna']"));
+        const linhaSemResultados = obterLinhaSemResultados(tabela);
+        let totalVisivel = 0;
+
+        Array.from(tabela.tBodies[0].rows).forEach(function (linha) {
+            if (linha.classList.contains("linha-sem-resultados")) return;
+
+            const textoLinha = normalizarTextoFiltro(linha.textContent);
+            const correspondePesquisa = !pesquisa || textoLinha.includes(pesquisa);
+
+            const correspondeFiltros = filtrosColuna.every(function (campo) {
+                const valorFiltro = normalizarTextoFiltro(campo.value);
+                if (!valorFiltro) return true;
+
+                return textoCelula(linha, Number(campo.dataset.coluna)).includes(valorFiltro);
+            });
+
+            const visivel = correspondePesquisa && correspondeFiltros;
+            linha.classList.toggle("d-none", !visivel);
+
+            if (visivel) totalVisivel += 1;
+        });
+
+        linhaSemResultados.classList.toggle("d-none", totalVisivel > 0);
+    }
+
+    document.querySelectorAll(".filtros-tabela").forEach(function (blocoFiltros) {
+        const campos = blocoFiltros.querySelectorAll("[data-filtro]");
+        const botaoLimpar = blocoFiltros.querySelector("[data-limpar-filtros]");
+
+        campos.forEach(function (campo) {
+            campo.addEventListener("input", function () {
+                aplicarFiltros(blocoFiltros);
+            });
+
+            campo.addEventListener("change", function () {
+                aplicarFiltros(blocoFiltros);
+            });
+        });
+
+        if (botaoLimpar) {
+            botaoLimpar.addEventListener("click", function () {
+                campos.forEach(function (campo) {
+                    campo.value = "";
+                });
+
+                aplicarFiltros(blocoFiltros);
+            });
+        }
+
+        aplicarFiltros(blocoFiltros);
+    });
+
+});
+
+/* =========================================================
+   SUBMENU DE EQUIPAMENTOS
+   Acrescenta links comuns nas páginas antigas sem duplicar HTML.
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    function prefixoEquipamentos() {
+        const caminho = window.location.pathname.replace(/\\/g, "/");
+
+        if (caminho.includes("/private/views/equipamentos/")) {
+            return "";
+        }
+
+        if (caminho.includes("/private/views/")) {
+            return "../equipamentos/";
+        }
+
+        return "views/equipamentos/";
+    }
+
+    const prefixo = prefixoEquipamentos();
+    const linksNovos = [
+        { href: "acessorios.html", icone: "fa-plug-circle-bolt", texto: "Acessórios" },
+        { href: "consumiveis.html", icone: "fa-boxes-stacked", texto: "Consumíveis" },
+        { href: "localizacao_equipamento.html", icone: "fa-map-location-dot", texto: "Localização Equipamento" }
+    ];
+
+    document.querySelectorAll(".submenu-equipamentos").forEach(function (submenu) {
+        linksNovos.forEach(function (link) {
+            const hrefCompleto = `${prefixo}${link.href}`;
+            const jaExiste = submenu.querySelector(`a[href$="${link.href}"]`);
+
+            if (!jaExiste) {
+                const item = document.createElement("li");
+                item.innerHTML = `<a href="${hrefCompleto}"><i class="fa-solid ${link.icone} me-2"></i> ${link.texto}</a>`;
+                submenu.appendChild(item);
+            }
+        });
+
+        submenu.querySelectorAll("a").forEach(function (link) {
+            const href = link.getAttribute("href") || "";
+            const paginaAtual = window.location.pathname.split("/").pop();
+
+            if (href.endsWith(paginaAtual)) {
+                submenu.querySelectorAll(".submenu-active").forEach(function (ativo) {
+                    ativo.classList.remove("submenu-active");
+                });
+
+                link.classList.add("submenu-active");
+            }
+        });
+    });
+
+});
+
+/* =========================================================
+   PÁGINA DE ACESSÓRIOS
+   Pesquisa equipamento, lista acessórios e permite adicionar, editar ou apagar.
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const seletorEquipamento = document.getElementById("seletorEquipamentoAcessorios");
+    const tabelaAcessorios = document.getElementById("tabelaGestaoAcessorios");
+    const pesquisaAcessorios = document.getElementById("pesquisaAcessoriosEquipamento");
+    const btnLimparPesquisa = document.getElementById("btnLimparPesquisaAcessorios");
+    const btnAdicionar = document.getElementById("btnAbrirModalNovoAcessorio");
+    const modalAcessorio = document.getElementById("modalAcessorio");
+    const modalEliminarAcessorio = document.getElementById("modalEliminarAcessorio");
+    const btnGuardarAcessorio = document.getElementById("btnGuardarAcessorioModal");
+    const btnConfirmarEliminarAcessorio = document.getElementById("btnConfirmarEliminarAcessorio");
+
+    if (!seletorEquipamento || !tabelaAcessorios) return;
+
+    const acessoriosPorEquipamento = {};
+
+    function obterAcessoriosEditaveis(codigoEquipamento) {
+        if (!acessoriosPorEquipamento[codigoEquipamento]) {
+            const equipamento = equipamentosMEDICORE[codigoEquipamento];
+            acessoriosPorEquipamento[codigoEquipamento] = JSON.parse(JSON.stringify(equipamento?.acessorios || []));
+        }
+
+        return acessoriosPorEquipamento[codigoEquipamento];
+    }
+
+    function textoNormalizado(texto) {
+        return String(texto || "")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .trim();
+    }
+
+    function equipamentoAtual() {
+        return equipamentosMEDICORE[seletorEquipamento.value];
+    }
+
+    function textoEquipamentoAtual() {
+        const equipamento = equipamentoAtual();
+        if (!equipamento) return seletorEquipamento.value;
+
+        return `${seletorEquipamento.value} - ${equipamento.nome}`;
+    }
+
+    function valorDataParaInput(valor) {
+        return /^\d{4}-\d{2}-\d{2}$/.test(valor || "") ? valor : "";
+    }
+
+    function definirTituloModalAcessorio(texto) {
+        const titulo = document.getElementById("modalAcessorioLabel");
+        if (!titulo) return;
+
+        titulo.innerHTML = `<i class="fa-solid fa-plug-circle-bolt me-2"></i>${escaparTextoPedido(texto)}`;
+    }
+
+    function atualizarResumoEquipamento() {
+        const equipamento = equipamentoAtual();
+        if (!equipamento) return;
+
+        definirTexto("tituloEquipamentoAcessorios", `${seletorEquipamento.value} - ${equipamento.nome}`);
+        definirTexto("descricaoEquipamentoAcessorios", `${equipamento.fabricante} ${equipamento.modelo} | ${equipamento.categoria} | Série ${equipamento.serie}`);
+        definirTexto("localizacaoEquipamentoAcessorios", equipamento.localizacao);
+        definirTexto("estadoEquipamentoAcessorios", equipamento.estado);
+    }
+
+    function criarLinhaAcessorioGestao(acessorio, indice) {
+        const linha = document.createElement("tr");
+        linha.dataset.indice = indice;
+
+        linha.innerHTML = `
+            <td>${escaparTextoPedido(acessorio.codigo || "---")}</td>
+            <td>${escaparTextoPedido(acessorio.nome || "---")}</td>
+            <td>${escaparTextoPedido(acessorio.tipo || "---")}</td>
+            <td>${escaparTextoPedido(acessorio.serie || "---")}</td>
+            <td><span class="estado ${classeEstado(acessorio.estado || "Ativo")}">${escaparTextoPedido(acessorio.estado || "Ativo")}</span></td>
+            <td>${escaparTextoPedido(acessorio.intervencao || "Não")}</td>
+            <td>${formatarDataPT(acessorio.proximaIntervencao || "")}</td>
+            <td class="text-center">
+                <button type="button" class="btn btn-sm btn-editar btn-editar-acessorio" title="Observar/editar acessório">
+                    <i class="fa-solid fa-file-pen"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-eliminar btn-apagar-acessorio" title="Apagar acessório">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </td>
+        `;
+
+        return linha;
+    }
+
+    function renderizarAcessorios() {
+        const acessorios = obterAcessoriosEditaveis(seletorEquipamento.value);
+        const pesquisa = textoNormalizado(pesquisaAcessorios?.value || "");
+        tabelaAcessorios.innerHTML = "";
+
+        const acessoriosFiltrados = acessorios.filter(function (acessorio) {
+            if (!pesquisa) return true;
+
+            return textoNormalizado(Object.values(acessorio).join(" ")).includes(pesquisa);
+        });
+
+        if (!acessoriosFiltrados.length) {
+            tabelaAcessorios.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Sem acessórios encontrados para este equipamento.</td></tr>`;
+            return;
+        }
+
+        acessoriosFiltrados.forEach(function (acessorio) {
+            const indiceOriginal = acessorios.indexOf(acessorio);
+            tabelaAcessorios.appendChild(criarLinhaAcessorioGestao(acessorio, indiceOriginal));
+        });
+    }
+
+    function prepararModalNovoAcessorio() {
+        definirTituloModalAcessorio("Adicionar Acessório");
+        definirValor("modalAcessorioIndice", "");
+        definirValor("modalAcessorioEquipamento", textoEquipamentoAtual());
+        definirValor("modalAcessorioCodigo", "");
+        definirValor("modalAcessorioNome", "");
+        definirValor("modalAcessorioTipo", "");
+        definirValor("modalAcessorioFabricante", "");
+        definirValor("modalAcessorioModelo", "");
+        definirValor("modalAcessorioSerie", "");
+        definirValor("modalAcessorioEstado", "Ativo");
+        definirValor("modalAcessorioVerificacao", "Não");
+        definirValor("modalAcessorioProximaIntervencao", "");
+        definirValor("modalAcessorioObservacoes", "");
+    }
+
+    function preencherModalEditarAcessorio(acessorio, indice) {
+        definirTituloModalAcessorio("Detalhes do Acessório");
+        definirValor("modalAcessorioIndice", String(indice));
+        definirValor("modalAcessorioEquipamento", acessorio.equipamentoPrincipal || textoEquipamentoAtual());
+        definirValor("modalAcessorioCodigo", acessorio.codigo || "");
+        definirValor("modalAcessorioNome", acessorio.nome || "");
+        definirValor("modalAcessorioTipo", acessorio.tipo || "");
+        definirValor("modalAcessorioFabricante", acessorio.fabricante || "");
+        definirValor("modalAcessorioModelo", acessorio.modelo || "");
+        definirValor("modalAcessorioSerie", acessorio.serie || "");
+        definirValor("modalAcessorioEstado", acessorio.estado || "Ativo");
+        definirValor("modalAcessorioVerificacao", acessorio.intervencao || "Não");
+        definirValor("modalAcessorioProximaIntervencao", valorDataParaInput(acessorio.proximaIntervencao));
+        definirValor("modalAcessorioObservacoes", acessorio.observacoes || "");
+    }
+
+    function obterDadosModalAcessorio() {
+        return {
+            codigo: document.getElementById("modalAcessorioCodigo")?.value.trim() || "",
+            nome: document.getElementById("modalAcessorioNome")?.value.trim() || "",
+            tipo: document.getElementById("modalAcessorioTipo")?.value || "Outro",
+            fabricante: document.getElementById("modalAcessorioFabricante")?.value.trim() || "---",
+            modelo: document.getElementById("modalAcessorioModelo")?.value.trim() || "---",
+            serie: document.getElementById("modalAcessorioSerie")?.value.trim() || "---",
+            estado: document.getElementById("modalAcessorioEstado")?.value || "Ativo",
+            intervencao: document.getElementById("modalAcessorioVerificacao")?.value || "Não",
+            proximaIntervencao: document.getElementById("modalAcessorioProximaIntervencao")?.value || "Por definir",
+            observacoes: document.getElementById("modalAcessorioObservacoes")?.value.trim() || "",
+            equipamentoCodigo: seletorEquipamento.value,
+            equipamentoPrincipal: textoEquipamentoAtual(),
+            localizacao: equipamentoAtual()?.localizacao || "---"
+        };
+    }
+
+    function guardarAcessorioModal() {
+        const dados = obterDadosModalAcessorio();
+        const indice = document.getElementById("modalAcessorioIndice")?.value;
+        const acessorios = obterAcessoriosEditaveis(seletorEquipamento.value);
+
+        if (!dados.codigo || !dados.nome) {
+            alert("Indique pelo menos o código e o nome do acessório.");
+            return;
+        }
+
+        if (indice === "") {
+            acessorios.push(dados);
+        } else {
+            acessorios[Number(indice)] = dados;
+        }
+
+        const modalBootstrap = bootstrap.Modal.getInstance(modalAcessorio);
+        if (modalBootstrap) modalBootstrap.hide();
+
+        renderizarAcessorios();
+    }
+
+    function preencherModalEliminarAcessorio(acessorio, indice) {
+        definirValor("modalEliminarAcessorioIndice", String(indice));
+        definirTexto("modalEliminarAcessorioCodigo", acessorio.codigo || "---");
+        definirTexto("modalEliminarAcessorioNome", acessorio.nome || "---");
+        definirTexto("modalEliminarAcessorioEquipamento", acessorio.equipamentoPrincipal || textoEquipamentoAtual());
+        definirTexto("modalEliminarAcessorioTipo", acessorio.tipo || "---");
+        definirTexto("modalEliminarAcessorioSerie", acessorio.serie || "---");
+        definirTexto("modalEliminarAcessorioEstado", acessorio.estado || "Ativo");
+    }
+
+    tabelaAcessorios.addEventListener("click", function (event) {
+        const linha = event.target.closest("tr[data-indice]");
+        if (!linha) return;
+
+        const indice = Number(linha.dataset.indice);
+        const acessorios = obterAcessoriosEditaveis(seletorEquipamento.value);
+        const acessorio = acessorios[indice];
+
+        if (event.target.closest(".btn-apagar-acessorio")) {
+            preencherModalEliminarAcessorio(acessorio, indice);
+            new bootstrap.Modal(modalEliminarAcessorio).show();
+            return;
+        }
+
+        if (event.target.closest(".btn-editar-acessorio")) {
+            preencherModalEditarAcessorio(acessorio, indice);
+            new bootstrap.Modal(modalAcessorio).show();
+        }
+    });
+
+    seletorEquipamento.addEventListener("change", function () {
+        atualizarResumoEquipamento();
+        renderizarAcessorios();
+    });
+
+    if (pesquisaAcessorios) {
+        pesquisaAcessorios.addEventListener("input", renderizarAcessorios);
+    }
+
+    if (btnLimparPesquisa) {
+        btnLimparPesquisa.addEventListener("click", function () {
+            if (pesquisaAcessorios) pesquisaAcessorios.value = "";
+            renderizarAcessorios();
+        });
+    }
+
+    if (btnAdicionar) {
+        btnAdicionar.addEventListener("click", prepararModalNovoAcessorio);
+    }
+
+    if (btnGuardarAcessorio) {
+        btnGuardarAcessorio.addEventListener("click", guardarAcessorioModal);
+    }
+
+    if (btnConfirmarEliminarAcessorio) {
+        btnConfirmarEliminarAcessorio.addEventListener("click", function () {
+            const indice = Number(document.getElementById("modalEliminarAcessorioIndice")?.value);
+            const acessorios = obterAcessoriosEditaveis(seletorEquipamento.value);
+
+            if (!Number.isNaN(indice)) {
+                acessorios.splice(indice, 1);
+            }
+
+            const modalBootstrap = bootstrap.Modal.getInstance(modalEliminarAcessorio);
+            if (modalBootstrap) modalBootstrap.hide();
+
+            renderizarAcessorios();
+        });
+    }
+
+    atualizarResumoEquipamento();
+    renderizarAcessorios();
+
+});
+
+/* =========================================================
+   SUBMENUS NO MENU COLAPSADO
+   Em ecrãs menores, abre e fecha cada submenu com clique no menu pai.
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const itensComSubmenu = document.querySelectorAll(
+        ".menu-dropdown-hover, .menu-dropdown-hover-calibracoes, .menu-dropdown-hover-localizacoes, .menu-dropdown-hover-fornecedores, .menu-dropdown-hover-utilizadores"
+    );
+
+    itensComSubmenu.forEach(function (item) {
+        const linkPrincipal = item.querySelector(":scope > .nav-link");
+
+        if (!linkPrincipal) return;
+
+        linkPrincipal.addEventListener("click", function (event) {
+            if (!window.matchMedia("(max-width: 991px)").matches) return;
+
+            event.preventDefault();
+
+            itensComSubmenu.forEach(function (outroItem) {
+                if (outroItem !== item) {
+                    outroItem.classList.remove("submenu-aberto");
+                }
+            });
+
+            item.classList.toggle("submenu-aberto");
+        });
+    });
+
+});
 
 /* =========================================================
    BACKOFFICE DA PÁGINA PÚBLICA

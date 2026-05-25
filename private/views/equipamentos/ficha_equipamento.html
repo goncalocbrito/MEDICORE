@@ -388,20 +388,6 @@
 
                     <li class="nav-item" role="presentation">
                         <button class="nav-link"
-                                id="acessorios-tab"
-                                data-bs-toggle="tab"
-                                data-bs-target="#acessorios"
-                                type="button"
-                                role="tab"
-                                aria-controls="acessorios"
-                                aria-selected="false">
-                            <i class="fa-solid fa-plug-circle-bolt me-2"></i>
-                            Acessórios
-                        </button>
-                    </li>
-
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link"
                                 id="observacoes-tab"
                                 data-bs-toggle="tab"
                                 data-bs-target="#observacoes-tab-pane"
@@ -972,109 +958,6 @@
                                         </button>
                                     </div>
 
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-
-                    <!-- =========================================
-                         SEPARADOR 6: OBSERVAÇÕES
-                         Campo livre para notas técnicas.
-                         ========================================= -->
-                    <div class="tab-pane fade"
-                         id="acessorios"
-                         role="tabpanel"
-                         aria-labelledby="acessorios-tab"
-                         tabindex="0">
-
-                        <!-- =====================================
-                             ACESSÓRIOS DO EQUIPAMENTO
-                             Cada acessório tem código próprio, mas fica associado ao equipamento.
-                             ===================================== -->
-                        <div class="secao-ficha-titulo d-flex justify-content-between align-items-start gap-3 flex-wrap">
-                            <div>
-                                <h4>Acessórios Associados</h4>
-                                <p>Cada acessório tem código próprio, mas mantém ligação ao equipamento principal.</p>
-                            </div>
-
-                            <button type="button"
-                                    class="btn btn-adicionar-documento botao-edicao d-none"
-                                    id="btnAdicionarAcessorioEquipamento">
-                                <i class="fa-solid fa-plus me-2"></i> Adicionar Acessório
-                            </button>
-                        </div>
-
-                        <div class="table-responsive tabela-container mb-4">
-                            <table class="table table-hover align-middle tabela-acessorios">
-                                <thead>
-                                    <tr>
-                                        <th>Código</th>
-                                        <th>Acessório</th>
-                                        <th>Tipo</th>
-                                        <th>N.º Série</th>
-                                        <th>Estado</th>
-                                        <th>Manut./Calib.</th>
-                                        <th>Próxima Intervenção</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody id="tabelaAcessoriosEquipamento">
-                                    <!-- Preenchido pelo JavaScript com os acessórios do equipamento selecionado. -->
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Registo rápido de novo acessório. Só fica disponível em modo edição. -->
-                        <div class="acessorio-form-rapido botao-edicao d-none">
-                            <h5 class="subtitulo-bloco-form">Registar novo acessório</h5>
-
-                            <div class="row g-4 align-items-end">
-                                <div class="col-md-2">
-                                    <label for="novoAcessorioCodigo" class="form-label">Código</label>
-                                    <input type="text"
-                                           class="form-control campo-ficha campo-editavel"
-                                           id="novoAcessorioCodigo"
-                                           placeholder="ACC-005">
-                                </div>
-
-                                <div class="col-md-3">
-                                    <label for="novoAcessorioNome" class="form-label">Acessório</label>
-                                    <input type="text"
-                                           class="form-control campo-ficha campo-editavel"
-                                           id="novoAcessorioNome"
-                                           placeholder="Sensor SpO2">
-                                </div>
-
-                                <div class="col-md-2">
-                                    <label for="novoAcessorioTipo" class="form-label">Tipo</label>
-                                    <select class="form-select campo-ficha campo-editavel" id="novoAcessorioTipo">
-                                        <option value="">Selecionar</option>
-                                        <option value="Sensor">Sensor</option>
-                                        <option value="Cabo">Cabo</option>
-                                        <option value="Módulo">Módulo</option>
-                                        <option value="Consumível reutilizável">Consumível reutilizável</option>
-                                        <option value="Outro">Outro</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-2">
-                                    <label for="novoAcessorioSerie" class="form-label">N.º Série</label>
-                                    <input type="text"
-                                           class="form-control campo-ficha campo-editavel"
-                                           id="novoAcessorioSerie"
-                                           placeholder="SN-ACC-0001">
-                                </div>
-
-                                <div class="col-md-3">
-                                    <label for="novoAcessorioIntervencao" class="form-label">Manut./Calib.</label>
-                                    <select class="form-select campo-ficha campo-editavel" id="novoAcessorioIntervencao">
-                                        <option value="Não aplicável">Não aplicável</option>
-                                        <option value="Manutenção preventiva">Manutenção preventiva</option>
-                                        <option value="Calibração">Calibração</option>
-                                        <option value="Manutenção e calibração">Manutenção e calibração</option>
-                                    </select>
                                 </div>
                             </div>
                         </div>

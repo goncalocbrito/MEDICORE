@@ -193,6 +193,52 @@
              Cada linha apresenta a identificação essencial e permite
              editar ou abrir o modal de remoção do utilizador.
              ===================================================== -->
+        <!-- Pesquisa e filtros da tabela de utilizadores. -->
+        <section class="filtros-tabela" data-tabela=".tabela-utilizadores" aria-label="Pesquisa e filtros de utilizadores">
+            <div class="row g-3 align-items-end">
+                <div class="col-lg-4 col-md-6">
+                    <label for="pesquisaUtilizadores" class="form-label">Pesquisar</label>
+                    <input type="search" class="form-control" id="pesquisaUtilizadores" data-filtro="texto" placeholder="Código, nome, cartão, email ou serviço">
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+                    <label for="filtroTipoUtilizadores" class="form-label">Tipo</label>
+                    <select class="form-select" id="filtroTipoUtilizadores" data-filtro="coluna" data-coluna="2">
+                        <option value="">Todos</option>
+                        <option value="Administrador">Administrador</option>
+                        <option value="Engenheiro">Engenheiro</option>
+                        <option value="Enfermeiro">Enfermeiro</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+                    <label for="filtroServicoUtilizadores" class="form-label">Serviço</label>
+                    <select class="form-select" id="filtroServicoUtilizadores" data-filtro="coluna" data-coluna="6">
+                        <option value="">Todos</option>
+                        <option value="Administração">Administração</option>
+                        <option value="Engenharia Biomédica">Engenharia Biomédica</option>
+                        <option value="Unidade de Cuidados Intensivos">UCI</option>
+                        <option value="Bloco Operatório">Bloco Operatório</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-2 col-md-6">
+                    <label for="filtroEstadoUtilizadores" class="form-label">Estado</label>
+                    <select class="form-select" id="filtroEstadoUtilizadores" data-filtro="coluna" data-coluna="7">
+                        <option value="">Todos</option>
+                        <option value="Ativo">Ativo</option>
+                        <option value="Inativo">Inativo</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-2 col-md-12">
+                    <button type="button" class="btn btn-limpar-filtros w-100" data-limpar-filtros>
+                        <i class="fa-solid fa-rotate-left me-2"></i> Limpar
+                    </button>
+                </div>
+            </div>
+        </section>
+
         <div class="table-responsive tabela-container">
             <table class="table table-hover align-middle tabela-utilizadores">
                 <thead>
