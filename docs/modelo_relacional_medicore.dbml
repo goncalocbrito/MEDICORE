@@ -34,6 +34,7 @@ Table utilizadores {
   validade_acesso date
   ultimo_acesso datetime
   observacoes text
+  isActive boolean [not null, default: true]
   criado_em datetime [not null]
   atualizado_em datetime [not null]
 }
@@ -59,6 +60,7 @@ Table localizacoes {
   equipamentos_previstos int
   permite_equipamentos_criticos boolean [not null, default: false]
   observacoes text
+  isActive boolean [not null, default: true]
   criado_em datetime [not null]
   atualizado_em datetime [not null]
 }
@@ -102,6 +104,7 @@ Table equipamentos {
   localizacao_id int [not null]
   operacional boolean [not null, default: true]
   observacoes text
+  isActive boolean [not null, default: true]
   criado_em datetime [not null]
   atualizado_em datetime [not null]
 }
@@ -118,6 +121,7 @@ Table acessorios {
   requer_calibracao boolean [not null, default: false]
   proxima_intervencao date
   observacoes text
+  isActive boolean [not null, default: true]
 }
 
 Table fornecedor_tipos {
@@ -144,6 +148,7 @@ Table fornecedores {
   estado varchar(30) [not null, default: "Ativo"]
   contrato varchar(100)
   observacoes text
+  isActive boolean [not null, default: true]
   criado_em datetime [not null]
   atualizado_em datetime [not null]
 }
@@ -184,6 +189,7 @@ Table documentos {
   ficheiro_nome varchar(255)
   caminho_ficheiro varchar(255)
   observacoes text
+  isActive boolean [not null, default: true]
   criado_por int
   criado_em datetime [not null]
 }
@@ -197,6 +203,7 @@ Table garantias {
   data_fim date [not null]
   entidade_responsavel varchar(150)
   observacoes text
+  isActive boolean [not null, default: true]
 }
 
 Table contratos_manutencao {
@@ -211,6 +218,7 @@ Table contratos_manutencao {
   data_fim date
   estado varchar(30) [not null, default: "Ativo"]
   observacoes text
+  isActive boolean [not null, default: true]
 }
 
 Table procedimento_tipos {
@@ -236,6 +244,7 @@ Table pedidos_calibracao_manutencao {
   data_conclusao date
   estado_id int [not null]
   observacoes text
+  isActive boolean [not null, default: true]
   criado_em datetime [not null]
   atualizado_em datetime [not null]
 }

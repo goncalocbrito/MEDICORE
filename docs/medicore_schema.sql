@@ -3,11 +3,7 @@
 -- Base de dados para inventario hospitalar de equipamentos medicos
 -- =========================================================
 
-CREATE DATABASE IF NOT EXISTS medicore
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-
-USE medicore;
+USE db1230404;
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
@@ -74,8 +70,10 @@ CREATE TABLE utilizadores (
   validade_acesso DATE,
   ultimo_acesso DATETIME,
   observacoes TEXT,
+  isActive TINYINT(1) NOT NULL DEFAULT 1,
   criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   atualizado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_utilizador_isActive (isActive),
   CONSTRAINT fk_utilizadores_tipo
     FOREIGN KEY (tipo_id) REFERENCES utilizador_tipos(id)
     ON UPDATE CASCADE
@@ -113,10 +111,12 @@ CREATE TABLE localizacoes (
   equipamentos_previstos INT UNSIGNED,
   permite_equipamentos_criticos TINYINT(1) NOT NULL DEFAULT 0,
   observacoes TEXT,
+  isActive TINYINT(1) NOT NULL DEFAULT 1,
   criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   atualizado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   KEY idx_localizacao_departamento (departamento),
-  KEY idx_localizacao_estado (estado)
+  KEY idx_localizacao_estado (estado),
+  KEY idx_localizacao_isActive (isActive)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =========================================================
@@ -173,11 +173,13 @@ CREATE TABLE fornecedores (
   estado VARCHAR(30) NOT NULL DEFAULT 'Ativo',
   contrato VARCHAR(100),
   observacoes TEXT,
+  isActive TINYINT(1) NOT NULL DEFAULT 1,
   criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   atualizado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   KEY idx_fornecedor_nome (nome_empresa),
   KEY idx_fornecedor_estado (estado),
-  KEY idx_fornecedor_localidade (localidade)
+  KEY idx_fornecedor_localidade (localidade),
+  KEY idx_fornecedor_isActive (isActive)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE fornecedor_tipo_assoc (
@@ -213,6 +215,7 @@ CREATE TABLE equipamentos (
   localizacao_id INT UNSIGNED NOT NULL,
   operacional TINYINT(1) NOT NULL DEFAULT 1,
   observacoes TEXT,
+  isActive TINYINT(1) NOT NULL DEFAULT 1,
   criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   atualizado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uk_eq_serie_fabricante_modelo (fabricante, modelo, numero_serie),
@@ -220,6 +223,7 @@ CREATE TABLE equipamentos (
   KEY idx_equipamento_designacao (designacao),
   KEY idx_equipamento_estado (estado_id),
   KEY idx_equipamento_localizacao (localizacao_id),
+  KEY idx_equipamento_isActive (isActive),
   CONSTRAINT fk_eq_categoria
     FOREIGN KEY (categoria_id) REFERENCES categorias_equipamento(id)
     ON UPDATE CASCADE,
@@ -249,8 +253,10 @@ CREATE TABLE acessorios (
   requer_calibracao TINYINT(1) NOT NULL DEFAULT 0,
   proxima_intervencao DATE,
   observacoes TEXT,
+  isActive TINYINT(1) NOT NULL DEFAULT 1,
   KEY idx_acessorio_equipamento (equipamento_id),
   KEY idx_acessorio_estado (estado_id),
+  KEY idx_acessorio_isActive (isActive),
   CONSTRAINT fk_acessorio_equipamento
     FOREIGN KEY (equipamento_id) REFERENCES equipamentos(id)
     ON DELETE CASCADE ON UPDATE CASCADE,
@@ -300,13 +306,13 @@ CREATE TABLE documentos (
   ficheiro_nome VARCHAR(255),
   caminho_ficheiro VARCHAR(255),
   observacoes TEXT,
+  isActive TINYINT(1) NOT NULL DEFAULT 1,
   criado_por INT UNSIGNED,
   criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_documento_tipo (tipo_id),
   KEY idx_documento_equipamento (equipamento_id),
   KEY idx_documento_fornecedor (fornecedor_id),
-  CONSTRAINT chk_documento_associacao
-    CHECK (equipamento_id IS NOT NULL OR acessorio_id IS NOT NULL OR fornecedor_id IS NOT NULL),
+  KEY idx_documento_isActive (isActive),
   CONSTRAINT fk_doc_tipo
     FOREIGN KEY (tipo_id) REFERENCES documento_tipos(id)
     ON UPDATE CASCADE,
@@ -333,6 +339,8 @@ CREATE TABLE garantias (
   data_fim DATE NOT NULL,
   entidade_responsavel VARCHAR(150),
   observacoes TEXT,
+  isActive TINYINT(1) NOT NULL DEFAULT 1,
+  KEY idx_garantia_isActive (isActive),
   CONSTRAINT chk_garantia_datas CHECK (data_fim >= data_inicio),
   CONSTRAINT fk_garantia_equipamento
     FOREIGN KEY (equipamento_id) REFERENCES equipamentos(id)
@@ -357,6 +365,8 @@ CREATE TABLE contratos_manutencao (
   data_fim DATE,
   estado VARCHAR(30) NOT NULL DEFAULT 'Ativo',
   observacoes TEXT,
+  isActive TINYINT(1) NOT NULL DEFAULT 1,
+  KEY idx_contrato_isActive (isActive),
   CONSTRAINT chk_contrato_datas CHECK (data_fim IS NULL OR data_inicio IS NULL OR data_fim >= data_inicio),
   CONSTRAINT fk_contrato_equipamento
     FOREIGN KEY (equipamento_id) REFERENCES equipamentos(id)
@@ -396,11 +406,13 @@ CREATE TABLE pedidos_calibracao_manutencao (
   data_conclusao DATE,
   estado_id INT UNSIGNED NOT NULL,
   observacoes TEXT,
+  isActive TINYINT(1) NOT NULL DEFAULT 1,
   criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   atualizado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   KEY idx_pedido_estado (estado_id),
   KEY idx_pedido_procedimento (procedimento_tipo_id),
   KEY idx_pedido_data_prevista (data_prevista),
+  KEY idx_pedido_isActive (isActive),
   CONSTRAINT fk_pedido_equipamento
     FOREIGN KEY (equipamento_id) REFERENCES equipamentos(id)
     ON DELETE CASCADE ON UPDATE CASCADE,

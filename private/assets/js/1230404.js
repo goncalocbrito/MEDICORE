@@ -3652,8 +3652,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const prefixo = prefixoEquipamentos();
     const linksNovos = [
         { href: "acessorios.html", icone: "fa-plug-circle-bolt", texto: "Acessórios" },
-        { href: "consumiveis.html", icone: "fa-boxes-stacked", texto: "Consumíveis" },
-        { href: "localizacao_equipamento.html", icone: "fa-map-location-dot", texto: "Localização Equipamento" }
+        { href: "consumiveis.html", icone: "fa-boxes-stacked", texto: "Consumíveis" }
     ];
 
     document.querySelectorAll(".submenu-equipamentos").forEach(function (submenu) {
