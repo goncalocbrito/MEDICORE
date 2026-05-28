@@ -3629,61 +3629,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 /* =========================================================
-   SUBMENU DE EQUIPAMENTOS
-   Acrescenta links comuns nas páginas antigas sem duplicar HTML.
-   ========================================================= */
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    function prefixoEquipamentos() {
-        const caminho = window.location.pathname.replace(/\\/g, "/");
-
-        if (caminho.includes("/private/views/equipamentos/")) {
-            return "";
-        }
-
-        if (caminho.includes("/private/views/")) {
-            return "../equipamentos/";
-        }
-
-        return "views/equipamentos/";
-    }
-
-    const prefixo = prefixoEquipamentos();
-    const linksNovos = [
-        { href: "acessorios.html", icone: "fa-plug-circle-bolt", texto: "Acessórios" },
-        { href: "consumiveis.html", icone: "fa-boxes-stacked", texto: "Consumíveis" }
-    ];
-
-    document.querySelectorAll(".submenu-equipamentos").forEach(function (submenu) {
-        linksNovos.forEach(function (link) {
-            const hrefCompleto = `${prefixo}${link.href}`;
-            const jaExiste = submenu.querySelector(`a[href$="${link.href}"]`);
-
-            if (!jaExiste) {
-                const item = document.createElement("li");
-                item.innerHTML = `<a href="${hrefCompleto}"><i class="fa-solid ${link.icone} me-2"></i> ${link.texto}</a>`;
-                submenu.appendChild(item);
-            }
-        });
-
-        submenu.querySelectorAll("a").forEach(function (link) {
-            const href = link.getAttribute("href") || "";
-            const paginaAtual = window.location.pathname.split("/").pop();
-
-            if (href.endsWith(paginaAtual)) {
-                submenu.querySelectorAll(".submenu-active").forEach(function (ativo) {
-                    ativo.classList.remove("submenu-active");
-                });
-
-                link.classList.add("submenu-active");
-            }
-        });
-    });
-
-});
-
-/* =========================================================
    PÁGINA DE ACESSÓRIOS
    Pesquisa equipamento, lista acessórios e permite adicionar, editar ou apagar.
    ========================================================= */
@@ -3741,16 +3686,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!titulo) return;
 
         titulo.innerHTML = `<i class="fa-solid fa-plug-circle-bolt me-2"></i>${escaparTextoPedido(texto)}`;
-    }
-
-    function atualizarResumoEquipamento() {
-        const equipamento = equipamentoAtual();
-        if (!equipamento) return;
-
-        definirTexto("tituloEquipamentoAcessorios", `${seletorEquipamento.value} - ${equipamento.nome}`);
-        definirTexto("descricaoEquipamentoAcessorios", `${equipamento.fabricante} ${equipamento.modelo} | ${equipamento.categoria} | Série ${equipamento.serie}`);
-        definirTexto("localizacaoEquipamentoAcessorios", equipamento.localizacao);
-        definirTexto("estadoEquipamentoAcessorios", equipamento.estado);
     }
 
     function criarLinhaAcessorioGestao(acessorio, indice) {
@@ -3903,7 +3838,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     seletorEquipamento.addEventListener("change", function () {
-        atualizarResumoEquipamento();
         renderizarAcessorios();
     });
 
@@ -3942,7 +3876,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    atualizarResumoEquipamento();
     renderizarAcessorios();
 
 });

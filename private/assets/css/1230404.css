@@ -1152,29 +1152,6 @@ body {
     padding: 18px;
 }
 
-/* Cartão de resumo usado na página de acessórios. */
-.equipamento-selecionado-card {
-    background: linear-gradient(135deg, #123c46 0%, #176b5b 100%);
-    color: #ffffff;
-    border-radius: 18px;
-    padding: 22px 26px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 22px;
-    box-shadow: 0 14px 32px rgba(18, 60, 70, 0.16);
-}
-
-.equipamento-selecionado-card h3 {
-    margin: 8px 0;
-    font-weight: 900;
-}
-
-.equipamento-selecionado-card p {
-    margin: 0;
-    color: #dff7f0;
-}
-
 .tabela-acessorios .btn {
     margin: 0 2px;
 }
