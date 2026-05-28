@@ -3432,33 +3432,12 @@ document.addEventListener("DOMContentLoaded", function () {
         definirEstadoStock(linha);
     }
 
-    function atualizarResumoConsumiveis() {
-        const linhas = Array.from(corpoConsumiveis.rows).filter(function (linha) {
-            return !linha.classList.contains("linha-sem-resultados");
-        });
-
-        const salas = new Set(linhas.map(function (linha) {
-            return linha.cells[2]?.textContent.trim();
-        }).filter(Boolean));
-
-        const stockBaixo = linhas.filter(function (linha) {
-            const quantidade = separarQuantidade(linha.cells[4]?.textContent);
-            const minimo = separarQuantidade(linha.cells[5]?.textContent);
-            return quantidade.numero <= minimo.numero;
-        }).length;
-
-        definirTexto("totalSalasConsumiveis", salas.size);
-        definirTexto("totalItensConsumiveis", linhas.length);
-        definirTexto("totalStockBaixoConsumiveis", stockBaixo);
-    }
-
     function alterarStock(linha, diferenca) {
         const quantidade = separarQuantidade(linha.cells[4]?.textContent);
         const novoValor = Math.max(0, quantidade.numero + diferenca);
 
         linha.cells[4].textContent = textoQuantidade(novoValor, quantidade.unidade);
         definirEstadoStock(linha);
-        atualizarResumoConsumiveis();
     }
 
     function criarLinhaNovoConsumivel(dados) {
@@ -3480,7 +3459,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     Array.from(corpoConsumiveis.rows).forEach(prepararLinhaConsumivel);
-    atualizarResumoConsumiveis();
 
     tabelaConsumiveis.addEventListener("click", function (event) {
         const linha = event.target.closest("tr");
@@ -3516,7 +3494,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             corpoConsumiveis.appendChild(criarLinhaNovoConsumivel(dados));
-            atualizarResumoConsumiveis();
 
             const modalBootstrap = bootstrap.Modal.getInstance(modalNovoConsumivel);
             if (modalBootstrap) modalBootstrap.hide();
