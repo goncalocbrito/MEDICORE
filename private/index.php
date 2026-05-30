@@ -1,9 +1,13 @@
+<?php
+require_once __DIR__ . '/../config/config.php';
+?>
+
 <!DOCTYPE html>
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MEDICORE | Área Técnica</title>
+    <title><?php echo APP_NAME; ?></title>
 
     <!-- favicon -->
     <link rel="shortcut icon" href="../private/assets/img/MEDICORE_icon.png" type="image/png">

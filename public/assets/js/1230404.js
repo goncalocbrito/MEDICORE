@@ -11,7 +11,7 @@ if (
     (utilizador === "admin" && password === "1234") ||
     (utilizador === "engenheiro@medicore.pt" && password === "1234")
 ) {
-    window.location.href = "../private/index.html";
+    window.location.href = "../private/index.php";
 } else {
     mensagemErro.style.display = "block";
 }
