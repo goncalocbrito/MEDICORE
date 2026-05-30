@@ -4,20 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MEDICORE | Localizações</title>
-
     <link rel="shortcut icon" href="../../assets/img/MEDICORE_icon.png" type="image/png">
     <link rel="stylesheet" href="../../assets/bootstrap/bootstrap.min.css">
     <link rel="stylesheet" href="../../assets/css/1230404.css">
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700;900&display=swap" rel="stylesheet">
-
     <link rel="stylesheet" href="../../assets/fontawesome/all.min.css">
 </head>
-
 <body>
-
     <!-- Cabeçalho superior da área privada. -->
     <header class="container-fluid top-header">
         <div class="row align-items-center">
@@ -26,14 +21,12 @@
                     <img src="../../assets/img/MEDICORE_logotipo_branco.png" alt="Logo da MEDICORE" class="logo-private">
                 </a>
             </div>
-
             <div class="col-md-4 text-center p-3">
                 <div class="mensagem-topo">
                     <i class="fa-solid fa-user-doctor me-2"></i>
                     <span>Bem-vindo, Sr. Engenheiro Gonçalo</span>
                 </div>
             </div>
-
             <div class="col-md-4 text-md-end p-3">
                 <div class="dropdown">
                     <button class="btn btn-secondary dropdown-toggle user-button" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -49,20 +42,17 @@
             </div>
         </div>
     </header>
-
     <!-- Menu horizontal da área privada. -->
     <nav class="navbar navbar-expand-lg menu-horizontal">
         <div class="container-fluid">
             <button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrivado" aria-controls="menuPrivado" aria-expanded="false" aria-label="Abrir menu">
                 <span class="navbar-toggler-icon"></span>
             </button>
-
             <div class="collapse navbar-collapse justify-content-center" id="menuPrivado">
                 <ul class="navbar-nav">
                     <li class="nav-item">
                         <a href="../../index.html" class="nav-link"><i class="fa-solid fa-chart-line me-2"></i> Dashboard Técnico</a>
                     </li>
-
                     <li class="nav-item menu-dropdown-hover">
                         <a href="../equipamentos/lista_equipamentos.html" class="nav-link">
                             <i class="fa-solid fa-stethoscope me-2"></i> Equipamentos
@@ -91,13 +81,11 @@
                             </li>
                         </ul>
                     </li>
-
                     <li class="nav-item menu-dropdown-hover-calibracoes">
                         <a href="../calibracao_manutencao/calibracao_manutencao.html" class="nav-link">
                             <i class="fa-solid fa-screwdriver-wrench me-2"></i> Calibrações/Manutenções
                             <i class="fa-solid fa-chevron-down ms-1 small"></i>
                         </a>
-
                         <ul class="submenu-calibracoes">
                             <li>
                                 <a href="../calibracao_manutencao/calibracao_manutencao.html">
@@ -111,7 +99,6 @@
                             </li>
                         </ul>
                     </li>
-
                     <li class="nav-item menu-dropdown-hover-localizacoes">
                         <a href="lista_localizacoes.html" class="nav-link active">
                             <i class="fa-solid fa-location-dot me-2"></i> Localizações
@@ -122,7 +109,6 @@
                             <li><a href="nova_localizacao.html"><i class="fa-solid fa-plus me-2"></i> Adicionar Localização</a></li>
                         </ul>
                     </li>
-
                     <li class="nav-item menu-dropdown-hover-fornecedores">
                         <a href="../fornecedores/lista_fornecedores.html" class="nav-link">
                             <i class="fa-solid fa-truck-medical me-2"></i> Fornecedores
@@ -133,20 +119,17 @@
                             <li><a href="../fornecedores/novo_fornecedor.html"><i class="fa-solid fa-plus me-2"></i> Adicionar Fornecedor</a></li>
                         </ul>
                     </li>
-
                     <li class="nav-item menu-dropdown-hover-utilizadores">
                         <a href="../utilizadores/lista_utilizadores.html" class="nav-link">
                             <i class="fa-solid fa-user me-2"></i> Utilizadores
                             <i class="fa-solid fa-chevron-down ms-1 small"></i>
                         </a>
-
                         <ul class="submenu-utilizadores">
                             <li>
                                 <a href="../utilizadores/lista_utilizadores.html">
                                     <i class="fa-solid fa-list me-2"></i> Lista de Utilizadores
                                 </a>
                             </li>
-
                             <li>
                                 <a href="../utilizadores/novo_utilizador.html">
                                     <i class="fa-solid fa-plus me-2"></i> Adicionar Utilizador
@@ -154,7 +137,6 @@
                             </li>
                         </ul>
                     </li>
-
                     <!-- Menu Backoffice -->
                     <li class="nav-item">
                         <a href="../backoffice/backoffice.html" class="nav-link">
@@ -165,7 +147,6 @@
             </div>
         </div>
     </nav>
-
     <!-- Conteúdo principal da lista de localizações. -->
     <main class="conteudo-private">
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
@@ -175,21 +156,18 @@
                     Consulta, registo e acompanhamento das localizações hospitalares associadas aos equipamentos médicos.
                 </p>
             </div>
-
             <a href="nova_localizacao.html" class="btn btn-adicionar">
                 <i class="fa-solid fa-plus me-2"></i> Adicionar Localização
             </a>
         </div>
-
         <!-- Tabela principal. Cada linha abre ficha ou modal de remoção. -->
         <!-- Pesquisa e filtros da tabela de localizações. -->
         <section class="filtros-tabela" data-tabela=".tabela-localizacoes" aria-label="Pesquisa e filtros de localizações">
             <div class="row g-3 align-items-end">
                 <div class="col-lg-4 col-md-6">
                     <label for="pesquisaLocalizacoes" class="form-label">Pesquisar</label>
-                    <input type="search" class="form-control" id="pesquisaLocalizacoes" data-filtro="texto" placeholder="Código, serviço, edifício, sala ou responsável">
+                    <input type="search" class="form-control" id="pesquisaLocalizacoes" data-filtro="texto" placeholder="Código, serviço, edifício, piso ou sala">
                 </div>
-
                 <div class="col-lg-2 col-md-6">
                     <label for="filtroEdificioLocalizacoes" class="form-label">Edifício</label>
                     <select class="form-select" id="filtroEdificioLocalizacoes" data-filtro="coluna" data-coluna="2">
@@ -201,29 +179,15 @@
                         <option value="Edifício Técnico">Edifício Técnico</option>
                     </select>
                 </div>
-
-                <div class="col-lg-2 col-md-6">
-                    <label for="filtroTipoLocalizacoes" class="form-label">Tipo</label>
-                    <select class="form-select" id="filtroTipoLocalizacoes" data-filtro="coluna" data-coluna="5">
-                        <option value="">Todos</option>
-                        <option value="UCI">UCI</option>
-                        <option value="Urgência">Urgência</option>
-                        <option value="Bloco Operatório">Bloco Operatório</option>
-                        <option value="Laboratório">Laboratório</option>
-                        <option value="Armazém Técnico">Armazém Técnico</option>
-                    </select>
-                </div>
-
-                <div class="col-lg-2 col-md-6">
+                                <div class="col-lg-2 col-md-6">
                     <label for="filtroEstadoLocalizacoes" class="form-label">Estado</label>
-                    <select class="form-select" id="filtroEstadoLocalizacoes" data-filtro="coluna" data-coluna="7">
+                    <select class="form-select" id="filtroEstadoLocalizacoes" data-filtro="coluna" data-coluna="5">
                         <option value="">Todos</option>
                         <option value="Ativa">Ativa</option>
                         <option value="Em manutenção">Em manutenção</option>
                         <option value="Inativa">Inativa</option>
                     </select>
                 </div>
-
                 <div class="col-lg-2 col-md-12">
                     <button type="button" class="btn btn-limpar-filtros w-100" data-limpar-filtros>
                         <i class="fa-solid fa-rotate-left me-2"></i> Limpar
@@ -231,7 +195,6 @@
                 </div>
             </div>
         </section>
-
         <div class="table-responsive tabela-container">
             <table class="table table-hover align-middle tabela-localizacoes">
                 <thead>
@@ -241,14 +204,11 @@
                         <th>Edifício</th>
                         <th>Piso</th>
                         <th>Sala</th>
-                        <th>Tipo de Espaço</th>
-                        <th>Responsável</th>
                         <th>Estado</th>
                         <th>Equipamentos</th>
                         <th class="text-center">Ações</th>
                     </tr>
                 </thead>
-
                 <tbody>
                     <tr>
                         <td>LOC-001</td>
@@ -256,8 +216,6 @@
                         <td>Edifício A</td>
                         <td>2</td>
                         <td>Sala 201</td>
-                        <td><span class="tipo-localizacao tipo-uci">UCI</span></td>
-                        <td>Enf. Maria Costa</td>
                         <td><span class="estado estado-ativo">Ativa</span></td>
                         <td>8</td>
                         <td class="text-center">
@@ -269,15 +227,12 @@
                             </button>
                         </td>
                     </tr>
-
                     <tr>
                         <td>LOC-002</td>
                         <td>Urgência</td>
                         <td>Edifício B</td>
                         <td>0</td>
                         <td>Sala 1</td>
-                        <td><span class="tipo-localizacao tipo-urgencia">Urgência</span></td>
-                        <td>Dr. João Martins</td>
                         <td><span class="estado estado-ativo">Ativa</span></td>
                         <td>12</td>
                         <td class="text-center">
@@ -289,15 +244,12 @@
                             </button>
                         </td>
                     </tr>
-
                     <tr>
                         <td>LOC-003</td>
                         <td>Bloco Operatório</td>
                         <td>Edifício C</td>
                         <td>1</td>
                         <td>BO-02</td>
-                        <td><span class="tipo-localizacao tipo-bloco">Bloco Operatório</span></td>
-                        <td>Enf. Ricardo Silva</td>
                         <td><span class="estado estado-ativo">Ativa</span></td>
                         <td>6</td>
                         <td class="text-center">
@@ -309,15 +261,12 @@
                             </button>
                         </td>
                     </tr>
-
                     <tr>
                         <td>LOC-004</td>
                         <td>Laboratório Clínico</td>
                         <td>Edifício D</td>
                         <td>1</td>
                         <td>Lab-105</td>
-                        <td><span class="tipo-localizacao tipo-laboratorio">Laboratório</span></td>
-                        <td>Téc. Ana Ferreira</td>
                         <td><span class="estado estado-manutencao">Em manutenção</span></td>
                         <td>10</td>
                         <td class="text-center">
@@ -329,15 +278,12 @@
                             </button>
                         </td>
                     </tr>
-
                     <tr>
                         <td>LOC-005</td>
                         <td>Armazém Técnico</td>
                         <td>Edifício Técnico</td>
                         <td>-1</td>
                         <td>ARM-01</td>
-                        <td><span class="tipo-localizacao tipo-armazem">Armazém Técnico</span></td>
-                        <td>Eng. Gonçalo Brito</td>
                         <td><span class="estado estado-inativo">Inativa</span></td>
                         <td>4</td>
                         <td class="text-center">
@@ -353,7 +299,6 @@
             </table>
         </div>
     </main>
-
     <!-- Modal de confirmação de remoção da localização. -->
     <div class="modal fade" id="modalApagarLocalizacao" tabindex="-1" aria-labelledby="modalApagarLocalizacaoLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-remocao-dialog">
@@ -366,10 +311,8 @@
                         </h5>
                         <p class="modal-remocao-subtitulo">Confirme os dados antes de remover a localização.</p>
                     </div>
-
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
-
                 <div class="modal-body modal-remocao-body">
                     <div class="modal-resumo-equipamento modal-resumo-remocao">
                         <div class="modal-linha"><strong>Código</strong><span id="modalApagarLocalizacaoCodigo">---</span></div>
@@ -382,15 +325,11 @@
                         <div class="modal-linha"><strong>Estado</strong><span id="modalApagarLocalizacaoEstado">---</span></div>
                         <div class="modal-linha"><strong>Equipamentos</strong><span id="modalApagarLocalizacaoEquipamentos">---</span></div>
                     </div>
-
                     <input type="hidden" id="modalApagarIdLocalizacao">
-
                     <p class="texto-confirmacao-remocao">
                         Confirma que pretende remover esta localização da lista?
                     </p>
-
                 </div>
-
                 <div class="modal-footer modal-remocao-footer">
                     <button type="button" class="btn btn-cancelar-modal" data-bs-dismiss="modal">
                         <i class="fa-solid fa-xmark me-2"></i> Cancelar
@@ -402,9 +341,7 @@
             </div>
         </div>
     </div>
-
     <script src="../../assets/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../assets/js/1230404.js"></script>
-
 </body>
 </html>

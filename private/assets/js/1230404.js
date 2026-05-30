@@ -2554,17 +2554,13 @@ function atualizarConteudoLinhaPedido(linha, dados) {
         <td>${dados.codigo}</td>
         <td>${dados.equipamento}</td>
         <td>${escaparTextoPedido(dados.equipamentoAssociado || "Equipamento principal")}</td>
-        <td>${dados.categoria}</td>
-        <td>${dados.localizacao}</td>
         <td>
             <span class="${classeProcedimentoPedido(dados.procedimento)}">${dados.procedimento}</span>
         </td>
-        <td>${dados.fornecedor}</td>
         <td>${formatarDataPT(dados.data)}</td>
         <td>
             <span class="${classeEstadoPedido(dados.estado)}">${dados.estado}</span>
         </td>
-        <td>${escaparTextoPedido(dados.observacoes)}</td>
         ${criarBotoesPedido()}
     `;
 }
@@ -2624,13 +2620,9 @@ function carregarProcessosFinalizados() {
             <td>${processo.codigo}</td>
             <td>${processo.equipamento}</td>
             <td>${escaparTextoPedido(processo.equipamentoAssociado || "Equipamento principal")}</td>
-            <td>${processo.categoria}</td>
-            <td>${processo.localizacao}</td>
             <td><span class="${classeProcedimentoPedido(processo.procedimento)}">${processo.procedimento}</span></td>
-            <td>${processo.fornecedor}</td>
             <td>${formatarDataPT(processo.dataConclusao)}</td>
             <td><span class="estado estado-ativo">Efetuada</span></td>
-            <td>${escaparTextoPedido(processo.observacoes || "Sem observações adicionais.")}</td>
         `;
 
         tabela.prepend(linha);
@@ -3364,14 +3356,14 @@ document.addEventListener("DOMContentLoaded", carregarProcessosFinalizados);
 
 /* =========================================================
    PÁGINA DE CONSUMÍVEIS
-   Gere visualmente entradas e saídas de stock por sala.
+   Gere visualmente entradas e saídas de stock por equipamento.
    ========================================================= */
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    const tabelaConsumiveis = document.getElementById("tabelaConsumiveisSala");
-    const corpoConsumiveis = document.getElementById("corpoConsumiveisSala");
-    const formNovoConsumivel = document.getElementById("formNovoConsumivelSala");
+    const tabelaConsumiveis = document.getElementById("tabelaConsumiveisEquipamento");
+    const corpoConsumiveis = document.getElementById("corpoConsumiveisEquipamento");
+    const formNovoConsumivel = document.getElementById("formNovoConsumivelEquipamento");
     const modalNovoConsumivel = document.getElementById("modalNovoConsumivel");
 
     if (!tabelaConsumiveis || !corpoConsumiveis) return;
@@ -3425,7 +3417,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function prepararLinhaConsumivel(linha) {
         if (linha.classList.contains("linha-sem-resultados")) return;
 
-        if (linha.cells.length === 8) {
+        if (linha.cells.length === 7) {
             linha.insertAdjacentHTML("beforeend", criarAcoesConsumivel());
         }
 
@@ -3445,12 +3437,11 @@ document.addEventListener("DOMContentLoaded", function () {
         linha.innerHTML = `
             <td>${escaparTextoPedido(dados.codigo)}</td>
             <td>${escaparTextoPedido(dados.item)}</td>
-            <td>${escaparTextoPedido(dados.sala)}</td>
+            <td>${escaparTextoPedido(dados.equipamento)}</td>
             <td>${escaparTextoPedido(dados.categoria)}</td>
             <td>${textoQuantidade(dados.quantidade, dados.unidade)}</td>
             <td>${textoQuantidade(dados.stockMinimo, dados.unidade)}</td>
             <td><span class="estado estado-ativo">Disponível</span></td>
-            <td>${escaparTextoPedido(dados.observacoes || "Sem observações.")}</td>
             ${criarAcoesConsumivel()}
         `;
 
@@ -3480,7 +3471,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const dados = {
                 codigo: document.getElementById("novoConsumivelCodigo")?.value.trim(),
                 item: document.getElementById("novoConsumivelItem")?.value.trim(),
-                sala: document.getElementById("novoConsumivelSala")?.value,
+                equipamento: document.getElementById("novoConsumivelEquipamento")?.value,
                 categoria: document.getElementById("novoConsumivelCategoria")?.value,
                 quantidade: Number(document.getElementById("novoConsumivelQuantidade")?.value || 0),
                 unidade: document.getElementById("novoConsumivelUnidade")?.value.trim() || "unidades",
@@ -3488,8 +3479,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 observacoes: document.getElementById("novoConsumivelObservacoes")?.value.trim()
             };
 
-            if (!dados.codigo || !dados.item || !dados.sala || !dados.categoria) {
-                alert("Preencha o código, material, sala e categoria.");
+            if (!dados.codigo || !dados.item || !dados.equipamento || !dados.categoria) {
+                alert("Preencha o código, consumível, equipamento e categoria.");
                 return;
             }
 
