@@ -1,150 +1,8 @@
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MEDICORE | Acessórios</title>
-
-    <!-- Recursos visuais da área privada MEDICORE. -->
-    <link rel="shortcut icon" href="../../assets/img/MEDICORE_icon.png" type="image/png">
-    <link rel="stylesheet" href="../../assets/bootstrap/bootstrap.min.css">
-    <link rel="stylesheet" href="../../assets/css/1230404.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../../assets/fontawesome/all.min.css">
-</head>
-
-<body>
-    <!-- Cabeçalho superior comum à área privada. -->
-    <header class="container-fluid top-header">
-        <div class="row align-items-center">
-            <div class="col-md-4 d-flex align-items-center p-3">
-                <a href="../../index.html">
-                    <img src="../../assets/img/MEDICORE_logotipo_branco.png" alt="Logo da MEDICORE" class="logo-private">
-                </a>
-            </div>
-
-            <div class="col-md-4 text-center p-3">
-                <div class="mensagem-topo">
-                    <i class="fa-solid fa-user-doctor me-2"></i>
-                    <span>Bem-vindo, Sr. Engenheiro Gonçalo</span>
-                </div>
-            </div>
-
-            <div class="col-md-4 text-md-end p-3">
-                <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle user-button" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fa-regular fa-user me-2"></i> Eng. Biomédico
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="perfil.php"><i class="fa-solid fa-user-gear me-2"></i> Perfil técnico</a></li>
-                        <li><a class="dropdown-item" href="alterar_password.php"><i class="fa-solid fa-key me-2"></i> Alterar password</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="logout.php"><i class="fa-solid fa-right-from-bracket me-2"></i> Sair</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Menu horizontal com o submenu de Equipamentos atualizado. -->
-    <nav class="navbar navbar-expand-lg menu-horizontal">
-        <div class="container-fluid">
-            <button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrivado" aria-controls="menuPrivado" aria-expanded="false" aria-label="Abrir menu">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse justify-content-center" id="menuPrivado">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a href="../../index.html" class="nav-link">
-                            <i class="fa-solid fa-chart-line me-2"></i> Dashboard Técnico
-                        </a>
-                    </li>
-
-                    <li class="nav-item menu-dropdown-hover">
-                        <a href="lista_equipamentos.html" class="nav-link active">
-                            <i class="fa-solid fa-stethoscope me-2"></i> Equipamentos
-                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
-                        </a>
-                        <ul class="submenu-equipamentos">
-                            <li>
-                                <a href="lista_equipamentos.html">
-                                    <i class="fa-solid fa-list me-2"></i> Lista de Equipamentos
-                                </a>
-                            </li>
-                            <li>
-                                <a href="novo_equipamento.html">
-                                    <i class="fa-solid fa-plus me-2"></i> Adicionar Equipamento
-                                </a>
-                            </li>
-                            <li>
-                                <a href="acessorios.html" class="submenu-active">
-                                    <i class="fa-solid fa-plug-circle-bolt me-2"></i> Acessórios
-                                </a>
-                            </li>
-                            <li>
-                                <a href="consumiveis.html">
-                                    <i class="fa-solid fa-boxes-stacked me-2"></i> Consumíveis
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
-                    <li class="nav-item menu-dropdown-hover-calibracoes">
-                        <a href="../calibracao_manutencao/calibracao_manutencao.html" class="nav-link">
-                            <i class="fa-solid fa-screwdriver-wrench me-2"></i> Calibrações/Manutenções
-                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
-                        </a>
-                        <ul class="submenu-calibracoes">
-                            <li><a href="../calibracao_manutencao/calibracao_manutencao.html"><i class="fa-solid fa-list-check me-2"></i> Processos a Decorrer</a></li>
-                            <li><a href="../calibracao_manutencao/processos_finalizados.html"><i class="fa-solid fa-circle-check me-2"></i> Processos Finalizados</a></li>
-                        </ul>
-                    </li>
-
-                    <li class="nav-item menu-dropdown-hover-localizacoes">
-                        <a href="../localizacoes/lista_localizacoes.html" class="nav-link">
-                            <i class="fa-solid fa-location-dot me-2"></i> Localizações
-                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
-                        </a>
-                        <ul class="submenu-localizacoes">
-                            <li><a href="../localizacoes/lista_localizacoes.html"><i class="fa-solid fa-list me-2"></i> Lista de Localizações</a></li>
-                            <li><a href="../localizacoes/nova_localizacao.html"><i class="fa-solid fa-plus me-2"></i> Adicionar Localização</a></li>
-                        </ul>
-                    </li>
-
-                    <li class="nav-item menu-dropdown-hover-fornecedores">
-                        <a href="../fornecedores/lista_fornecedores.html" class="nav-link">
-                            <i class="fa-solid fa-truck-medical me-2"></i> Fornecedores
-                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
-                        </a>
-                        <ul class="submenu-fornecedores">
-                            <li><a href="../fornecedores/lista_fornecedores.html"><i class="fa-solid fa-list me-2"></i> Lista de Fornecedores</a></li>
-                            <li><a href="../fornecedores/novo_fornecedor.html"><i class="fa-solid fa-plus me-2"></i> Adicionar Fornecedor</a></li>
-                        </ul>
-                    </li>
-
-                    <li class="nav-item menu-dropdown-hover-utilizadores">
-                        <a href="../utilizadores/lista_utilizadores.html" class="nav-link">
-                            <i class="fa-solid fa-user me-2"></i> Utilizadores
-                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
-                        </a>
-                        <ul class="submenu-utilizadores">
-                            <li><a href="../utilizadores/lista_utilizadores.html"><i class="fa-solid fa-list me-2"></i> Lista de Utilizadores</a></li>
-                            <li><a href="../utilizadores/novo_utilizador.html"><i class="fa-solid fa-plus me-2"></i> Adicionar Utilizador</a></li>
-                        </ul>
-                    </li>
-
-                    <li class="nav-item">
-                        <a href="../backoffice/backoffice.html" class="nav-link">
-                            <i class="fa-solid fa-pen-to-square me-2"></i> Backoffice
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+<?php
+require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/nav.php';
+require_once __DIR__ . '/includes/sidebar.php';
+?>
 
     <!-- Página de gestão de acessórios por equipamento. -->
     <main class="conteudo-private">
@@ -385,7 +243,7 @@
         </div>
     </div>
 
-    <script src="../../assets/bootstrap/bootstrap.bundle.min.js"></script>
-    <script src="../../assets/js/1230404.js"></script>
-</body>
-</html>
+<?php
+require_once __DIR__ . '/includes/footer.php';
+?>
+
