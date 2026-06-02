@@ -1,7 +1,7 @@
 <?php
-require_once __DIR__ . '/includes/header.php';
-require_once __DIR__ . '/includes/nav.php';
-require_once __DIR__ . '/includes/sidebar.php';
+require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/nav.php';
+require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
 
         <main class="conteudo-private">
@@ -12,7 +12,7 @@ require_once __DIR__ . '/includes/sidebar.php';
                     Consulta, registo e acompanhamento dos equipamentos médicos hospitalares.
                 </p>
             </div>
-            <a href="novo_equipamento.html" class="btn btn-adicionar">
+            <a href="novo_equipamento.php" class="btn btn-adicionar">
                 <i class="fa-solid fa-plus me-2"></i> Adicionar Equipamento
             </a>
         </div>
@@ -79,7 +79,7 @@ require_once __DIR__ . '/includes/sidebar.php';
                             <span class="estado estado-ativo">Ativo</span>
                         </td>
                         <td class="text-center">
-                            <a href="ficha_equipamento.html?id=EQ-001" class="btn btn-sm btn-ficha" title="Abrir ficha do equipamento">
+                            <a href="ficha_equipamento.php?id=EQ-001" class="btn btn-sm btn-ficha" title="Abrir ficha do equipamento">
                                 <i class="fa-solid fa-file-lines"></i>
                             </a>
                             <button type="button"
@@ -108,7 +108,7 @@ require_once __DIR__ . '/includes/sidebar.php';
                             <span class="estado estado-manutencao">Em manutenção</span>
                         </td>
                         <td class="text-center">
-                            <a href="ficha_equipamento.html?id=EQ-002" class="btn btn-sm btn-ficha" title="Abrir ficha do equipamento">
+                            <a href="ficha_equipamento.php?id=EQ-002" class="btn btn-sm btn-ficha" title="Abrir ficha do equipamento">
                                 <i class="fa-solid fa-file-lines"></i>
                             </a>
                             <button type="button"
@@ -137,7 +137,7 @@ require_once __DIR__ . '/includes/sidebar.php';
                             <span class="estado estado-avariado">Avariado</span>
                         </td>
                         <td class="text-center">
-                            <a href="ficha_equipamento.html?id=EQ-003" class="btn btn-sm btn-ficha" title="Abrir ficha do equipamento">
+                            <a href="ficha_equipamento.php?id=EQ-003" class="btn btn-sm btn-ficha" title="Abrir ficha do equipamento">
                                 <i class="fa-solid fa-file-lines"></i>
                             </a>
                             <button type="button"
@@ -253,6 +253,6 @@ require_once __DIR__ . '/includes/sidebar.php';
     </div>
 
 <?php
-require_once __DIR__ . '/includes/footer.php';
+require_once __DIR__ . '/../../includes/footer.php';
 ?>
 

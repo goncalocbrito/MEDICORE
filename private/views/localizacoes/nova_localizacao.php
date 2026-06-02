@@ -1,15 +1,16 @@
 <?php
-require_once __DIR__ . '/includes/header.php';
-require_once __DIR__ . '/includes/nav.php';
-require_once __DIR__ . '/includes/sidebar.php';
+require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/nav.php';
+require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
+
 
     <!-- Conteúdo principal no mesmo formato do novo equipamento. -->
     <main class="conteudo-private ficha-equipamento-page novo-equipamento-page ficha-localizacao-page">
 
         <!-- Botões principais do formulário. -->
         <div class="form-actions">
-            <a href="lista_localizacoes.html" class="btn btn-cancelar">
+            <a href="lista_localizacoes.php" class="btn btn-cancelar">
                 <i class="fa-solid fa-xmark me-2"></i> Cancelar
             </a>
 
@@ -263,5 +264,5 @@ require_once __DIR__ . '/includes/sidebar.php';
     </main>
 
 <?php
-require_once __DIR__ . '/includes/footer.php';
+require_once __DIR__ . '/../../includes/footer.php';
 ?>

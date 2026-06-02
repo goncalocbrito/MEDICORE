@@ -1,8 +1,9 @@
 <?php
-require_once __DIR__ . '/includes/header.php';
-require_once __DIR__ . '/includes/nav.php';
-require_once __DIR__ . '/includes/sidebar.php';
+require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/nav.php';
+require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
+
 
     <!-- =========================================================
          CONTEÚDO PRINCIPAL DA LISTA DE FORNECEDORES
@@ -20,7 +21,7 @@ require_once __DIR__ . '/includes/sidebar.php';
                     Consulta, registo e acompanhamento dos fornecedores associados aos equipamentos médicos.
                 </p>
             </div>
-            <a href="novo_fornecedor.html" class="btn btn-adicionar">
+            <a href="novo_fornecedor.php" class="btn btn-adicionar">
                 <i class="fa-solid fa-plus me-2"></i> Adicionar Fornecedor
             </a>
         </div>
@@ -92,7 +93,7 @@ require_once __DIR__ . '/includes/sidebar.php';
                         <td><span class="estado estado-ativo">Ativo</span></td>
                         <td>12</td>
                         <td class="text-center">
-                            <a href="ficha_fornecedor.html?id=FOR-001" class="btn btn-sm btn-ficha" title="Abrir ficha do fornecedor">
+                            <a href="ficha_fornecedor.php?id=FOR-001" class="btn btn-sm btn-ficha" title="Abrir ficha do fornecedor">
                                 <i class="fa-solid fa-file-lines"></i>
                             </a>
                             <button type="button"
@@ -121,7 +122,7 @@ require_once __DIR__ . '/includes/sidebar.php';
                         <td><span class="estado estado-ativo">Ativo</span></td>
                         <td>8</td>
                         <td class="text-center">
-                            <a href="ficha_fornecedor.html?id=FOR-002" class="btn btn-sm btn-ficha" title="Abrir ficha do fornecedor">
+                            <a href="ficha_fornecedor.php?id=FOR-002" class="btn btn-sm btn-ficha" title="Abrir ficha do fornecedor">
                                 <i class="fa-solid fa-file-lines"></i>
                             </a>
                             <button type="button"
@@ -150,7 +151,7 @@ require_once __DIR__ . '/includes/sidebar.php';
                         <td><span class="estado estado-ativo">Ativo</span></td>
                         <td>5</td>
                         <td class="text-center">
-                            <a href="ficha_fornecedor.html?id=FOR-003" class="btn btn-sm btn-ficha" title="Abrir ficha do fornecedor">
+                            <a href="ficha_fornecedor.php?id=FOR-003" class="btn btn-sm btn-ficha" title="Abrir ficha do fornecedor">
                                 <i class="fa-solid fa-file-lines"></i>
                             </a>
                             <button type="button"
@@ -179,7 +180,7 @@ require_once __DIR__ . '/includes/sidebar.php';
                         <td><span class="estado estado-inativo">Inativo</span></td>
                         <td>3</td>
                         <td class="text-center">
-                            <a href="ficha_fornecedor.html?id=FOR-004" class="btn btn-sm btn-ficha" title="Abrir ficha do fornecedor">
+                            <a href="ficha_fornecedor.php?id=FOR-004" class="btn btn-sm btn-ficha" title="Abrir ficha do fornecedor">
                                 <i class="fa-solid fa-file-lines"></i>
                             </a>
                             <button type="button"
@@ -295,5 +296,5 @@ require_once __DIR__ . '/includes/sidebar.php';
     </div>
 
 <?php
-require_once __DIR__ . '/includes/footer.php';
+require_once __DIR__ . '/../../includes/footer.php';
 ?>

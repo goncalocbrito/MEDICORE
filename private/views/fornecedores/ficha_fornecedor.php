@@ -1,8 +1,9 @@
 <?php
-require_once __DIR__ . '/includes/header.php';
-require_once __DIR__ . '/includes/nav.php';
-require_once __DIR__ . '/includes/sidebar.php';
+require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/nav.php';
+require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
+
 
     <!-- =========================================================
          CONTEÚDO PRINCIPAL DA FICHA DO FORNECEDOR
@@ -31,7 +32,7 @@ require_once __DIR__ . '/includes/sidebar.php';
              Em modo edição mostra Cancelar + Guardar Alterações.
              ===================================================== -->
         <div class="ficha-toolbar">
-            <a href="lista_fornecedores.html" class="btn btn-voltar botao-consulta">
+            <a href="lista_fornecedores.php" class="btn btn-voltar botao-consulta">
                 <i class="fa-solid fa-arrow-left me-2"></i> Voltar à Lista
             </a>
 
@@ -604,5 +605,5 @@ require_once __DIR__ . '/includes/sidebar.php';
     </main>
 
 <?php
-require_once __DIR__ . '/includes/footer.php';
+require_once __DIR__ . '/../../includes/footer.php';
 ?>

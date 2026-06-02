@@ -1,7 +1,7 @@
 <?php
-require_once __DIR__ . '/includes/header.php';
-require_once __DIR__ . '/includes/nav.php';
-require_once __DIR__ . '/includes/sidebar.php';
+require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/nav.php';
+require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
 
     <!-- Página de gestão de acessórios por equipamento. -->
@@ -244,6 +244,6 @@ require_once __DIR__ . '/includes/sidebar.php';
     </div>
 
 <?php
-require_once __DIR__ . '/includes/footer.php';
+require_once __DIR__ . '/../../includes/footer.php';
 ?>
 

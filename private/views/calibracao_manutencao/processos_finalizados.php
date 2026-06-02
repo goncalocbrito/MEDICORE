@@ -1,8 +1,9 @@
 <?php
-require_once __DIR__ . '/includes/header.php';
-require_once __DIR__ . '/includes/nav.php';
-require_once __DIR__ . '/includes/sidebar.php';
+require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/nav.php';
+require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
+
 
     <!-- Conteúdo principal dos processos finalizados. -->
     <main class="conteudo-private">
@@ -72,5 +73,5 @@ require_once __DIR__ . '/includes/sidebar.php';
     </main>
 
 <?php
-require_once __DIR__ . '/includes/footer.php';
+require_once __DIR__ . '/../../includes/footer.php';
 ?>

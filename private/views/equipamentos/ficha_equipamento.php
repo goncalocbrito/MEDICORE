@@ -1,7 +1,7 @@
 <?php
-require_once __DIR__ . '/includes/header.php';
-require_once __DIR__ . '/includes/nav.php';
-require_once __DIR__ . '/includes/sidebar.php';
+require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/nav.php';
+require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
 
     <!-- =========================================================
@@ -32,7 +32,7 @@ require_once __DIR__ . '/includes/sidebar.php';
         <div class="ficha-toolbar">
 
             <!-- Botões visíveis no modo observação -->
-            <a href="lista_equipamentos.html" class="btn btn-voltar botao-consulta">
+            <a href="lista_equipamentos.php" class="btn btn-voltar botao-consulta">
                 <i class="fa-solid fa-arrow-left me-2"></i> Voltar à Lista
             </a>
 
@@ -761,6 +761,6 @@ require_once __DIR__ . '/includes/sidebar.php';
     </main>
 
 <?php
-require_once __DIR__ . '/includes/footer.php';
+require_once __DIR__ . '/../../includes/footer.php';
 ?>
 

@@ -1,8 +1,9 @@
 <?php
-require_once __DIR__ . '/includes/header.php';
-require_once __DIR__ . '/includes/nav.php';
-require_once __DIR__ . '/includes/sidebar.php';
+require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/nav.php';
+require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
+
 
     <!-- Conteúdo principal da lista de localizações. -->
     <main class="conteudo-private">
@@ -13,7 +14,7 @@ require_once __DIR__ . '/includes/sidebar.php';
                     Consulta, registo e acompanhamento das localizações hospitalares associadas aos equipamentos médicos.
                 </p>
             </div>
-            <a href="nova_localizacao.html" class="btn btn-adicionar">
+            <a href="nova_localizacao.php" class="btn btn-adicionar">
                 <i class="fa-solid fa-plus me-2"></i> Adicionar Localização
             </a>
         </div>
@@ -76,7 +77,7 @@ require_once __DIR__ . '/includes/sidebar.php';
                         <td><span class="estado estado-ativo">Ativa</span></td>
                         <td>8</td>
                         <td class="text-center">
-                            <a href="ficha_localizacao.html?id=LOC-001" class="btn btn-sm btn-ficha" title="Abrir ficha da localização">
+                            <a href="ficha_localizacao.php?id=LOC-001" class="btn btn-sm btn-ficha" title="Abrir ficha da localização">
                                 <i class="fa-solid fa-file-lines"></i>
                             </a>
                             <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-localizacao" title="Eliminar localização" data-bs-toggle="modal" data-bs-target="#modalApagarLocalizacao" data-codigo="LOC-001" data-departamento="Unidade de Cuidados Intensivos" data-edificio="Edifício A" data-piso="2" data-sala="Sala 201" data-tipo="UCI" data-responsavel="Enf. Maria Costa" data-estado="Ativa" data-equipamentos="8">
@@ -93,7 +94,7 @@ require_once __DIR__ . '/includes/sidebar.php';
                         <td><span class="estado estado-ativo">Ativa</span></td>
                         <td>12</td>
                         <td class="text-center">
-                            <a href="ficha_localizacao.html?id=LOC-002" class="btn btn-sm btn-ficha" title="Abrir ficha da localização">
+                            <a href="ficha_localizacao.php?id=LOC-002" class="btn btn-sm btn-ficha" title="Abrir ficha da localização">
                                 <i class="fa-solid fa-file-lines"></i>
                             </a>
                             <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-localizacao" title="Eliminar localização" data-bs-toggle="modal" data-bs-target="#modalApagarLocalizacao" data-codigo="LOC-002" data-departamento="Urgência" data-edificio="Edifício B" data-piso="0" data-sala="Sala 1" data-tipo="Urgência" data-responsavel="Dr. João Martins" data-estado="Ativa" data-equipamentos="12">
@@ -110,7 +111,7 @@ require_once __DIR__ . '/includes/sidebar.php';
                         <td><span class="estado estado-ativo">Ativa</span></td>
                         <td>6</td>
                         <td class="text-center">
-                            <a href="ficha_localizacao.html?id=LOC-003" class="btn btn-sm btn-ficha" title="Abrir ficha da localização">
+                            <a href="ficha_localizacao.php?id=LOC-003" class="btn btn-sm btn-ficha" title="Abrir ficha da localização">
                                 <i class="fa-solid fa-file-lines"></i>
                             </a>
                             <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-localizacao" title="Eliminar localização" data-bs-toggle="modal" data-bs-target="#modalApagarLocalizacao" data-codigo="LOC-003" data-departamento="Bloco Operatório" data-edificio="Edifício C" data-piso="1" data-sala="BO-02" data-tipo="Bloco Operatório" data-responsavel="Enf. Ricardo Silva" data-estado="Ativa" data-equipamentos="6">
@@ -127,7 +128,7 @@ require_once __DIR__ . '/includes/sidebar.php';
                         <td><span class="estado estado-manutencao">Em manutenção</span></td>
                         <td>10</td>
                         <td class="text-center">
-                            <a href="ficha_localizacao.html?id=LOC-004" class="btn btn-sm btn-ficha" title="Abrir ficha da localização">
+                            <a href="ficha_localizacao.php?id=LOC-004" class="btn btn-sm btn-ficha" title="Abrir ficha da localização">
                                 <i class="fa-solid fa-file-lines"></i>
                             </a>
                             <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-localizacao" title="Eliminar localização" data-bs-toggle="modal" data-bs-target="#modalApagarLocalizacao" data-codigo="LOC-004" data-departamento="Laboratório Clínico" data-edificio="Edifício D" data-piso="1" data-sala="Lab-105" data-tipo="Laboratório" data-responsavel="Téc. Ana Ferreira" data-estado="Em manutenção" data-equipamentos="10">
@@ -144,7 +145,7 @@ require_once __DIR__ . '/includes/sidebar.php';
                         <td><span class="estado estado-inativo">Inativa</span></td>
                         <td>4</td>
                         <td class="text-center">
-                            <a href="ficha_localizacao.html?id=LOC-005" class="btn btn-sm btn-ficha" title="Abrir ficha da localização">
+                            <a href="ficha_localizacao.php?id=LOC-005" class="btn btn-sm btn-ficha" title="Abrir ficha da localização">
                                 <i class="fa-solid fa-file-lines"></i>
                             </a>
                             <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-localizacao" title="Eliminar localização" data-bs-toggle="modal" data-bs-target="#modalApagarLocalizacao" data-codigo="LOC-005" data-departamento="Armazém Técnico" data-edificio="Edifício Técnico" data-piso="-1" data-sala="ARM-01" data-tipo="Armazém Técnico" data-responsavel="Eng. Gonçalo Brito" data-estado="Inativa" data-equipamentos="4">
@@ -200,5 +201,5 @@ require_once __DIR__ . '/includes/sidebar.php';
     </div>
 
 <?php
-require_once __DIR__ . '/includes/footer.php';
+require_once __DIR__ . '/../../includes/footer.php';
 ?>

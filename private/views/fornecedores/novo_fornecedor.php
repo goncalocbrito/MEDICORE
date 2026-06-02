@@ -1,7 +1,7 @@
 <?php
-require_once __DIR__ . '/includes/header.php';
-require_once __DIR__ . '/includes/nav.php';
-require_once __DIR__ . '/includes/sidebar.php';
+require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/nav.php';
+require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
 
     <!-- =========================================================
@@ -17,7 +17,7 @@ require_once __DIR__ . '/includes/sidebar.php';
              dispara o pop-up visual de sucesso via JavaScript.
              ===================================================== -->
         <div class="form-actions">
-            <a href="lista_fornecedores.html" class="btn btn-cancelar">
+            <a href="lista_fornecedores.php" class="btn btn-cancelar">
                 <i class="fa-solid fa-xmark me-2"></i> Cancelar
             </a>
 
@@ -508,5 +508,5 @@ require_once __DIR__ . '/includes/sidebar.php';
     </main>
 
 <?php
-require_once __DIR__ . '/includes/footer.php';
+require_once __DIR__ . '/../../includes/footer.php';
 ?>

@@ -1,12 +1,12 @@
 <?php
-require_once __DIR__ . '/includes/header.php';
-require_once __DIR__ . '/includes/nav.php';
-require_once __DIR__ . '/includes/sidebar.php';
+require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/nav.php';
+require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
 
     <!-- =========================================================
          CONTEÚDO PRINCIPAL
-         Usa a mesma estrutura visual da ficha_equipamento.html:
+         Usa a mesma estrutura visual da ficha_equipamento.php:
          - página em largura total
          - barra superior com botão voltar
          - formulário organizado por separadores Bootstrap
@@ -20,7 +20,7 @@ require_once __DIR__ . '/includes/sidebar.php';
                  - Guardar: envia o formulário
                  ================================================= -->
             <div class="form-actions">
-                <a href="lista_equipamentos.html" class="btn btn-cancelar">
+                <a href="lista_equipamentos.php" class="btn btn-cancelar">
                     <i class="fa-solid fa-xmark me-2"></i> Cancelar
                 </a>
 
@@ -733,6 +733,6 @@ require_once __DIR__ . '/includes/sidebar.php';
     </main>
 
 <?php
-require_once __DIR__ . '/includes/footer.php';
+require_once __DIR__ . '/../../includes/footer.php';
 ?>
 

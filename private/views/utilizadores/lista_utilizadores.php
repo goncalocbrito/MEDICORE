@@ -1,8 +1,9 @@
 <?php
-require_once __DIR__ . '/includes/header.php';
-require_once __DIR__ . '/includes/nav.php';
-require_once __DIR__ . '/includes/sidebar.php';
+require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/nav.php';
+require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
+
 
     <!-- =========================================================
          CONTEÚDO PRINCIPAL DA LISTA DE UTILIZADORES
@@ -20,7 +21,7 @@ require_once __DIR__ . '/includes/sidebar.php';
                     Consulta, criação e gestão dos acessos dos administradores, engenheiros e enfermeiros.
                 </p>
             </div>
-            <a href="novo_utilizador.html" class="btn btn-adicionar">
+            <a href="novo_utilizador.php" class="btn btn-adicionar">
                 <i class="fa-solid fa-plus me-2"></i> Adicionar Utilizador
             </a>
         </div>
@@ -90,7 +91,7 @@ require_once __DIR__ . '/includes/sidebar.php';
                         <td>Administração</td>
                         <td><span class="estado estado-ativo">Ativo</span></td>
                         <td class="text-center">
-                            <a href="ficha_utilizador.html?id=USR-001" class="btn btn-sm btn-ficha" title="Abrir ficha do utilizador">
+                            <a href="ficha_utilizador.php?id=USR-001" class="btn btn-sm btn-ficha" title="Abrir ficha do utilizador">
                                 <i class="fa-solid fa-file-lines"></i>
                             </a>
                             <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-utilizador" title="Eliminar utilizador" data-bs-toggle="modal" data-bs-target="#modalApagarUtilizador" data-codigo="USR-001" data-nome="Ana Martins" data-tipo="Administrador" data-cartao="12345678" data-email="ana.martins@medicore.pt" data-telefone="+351 220 000 100" data-servico="Administração" data-estado="Ativo">
@@ -105,7 +106,7 @@ require_once __DIR__ . '/includes/sidebar.php';
                         <td>Engenharia Biomédica</td>
                         <td><span class="estado estado-ativo">Ativo</span></td>
                         <td class="text-center">
-                            <a href="ficha_utilizador.html?id=USR-002" class="btn btn-sm btn-ficha" title="Abrir ficha do utilizador">
+                            <a href="ficha_utilizador.php?id=USR-002" class="btn btn-sm btn-ficha" title="Abrir ficha do utilizador">
                                 <i class="fa-solid fa-file-lines"></i>
                             </a>
                             <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-utilizador" title="Eliminar utilizador" data-bs-toggle="modal" data-bs-target="#modalApagarUtilizador" data-codigo="USR-002" data-nome="Gonçalo Brito" data-tipo="Engenheiro" data-cartao="87654321" data-email="g.brito@medicore.pt" data-telefone="+351 220 000 200" data-servico="Engenharia Biomédica" data-estado="Ativo">
@@ -120,7 +121,7 @@ require_once __DIR__ . '/includes/sidebar.php';
                         <td>Unidade de Cuidados Intensivos</td>
                         <td><span class="estado estado-ativo">Ativo</span></td>
                         <td class="text-center">
-                            <a href="ficha_utilizador.html?id=USR-003" class="btn btn-sm btn-ficha" title="Abrir ficha do utilizador">
+                            <a href="ficha_utilizador.php?id=USR-003" class="btn btn-sm btn-ficha" title="Abrir ficha do utilizador">
                                 <i class="fa-solid fa-file-lines"></i>
                             </a>
                             <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-utilizador" title="Eliminar utilizador" data-bs-toggle="modal" data-bs-target="#modalApagarUtilizador" data-codigo="USR-003" data-nome="Maria Costa" data-tipo="Enfermeiro" data-cartao="23456789" data-email="maria.costa@medicore.pt" data-telefone="+351 220 000 300" data-servico="Unidade de Cuidados Intensivos" data-estado="Ativo">
@@ -135,7 +136,7 @@ require_once __DIR__ . '/includes/sidebar.php';
                         <td>Bloco Operatório</td>
                         <td><span class="estado estado-inativo">Inativo</span></td>
                         <td class="text-center">
-                            <a href="ficha_utilizador.html?id=USR-004" class="btn btn-sm btn-ficha" title="Abrir ficha do utilizador">
+                            <a href="ficha_utilizador.php?id=USR-004" class="btn btn-sm btn-ficha" title="Abrir ficha do utilizador">
                                 <i class="fa-solid fa-file-lines"></i>
                             </a>
                             <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-utilizador" title="Eliminar utilizador" data-bs-toggle="modal" data-bs-target="#modalApagarUtilizador" data-codigo="USR-004" data-nome="Ricardo Silva" data-tipo="Enfermeiro" data-cartao="34567890" data-email="ricardo.silva@medicore.pt" data-telefone="+351 220 000 301" data-servico="Bloco Operatório" data-estado="Inativo">
@@ -218,5 +219,5 @@ require_once __DIR__ . '/includes/sidebar.php';
     </div>
 
 <?php
-require_once __DIR__ . '/includes/footer.php';
+require_once __DIR__ . '/../../includes/footer.php';
 ?>
