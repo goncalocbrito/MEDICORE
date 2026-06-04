@@ -1,9 +1,36 @@
+<?php
+/* =========================================================
+   LOGIN
+   Carrega configuracoes e recupera mensagens temporarias
+   guardadas na sessao pelo processa_login.php.
+   ========================================================= */
+
+require_once __DIR__ . '/../config/config.php';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$validation_errors = [];
+
+if (!empty($_SESSION['validation_errors'])) {
+    $validation_errors = $_SESSION['validation_errors'];
+    unset($_SESSION['validation_errors']);
+}
+
+$server_error = '';
+
+if (!empty($_SESSION['server_error'])) {
+    $server_error = $_SESSION['server_error'];
+    unset($_SESSION['server_error']);
+}
+?>
 <!DOCTYPE html>
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MEDICORE | Login</title>
+    <title><?php echo APP_NAME; ?></title>
 
     <!-- favicon -->
     <link rel="shortcut icon" href="assets/img/MEDICORE_icon.png" type="image/png">
@@ -17,67 +44,54 @@
     <link rel="stylesheet" href="assets/fontawesome/all.min.css">
 
     <!-- estilos da página -->
-    <link rel="stylesheet" href="assets/css/login.css">
+    <link rel="stylesheet" href="assets/css/login.css?v=4">
 </head>
 
 <body>
 
     <main class="login-container">
 
-        <section class="login-info">
-            <img src="assets/img/MEDICORE_logo_white.png"
-                 alt="Logótipo MEDICORE"
-                 class="login-logo">
-
-            <h1>Área Restrita MEDICORE</h1>
-
-            <p>
-                Acesso reservado à equipa técnica para gestão de equipamentos médicos,
-                fornecedores, localizações, documentos e indicadores hospitalares.
-            </p>
-
-            <ul class="login-beneficios">
-                <li>
-                    <i class="fa-solid fa-check-circle"></i>
-                    Gestão técnica de equipamentos hospitalares
-                </li>
-
-                <li>
-                    <i class="fa-solid fa-check-circle"></i>
-                    Consulta de estados, criticidade e documentação
-                </li>
-
-                <li>
-                    <i class="fa-solid fa-check-circle"></i>
-                    Backoffice para acompanhamento do inventário
-                </li>
-            </ul>
-        </section>
-
         <section class="login-form-area">
-            <h2>Iniciar Sessão</h2>
+            <img src="assets/img/MEDICORE_Official_Logo.png"
+                 alt="Logótipo MEDICORE"
+                 class="login-card-logo">
+
+            <h1>Iniciar Sessão</h1>
 
             <p>
                 Introduza as suas credenciais para aceder à área privada.
             </p>
 
-            <div class="mensagem-erro" id="mensagemErro">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                Credenciais inválidas. Tente novamente.
-            </div>
+            <?php if (!empty($validation_errors)): ?>
+                <div class="mensagem-erro mostrar">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <?php foreach ($validation_errors as $error): ?>
+                        <div><?php echo htmlspecialchars($error); ?></div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
 
-            <form id="loginForm">
+            <?php if (!empty($server_error)): ?>
+                <div class="mensagem-erro mostrar">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <div><?php echo htmlspecialchars($server_error); ?></div>
+                </div>
+            <?php endif; ?>
+
+            <form id="loginForm" action="../private/processa_login.php" method="post">
 
                 <div class="form-group">
                     <label for="email">Email / Utilizador</label>
 
                     <div class="input-wrapper">
                         <i class="fa-solid fa-user"></i>
-                        <input type="text"
-                               id="email"
-                               name="email"
-                               placeholder="Ex: engenheiro@medicore.pt"
-                               required>
+                        <input 
+                            type="text" 
+                            id="email" 
+                            name="text_username" 
+                            placeholder="Ex: engenheiro@medicore.pt" 
+                            required
+                        >
                     </div>
                 </div>
 
@@ -86,11 +100,13 @@
 
                     <div class="input-wrapper">
                         <i class="fa-solid fa-lock"></i>
-                        <input type="password"
-                               id="password"
-                               name="password"
-                               placeholder="Introduza a password"
-                               required>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="text_password" 
+                            placeholder="Introduza a password" 
+                            required
+                        >
                     </div>
                 </div>
 
@@ -114,12 +130,6 @@
                 <i class="fa-solid fa-arrow-left me-2"></i>
                 Voltar à página pública
             </a>
-
-            <div class="credenciais-teste">
-                <strong>Credenciais temporárias:</strong><br>
-                Utilizador: <strong>admin</strong><br>
-                Password: <strong>1234</strong>
-            </div>
         </section>
 
     </main>
