@@ -1,10 +1,78 @@
 <?php
 require_once __DIR__ . '/../../includes/funcoes.php';
 redirect_if_not_logged();
+
+/* =========================================================
+   CONSULTA DOS EQUIPAMENTOS
+   Vai buscar os equipamentos ativos à base de dados.
+   ========================================================= */
+
+$equipamentos = [];
+$erro_bd = '';
+
+function classeEstadoEquipamento($estado)
+{
+    $estado = strtolower($estado);
+
+    if (str_contains($estado, 'manut')) {
+        return 'estado-manutencao';
+    }
+
+    if (str_contains($estado, 'avari')) {
+        return 'estado-avariado';
+    }
+
+    return 'estado-ativo';
+}
+
+try {
+    $pdo = new PDO(
+        'mysql:host=' . MYSQL_HOST . ';port=' . MYSQL_PORT . ';dbname=' . MYSQL_DATABASE . ';charset=utf8mb4',
+        MYSQL_USERNAME,
+        MYSQL_PASSWORD,
+        [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+        ]
+    );
+
+    $sql = "
+        SELECT
+            e.id_equipamento,
+            e.codigo,
+            e.designacao,
+            e.fabricante,
+            e.modelo,
+            e.numero_serie,
+            ce.nome AS categoria,
+            ee.nome AS estado,
+            CONCAT(l.departamento, ' - ', l.sala) AS localizacao
+        FROM equipamentos e
+        INNER JOIN categorias_equipamento ce
+            ON ce.id_categoria_equipamento = e.id_categoria_equipamento
+        INNER JOIN estados_equipamento ee
+            ON ee.id_estado_equipamento = e.id_estado_equipamento
+        INNER JOIN localizacoes l
+            ON l.id_localizacao = e.id_localizacao
+        WHERE e.isActive = 1
+        ORDER BY e.codigo ASC
+    ";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+
+    $equipamentos = $stmt->fetchAll();
+
+} catch (PDOException $e) {
+    $erro_bd = 'Erro ao carregar equipamentos da base de dados.';
+}
+
 require_once __DIR__ . '/../../includes/header.php';
 require_once __DIR__ . '/../../includes/nav.php';
 require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
+
+
 
         <main class="conteudo-private">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -72,93 +140,63 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>EQ-001</td>
-                        <td>Monitor Multiparamétrico</td>
-                        <td>Monitorização</td>
-                        <td>UCI - Sala 2</td>
-                        <td>
-                            <span class="estado estado-ativo">Ativo</span>
-                        </td>
-                        <td class="text-center">
-                            <a href="ficha_equipamento.php?id=EQ-001" class="btn btn-sm btn-ficha" title="Abrir ficha do equipamento">
-                                <i class="fa-solid fa-file-lines"></i>
-                            </a>
-                            <button type="button"
-                                    class="btn btn-sm btn-eliminar btn-abrir-modal-apagar"
-                                    title="Eliminar equipamento"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modalApagarEquipamento"
-                                    data-codigo="EQ-001"
-                                    data-nome="Monitor Multiparamétrico"
-                                    data-categoria="Monitorização"
-                                    data-fabricante="Philips"
-                                    data-modelo="IntelliVue MX450"
-                                    data-serie="SN-MX450-2024"
-                                    data-localizacao="UCI - Sala 2"
-                                    data-estado="Ativo">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>EQ-002</td>
-                        <td>Ventilador Pulmonar</td>
-                        <td>Suporte de Vida</td>
-                        <td>Urgência - Sala 1</td>
-                        <td>
-                            <span class="estado estado-manutencao">Em manutenção</span>
-                        </td>
-                        <td class="text-center">
-                            <a href="ficha_equipamento.php?id=EQ-002" class="btn btn-sm btn-ficha" title="Abrir ficha do equipamento">
-                                <i class="fa-solid fa-file-lines"></i>
-                            </a>
-                            <button type="button"
-                                    class="btn btn-sm btn-eliminar btn-abrir-modal-apagar"
-                                    title="Eliminar equipamento"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modalApagarEquipamento"
-                                    data-codigo="EQ-002"
-                                    data-nome="Ventilador Pulmonar"
-                                    data-categoria="Suporte de Vida"
-                                    data-fabricante="Dräger"
-                                    data-modelo="Evita V300"
-                                    data-serie="SN-EV300-1198"
-                                    data-localizacao="Urgência - Sala 1"
-                                    data-estado="Em manutenção">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>EQ-003</td>
-                        <td>Desfibrilhador</td>
-                        <td>Emergência</td>
-                        <td>Bloco Operatório</td>
-                        <td>
-                            <span class="estado estado-avariado">Avariado</span>
-                        </td>
-                        <td class="text-center">
-                            <a href="ficha_equipamento.php?id=EQ-003" class="btn btn-sm btn-ficha" title="Abrir ficha do equipamento">
-                                <i class="fa-solid fa-file-lines"></i>
-                            </a>
-                            <button type="button"
-                                    class="btn btn-sm btn-eliminar btn-abrir-modal-apagar"
-                                    title="Eliminar equipamento"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modalApagarEquipamento"
-                                    data-codigo="EQ-002"
-                                    data-nome="Ventilador Pulmonar"
-                                    data-categoria="Suporte de Vida"
-                                    data-fabricante="Dräger"
-                                    data-modelo="Evita V300"
-                                    data-serie="SN-EV300-1198"
-                                    data-localizacao="Urgência - Sala 1"
-                                    data-estado="Em manutenção">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
+                    <?php if (!empty($erro_bd)): ?>
+                        <tr>
+                            <td colspan="6" class="text-center">
+                                <?php echo htmlspecialchars($erro_bd); ?>
+                            </td>
+                        </tr>
+
+                    <?php elseif (empty($equipamentos)): ?>
+                        <tr>
+                            <td colspan="6" class="text-center">
+                                Não existem equipamentos registados.
+                            </td>
+                        </tr>
+
+                    <?php else: ?>
+                        <?php foreach ($equipamentos as $equipamento): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($equipamento['codigo']); ?></td>
+
+                                <td><?php echo htmlspecialchars($equipamento['designacao']); ?></td>
+
+                                <td><?php echo htmlspecialchars($equipamento['categoria']); ?></td>
+
+                                <td><?php echo htmlspecialchars($equipamento['localizacao']); ?></td>
+
+                                <td>
+                                    <span class="estado <?php echo classeEstadoEquipamento($equipamento['estado']); ?>">
+                                        <?php echo htmlspecialchars($equipamento['estado']); ?>
+                                    </span>
+                                </td>
+
+                                <td class="text-center">
+                                    <a href="ficha_equipamento.php?id=<?php echo urlencode($equipamento['id_equipamento']); ?>"
+                                    class="btn btn-sm btn-ficha"
+                                    title="Abrir ficha do equipamento">
+                                        <i class="fa-solid fa-file-lines"></i>
+                                    </a>
+
+                                    <button type="button"
+                                            class="btn btn-sm btn-eliminar btn-abrir-modal-apagar"
+                                            title="Eliminar equipamento"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalApagarEquipamento"
+                                            data-codigo="<?php echo htmlspecialchars($equipamento['codigo']); ?>"
+                                            data-nome="<?php echo htmlspecialchars($equipamento['designacao']); ?>"
+                                            data-categoria="<?php echo htmlspecialchars($equipamento['categoria']); ?>"
+                                            data-fabricante="<?php echo htmlspecialchars($equipamento['fabricante']); ?>"
+                                            data-modelo="<?php echo htmlspecialchars($equipamento['modelo']); ?>"
+                                            data-serie="<?php echo htmlspecialchars($equipamento['numero_serie']); ?>"
+                                            data-localizacao="<?php echo htmlspecialchars($equipamento['localizacao']); ?>"
+                                            data-estado="<?php echo htmlspecialchars($equipamento['estado']); ?>">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
