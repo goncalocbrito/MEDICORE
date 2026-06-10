@@ -384,7 +384,7 @@ function inicializarDocumentosEquipamento() {
 
         const novoDocumento = primeiroDocumento.cloneNode(true);
 
-        novoDocumento.querySelectorAll("input, select").forEach(function (campo) {
+        novoDocumento.querySelectorAll("input, select, textarea").forEach(function (campo) {
             if (campo.tagName === "SELECT") {
                 campo.selectedIndex = 0;
             } else {

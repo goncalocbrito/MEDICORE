@@ -34,6 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             codigo_postal,
             localidade,
             pais,
+            observacoes,
             isActive
         ) VALUES (
             :nome_empresa,
@@ -49,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             :codigo_postal,
             :localidade,
             :pais,
+            :observacoes,
             1
         )
     ");
@@ -66,8 +68,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ':morada' => trim($_POST['moradaFornecedor'] ?? ''),
         ':codigo_postal' => trim($_POST['codigoPostalFornecedor'] ?? ''),
         ':localidade' => trim($_POST['localidadeFornecedor'] ?? ''),
-        ':pais' => trim($_POST['paisFornecedor'] ?? 'Portugal')
+        ':pais' => trim($_POST['paisFornecedor'] ?? 'Portugal'),
+        ':observacoes' => trim($_POST['observacoesFornecedor'] ?? '')
     ]);
+
+    $id_fornecedor = $pdo->lastInsertId();
+
+    /* Processa documentos opcionais associados ao fornecedor criado. */
+    if (!empty($_FILES['ficheiroDocumento']['name'][0])) {
+        $pastaDestino = __DIR__ . '/../../uploads/fornecedores/' . $id_fornecedor . '/';
+
+        if (!is_dir($pastaDestino)) {
+            mkdir($pastaDestino, 0777, true);
+        }
+
+        foreach ($_FILES['ficheiroDocumento']['name'] as $index => $nomeOriginal) {
+            if (empty($nomeOriginal)) {
+                continue;
+            }
+
+            $tipoDocumento = trim($_POST['tipoDocumento'][$index] ?? '');
+            $numeroDocumento = trim($_POST['numeroDocumento'][$index] ?? '');
+            $nomeDocumento = trim($_POST['nomeDocumento'][$index] ?? '');
+
+            if ($tipoDocumento === '' || $numeroDocumento === '' || $nomeDocumento === '') {
+                continue;
+            }
+
+            $nomeSeguro = date('YmdHis') . '_' . $index . '_' . basename($nomeOriginal);
+            $caminhoFisico = $pastaDestino . $nomeSeguro;
+            $caminhoBD = 'private/uploads/fornecedores/' . $id_fornecedor . '/' . $nomeSeguro;
+
+            if (!move_uploaded_file($_FILES['ficheiroDocumento']['tmp_name'][$index], $caminhoFisico)) {
+                continue;
+            }
+
+            $stmtDoc = $pdo->prepare("
+                INSERT INTO documentos_fornecedores (
+                    id_fornecedor,
+                    tipo_documento,
+                    numero_documento,
+                    nome_documento,
+                    caminho_ficheiro,
+                    data_documento,
+                    data_validade
+                ) VALUES (
+                    :id_fornecedor,
+                    :tipo_documento,
+                    :numero_documento,
+                    :nome_documento,
+                    :caminho_ficheiro,
+                    :data_documento,
+                    :data_validade
+                )
+            ");
+
+            $stmtDoc->execute([
+                ':id_fornecedor' => $id_fornecedor,
+                ':tipo_documento' => $tipoDocumento,
+                ':numero_documento' => $numeroDocumento,
+                ':nome_documento' => $nomeDocumento,
+                ':caminho_ficheiro' => $caminhoBD,
+                ':data_documento' => ($_POST['dataDocumento'][$index] ?? '') ?: null,
+                ':data_validade' => ($_POST['dataValidadeDocumento'][$index] ?? '') ?: null
+            ]);
+        }
+    }
 
     header('Location: lista_fornecedores.php');
     exit;
@@ -495,25 +561,34 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <div id="listaDocumentos">
                             <div class="documento-form-item">
                                 <div class="row g-4 align-items-end">
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <label class="form-label">Tipo de Documento</label>
                                         <select class="form-select" name="tipoDocumento[]">
                                             <option value="">Selecionar tipo</option>
-                                            <option value="contrato">Contrato</option>
-                                            <option value="certificado">Certificado técnico</option>
-                                            <option value="catalogo">Catálogo</option>
-                                            <option value="comprovativo">Comprovativo fiscal</option>
-                                            <option value="relatorio">Relatório técnico</option>
-                                            <option value="outro">Outro</option>
+                                            <option value="Contrato de Fornecimento">Contrato de Fornecimento</option>
+                                            <option value="Contrato de Manutenção">Contrato de Manutenção</option>
+                                            <option value="Contrato de Calibração">Contrato de Calibração</option>
+                                            <option value="Certificado Técnico">Certificado Técnico</option>
+                                            <option value="Comprovativo fiscal">Comprovativo fiscal</option>
+                                            <option value="Outro">Outro</option>
                                         </select>
                                     </div>
 
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Numero do Documento</label>
+                                        <input type="text"
+                                               class="form-control"
+                                               name="numeroDocumento[]"
+                                               maxlength="30"
+                                               placeholder="Ex: DOC-2026-001">
+                                    </div>
+
+                                    <div class="col-md-3">
                                         <label class="form-label">Nome do Documento</label>
                                         <input type="text"
                                                class="form-control"
                                                name="nomeDocumento[]"
-                                               placeholder="Ex: Contrato de fornecimento 2026">
+                                               placeholder="Ex: Contrato de Fornecimento 2026">
                                     </div>
 
                                     <div class="col-md-3">
@@ -523,6 +598,21 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                                name="ficheiroDocumento[]"
                                                accept=".pdf,.png,.jpg,.jpeg">
                                     </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Data do Documento</label>
+                                        <input type="date"
+                                               class="form-control"
+                                               name="dataDocumento[]">
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Data de Validade</label>
+                                        <input type="date"
+                                               class="form-control"
+                                               name="dataValidadeDocumento[]">
+                                    </div>
+
 
                                     <div class="col-md-1 text-end">
                                         <button type="button"

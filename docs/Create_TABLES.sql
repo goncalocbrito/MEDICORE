@@ -13,6 +13,7 @@ CREATE TABLE fornecedores (
     codigo_postal VARCHAR(20),
     localidade VARCHAR(100),
     pais VARCHAR(80) NOT NULL DEFAULT 'Portugal',
+    observacoes VARCHAR(500),
     isActive TINYINT(1) NOT NULL DEFAULT 1
 );
 
@@ -21,9 +22,11 @@ CREATE TABLE documentos_fornecedores (
     id_fornecedor INT NOT NULL,
 
     tipo_documento ENUM(
-        'Contrato de fornecimento',
-        'Contrato de manutenção',
-        'Certificado',
+        'Contrato de Fornecimento',
+        'Contrato de Manutenção',
+        'Contrato de Calibração',
+        'Certificado Técnico',
+        'Comprovativo fiscal',
         'Outro'
     ) NOT NULL,
 
@@ -34,8 +37,6 @@ CREATE TABLE documentos_fornecedores (
     data_documento DATE NULL,
     data_validade DATE NULL,
 
-    observacoes VARCHAR(500) NULL,
-
     isActive TINYINT(1) NOT NULL DEFAULT 1,
     criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     atualizado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -44,3 +45,4 @@ CREATE TABLE documentos_fornecedores (
         FOREIGN KEY (id_fornecedor)
         REFERENCES fornecedores(id_fornecedor)
 );
+

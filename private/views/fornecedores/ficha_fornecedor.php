@@ -31,7 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             morada = :morada,
             codigo_postal = :codigo_postal,
             localidade = :localidade,
-            pais = :pais
+            pais = :pais,
+            observacoes = :observacoes
         WHERE id_fornecedor = :id_fornecedor
           AND isActive = 1
     ");
@@ -50,8 +51,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ':codigo_postal' => trim($_POST['codigoPostalFornecedor'] ?? ''),
         ':localidade' => trim($_POST['localidadeFornecedor'] ?? ''),
         ':pais' => trim($_POST['paisFornecedor'] ?? 'Portugal'),
+        ':observacoes' => trim($_POST['observacoesFornecedor'] ?? ''),
         ':id_fornecedor' => $id_fornecedor
     ]);
+
+    /* Processa novos documentos opcionais submetidos na ficha do fornecedor. */
+    if (!empty($_FILES['ficheiroDocumento']['name'][0])) {
+        $pastaDestino = __DIR__ . '/../../uploads/fornecedores/' . $id_fornecedor . '/';
+
+        if (!is_dir($pastaDestino)) {
+            mkdir($pastaDestino, 0777, true);
+        }
+
+        foreach ($_FILES['ficheiroDocumento']['name'] as $index => $nomeOriginal) {
+            if (empty($nomeOriginal)) {
+                continue;
+            }
+
+            $tipoDocumento = trim($_POST['tipoDocumento'][$index] ?? '');
+            $numeroDocumento = trim($_POST['numeroDocumento'][$index] ?? '');
+            $nomeDocumento = trim($_POST['nomeDocumento'][$index] ?? '');
+
+            if ($tipoDocumento === '' || $numeroDocumento === '' || $nomeDocumento === '') {
+                continue;
+            }
+
+            $nomeSeguro = date('YmdHis') . '_' . $index . '_' . basename($nomeOriginal);
+            $caminhoFisico = $pastaDestino . $nomeSeguro;
+            $caminhoBD = 'private/uploads/fornecedores/' . $id_fornecedor . '/' . $nomeSeguro;
+
+            if (!move_uploaded_file($_FILES['ficheiroDocumento']['tmp_name'][$index], $caminhoFisico)) {
+                continue;
+            }
+
+            $stmtDoc = $pdo->prepare("
+                INSERT INTO documentos_fornecedores (
+                    id_fornecedor,
+                    tipo_documento,
+                    numero_documento,
+                    nome_documento,
+                    caminho_ficheiro,
+                    data_documento,
+                    data_validade
+                ) VALUES (
+                    :id_fornecedor,
+                    :tipo_documento,
+                    :numero_documento,
+                    :nome_documento,
+                    :caminho_ficheiro,
+                    :data_documento,
+                    :data_validade
+                )
+            ");
+
+            $stmtDoc->execute([
+                ':id_fornecedor' => $id_fornecedor,
+                ':tipo_documento' => $tipoDocumento,
+                ':numero_documento' => $numeroDocumento,
+                ':nome_documento' => $nomeDocumento,
+                ':caminho_ficheiro' => $caminhoBD,
+                ':data_documento' => ($_POST['dataDocumento'][$index] ?? '') ?: null,
+                ':data_validade' => ($_POST['dataValidadeDocumento'][$index] ?? '') ?: null
+            ]);
+        }
+    }
 
     header('Location: ficha_fornecedor.php?id=' . urlencode($id_fornecedor));
     exit;
@@ -74,6 +137,21 @@ if (!$fornecedor) {
     header('Location: lista_fornecedores.php');
     exit;
 }
+
+
+$stmtDocs = $pdo->prepare("
+    SELECT *
+    FROM documentos_fornecedores
+    WHERE id_fornecedor = :id_fornecedor
+      AND isActive = 1
+    ORDER BY data_documento DESC, id_documento_fornecedor DESC
+");
+
+$stmtDocs->execute([
+    ':id_fornecedor' => $id_fornecedor
+]);
+
+$documentosFornecedor = $stmtDocs->fetchAll(PDO::FETCH_ASSOC);
 
 require_once __DIR__ . '/../../includes/header.php';
 require_once __DIR__ . '/../../includes/nav.php';
@@ -281,7 +359,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                         name="tipoFornecedor"
                                         required>
                                     <option value="">Selecionar tipo</option>
-                                    <option value="Manuten��o" <?php echo $fornecedor['tipo_fornecedor'] === 'Manuten��o' ? 'selected' : ''; ?>>Manuten��o</option>
+                                    <option value="Manuten��o" <?php echo $fornecedor['tipo_fornecedor'] === 'Manuten��o' ? 'selected' : ''; ?>>Manuten��o</option>
                                     <option value="Comercial" <?php echo $fornecedor['tipo_fornecedor'] === 'Comercial' ? 'selected' : ''; ?>>Comercial</option>
                                     <option value="Fabricante" <?php echo $fornecedor['tipo_fornecedor'] === 'Fabricante' ? 'selected' : ''; ?>>Fabricante</option>
                                 </select>
@@ -507,67 +585,77 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="documentos-lista mb-4">
-                            <div class="documento-item">
-                                <div class="documento-info">
-                                    <i class="fa-solid fa-file-contract documento-icone"></i>
-                                    <div>
-                                        <h5>Contrato de Fornecimento</h5>
-                                        <p>Contrato ativo com condições comerciais e técnicas do fornecedor.</p>
+                            <?php if (empty($documentosFornecedor)): ?>
+                                <div class="documento-item">
+                                    <div class="documento-info">
+                                        <i class="fa-solid fa-file-circle-plus documento-icone"></i>
+                                        <div>
+                                            <h5>Sem documentos associados</h5>
+                                            <p>Este fornecedor ainda nao tem contratos, certificados ou comprovativos registados.</p>
+                                        </div>
                                     </div>
                                 </div>
+                            <?php else: ?>
+                                <?php foreach ($documentosFornecedor as $documento): ?>
+                                    <div class="documento-item">
+                                        <div class="documento-info">
+                                            <i class="fa-solid fa-file-contract documento-icone"></i>
+                                            <div>
+                                                <h5><?php echo htmlspecialchars($documento['nome_documento']); ?></h5>
+                                                <p>
+                                                    <?php echo htmlspecialchars($documento['tipo_documento']); ?>
+                                                    | Numero: <?php echo htmlspecialchars($documento['numero_documento']); ?>
+                                                    <?php if (!empty($documento['data_validade'])): ?>
+                                                        | Validade: <?php echo htmlspecialchars($documento['data_validade']); ?>
+                                                    <?php endif; ?>
+                                                </p>
+                                            </div>
+                                        </div>
 
-                                <div class="documento-acoes">
-                                    <a href="#" class="btn-documento-ver">
-                                        <i class="fa-solid fa-eye me-1"></i> Ver
-                                    </a>
-                                    <a href="#" class="btn-documento-download">
-                                        <i class="fa-solid fa-download me-1"></i> Download
-                                    </a>
-                                </div>
-                            </div>
-
-                            <div class="documento-item">
-                                <div class="documento-info">
-                                    <i class="fa-solid fa-file-shield documento-icone"></i>
-                                    <div>
-                                        <h5>Certificado Técnico</h5>
-                                        <p>Certificado de conformidade ou qualificação técnica do fornecedor.</p>
+                                        <div class="documento-acoes">
+                                            <a href="<?php echo BASE_URL . '/' . htmlspecialchars($documento['caminho_ficheiro']); ?>" class="btn-documento-ver" target="_blank">
+                                                <i class="fa-solid fa-eye me-1"></i> Ver
+                                            </a>
+                                            <a href="<?php echo BASE_URL . '/' . htmlspecialchars($documento['caminho_ficheiro']); ?>" class="btn-documento-download" download>
+                                                <i class="fa-solid fa-download me-1"></i> Download
+                                            </a>
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div class="documento-acoes">
-                                    <a href="#" class="btn-documento-ver">
-                                        <i class="fa-solid fa-eye me-1"></i> Ver
-                                    </a>
-                                    <a href="#" class="btn-documento-download">
-                                        <i class="fa-solid fa-download me-1"></i> Download
-                                    </a>
-                                </div>
-                            </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </div>
 
                         <div id="listaDocumentosNovos">
                             <div class="documento-form-item botao-edicao d-none">
                                 <div class="row g-4 align-items-end">
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <label class="form-label">Tipo de Documento</label>
                                         <select class="form-select campo-ficha campo-editavel" name="tipoDocumento[]">
                                             <option value="">Selecionar tipo</option>
-                                            <option value="contrato">Contrato</option>
-                                            <option value="certificado">Certificado técnico</option>
-                                            <option value="catalogo">Catálogo</option>
-                                            <option value="comprovativo">Comprovativo fiscal</option>
-                                            <option value="relatorio">Relatório técnico</option>
-                                            <option value="outro">Outro</option>
+                                            <option value="Contrato de Fornecimento">Contrato de Fornecimento</option>
+                                            <option value="Contrato de Manutenção">Contrato de Manutenção</option>
+                                            <option value="Contrato de Calibração">Contrato de Calibração</option>
+                                            <option value="Certificado Técnico">Certificado Técnico</option>
+                                            <option value="Comprovativo fiscal">Comprovativo fiscal</option>
+                                            <option value="Outro">Outro</option>
                                         </select>
                                     </div>
 
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
+                                        <label class="form-label">Numero do Documento</label>
+                                        <input type="text"
+                                               class="form-control campo-ficha campo-editavel"
+                                               name="numeroDocumento[]"
+                                               maxlength="30"
+                                               placeholder="Ex: DOC-2026-001">
+                                    </div>
+
+                                    <div class="col-md-3">
                                         <label class="form-label">Nome do Documento</label>
                                         <input type="text"
                                                class="form-control campo-ficha campo-editavel"
                                                name="nomeDocumento[]"
-                                               placeholder="Ex: Contrato de manutenção 2026">
+                                               placeholder="Ex: Contrato de Manutenção 2026">
                                     </div>
 
                                     <div class="col-md-3">
@@ -577,6 +665,21 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                                name="ficheiroDocumento[]"
                                                accept=".pdf,.png,.jpg,.jpeg">
                                     </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Data do Documento</label>
+                                        <input type="date"
+                                               class="form-control campo-ficha campo-editavel"
+                                               name="dataDocumento[]">
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Data de Validade</label>
+                                        <input type="date"
+                                               class="form-control campo-ficha campo-editavel"
+                                               name="dataValidadeDocumento[]">
+                                    </div>
+
 
                                     <div class="col-md-1 text-end">
                                         <button type="button"
@@ -589,7 +692,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </div>
                         </div>
                     </div>
-
                     <!-- =========================================
                          SEPARADOR 6: OBSERVAÇÕES
                          Campo livre para notas técnicas ou administrativas.
@@ -608,7 +710,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <textarea class="form-control campo-ficha campo-editavel"
                                   id="observacoesFornecedor"
                                   name="observacoesFornecedor"
-                                  rows="7">Fornecedor associado a equipamentos de monitorização em unidades críticas.</textarea>
+                                  rows="7"><?php echo htmlspecialchars($fornecedor['observacoes'] ?? ''); ?></textarea>
                     </div>
                 </div>
             </div>
