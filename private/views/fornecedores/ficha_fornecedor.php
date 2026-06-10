@@ -1,6 +1,80 @@
 <?php
 require_once __DIR__ . '/../../includes/funcoes.php';
 redirect_if_not_logged();
+require_once __DIR__ . '/../../../config/config.php';
+
+$pdo = new PDO(
+    'mysql:host=' . MYSQL_HOST . ';port=' . MYSQL_PORT . ';dbname=' . MYSQL_DATABASE . ';charset=utf8mb4',
+    MYSQL_USERNAME,
+    MYSQL_PASSWORD,
+    [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]
+);
+
+$id_fornecedor = $_GET['id'] ?? 0;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $stmt = $pdo->prepare("
+        UPDATE fornecedores
+        SET
+            nome_empresa = :nome_empresa,
+            tipo_fornecedor = :tipo_fornecedor,
+            nif = :nif,
+            email = :email,
+            telefone = :telefone,
+            website = :website,
+            pessoa_contacto = :pessoa_contacto,
+            telefone_contacto = :telefone_contacto,
+            email_contacto = :email_contacto,
+            morada = :morada,
+            codigo_postal = :codigo_postal,
+            localidade = :localidade,
+            pais = :pais
+        WHERE id_fornecedor = :id_fornecedor
+          AND isActive = 1
+    ");
+
+    $stmt->execute([
+        ':nome_empresa' => trim($_POST['nomeFornecedor'] ?? ''),
+        ':tipo_fornecedor' => trim($_POST['tipoFornecedor'] ?? ''),
+        ':nif' => trim($_POST['nifFornecedor'] ?? ''),
+        ':email' => trim($_POST['emailFornecedor'] ?? ''),
+        ':telefone' => trim($_POST['telefoneFornecedor'] ?? ''),
+        ':website' => trim($_POST['websiteFornecedor'] ?? ''),
+        ':pessoa_contacto' => trim($_POST['contactoResponsavel'] ?? ''),
+        ':telefone_contacto' => trim($_POST['telefoneContacto'] ?? ''),
+        ':email_contacto' => trim($_POST['emailContacto'] ?? ''),
+        ':morada' => trim($_POST['moradaFornecedor'] ?? ''),
+        ':codigo_postal' => trim($_POST['codigoPostalFornecedor'] ?? ''),
+        ':localidade' => trim($_POST['localidadeFornecedor'] ?? ''),
+        ':pais' => trim($_POST['paisFornecedor'] ?? 'Portugal'),
+        ':id_fornecedor' => $id_fornecedor
+    ]);
+
+    header('Location: ficha_fornecedor.php?id=' . urlencode($id_fornecedor));
+    exit;
+}
+
+$stmt = $pdo->prepare("
+    SELECT *
+    FROM fornecedores
+    WHERE id_fornecedor = :id_fornecedor
+      AND isActive = 1
+");
+
+$stmt->execute([
+    ':id_fornecedor' => $id_fornecedor
+]);
+
+$fornecedor = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$fornecedor) {
+    header('Location: lista_fornecedores.php');
+    exit;
+}
+
 require_once __DIR__ . '/../../includes/header.php';
 require_once __DIR__ . '/../../includes/nav.php';
 require_once __DIR__ . '/../../includes/sidebar.php';
@@ -58,12 +132,11 @@ require_once __DIR__ . '/../../includes/sidebar.php';
              ===================================================== -->
         <form class="form-equipamento form-ficha-equipamento"
               id="formFichaFornecedor"
-              action="processa_fornecedor.php"
+              action="ficha_fornecedor.php?id=<?php echo urlencode($fornecedor['id_fornecedor']); ?>"
               method="post"
               enctype="multipart/form-data">
 
-            <input type="hidden" id="idFornecedor" name="idFornecedor" value="FOR-001">
-            <input type="hidden" id="modoFormularioFornecedor" name="modoFormulario" value="ver">
+            <input type="hidden" id="idFornecedor" name="idFornecedor" value="<?php echo htmlspecialchars($fornecedor['id_fornecedor']); ?>">
 
             <!-- =================================================
                  ÁREA PRINCIPAL DA FICHA
@@ -176,28 +249,18 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                          tabindex="0">
 
                         <div class="secao-ficha-titulo">
-                            <h4>Identificação do Fornecedor</h4>
-                            <p>Dados principais da entidade fornecedora e respetiva classificação.</p>
+                            <h4>Identificacao do Fornecedor</h4>
+                            <p>Dados principais da entidade fornecedora e respetiva classificacao.</p>
                         </div>
 
                         <div class="row g-4">
-                            <div class="col-md-4">
-                                <label for="codigoFornecedor" class="form-label">Código do Fornecedor *</label>
-                                <input type="text"
-                                       class="form-control campo-ficha campo-bloqueado"
-                                       id="codigoFornecedor"
-                                       name="codigoFornecedor"
-                                       value="FOR-001"
-                                       readonly>
-                            </div>
-
                             <div class="col-md-8">
                                 <label for="nomeFornecedor" class="form-label">Nome do Fornecedor *</label>
                                 <input type="text"
                                        class="form-control campo-ficha campo-editavel"
                                        id="nomeFornecedor"
                                        name="nomeFornecedor"
-                                       value="Philips Medical Systems"
+                                       value="<?php echo htmlspecialchars($fornecedor['nome_empresa']); ?>"
                                        required>
                             </div>
 
@@ -207,74 +270,21 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        class="form-control campo-ficha campo-editavel"
                                        id="nifFornecedor"
                                        name="nifFornecedor"
-                                       value="509123456"
+                                       value="<?php echo htmlspecialchars($fornecedor['nif']); ?>"
                                        required>
                             </div>
 
-                            <div class="col-md-4">
-                                <label for="estadoFornecedor" class="form-label">Estado *</label>
+                            <div class="col-md-8">
+                                <label for="tipoFornecedor" class="form-label">Tipo de Fornecedor *</label>
                                 <select class="form-select campo-ficha campo-editavel"
-                                        id="estadoFornecedor"
-                                        name="estadoFornecedor"
+                                        id="tipoFornecedor"
+                                        name="tipoFornecedor"
                                         required>
-                                    <option value="">Selecionar estado</option>
-                                    <option value="Ativo" selected>Ativo</option>
-                                    <option value="Inativo">Inativo</option>
-                                    <option value="Em avaliação">Em avaliação</option>
+                                    <option value="">Selecionar tipo</option>
+                                    <option value="Manuten��o" <?php echo $fornecedor['tipo_fornecedor'] === 'Manuten��o' ? 'selected' : ''; ?>>Manuten��o</option>
+                                    <option value="Comercial" <?php echo $fornecedor['tipo_fornecedor'] === 'Comercial' ? 'selected' : ''; ?>>Comercial</option>
+                                    <option value="Fabricante" <?php echo $fornecedor['tipo_fornecedor'] === 'Fabricante' ? 'selected' : ''; ?>>Fabricante</option>
                                 </select>
-                            </div>
-
-                            <div class="col-md-4">
-                                <label for="qtdEquipamentosFornecedor" class="form-label">Equipamentos Associados</label>
-                                <input type="number"
-                                       class="form-control campo-ficha campo-editavel"
-                                       id="qtdEquipamentosFornecedor"
-                                       name="qtdEquipamentosFornecedor"
-                                       min="0"
-                                       value="12">
-                            </div>
-
-                            <div class="col-12">
-                                <label class="form-label d-block">Tipo de Fornecedor *</label>
-
-                                <div class="tipos-fornecedor-opcoes">
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input campo-ficha campo-editavel"
-                                               type="checkbox"
-                                               id="tipoFabricante"
-                                               name="tipoFornecedor[]"
-                                               value="Fabricante"
-                                               checked>
-                                        <label class="form-check-label" for="tipoFabricante">Fabricante</label>
-                                    </div>
-
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input campo-ficha campo-editavel"
-                                               type="checkbox"
-                                               id="tipoDistribuidor"
-                                               name="tipoFornecedor[]"
-                                               value="Distribuidor">
-                                        <label class="form-check-label" for="tipoDistribuidor">Vendedor / Distribuidor</label>
-                                    </div>
-
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input campo-ficha campo-editavel"
-                                               type="checkbox"
-                                               id="tipoManutencao"
-                                               name="tipoFornecedor[]"
-                                               value="Manutenção">
-                                        <label class="form-check-label" for="tipoManutencao">Manutenção</label>
-                                    </div>
-
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input campo-ficha campo-editavel"
-                                               type="checkbox"
-                                               id="tipoCalibracao"
-                                               name="tipoFornecedor[]"
-                                               value="Calibração">
-                                        <label class="form-check-label" for="tipoCalibracao">Calibração</label>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -301,7 +311,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        class="form-control campo-ficha campo-editavel"
                                        id="emailFornecedor"
                                        name="emailFornecedor"
-                                       value="suporte@philips-med.pt"
+                                       value="<?php echo htmlspecialchars($fornecedor['email']); ?>"
                                        required>
                             </div>
 
@@ -311,7 +321,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        class="form-control campo-ficha campo-editavel"
                                        id="telefoneFornecedor"
                                        name="telefoneFornecedor"
-                                       value="+351 220 000 111"
+                                       value="<?php echo htmlspecialchars($fornecedor['telefone']); ?>"
                                        required>
                             </div>
 
@@ -321,7 +331,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        class="form-control campo-ficha campo-editavel"
                                        id="websiteFornecedor"
                                        name="websiteFornecedor"
-                                       value="https://www.philips.pt">
+                                       value="<?php echo htmlspecialchars($fornecedor['website'] ?? ''); ?>">
                             </div>
 
                             <div class="col-md-4">
@@ -330,16 +340,16 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        class="form-control campo-ficha campo-editavel"
                                        id="contactoResponsavel"
                                        name="contactoResponsavel"
-                                       value="Carlos Almeida">
+                                       value="<?php echo htmlspecialchars($fornecedor['pessoa_contacto'] ?? ''); ?>">
                             </div>
 
                             <div class="col-md-4">
-                                <label for="cargoContacto" class="form-label">Cargo / Função</label>
+                                <label for="telefoneContacto" class="form-label">Telefone do Contacto</label>
                                 <input type="text"
                                        class="form-control campo-ficha campo-editavel"
-                                       id="cargoContacto"
-                                       name="cargoContacto"
-                                       value="Suporte Técnico">
+                                       id="telefoneContacto"
+                                       name="telefoneContacto"
+                                       value="<?php echo htmlspecialchars($fornecedor['telefone_contacto'] ?? ''); ?>">
                             </div>
 
                             <div class="col-md-4">
@@ -348,7 +358,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        class="form-control campo-ficha campo-editavel"
                                        id="emailContacto"
                                        name="emailContacto"
-                                       value="carlos.almeida@philips-med.pt">
+                                       value="<?php echo htmlspecialchars($fornecedor['email_contacto'] ?? ''); ?>">
                             </div>
                         </div>
                     </div>
@@ -375,7 +385,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        class="form-control campo-ficha campo-editavel"
                                        id="moradaFornecedor"
                                        name="moradaFornecedor"
-                                       value="Rua da Tecnologia Médica, 45">
+                                       value="<?php echo htmlspecialchars($fornecedor['morada'] ?? ''); ?>">
                             </div>
 
                             <div class="col-md-2">
@@ -384,7 +394,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        class="form-control campo-ficha campo-editavel"
                                        id="codigoPostalFornecedor"
                                        name="codigoPostalFornecedor"
-                                       value="4100-000">
+                                       value="<?php echo htmlspecialchars($fornecedor['codigo_postal'] ?? ''); ?>">
                             </div>
 
                             <div class="col-md-2">
@@ -393,7 +403,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        class="form-control campo-ficha campo-editavel"
                                        id="localidadeFornecedor"
                                        name="localidadeFornecedor"
-                                       value="Porto"
+                                       value="<?php echo htmlspecialchars($fornecedor['localidade'] ?? ''); ?>"
                                        required>
                             </div>
 
@@ -403,7 +413,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        class="form-control campo-ficha campo-editavel"
                                        id="paisFornecedor"
                                        name="paisFornecedor"
-                                       value="Portugal">
+                                       value="<?php echo htmlspecialchars($fornecedor['pais'] ?? 'Portugal'); ?>">
                             </div>
                         </div>
                     </div>

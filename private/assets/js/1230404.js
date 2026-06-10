@@ -665,155 +665,6 @@ const fornecedoresMEDICORE = {
 };
 
 
-// Detalhes do fornecedor
-document.addEventListener("DOMContentLoaded", function () {
-
-    const detalheFornecedorNome = document.getElementById("detalheFornecedorNome");
-
-    if (!detalheFornecedorNome) return;
-
-    const parametros = new URLSearchParams(window.location.search);
-    const idFornecedor = parametros.get("id");
-    const fornecedor = fornecedoresMEDICORE[idFornecedor];
-
-    if (!fornecedor) {
-        alert("Fornecedor não encontrado.");
-        window.location.href = "lista_fornecedores.html";
-        return;
-    }
-
-    detalheFornecedorNome.textContent = fornecedor.nome;
-    document.getElementById("detalheFornecedorResumo").textContent =
-        `${fornecedor.nome} é uma entidade associada a ${fornecedor.qtdEquipamentos} equipamento(s), com estado ${fornecedor.estado}.`;
-
-    const tiposContainer = document.getElementById("detalheFornecedorTipos");
-    tiposContainer.innerHTML = "";
-
-    fornecedor.tipos.forEach(function (tipo) {
-        const span = document.createElement("span");
-        span.className = "badge-detalhe";
-        span.textContent = tipo;
-        tiposContainer.appendChild(span);
-    });
-
-    document.getElementById("detalheFornecedorNif").textContent = fornecedor.nif;
-    document.getElementById("detalheFornecedorEstado").textContent = fornecedor.estado;
-    document.getElementById("detalheFornecedorPais").textContent = fornecedor.pais;
-    document.getElementById("detalheFornecedorLocalidade").textContent = fornecedor.localidade;
-
-    document.getElementById("detalheFornecedorEmail").textContent = fornecedor.email;
-    document.getElementById("detalheFornecedorTelefone").textContent = fornecedor.telefone;
-    document.getElementById("detalheFornecedorContacto").textContent = `${fornecedor.contacto} — ${fornecedor.cargo}`;
-    document.getElementById("detalheFornecedorWebsite").textContent = fornecedor.website;
-
-    document.getElementById("detalheFornecedorContrato").textContent = fornecedor.contrato;
-    document.getElementById("detalheFornecedorInicioContrato").textContent = fornecedor.inicioContrato;
-    document.getElementById("detalheFornecedorFimContrato").textContent = fornecedor.fimContrato;
-    document.getElementById("detalheFornecedorQtdEquipamentos").textContent = fornecedor.qtdEquipamentos;
-
-    document.getElementById("detalheFornecedorArea").textContent = fornecedor.area;
-    document.getElementById("detalheFornecedorEquipamentos").textContent = fornecedor.equipamentos;
-    document.getElementById("detalheFornecedorObservacoes").textContent = fornecedor.observacoes;
-
-    const tabelaEquipamentosFornecedor = document.getElementById("tabelaEquipamentosFornecedor");
-    const totalEquipamentosFornecedor = document.getElementById("totalEquipamentosFornecedor");
-
-    if (tabelaEquipamentosFornecedor && totalEquipamentosFornecedor) {
-        tabelaEquipamentosFornecedor.innerHTML = "";
-
-        const equipamentosAssociados = fornecedor.equipamentosAssociados || [];
-
-        totalEquipamentosFornecedor.textContent = `${equipamentosAssociados.length} equipamento(s)`;
-
-        if (equipamentosAssociados.length === 0) {
-            tabelaEquipamentosFornecedor.innerHTML = `
-                <tr>
-                    <td colspan="7" class="text-center text-muted">
-                        Não existem equipamentos associados a este fornecedor.
-                    </td>
-                </tr>
-            `;
-        } else {
-            equipamentosAssociados.forEach(function (equipamento) {
-                const linha = document.createElement("tr");
-
-                linha.innerHTML = `
-                    <td>${equipamento.codigo}</td>
-                    <td>${equipamento.nome}</td>
-                    <td>${equipamento.categoria}</td>
-                    <td>${equipamento.modelo}</td>
-                    <td>${equipamento.serie}</td>
-                    <td>
-                        <span class="tipo-fornecedor tipo-distribuidor">${equipamento.relacao}</span>
-                    </td>
-                    <td>
-                        <span class="estado ${equipamento.estadoClasse}">${equipamento.estado}</span>
-                    </td>
-                `;
-
-                tabelaEquipamentosFornecedor.appendChild(linha);
-            });
-        }
-    }
-
-});
-
-
-// Editar fornecedor
-document.addEventListener("DOMContentLoaded", function () {
-
-    const formEditarFornecedor = document.getElementById("formEditarFornecedor");
-
-    if (!formEditarFornecedor) return;
-
-    const parametros = new URLSearchParams(window.location.search);
-    const idFornecedor = parametros.get("id");
-    const fornecedor = fornecedoresMEDICORE[idFornecedor];
-
-    if (!fornecedor) {
-        alert("Fornecedor não encontrado.");
-        window.location.href = "lista_fornecedores.html";
-        return;
-    }
-
-    document.getElementById("nomeFornecedor").value = fornecedor.nome;
-    document.getElementById("nifFornecedor").value = fornecedor.nif;
-    document.getElementById("estadoFornecedor").value = fornecedor.estado;
-
-    document.getElementById("tipoFabricante").checked = fornecedor.tipos.includes("Fabricante");
-    document.getElementById("tipoDistribuidor").checked = fornecedor.tipos.includes("Distribuidor");
-    document.getElementById("tipoManutencao").checked = fornecedor.tipos.includes("Manutenção");
-    document.getElementById("tipoCalibracao").checked = fornecedor.tipos.includes("Calibração");
-
-    document.getElementById("emailFornecedor").value = fornecedor.email;
-    document.getElementById("telefoneFornecedor").value = fornecedor.telefone;
-    document.getElementById("websiteFornecedor").value = fornecedor.website;
-    document.getElementById("contactoResponsavel").value = fornecedor.contacto;
-    document.getElementById("cargoContacto").value = fornecedor.cargo;
-    document.getElementById("emailContacto").value = fornecedor.emailContacto;
-
-    document.getElementById("moradaFornecedor").value = fornecedor.morada;
-    document.getElementById("codigoPostalFornecedor").value = fornecedor.codigoPostal;
-    document.getElementById("localidadeFornecedor").value = fornecedor.localidade;
-    document.getElementById("paisFornecedor").value = fornecedor.pais;
-
-    document.getElementById("contratoFornecedor").value = fornecedor.contrato;
-    document.getElementById("inicioContratoFornecedor").value = fornecedor.inicioContrato;
-    document.getElementById("fimContratoFornecedor").value = fornecedor.fimContrato;
-    document.getElementById("areaAtuacaoFornecedor").value = fornecedor.area;
-    document.getElementById("equipamentosAssociadosFornecedor").value = fornecedor.equipamentos;
-    document.getElementById("observacoesFornecedor").value = fornecedor.observacoes;
-
-    formEditarFornecedor.addEventListener("submit", function (event) {
-        event.preventDefault();
-
-        alert("Alterações do fornecedor registadas com sucesso.");
-        window.location.href = "lista_fornecedores.html";
-    });
-
-});
-
-
 // Novo fornecedor
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -858,68 +709,8 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Interceta o submit para mostrar o mesmo pop-up visual usado nos equipamentos.
-    // Quando o backend existir, esta zona pode ser ligada ao processamento real.
-    formNovoFornecedor.addEventListener("submit", function (event) {
-        event.preventDefault();
-
-        mostrarPopupSucesso(
-            "Novo fornecedor guardado",
-            "O novo fornecedor foi registado com sucesso.",
-            "lista_fornecedores.html"
-        );
-    });
-
 });
 
-
-// Remover fornecedor
-document.addEventListener("DOMContentLoaded", function () {
-
-    const botaoRemoverFornecedor = document.getElementById("btnConfirmarRemocaoFornecedor");
-
-    if (!botaoRemoverFornecedor) return;
-
-    const parametros = new URLSearchParams(window.location.search);
-    const idFornecedor = parametros.get("id");
-    const fornecedor = fornecedoresMEDICORE[idFornecedor];
-
-    if (!fornecedor) {
-        alert("Fornecedor não encontrado.");
-        window.location.href = "lista_fornecedores.html";
-        return;
-    }
-
-    document.getElementById("removerFornecedorNome").textContent = fornecedor.nome;
-    document.getElementById("removerFornecedorTipo").textContent = fornecedor.tipos.join(", ");
-    document.getElementById("removerFornecedorNif").textContent = fornecedor.nif;
-    document.getElementById("removerFornecedorEmail").textContent = fornecedor.email;
-    document.getElementById("removerFornecedorTelefone").textContent = fornecedor.telefone;
-    document.getElementById("removerFornecedorLocalidade").textContent = fornecedor.localidade;
-    document.getElementById("removerFornecedorEquipamentos").textContent = fornecedor.qtdEquipamentos;
-    document.getElementById("removerFornecedorContrato").textContent = fornecedor.contrato;
-
-    const estado = document.getElementById("removerFornecedorEstado");
-    estado.textContent = fornecedor.estado;
-    estado.className = `estado ${fornecedor.estadoClasse}`;
-
-    const checkbox = document.getElementById("confirmarRemocaoFornecedor");
-
-    checkbox.addEventListener("change", function () {
-        botaoRemoverFornecedor.disabled = !checkbox.checked;
-    });
-
-    botaoRemoverFornecedor.addEventListener("click", function () {
-        botaoRemoverFornecedor.disabled = true;
-
-        mostrarCardConfirmacaoRemocao(
-            "Fornecedor",
-            fornecedor.nome,
-            "lista_fornecedores.html"
-        );
-    });
-
-});
 
 // Card visual de confirmação de remoção
 
@@ -1793,27 +1584,16 @@ document.addEventListener("DOMContentLoaded", function () {
    consulta por defeito + edição controlada pelo botão Editar.
    ========================================================= */
 
-function obterFornecedorSelecionado() {
-    // Lê o id do fornecedor na query string.
-    // Se não existir id, usa FOR-001 como exemplo para a página não ficar vazia.
-    const id = obterParametroURL("id") || "FOR-001";
-    return {
-        id: id,
-        dados: fornecedoresMEDICORE[id] || null
-    };
-}
-
-function definirCheckboxFornecedor(id, tipos, valor) {
-    // Marca ou desmarca uma checkbox de tipo de fornecedor conforme os dados carregados.
-    const campo = document.getElementById(id);
-    if (campo) {
-        campo.checked = tipos.includes(valor);
-    }
-}
-
 function obterTiposFornecedorSelecionados() {
-    // Recolhe todos os tipos atualmente selecionados nas checkboxes do formulário.
+    // Recolhe o tipo atualmente selecionado no formulário.
     // É usado para atualizar o resumo oculto da ficha.
+    const tipoFornecedor = document.getElementById("tipoFornecedor");
+
+    if (tipoFornecedor && tipoFornecedor.value) {
+        return [tipoFornecedor.value];
+    }
+
+    // Mantém compatibilidade caso ainda exista alguma versão antiga com checkboxes.
     const tipos = [];
 
     document.querySelectorAll('input[name="tipoFornecedor[]"]:checked').forEach(function (campo) {
@@ -1823,43 +1603,6 @@ function obterTiposFornecedorSelecionados() {
     return tipos;
 }
 
-function preencherCamposFornecedor(idFornecedor, fornecedor) {
-    // Copia os dados temporários de fornecedoresMEDICORE para os campos da ficha.
-    // Mantém a página preparada para receber dados reais vindos do backend no futuro.
-    if (!fornecedor) return;
-
-    definirValor("idFornecedor", idFornecedor);
-    definirValor("codigoFornecedor", idFornecedor);
-    definirValor("nomeFornecedor", fornecedor.nome);
-    definirValor("nifFornecedor", fornecedor.nif);
-    definirValor("estadoFornecedor", fornecedor.estado);
-    definirValor("qtdEquipamentosFornecedor", fornecedor.qtdEquipamentos);
-
-    definirCheckboxFornecedor("tipoFabricante", fornecedor.tipos, "Fabricante");
-    definirCheckboxFornecedor("tipoDistribuidor", fornecedor.tipos, "Distribuidor");
-    definirCheckboxFornecedor("tipoManutencao", fornecedor.tipos, "Manutenção");
-    definirCheckboxFornecedor("tipoCalibracao", fornecedor.tipos, "Calibração");
-
-    definirValor("emailFornecedor", fornecedor.email);
-    definirValor("telefoneFornecedor", fornecedor.telefone);
-    definirValor("websiteFornecedor", fornecedor.website);
-    definirValor("contactoResponsavel", fornecedor.contacto);
-    definirValor("cargoContacto", fornecedor.cargo);
-    definirValor("emailContacto", fornecedor.emailContacto);
-
-    definirValor("moradaFornecedor", fornecedor.morada);
-    definirValor("codigoPostalFornecedor", fornecedor.codigoPostal);
-    definirValor("localidadeFornecedor", fornecedor.localidade);
-    definirValor("paisFornecedor", fornecedor.pais);
-
-    definirValor("contratoFornecedor", fornecedor.contrato);
-    definirValor("inicioContratoFornecedor", fornecedor.inicioContrato);
-    definirValor("fimContratoFornecedor", fornecedor.fimContrato);
-    definirValor("areaAtuacaoFornecedor", fornecedor.area);
-    definirValor("equipamentosAssociadosFornecedor", fornecedor.equipamentos);
-    definirValor("observacoesFornecedor", fornecedor.observacoes);
-}
-
 document.addEventListener("DOMContentLoaded", function () {
 
     // Inicializa apenas a página ficha_fornecedor.html.
@@ -1867,17 +1610,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const formFicha = document.getElementById("formFichaFornecedor");
 
     if (!formFicha) return;
-
-    const fornecedorSelecionado = obterFornecedorSelecionado();
-    const fornecedor = fornecedorSelecionado.dados;
-
-    if (!fornecedor) {
-        alert("Fornecedor não encontrado.");
-        window.location.href = "lista_fornecedores.html";
-        return;
-    }
-
-    preencherCamposFornecedor(fornecedorSelecionado.id, fornecedor);
 
     const btnAtivarEdicao = document.getElementById("btnAtivarEdicaoFornecedor");
     const btnCancelarEdicao = document.getElementById("btnCancelarEdicaoFornecedor");
@@ -1947,7 +1679,10 @@ document.addEventListener("DOMContentLoaded", function () {
         formFicha.classList.remove("modo-edicao");
         formFicha.classList.add("modo-consulta");
 
-        document.getElementById("modoFormularioFornecedor").value = "ver";
+        const modoFormulario = document.getElementById("modoFormularioFornecedor");
+        if (modoFormulario) {
+            modoFormulario.value = "ver";
+        }
     }
 
     function aplicarModoEdicao() {
@@ -1976,13 +1711,16 @@ document.addEventListener("DOMContentLoaded", function () {
         formFicha.classList.remove("modo-consulta");
         formFicha.classList.add("modo-edicao");
 
-        document.getElementById("modoFormularioFornecedor").value = "editar";
+        const modoFormulario = document.getElementById("modoFormularioFornecedor");
+        if (modoFormulario) {
+            modoFormulario.value = "editar";
+        }
     }
 
     function atualizarResumoFornecedor() {
         // Atualiza textos auxiliares da ficha sempre que algum campo muda.
         // Estes elementos estão ocultos no HTML, mas ficam prontos para badges/resumos futuros.
-        const codigo = document.getElementById("codigoFornecedor")?.value || "";
+        const codigo = document.getElementById("idFornecedor")?.value || "";
         const nome = document.getElementById("nomeFornecedor")?.value || "Fornecedor";
         const nif = document.getElementById("nifFornecedor")?.value || "NIF por definir";
         const localidade = document.getElementById("localidadeFornecedor")?.value || "localidade por definir";
@@ -2021,16 +1759,6 @@ document.addEventListener("DOMContentLoaded", function () {
     formFicha.addEventListener("input", atualizarResumoFornecedor);
     formFicha.addEventListener("change", atualizarResumoFornecedor);
 
-    formFicha.addEventListener("submit", function (event) {
-        event.preventDefault();
-
-        mostrarPopupSucesso(
-            "Alterações registadas",
-            "As alterações no fornecedor foram registadas com sucesso.",
-            "lista_fornecedores.html"
-        );
-    });
-
     guardarValoresOriginais();
     atualizarResumoFornecedor();
     aplicarModoConsulta();
@@ -2047,11 +1775,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // Inicializa apenas a lista_fornecedores.html.
     // O modal usa os data-attributes do botão eliminar para mostrar o fornecedor escolhido.
     const modalApagar = document.getElementById("modalApagarFornecedor");
-    const btnConfirmarApagar = document.getElementById("btnConfirmarApagarFornecedor");
 
-    let linhaFornecedorSelecionada = null;
-
-    if (!modalApagar || !btnConfirmarApagar) return;
+    if (!modalApagar) return;
 
     // Antes do modal abrir, preenche cada linha do resumo com os dados do botão clicado.
     modalApagar.addEventListener("show.bs.modal", function (event) {
@@ -2059,9 +1784,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (!botao) return;
 
-        linhaFornecedorSelecionada = botao.closest("tr");
-
-        const codigo = botao.getAttribute("data-codigo");
+        const codigo = botao.getAttribute("data-id") || botao.getAttribute("data-codigo");
         const nome = botao.getAttribute("data-nome");
         const tipo = botao.getAttribute("data-tipo");
         const nif = botao.getAttribute("data-nif");
@@ -2069,10 +1792,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const telefone = botao.getAttribute("data-telefone");
         const localidade = botao.getAttribute("data-localidade");
         const estado = botao.getAttribute("data-estado");
-        const equipamentos = botao.getAttribute("data-equipamentos");
 
         document.getElementById("modalApagarIdFornecedor").value = codigo;
-        document.getElementById("modalApagarFornecedorCodigo").textContent = codigo;
         document.getElementById("modalApagarFornecedorNome").textContent = nome;
         document.getElementById("modalApagarFornecedorTipo").textContent = tipo;
         document.getElementById("modalApagarFornecedorNif").textContent = nif;
@@ -2080,27 +1801,6 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("modalApagarFornecedorTelefone").textContent = telefone;
         document.getElementById("modalApagarFornecedorLocalidade").textContent = localidade;
         document.getElementById("modalApagarFornecedorEstado").textContent = estado;
-        document.getElementById("modalApagarFornecedorEquipamentos").textContent = equipamentos;
-    });
-
-    // Confirma a remoção: fecha o modal, remove a linha da tabela e mostra o pop-up.
-    // Atualmente é uma remoção visual; no backend será substituída por DELETE/UPDATE real.
-    btnConfirmarApagar.addEventListener("click", function () {
-        const codigo = document.getElementById("modalApagarIdFornecedor").value;
-        const nome = document.getElementById("modalApagarFornecedorNome").textContent;
-        const modalBootstrap = bootstrap.Modal.getInstance(modalApagar);
-
-        modalBootstrap.hide();
-
-        if (linhaFornecedorSelecionada) {
-            linhaFornecedorSelecionada.remove();
-        }
-
-        mostrarPopupSucesso(
-            "Fornecedor removido",
-            `O fornecedor ${codigo} - ${nome} foi removido com sucesso.`,
-            "lista_fornecedores.html"
-        );
     });
 
 });

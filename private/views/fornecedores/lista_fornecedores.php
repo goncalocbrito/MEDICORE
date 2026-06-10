@@ -1,6 +1,30 @@
 <?php
 require_once __DIR__ . '/../../includes/funcoes.php';
 redirect_if_not_logged();
+
+require_once __DIR__ . '/../../../config/config.php';
+
+$fornecedores = [];
+
+$pdo = new PDO(
+    'mysql:host=' . MYSQL_HOST . ';port=' . MYSQL_PORT . ';dbname=' . MYSQL_DATABASE . ';charset=utf8mb4',
+    MYSQL_USERNAME,
+    MYSQL_PASSWORD,
+    [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]
+);
+
+$stmt = $pdo->prepare("
+    SELECT *
+    FROM fornecedores
+    WHERE isActive = 1
+    ORDER BY id_fornecedor ASC
+");
+$stmt->execute();
+$fornecedores = $stmt->fetchAll();
+
 require_once __DIR__ . '/../../includes/header.php';
 require_once __DIR__ . '/../../includes/nav.php';
 require_once __DIR__ . '/../../includes/sidebar.php';
@@ -41,17 +65,16 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 </div>
                 <div class="col-lg-2 col-md-6">
                     <label for="filtroTipoFornecedores" class="form-label">Tipo</label>
-                    <select class="form-select" id="filtroTipoFornecedores" data-filtro="coluna" data-coluna="2">
+                    <select class="form-select" id="filtroTipoFornecedores" data-filtro="coluna" data-coluna="1">
                         <option value="">Todos</option>
                         <option value="Fabricante">Fabricante</option>
-                        <option value="Distribuidor">Distribuidor</option>
+                        <option value="Comercial">Comercial</option>
                         <option value="Manutenção">Manutenção</option>
-                        <option value="Calibração">Calibração</option>
                     </select>
                 </div>
                 <div class="col-lg-2 col-md-6">
                     <label for="filtroLocalidadeFornecedores" class="form-label">Localidade</label>
-                    <select class="form-select" id="filtroLocalidadeFornecedores" data-filtro="coluna" data-coluna="3">
+                    <select class="form-select" id="filtroLocalidadeFornecedores" data-filtro="coluna" data-coluna="2">
                         <option value="">Todas</option>
                         <option value="Porto">Porto</option>
                         <option value="Lisboa">Lisboa</option>
@@ -60,7 +83,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 </div>
                 <div class="col-lg-2 col-md-6">
                     <label for="filtroEstadoFornecedores" class="form-label">Estado</label>
-                    <select class="form-select" id="filtroEstadoFornecedores" data-filtro="coluna" data-coluna="4">
+                    <select class="form-select" id="filtroEstadoFornecedores" data-filtro="coluna" data-coluna="3">
                         <option value="">Todos</option>
                         <option value="Ativo">Ativo</option>
                         <option value="Inativo">Inativo</option>
@@ -77,140 +100,60 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             <table class="table table-hover align-middle tabela-fornecedores">
                 <thead>
                     <tr>
-                        <th>Código</th>
                         <th>Fornecedor</th>
                         <th>Tipo</th>
                         <th>Localidade</th>
                         <th>Estado</th>
-                        <th>Equipamentos</th>
                         <th class="text-center">Ações</th>
                     </tr>
                 </thead>
+                
                 <tbody>
+                    <?php if (empty($fornecedores)): ?>
+                    <tr class="linha-sem-resultados">
+                        <td colspan="5" class="text-center text-muted">
+                            Nenhum fornecedor ativo encontrado.
+                        </td>
+                    </tr>
+                    <?php else: ?>
+                    <?php foreach ($fornecedores as $fornecedor): ?>
                     <tr>
-                        <td>FOR-001</td>
-                        <td>Philips Medical Systems</td>
-                        <td><span class="tipo-fornecedor tipo-fabricante">Fabricante</span></td>
-                        <td>Porto</td>
+                        <td><?php echo htmlspecialchars($fornecedor['nome_empresa']); ?></td>
+                        <td><?php echo htmlspecialchars($fornecedor['tipo_fornecedor']); ?></td>
+                        <td><?php echo htmlspecialchars($fornecedor['localidade']); ?></td>
                         <td><span class="estado estado-ativo">Ativo</span></td>
-                        <td>12</td>
                         <td class="text-center">
-                            <a href="ficha_fornecedor.php?id=FOR-001" class="btn btn-sm btn-ficha" title="Abrir ficha do fornecedor">
+                            <a href="ficha_fornecedor.php?id=<?php echo $fornecedor['id_fornecedor']; ?>"
+                            class="btn btn-sm btn-ficha">
                                 <i class="fa-solid fa-file-lines"></i>
                             </a>
+
                             <button type="button"
                                     class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-fornecedor"
-                                    title="Eliminar fornecedor"
                                     data-bs-toggle="modal"
                                     data-bs-target="#modalApagarFornecedor"
-                                    data-codigo="FOR-001"
-                                    data-nome="Philips Medical Systems"
-                                    data-tipo="Fabricante"
-                                    data-nif="509123456"
-                                    data-email="suporte@philips-med.pt"
-                                    data-telefone="+351 220 000 111"
-                                    data-localidade="Porto"
-                                    data-estado="Ativo"
-                                    data-equipamentos="12">
+                                    data-id="<?php echo $fornecedor['id_fornecedor']; ?>"
+                                    data-codigo="<?php echo htmlspecialchars($fornecedor['id_fornecedor']); ?>"
+                                    data-nome="<?php echo htmlspecialchars($fornecedor['nome_empresa']); ?>"
+                                    data-tipo="<?php echo htmlspecialchars($fornecedor['tipo_fornecedor']); ?>"
+                                    data-nif="<?php echo htmlspecialchars($fornecedor['nif']); ?>"
+                                    data-email="<?php echo htmlspecialchars($fornecedor['email']); ?>"
+                                    data-telefone="<?php echo htmlspecialchars($fornecedor['telefone']); ?>"
+                                    data-localidade="<?php echo htmlspecialchars($fornecedor['localidade']); ?>"
+                                    data-estado="Ativo">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </td>
                     </tr>
-                    <tr>
-                        <td>FOR-002</td>
-                        <td>MedSupply Portugal</td>
-                        <td><span class="tipo-fornecedor tipo-distribuidor">Distribuidor</span></td>
-                        <td>Lisboa</td>
-                        <td><span class="estado estado-ativo">Ativo</span></td>
-                        <td>8</td>
-                        <td class="text-center">
-                            <a href="ficha_fornecedor.php?id=FOR-002" class="btn btn-sm btn-ficha" title="Abrir ficha do fornecedor">
-                                <i class="fa-solid fa-file-lines"></i>
-                            </a>
-                            <button type="button"
-                                    class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-fornecedor"
-                                    title="Eliminar fornecedor"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modalApagarFornecedor"
-                                    data-codigo="FOR-002"
-                                    data-nome="MedSupply Portugal"
-                                    data-tipo="Distribuidor"
-                                    data-nif="514987321"
-                                    data-email="comercial@medsupply.pt"
-                                    data-telefone="+351 221 234 567"
-                                    data-localidade="Lisboa"
-                                    data-estado="Ativo"
-                                    data-equipamentos="8">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>FOR-003</td>
-                        <td>Biomedical Solutions</td>
-                        <td><span class="tipo-fornecedor tipo-manutencao">Manutenção</span></td>
-                        <td>Maia</td>
-                        <td><span class="estado estado-ativo">Ativo</span></td>
-                        <td>5</td>
-                        <td class="text-center">
-                            <a href="ficha_fornecedor.php?id=FOR-003" class="btn btn-sm btn-ficha" title="Abrir ficha do fornecedor">
-                                <i class="fa-solid fa-file-lines"></i>
-                            </a>
-                            <button type="button"
-                                    class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-fornecedor"
-                                    title="Eliminar fornecedor"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modalApagarFornecedor"
-                                    data-codigo="FOR-003"
-                                    data-nome="Biomedical Solutions"
-                                    data-tipo="Manutenção"
-                                    data-nif="507654789"
-                                    data-email="tecnica@biomedicalsolutions.pt"
-                                    data-telefone="+351 222 456 789"
-                                    data-localidade="Maia"
-                                    data-estado="Ativo"
-                                    data-equipamentos="5">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>FOR-004</td>
-                        <td>CalibraMed</td>
-                        <td><span class="tipo-fornecedor tipo-calibracao">Calibração</span></td>
-                        <td>Braga</td>
-                        <td><span class="estado estado-inativo">Inativo</span></td>
-                        <td>3</td>
-                        <td class="text-center">
-                            <a href="ficha_fornecedor.php?id=FOR-004" class="btn btn-sm btn-ficha" title="Abrir ficha do fornecedor">
-                                <i class="fa-solid fa-file-lines"></i>
-                            </a>
-                            <button type="button"
-                                    class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-fornecedor"
-                                    title="Eliminar fornecedor"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modalApagarFornecedor"
-                                    data-codigo="FOR-004"
-                                    data-nome="CalibraMed"
-                                    data-tipo="Calibração"
-                                    data-nif="515321987"
-                                    data-email="calibracao@calibramed.pt"
-                                    data-telefone="+351 223 987 654"
-                                    data-localidade="Braga"
-                                    data-estado="Inativo"
-                                    data-equipamentos="3">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
+                <?php endforeach; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
     </main>
     <!-- =========================================================
-         MODAL PARA CONFIRMAR REMOÇÃO DO FORNECEDOR
-         Abre ao clicar no botão eliminar e mostra os dados principais
-         antes de confirmar a remoção visual da linha.
+         MODAL PARA CONFIRMAR REMOCAO DO FORNECEDOR
+         Envia um POST para apagar_fornecedor.php, que muda isActive para 0.
          ========================================================= -->
     <div class="modal fade"
          id="modalApagarFornecedor"
@@ -223,7 +166,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <div>
                         <h5 class="modal-title" id="modalApagarFornecedorLabel">
                             <i class="fa-solid fa-triangle-exclamation me-2"></i>
-                            Confirmar remoção
+                            Confirmar remocao
                         </h5>
                         <p class="modal-remocao-subtitulo">
                             Confirme os dados antes de remover o fornecedor.
@@ -235,12 +178,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             aria-label="Fechar">
                     </button>
                 </div>
+
                 <div class="modal-body modal-remocao-body">
                     <div class="modal-resumo-equipamento modal-resumo-remocao">
-                        <div class="modal-linha">
-                            <strong>Código</strong>
-                            <span id="modalApagarFornecedorCodigo">---</span>
-                        </div>
                         <div class="modal-linha">
                             <strong>Fornecedor</strong>
                             <span id="modalApagarFornecedorNome">---</span>
@@ -269,16 +209,13 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             <strong>Estado</strong>
                             <span id="modalApagarFornecedorEstado">---</span>
                         </div>
-                        <div class="modal-linha">
-                            <strong>Equipamentos</strong>
-                            <span id="modalApagarFornecedorEquipamentos">---</span>
-                        </div>
                     </div>
-                    <input type="hidden" id="modalApagarIdFornecedor">
+
                     <p class="texto-confirmacao-remocao">
                         Confirma que pretende remover este fornecedor da lista?
                     </p>
                 </div>
+
                 <div class="modal-footer modal-remocao-footer">
                     <button type="button"
                             class="btn btn-cancelar-modal"
@@ -286,17 +223,19 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <i class="fa-solid fa-xmark me-2"></i>
                         Cancelar
                     </button>
-                    <button type="button"
-                            class="btn btn-confirmar-remocao"
-                            id="btnConfirmarApagarFornecedor">
-                        <i class="fa-solid fa-trash me-2"></i>
-                        Guardar Alteração
-                    </button>
+
+                    <form action="apagar_fornecedor.php" method="post">
+                        <input type="hidden" name="id_fornecedor" id="modalApagarIdFornecedor">
+
+                        <button type="submit" class="btn btn-confirmar-remocao">
+                            <i class="fa-solid fa-trash me-2"></i>
+                            Guardar Alteracao
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-
 <?php
 require_once __DIR__ . '/../../includes/footer.php';
 ?>

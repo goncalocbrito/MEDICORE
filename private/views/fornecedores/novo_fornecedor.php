@@ -1,6 +1,78 @@
 <?php
 require_once __DIR__ . '/../../includes/funcoes.php';
 redirect_if_not_logged();
+
+require_once __DIR__ . '/../../../config/config.php';
+
+$pdo = new PDO(
+    'mysql:host=' . MYSQL_HOST . ';port=' . MYSQL_PORT . ';dbname=' . MYSQL_DATABASE . ';charset=utf8mb4',
+    MYSQL_USERNAME,
+    MYSQL_PASSWORD,
+    [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]
+);
+
+/* =========================================================
+   PROCESSAMENTO DO NOVO FORNECEDOR
+   Se a página receber POST, insere o fornecedor na base de dados.
+   ========================================================= */
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $stmt = $pdo->prepare("
+        INSERT INTO fornecedores (
+            nome_empresa,
+            tipo_fornecedor,
+            nif,
+            email,
+            telefone,
+            website,
+            pessoa_contacto,
+            telefone_contacto,
+            email_contacto,
+            morada,
+            codigo_postal,
+            localidade,
+            pais,
+            isActive
+        ) VALUES (
+            :nome_empresa,
+            :tipo_fornecedor,
+            :nif,
+            :email,
+            :telefone,
+            :website,
+            :pessoa_contacto,
+            :telefone_contacto,
+            :email_contacto,
+            :morada,
+            :codigo_postal,
+            :localidade,
+            :pais,
+            1
+        )
+    ");
+
+    $stmt->execute([
+        ':nome_empresa' => trim($_POST['nomeFornecedor'] ?? ''),
+        ':tipo_fornecedor' => trim($_POST['tipoFornecedor'] ?? ''),
+        ':nif' => trim($_POST['nifFornecedor'] ?? ''),
+        ':email' => trim($_POST['emailFornecedor'] ?? ''),
+        ':telefone' => trim($_POST['telefoneFornecedor'] ?? ''),
+        ':website' => trim($_POST['websiteFornecedor'] ?? ''),
+        ':pessoa_contacto' => trim($_POST['contactoResponsavel'] ?? ''),
+        ':telefone_contacto' => trim($_POST['telefoneContacto'] ?? ''),
+        ':email_contacto' => trim($_POST['emailContacto'] ?? ''),
+        ':morada' => trim($_POST['moradaFornecedor'] ?? ''),
+        ':codigo_postal' => trim($_POST['codigoPostalFornecedor'] ?? ''),
+        ':localidade' => trim($_POST['localidadeFornecedor'] ?? ''),
+        ':pais' => trim($_POST['paisFornecedor'] ?? 'Portugal')
+    ]);
+
+    header('Location: lista_fornecedores.php');
+    exit;
+}
+
 require_once __DIR__ . '/../../includes/header.php';
 require_once __DIR__ . '/../../includes/nav.php';
 require_once __DIR__ . '/../../includes/sidebar.php';
@@ -39,11 +111,10 @@ require_once __DIR__ . '/../../includes/sidebar.php';
              ===================================================== -->
         <form class="form-equipamento form-ficha-equipamento"
               id="formNovoFornecedor"
-              action="processa_novo_fornecedor.php"
+              action="novo_fornecedor.php"
               method="post"
               enctype="multipart/form-data">
 
-            <input type="hidden" name="acao" value="inserir">
 
             <!-- =================================================
                  ÁREA PRINCIPAL DO FORMULÁRIO
@@ -185,30 +256,13 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 <label class="form-label d-block">Tipo de Fornecedor *</label>
 
                                 <div class="tipos-fornecedor-opcoes">
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" id="tipoFabricante" name="tipoFornecedor[]" value="Fabricante">
-                                        <label class="form-check-label" for="tipoFabricante">Fabricante</label>
-                                    </div>
-
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" id="tipoDistribuidor" name="tipoFornecedor[]" value="Distribuidor">
-                                        <label class="form-check-label" for="tipoDistribuidor">Vendedor / Distribuidor</label>
-                                    </div>
-
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" id="tipoManutencao" name="tipoFornecedor[]" value="Manutenção">
-                                        <label class="form-check-label" for="tipoManutencao">Manutenção</label>
-                                    </div>
-
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" id="tipoCalibracao" name="tipoFornecedor[]" value="Calibração">
-                                        <label class="form-check-label" for="tipoCalibracao">Calibração</label>
-                                    </div>
+                                    <select class="form-select" id="tipoFornecedor" name="tipoFornecedor" required>
+                                        <option value="">Selecionar tipo</option>
+                                        <option value="Manutenção">Manutenção</option>
+                                        <option value="Comercial">Comercial</option>
+                                        <option value="Fabricante">Fabricante</option>
+                                    </select>
                                 </div>
-
-                                <small class="texto-ajuda-form">
-                                    Um fornecedor pode acumular funções, por exemplo distribuidor e manutenção.
-                                </small>
                             </div>
 
                             <div class="col-md-4">
@@ -278,12 +332,12 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </div>
 
                             <div class="col-md-4">
-                                <label for="cargoContacto" class="form-label">Cargo / Função</label>
+                                <label for="telefoneContacto" class="form-label">Telefone do Contacto</label>
                                 <input type="text"
                                        class="form-control"
-                                       id="cargoContacto"
-                                       name="cargoContacto"
-                                       placeholder="Ex: Responsável Técnico">
+                                       id="telefoneContacto"
+                                       name="telefoneContacto"
+                                       placeholder="Ex: 912 345 678">
                             </div>
 
                             <div class="col-md-4">
