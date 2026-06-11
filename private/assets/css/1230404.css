@@ -142,6 +142,134 @@ body {
     font-size: 0.98rem;
 }
 
+
+/* Barra de progresso estilo formulário por etapas */
+.form-stepper {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    align-items: start;
+    gap: 0;
+    margin: 10px 0 34px;
+    padding: 18px 8px 8px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+}
+
+.form-step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+    text-align: center;
+    color: #9aa5ad;
+    font-weight: 800;
+}
+
+.form-step::before {
+    content: "";
+    position: absolute;
+    top: 17px;
+    left: -50%;
+    width: 100%;
+    height: 3px;
+    background-color: #d8e0e3;
+    z-index: 0;
+}
+
+.form-step:first-child::before {
+    display: none;
+}
+
+.form-step-numero {
+    position: relative;
+    z-index: 1;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 3px solid #d8e0e3;
+    background-color: #ffffff;
+    color: #9aa5ad;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    font-weight: 900;
+}
+
+.form-step-label {
+    font-size: 0.86rem;
+    line-height: 1.2;
+}
+
+/* Linha até às etapas concluídas e até à etapa atual */
+.form-step.concluido::before,
+.form-step.atual::before {
+    background-color: var(--cor-secundaria);
+}
+
+/* Etapas já concluídas */
+.form-step.concluido .form-step-numero {
+    background-color: var(--cor-secundaria);
+    border-color: var(--cor-secundaria);
+    color: #ffffff;
+}
+
+.form-step.concluido .form-step-label {
+    color: var(--cor-secundaria);
+}
+
+/* Etapa atual: círculo branco com contorno, como na imagem */
+.form-step.atual .form-step-numero {
+    background-color: #ffffff;
+    border-color: var(--cor-principal);
+    color: var(--cor-principal);
+    box-shadow: 0 0 0 5px rgba(79, 179, 164, 0.16);
+}
+
+.form-step.atual .form-step-label {
+    color: var(--cor-principal);
+}
+
+/* Etapas futuras */
+.form-step.pendente .form-step-numero {
+    background-color: #ffffff;
+    border-color: #d8e0e3;
+    color: #9aa5ad;
+}
+
+.form-step.pendente .form-step-label {
+    color: #9aa5ad;
+}
+
+.form-step-heading {
+    margin: -8px 0 26px;
+}
+
+.form-step-heading h3 {
+    color: var(--cor-principal);
+    font-weight: 900;
+    font-size: 1.35rem;
+    margin: 0;
+}
+
+.form-alerta-erros {
+    margin: -10px 0 24px;
+    padding: 18px 22px;
+    border: 1px solid #f3c8c8;
+    border-radius: 16px;
+    background-color: #fff3f3;
+    color: #8a1515;
+    font-weight: 700;
+}
+
+.form-alerta-erros ul {
+    margin: 10px 0 0;
+    padding-left: 20px;
+    font-weight: 600;
+}
+
 /* Responsividade */
 @media (max-width: 991px) {
     .menu-horizontal .nav-link {

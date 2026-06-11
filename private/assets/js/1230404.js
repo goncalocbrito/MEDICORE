@@ -664,54 +664,6 @@ const fornecedoresMEDICORE = {
     }
 };
 
-
-// Novo fornecedor
-document.addEventListener("DOMContentLoaded", function () {
-
-    // Inicializa apenas a página novo_fornecedor.html.
-    // Se o formulário não existir na página atual, esta função termina sem fazer nada.
-    const formNovoFornecedor = document.getElementById("formNovoFornecedor");
-    const btnLimparNovoFornecedor = document.getElementById("btnLimparNovoFornecedor");
-
-    if (!formNovoFornecedor) return;
-
-    // Limpa manualmente todos os campos do novo fornecedor.
-    // Também repõe Portugal como país por defeito e remove documentos extra clonados.
-    if (btnLimparNovoFornecedor) {
-        btnLimparNovoFornecedor.addEventListener("click", function () {
-            formNovoFornecedor.querySelectorAll("input, select, textarea").forEach(function (campo) {
-                if (campo.type === "radio" || campo.type === "checkbox") {
-                    campo.checked = false;
-                } else if (campo.type === "file") {
-                    campo.value = "";
-                } else if (campo.tagName === "SELECT") {
-                    campo.selectedIndex = 0;
-                } else {
-                    campo.value = "";
-                }
-            });
-
-            const paisFornecedor = document.getElementById("paisFornecedor");
-            if (paisFornecedor) {
-                paisFornecedor.value = "Portugal";
-            }
-
-            const listaDocumentos = document.getElementById("listaDocumentos");
-            if (listaDocumentos) {
-                const documentos = listaDocumentos.querySelectorAll(".documento-form-item");
-
-                documentos.forEach(function (documento, index) {
-                    if (index > 0) {
-                        documento.remove();
-                    }
-                });
-            }
-        });
-    }
-
-});
-
-
 // Card visual de confirmação de remoção
 
 function mostrarCardConfirmacaoRemocao(tipo, nome, paginaDestino) {
