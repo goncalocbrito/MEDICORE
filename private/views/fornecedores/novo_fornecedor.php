@@ -43,11 +43,39 @@ $camposPorEtapaFornecedor = [
 ];
 
 $camposObrigatoriosFornecedor = [
-    'identificacao' => ['nomeFornecedor', 'nifFornecedor', 'tipoFornecedor', 'estadoFornecedor'],
-    'contactos' => ['emailFornecedor', 'telefoneFornecedor'],
-    'morada' => ['localidadeFornecedor'],
-    'contrato' => [],
+    'identificacao' => [
+        'nomeFornecedor',
+        'nifFornecedor',
+        'tipoFornecedor',
+        'estadoFornecedor'
+    ],
+
+    'contactos' => [
+        'emailFornecedor',
+        'telefoneFornecedor',
+        'websiteFornecedor',
+        'contactoResponsavel',
+        'telefoneContacto',
+        'emailContacto'
+    ],
+
+    'morada' => [
+        'moradaFornecedor',
+        'codigoPostalFornecedor',
+        'localidadeFornecedor',
+        'paisFornecedor'
+    ],
+
+    'contrato' => [
+        'contratoFornecedor',
+        'inicioContratoFornecedor',
+        'fimContratoFornecedor',
+        'areaAtuacaoFornecedor',
+        'equipamentosAssociadosFornecedor'
+    ],
+
     'observacoes' => [],
+
     'documentos' => []
 ];
 
@@ -56,9 +84,24 @@ $labelsCamposFornecedor = [
     'nifFornecedor' => 'NIF',
     'tipoFornecedor' => 'Tipo de Fornecedor',
     'estadoFornecedor' => 'Estado',
-    'emailFornecedor' => 'Email',
+
+    'emailFornecedor' => 'Email Geral',
     'telefoneFornecedor' => 'Telefone',
-    'localidadeFornecedor' => 'Localidade'
+    'websiteFornecedor' => 'Website',
+    'contactoResponsavel' => 'Pessoa de Contacto',
+    'telefoneContacto' => 'Telefone do Contacto',
+    'emailContacto' => 'Email do Contacto',
+
+    'moradaFornecedor' => 'Morada',
+    'codigoPostalFornecedor' => 'Código Postal',
+    'localidadeFornecedor' => 'Localidade',
+    'paisFornecedor' => 'País',
+
+    'contratoFornecedor' => 'Contrato Ativo',
+    'inicioContratoFornecedor' => 'Início do Contrato',
+    'fimContratoFornecedor' => 'Fim do Contrato',
+    'areaAtuacaoFornecedor' => 'Área de Atuação',
+    'equipamentosAssociadosFornecedor' => 'Equipamentos / Marcas Associadas'
 ];
 
 $nomesEtapasFornecedor = [
@@ -160,11 +203,41 @@ function validar_etapa_fornecedor($etapa, $camposObrigatorios, $labelsCampos)
 
     foreach ($camposObrigatorios[$etapa] ?? [] as $campo) {
         if (trim($_SESSION['novo_fornecedor'][$campo] ?? '') === '') {
-            $erros[] = 'Preencha o campo ' . ($labelsCampos[$campo] ?? $campo) . '.';
+            $erros[] = 'O campo "' . ($labelsCampos[$campo] ?? $campo) . '" é obrigatório.';
         }
     }
 
     return $erros;
+}
+
+function primeira_etapa_incompleta_antes($etapaAtual, $etapas, $camposObrigatorios, $labelsCampos)
+{
+    $indiceAtual = indice_etapa_fornecedor($etapaAtual, $etapas);
+
+    for ($i = 0; $i < $indiceAtual; $i++) {
+        $etapa = $etapas[$i];
+        $errosEtapa = validar_etapa_fornecedor($etapa, $camposObrigatorios, $labelsCampos);
+
+        if (!empty($errosEtapa)) {
+            return $etapa;
+        }
+    }
+
+    return null;
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $etapaIncompleta = primeira_etapa_incompleta_antes(
+        $etapaAtual,
+        $etapasFornecedor,
+        $camposObrigatoriosFornecedor,
+        $labelsCamposFornecedor
+    );
+
+    if ($etapaIncompleta !== null) {
+        header('Location: novo_fornecedor.php?etapa=' . urlencode($etapaIncompleta));
+        exit;
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -174,6 +247,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     guardar_etapa_fornecedor($etapaSubmetida, $camposPorEtapaFornecedor);
+
+    /* =========================================================
+    CLIQUE NOS SEPARADORES
+    Se o utilizador clicar num separador mais à frente,
+    primeiro valida todas as etapas anteriores.
+    ========================================================= */
+    if (isset($_POST['etapa_destino'])) {
+        $etapaDestino = $_POST['etapa_destino'];
+
+        if (!in_array($etapaDestino, $etapasFornecedor, true)) {
+            $etapaDestino = $etapaSubmetida;
+        }
+
+        $indiceSubmetida = indice_etapa_fornecedor($etapaSubmetida, $etapasFornecedor);
+        $indiceDestino = indice_etapa_fornecedor($etapaDestino, $etapasFornecedor);
+
+        /*
+        Se o utilizador clicar numa etapa anterior, pode voltar sem validação.
+        Se clicar numa etapa seguinte, valida as etapas obrigatórias anteriores.
+        */
+        if ($indiceDestino <= $indiceSubmetida) {
+            header('Location: novo_fornecedor.php?etapa=' . urlencode($etapaDestino));
+            exit;
+        }
+
+        for ($i = 0; $i < $indiceDestino; $i++) {
+            $etapaValidar = $etapasFornecedor[$i];
+
+            $errosEtapa = validar_etapa_fornecedor(
+                $etapaValidar,
+                $camposObrigatoriosFornecedor,
+                $labelsCamposFornecedor
+            );
+
+            if (!empty($errosEtapa)) {
+                $errosFornecedor = $errosEtapa;
+                $etapaAtual = $etapaValidar;
+                break;
+            }
+        }
+
+        if (empty($errosFornecedor)) {
+            header('Location: novo_fornecedor.php?etapa=' . urlencode($etapaDestino));
+            exit;
+        }
+    }
 
     if (($_POST['acao_etapa'] ?? '') === 'anterior') {
         header('Location: novo_fornecedor.php?etapa=' . etapa_anterior_fornecedor($etapaSubmetida, $etapasFornecedor));
@@ -409,9 +528,17 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 </h3>
             </div>
 
-            <?php if (!empty($errosFornecedor)): ?>
+           <?php if (!empty($errosFornecedor)): ?>
                 <div class="form-alerta-erros" role="alert">
-                    <strong>Antes de avançar, confirme:</strong>
+                    <strong>
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                        Não é possível avançar para essa etapa.
+                    </strong>
+
+                    <p class="mb-2 mt-2">
+                        Preencha os campos obrigatórios antes de continuar.
+                    </p>
+
                     <ul>
                         <?php foreach ($errosFornecedor as $erro): ?>
                             <li><?php echo htmlspecialchars($erro); ?></li>
@@ -431,75 +558,93 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                      ============================================= -->
                 <ul class="nav nav-tabs ficha-tabs" id="tabsNovoFornecedor" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <a class="<?php echo classe_tab_fornecedor('identificacao', $etapaAtual); ?>"
-                           id="identificacao-tab"
-                           href="novo_fornecedor.php?etapa=identificacao"
-                           role="tab"
-                           aria-controls="identificacao"
-                           aria-selected="<?php echo aria_tab_fornecedor('identificacao', $etapaAtual); ?>">
+                        <button type="submit"
+                                class="<?php echo classe_tab_fornecedor('identificacao', $etapaAtual); ?>"
+                                id="identificacao-tab"
+                                name="etapa_destino"
+                                value="identificacao"
+                                formnovalidate
+                                role="tab"
+                                aria-controls="identificacao"
+                                aria-selected="<?php echo aria_tab_fornecedor('identificacao', $etapaAtual); ?>">
                             <i class="fa-solid fa-building me-2"></i>
-                            Identificacao
-                        </a>
+                            Identificação
+                        </button>
                     </li>
 
                     <li class="nav-item" role="presentation">
-                        <a class="<?php echo classe_tab_fornecedor('contactos', $etapaAtual); ?>"
-                           id="contactos-tab"
-                           href="novo_fornecedor.php?etapa=contactos"
-                           role="tab"
-                           aria-controls="contactos"
-                           aria-selected="<?php echo aria_tab_fornecedor('contactos', $etapaAtual); ?>">
+                        <button type="submit"
+                                class="<?php echo classe_tab_fornecedor('contactos', $etapaAtual); ?>"
+                                id="contactos-tab"
+                                name="etapa_destino"
+                                value="contactos"
+                                formnovalidate
+                                role="tab"
+                                aria-controls="contactos"
+                                aria-selected="<?php echo aria_tab_fornecedor('contactos', $etapaAtual); ?>">
                             <i class="fa-solid fa-address-book me-2"></i>
                             Contactos
-                        </a>
+                        </button>
                     </li>
 
                     <li class="nav-item" role="presentation">
-                        <a class="<?php echo classe_tab_fornecedor('morada', $etapaAtual); ?>"
-                           id="morada-tab"
-                           href="novo_fornecedor.php?etapa=morada"
-                           role="tab"
-                           aria-controls="morada"
-                           aria-selected="<?php echo aria_tab_fornecedor('morada', $etapaAtual); ?>">
+                        <button type="submit"
+                                class="<?php echo classe_tab_fornecedor('morada', $etapaAtual); ?>"
+                                id="morada-tab"
+                                name="etapa_destino"
+                                value="morada"
+                                formnovalidate
+                                role="tab"
+                                aria-controls="morada"
+                                aria-selected="<?php echo aria_tab_fornecedor('morada', $etapaAtual); ?>">
                             <i class="fa-solid fa-location-dot me-2"></i>
                             Morada
-                        </a>
+                        </button>
                     </li>
 
                     <li class="nav-item" role="presentation">
-                        <a class="<?php echo classe_tab_fornecedor('contrato', $etapaAtual); ?>"
-                           id="contrato-tab"
-                           href="novo_fornecedor.php?etapa=contrato"
-                           role="tab"
-                           aria-controls="contrato"
-                           aria-selected="<?php echo aria_tab_fornecedor('contrato', $etapaAtual); ?>">
+                        <button type="submit"
+                                class="<?php echo classe_tab_fornecedor('contrato', $etapaAtual); ?>"
+                                id="contrato-tab"
+                                name="etapa_destino"
+                                value="contrato"
+                                formnovalidate
+                                role="tab"
+                                aria-controls="contrato"
+                                aria-selected="<?php echo aria_tab_fornecedor('contrato', $etapaAtual); ?>">
                             <i class="fa-solid fa-file-contract me-2"></i>
-                            Servicos
-                        </a>
+                            Serviços
+                        </button>
                     </li>
 
                     <li class="nav-item" role="presentation">
-                        <a class="<?php echo classe_tab_fornecedor('observacoes', $etapaAtual); ?>"
-                           id="observacoes-tab"
-                           href="novo_fornecedor.php?etapa=observacoes"
-                           role="tab"
-                           aria-controls="observacoes-tab-pane"
-                           aria-selected="<?php echo aria_tab_fornecedor('observacoes', $etapaAtual); ?>">
+                        <button type="submit"
+                                class="<?php echo classe_tab_fornecedor('observacoes', $etapaAtual); ?>"
+                                id="observacoes-tab"
+                                name="etapa_destino"
+                                value="observacoes"
+                                formnovalidate
+                                role="tab"
+                                aria-controls="observacoes-tab-pane"
+                                aria-selected="<?php echo aria_tab_fornecedor('observacoes', $etapaAtual); ?>">
                             <i class="fa-solid fa-clipboard-list me-2"></i>
-                            Observacoes
-                        </a>
+                            Observações
+                        </button>
                     </li>
 
                     <li class="nav-item" role="presentation">
-                        <a class="<?php echo classe_tab_fornecedor('documentos', $etapaAtual); ?>"
-                           id="documentos-tab"
-                           href="novo_fornecedor.php?etapa=documentos"
-                           role="tab"
-                           aria-controls="documentos"
-                           aria-selected="<?php echo aria_tab_fornecedor('documentos', $etapaAtual); ?>">
+                        <button type="submit"
+                                class="<?php echo classe_tab_fornecedor('documentos', $etapaAtual); ?>"
+                                id="documentos-tab"
+                                name="etapa_destino"
+                                value="documentos"
+                                formnovalidate
+                                role="tab"
+                                aria-controls="documentos"
+                                aria-selected="<?php echo aria_tab_fornecedor('documentos', $etapaAtual); ?>">
                             <i class="fa-solid fa-folder-open me-2"></i>
                             Documentos
-                        </a>
+                        </button>
                     </li>
                 </ul>
 
