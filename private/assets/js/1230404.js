@@ -3596,3 +3596,46 @@ document.addEventListener("DOMContentLoaded", function () {
     atualizarPreviewPublico();
 
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const tabelaFornecedores = document.getElementById("tabela-fornecedores");
+
+    if (!tabelaFornecedores || typeof jQuery === "undefined" || !jQuery.fn.DataTable) {
+        return;
+    }
+
+    jQuery("#tabela-fornecedores").DataTable({
+        pageLength: 5,
+        pagingType: "full_numbers",
+        columnDefs: [
+            {
+                targets: 4,
+                orderable: false,
+                searchable: false
+            }
+        ],
+        language: {
+            decimal: "",
+            emptyTable: "Não existem fornecedores registados.",
+            info: "Mostrando _START_ até _END_ de _TOTAL_ fornecedores",
+            infoEmpty: "Mostrando 0 até 0 de 0 fornecedores",
+            infoFiltered: "(filtrado de _MAX_ fornecedores no total)",
+            thousands: ",",
+            lengthMenu: "Mostrar _MENU_ fornecedores por página",
+            loadingRecords: "A carregar...",
+            processing: "A processar...",
+            search: "Pesquisar:",
+            zeroRecords: "Nenhum fornecedor encontrado.",
+            paginate: {
+                first: "Primeira",
+                last: "Última",
+                next: "Seguinte",
+                previous: "Anterior"
+            },
+            aria: {
+                sortAscending: ": ativar para ordenar a coluna de forma crescente.",
+                sortDescending: ": ativar para ordenar a coluna de forma decrescente."
+            }
+        }
+    });
+});

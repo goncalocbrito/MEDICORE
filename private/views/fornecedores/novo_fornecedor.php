@@ -552,7 +552,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 <div class="tipos-fornecedor-opcoes">
                                     <select class="form-select" id="tipoFornecedor" name="tipoFornecedor" required>
                                         <option value="">Selecionar tipo</option>
-                                        <option value="Manuten&ccedil;&atilde;o" <?php echo selected_fornecedor_temp('tipoFornecedor', html_entity_decode('Manuten&ccedil;&atilde;o', ENT_QUOTES, 'UTF-8')); ?>>Manuten&ccedil;&atilde;o</option>
+                                        <option value="Manuten&ccedil;&atilde;o" <?php echo selected_fornecedor_temp('tipoFornecedor', html_entity_decode('Manuten&ccedil;&atilde;o', ENT_QUOTES, 'UTF-8')); ?>>Manutenção</option>
                                         <option value="Comercial" <?php echo selected_fornecedor_temp('tipoFornecedor', 'Comercial'); ?>>Comercial</option>
                                         <option value="Fabricante" <?php echo selected_fornecedor_temp('tipoFornecedor', 'Fabricante'); ?>>Fabricante</option>
                                     </select>
@@ -565,7 +565,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     <option value="">Selecionar estado</option>
                                     <option value="Ativo" <?php echo selected_fornecedor_temp('estadoFornecedor', 'Ativo'); ?>>Ativo</option>
                                     <option value="Inativo" <?php echo selected_fornecedor_temp('estadoFornecedor', 'Inativo'); ?>>Inativo</option>
-                                    <option value="Em avalia&ccedil;&atilde;o" <?php echo selected_fornecedor_temp('estadoFornecedor', html_entity_decode('Em avalia&ccedil;&atilde;o', ENT_QUOTES, 'UTF-8')); ?>>Em avalia&ccedil;&atilde;o</option>
+                                    <option value="Em avalia&ccedil;&atilde;o" <?php echo selected_fornecedor_temp('estadoFornecedor', html_entity_decode('Em avalia&ccedil;&atilde;o', ENT_QUOTES, 'UTF-8')); ?>>Em avaliação</option>
                                 </select>
                             </div>
                         </div>

@@ -1,5 +1,31 @@
 <?php
 require_once __DIR__ . '/../../includes/funcoes.php';
+
+function classe_tipo_fornecedor($tipo)
+{
+    $tipoNormalizado = strtolower(trim($tipo));
+
+    $tipoNormalizado = str_replace(
+        ['ç', 'ã', 'á', 'à', 'â', 'é', 'ê', 'í', 'ó', 'ô', 'õ', 'ú'],
+        ['c', 'a', 'a', 'a', 'a', 'e', 'e', 'i', 'o', 'o', 'o', 'u'],
+        $tipoNormalizado
+    );
+
+    switch ($tipoNormalizado) {
+        case 'fabricante':
+            return 'tipo-fabricante';
+
+        case 'comercial':
+            return 'tipo-comercial';
+
+        case 'manutencao':
+            return 'tipo-manutencao';
+
+        default:
+            return '';
+    }
+}
+
 redirect_if_not_logged();
 
 require_once __DIR__ . '/../../../config/config.php';
@@ -56,48 +82,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
              Cada linha tem um botão para abrir a ficha e outro para
              abrir o modal de remoção com os dados preenchidos.
              ===================================================== -->
-        <!-- Pesquisa e filtros da tabela de fornecedores. -->
-        <section class="filtros-tabela" data-tabela=".tabela-fornecedores" aria-label="Pesquisa e filtros de fornecedores">
-            <div class="row g-3 align-items-end">
-                <div class="col-lg-4 col-md-6">
-                    <label for="pesquisaFornecedores" class="form-label">Pesquisar</label>
-                    <input type="search" class="form-control" id="pesquisaFornecedores" data-filtro="texto" placeholder="Código, fornecedor, tipo, localidade ou estado">
-                </div>
-                <div class="col-lg-2 col-md-6">
-                    <label for="filtroTipoFornecedores" class="form-label">Tipo</label>
-                    <select class="form-select" id="filtroTipoFornecedores" data-filtro="coluna" data-coluna="1">
-                        <option value="">Todos</option>
-                        <option value="Fabricante">Fabricante</option>
-                        <option value="Comercial">Comercial</option>
-                        <option value="Manutenção">Manutenção</option>
-                    </select>
-                </div>
-                <div class="col-lg-2 col-md-6">
-                    <label for="filtroLocalidadeFornecedores" class="form-label">Localidade</label>
-                    <select class="form-select" id="filtroLocalidadeFornecedores" data-filtro="coluna" data-coluna="2">
-                        <option value="">Todas</option>
-                        <option value="Porto">Porto</option>
-                        <option value="Lisboa">Lisboa</option>
-                        <option value="Coimbra">Coimbra</option>
-                    </select>
-                </div>
-                <div class="col-lg-2 col-md-6">
-                    <label for="filtroEstadoFornecedores" class="form-label">Estado</label>
-                    <select class="form-select" id="filtroEstadoFornecedores" data-filtro="coluna" data-coluna="3">
-                        <option value="">Todos</option>
-                        <option value="Ativo">Ativo</option>
-                        <option value="Inativo">Inativo</option>
-                    </select>
-                </div>
-                <div class="col-lg-2 col-md-12">
-                    <button type="button" class="btn btn-limpar-filtros w-100" data-limpar-filtros>
-                        <i class="fa-solid fa-rotate-left me-2"></i> Limpar
-                    </button>
-                </div>
-            </div>
-        </section>
+
         <div class="table-responsive tabela-container">
-            <table class="table table-hover align-middle tabela-fornecedores">
+            <table id="tabela-fornecedores" class="table table-hover align-middle tabela-fornecedores">
                 <thead>
                     <tr>
                         <th>Fornecedor</th>
@@ -109,44 +96,40 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 </thead>
                 
                 <tbody>
-                    <?php if (empty($fornecedores)): ?>
-                    <tr class="linha-sem-resultados">
-                        <td colspan="5" class="text-center text-muted">
-                            Nenhum fornecedor ativo encontrado.
-                        </td>
-                    </tr>
-                    <?php else: ?>
                     <?php foreach ($fornecedores as $fornecedor): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($fornecedor['nome_empresa']); ?></td>
-                        <td><?php echo htmlspecialchars($fornecedor['tipo_fornecedor']); ?></td>
-                        <td><?php echo htmlspecialchars($fornecedor['localidade']); ?></td>
-                        <td><span class="estado estado-ativo">Ativo</span></td>
-                        <td class="text-center">
-                            <a href="ficha_fornecedor.php?id=<?php echo $fornecedor['id_fornecedor']; ?>"
-                            class="btn btn-sm btn-ficha">
-                                <i class="fa-solid fa-file-lines"></i>
-                            </a>
+                        <tr>
+                            <td><?php echo htmlspecialchars($fornecedor['nome_empresa']); ?></td>
+                            <td>
+                                <span class="tipo-fornecedor <?php echo classe_tipo_fornecedor($fornecedor['tipo_fornecedor']); ?>">
+                                    <?php echo htmlspecialchars($fornecedor['tipo_fornecedor']); ?>
+                                </span>
+                            </td>
+                            <td><?php echo htmlspecialchars($fornecedor['localidade']); ?></td>
+                            <td><span class="estado estado-ativo">Ativo</span></td>
+                            <td class="text-center">
+                                <a href="ficha_fornecedor.php?id=<?php echo $fornecedor['id_fornecedor']; ?>"
+                                class="btn btn-sm btn-ficha">
+                                    <i class="fa-solid fa-file-lines"></i>
+                                </a>
 
-                            <button type="button"
-                                    class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-fornecedor"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modalApagarFornecedor"
-                                    data-id="<?php echo $fornecedor['id_fornecedor']; ?>"
-                                    data-codigo="<?php echo htmlspecialchars($fornecedor['id_fornecedor']); ?>"
-                                    data-nome="<?php echo htmlspecialchars($fornecedor['nome_empresa']); ?>"
-                                    data-tipo="<?php echo htmlspecialchars($fornecedor['tipo_fornecedor']); ?>"
-                                    data-nif="<?php echo htmlspecialchars($fornecedor['nif']); ?>"
-                                    data-email="<?php echo htmlspecialchars($fornecedor['email']); ?>"
-                                    data-telefone="<?php echo htmlspecialchars($fornecedor['telefone']); ?>"
-                                    data-localidade="<?php echo htmlspecialchars($fornecedor['localidade']); ?>"
-                                    data-estado="Ativo">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-                    <?php endif; ?>
+                                <button type="button"
+                                        class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-fornecedor"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalApagarFornecedor"
+                                        data-id="<?php echo $fornecedor['id_fornecedor']; ?>"
+                                        data-codigo="<?php echo htmlspecialchars($fornecedor['id_fornecedor']); ?>"
+                                        data-nome="<?php echo htmlspecialchars($fornecedor['nome_empresa']); ?>"
+                                        data-tipo="<?php echo htmlspecialchars($fornecedor['tipo_fornecedor']); ?>"
+                                        data-nif="<?php echo htmlspecialchars($fornecedor['nif']); ?>"
+                                        data-email="<?php echo htmlspecialchars($fornecedor['email']); ?>"
+                                        data-telefone="<?php echo htmlspecialchars($fornecedor['telefone']); ?>"
+                                        data-localidade="<?php echo htmlspecialchars($fornecedor['localidade']); ?>"
+                                        data-estado="Ativo">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
