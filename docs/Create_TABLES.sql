@@ -46,3 +46,27 @@ CREATE TABLE documentos_fornecedores (
         REFERENCES fornecedores(id_fornecedor)
 );
 
+CREATE TABLE localizacoes (
+    id_localizacao INT AUTO_INCREMENT PRIMARY KEY,
+
+    codigo VARCHAR(30) NOT NULL UNIQUE,
+
+    departamento_nome VARCHAR(150) NOT NULL,
+    departamento_sigla VARCHAR(20) NOT NULL,
+
+    edificio VARCHAR(100) NOT NULL,
+    piso VARCHAR(30) NOT NULL,
+    sala VARCHAR(80) NOT NULL,
+
+    tipo_espaco VARCHAR(80) NOT NULL,
+    estado VARCHAR(30) NOT NULL DEFAULT 'Ativa',
+
+    capacidade_equipamentos INT,
+    permite_equipamentos_criticos TINYINT(1) NOT NULL DEFAULT 0,
+
+    observacoes TEXT,
+
+    isActive TINYINT(1) NOT NULL DEFAULT 1
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;

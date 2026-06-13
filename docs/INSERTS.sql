@@ -110,3 +110,59 @@ INSERT INTO fornecedores (
     'Portugal',
     1
 );
+
+INSERT INTO localizacoes (
+    codigo,
+    departamento_nome,
+    departamento_sigla,
+    edificio,
+    piso,
+    sala,
+    tipo_espaco,
+    estado,
+    capacidade_equipamentos,
+    permite_equipamentos_criticos,
+    observacoes,
+    isActive
+) VALUES
+('UCI-P2-S201', 'Unidade de Cuidados Intensivos', 'UCI', 'Edifício A', '2', '201', 'UCI', 'Ativa', 12, 1, 'Sala destinada a cuidados intensivos com equipamentos críticos.', 1),
+('UCI-P2-S202', 'Unidade de Cuidados Intensivos', 'UCI', 'Edifício A', '2', '202', 'UCI', 'Ativa', 10, 1, 'Sala com monitorização contínua de doentes críticos.', 1),
+('UCI-P2-S203', 'Unidade de Cuidados Intensivos', 'UCI', 'Edifício A', '2', '203', 'UCI', 'Em manutenção', 8, 1, 'Espaço temporariamente em manutenção técnica.', 1),
+
+('URG-P0-S001', 'Urgência', 'URG', 'Edifício B', '0', '001', 'Urgência', 'Ativa', 15, 1, 'Sala principal de atendimento urgente.', 1),
+('URG-P0-S002', 'Urgência', 'URG', 'Edifício B', '0', '002', 'Urgência', 'Ativa', 8, 1, 'Sala de observação rápida.', 1),
+('URG-P0-S003', 'Urgência', 'URG', 'Edifício B', '0', '003', 'Triagem', 'Ativa', 5, 0, 'Área destinada à triagem inicial dos utentes.', 1),
+
+('BO-P1-S101', 'Bloco Operatório', 'BO', 'Edifício C', '1', '101', 'Bloco Operatório', 'Ativa', 7, 1, 'Sala operatória equipada para cirurgia geral.', 1),
+('BO-P1-S102', 'Bloco Operatório', 'BO', 'Edifício C', '1', '102', 'Bloco Operatório', 'Ativa', 7, 1, 'Sala operatória com suporte para equipamentos críticos.', 1),
+('BO-P1-S103', 'Bloco Operatório', 'BO', 'Edifício C', '1', '103', 'Bloco Operatório', 'Indisponível', 6, 1, 'Sala temporariamente indisponível para intervenção técnica.', 1),
+
+('RAD-P0-S010', 'Radiologia', 'RAD', 'Edifício A', '0', '010', 'Radiologia', 'Ativa', 4, 0, 'Sala destinada a exames de imagem.', 1),
+('RAD-P0-S011', 'Radiologia', 'RAD', 'Edifício A', '0', '011', 'Radiologia', 'Ativa', 3, 0, 'Sala com equipamento de diagnóstico por imagem.', 1),
+('RAD-P0-S012', 'Radiologia', 'RAD', 'Edifício A', '0', '012', 'Radiologia', 'Em manutenção', 2, 0, 'Sala em manutenção preventiva.', 1),
+
+('LAB-P1-S105', 'Laboratório Clínico', 'LAB', 'Edifício D', '1', '105', 'Laboratório', 'Ativa', 10, 0, 'Laboratório destinado ao processamento de amostras clínicas.', 1),
+('LAB-P1-S106', 'Laboratório Clínico', 'LAB', 'Edifício D', '1', '106', 'Laboratório', 'Ativa', 8, 0, 'Sala de apoio técnico laboratorial.', 1),
+('LAB-P1-S107', 'Laboratório Clínico', 'LAB', 'Edifício D', '1', '107', 'Laboratório', 'Ativa', 6, 0, 'Espaço reservado para equipamentos laboratoriais.', 1),
+
+('CARD-P3-S301', 'Cardiologia', 'CARD', 'Edifício A', '3', '301', 'Consulta Externa', 'Ativa', 5, 0, 'Sala de consulta de cardiologia.', 1),
+('CARD-P3-S302', 'Cardiologia', 'CARD', 'Edifício A', '3', '302', 'Consulta Externa', 'Ativa', 5, 0, 'Sala destinada a avaliação cardiológica.', 1),
+('CARD-P3-S303', 'Cardiologia', 'CARD', 'Edifício A', '3', '303', 'Sala de Exames', 'Ativa', 6, 0, 'Sala equipada para exames complementares de cardiologia.', 1),
+
+('PED-P2-S210', 'Pediatria', 'PED', 'Edifício B', '2', '210', 'Consulta Externa', 'Ativa', 6, 0, 'Sala de consulta pediátrica.', 1),
+('PED-P2-S211', 'Pediatria', 'PED', 'Edifício B', '2', '211', 'Consulta Externa', 'Ativa', 6, 0, 'Sala adaptada ao atendimento pediátrico.', 1),
+('PED-P2-S212', 'Pediatria', 'PED', 'Edifício B', '2', '212', 'Sala de Tratamentos', 'Ativa', 7, 0, 'Sala para pequenos procedimentos pediátricos.', 1),
+
+('NEO-P2-S220', 'Neonatologia', 'NEO', 'Edifício B', '2', '220', 'Neonatologia', 'Ativa', 10, 1, 'Sala com suporte para cuidados neonatais.', 1),
+('NEO-P2-S221', 'Neonatologia', 'NEO', 'Edifício B', '2', '221', 'Neonatologia', 'Ativa', 8, 1, 'Sala destinada a recém-nascidos com necessidade de monitorização.', 1),
+
+('MI-P4-S401', 'Medicina Interna', 'MI', 'Edifício A', '4', '401', 'Enfermaria', 'Ativa', 12, 0, 'Sala/enfermaria de medicina interna.', 1),
+('MI-P4-S402', 'Medicina Interna', 'MI', 'Edifício A', '4', '402', 'Enfermaria', 'Ativa', 12, 0, 'Espaço de internamento de medicina interna.', 1),
+
+('CE-P-1-S001', 'Central de Esterilização', 'CE', 'Edifício Técnico', '-1', '001', 'Esterilização', 'Ativa', 9, 0, 'Área técnica dedicada à esterilização de material.', 1),
+('CE-P-1-S002', 'Central de Esterilização', 'CE', 'Edifício Técnico', '-1', '002', 'Esterilização', 'Ativa', 7, 0, 'Sala de apoio ao processamento de material esterilizado.', 1),
+
+('ARM-P-1-S010', 'Armazém Técnico', 'ARM', 'Edifício Técnico', '-1', '010', 'Armazém Técnico', 'Ativa', 20, 0, 'Armazém para equipamentos e acessórios técnicos.', 1),
+('ARM-P-1-S011', 'Armazém Técnico', 'ARM', 'Edifício Técnico', '-1', '011', 'Armazém Técnico', 'Ativa', 18, 0, 'Espaço de armazenamento de consumíveis e peças.', 1),
+
+('MN-P1-S115', 'Medicina Nuclear', 'MN', 'Edifício D', '1', '115', 'Sala de Exames', 'Ativa', 4, 0, 'Sala destinada a exames de medicina nuclear.', 1);
