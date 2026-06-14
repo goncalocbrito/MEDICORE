@@ -70,3 +70,110 @@ CREATE TABLE localizacoes (
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci;
+  
+  CREATE TABLE familias_equipamento (
+    id_familia_equipamento INT AUTO_INCREMENT PRIMARY KEY,
+
+    codigo_familia VARCHAR(10) NOT NULL UNIQUE,
+    nome VARCHAR(150) NOT NULL,
+    descricao TEXT,
+
+    isActive TINYINT(1) NOT NULL DEFAULT 1
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+  
+  CREATE TABLE equipamentos (
+    id_equipamento INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_familia_equipamento INT NOT NULL,
+
+    numero_sequencial INT NOT NULL,
+    codigo VARCHAR(30) NOT NULL UNIQUE,
+
+    designacao VARCHAR(150) NOT NULL,
+
+    fabricante VARCHAR(120) NOT NULL,
+    modelo VARCHAR(120) NOT NULL,
+    numero_serie VARCHAR(120) NOT NULL UNIQUE,
+
+    tipo_entrada VARCHAR(50),
+
+    id_localizacao INT NOT NULL,
+
+    estado VARCHAR(30) NOT NULL DEFAULT 'Ativo',
+    criticidade VARCHAR(30) NOT NULL,
+    operacional TINYINT(1) NOT NULL DEFAULT 1,
+
+    data_fabrico DATE NULL,
+    data_aquisicao DATE NULL,
+    data_instalacao DATE NULL,
+    valor_aquisicao DECIMAL(10,2) NULL,
+
+    fim_garantia DATE NULL,
+
+    contrato_manutencao VARCHAR(30) NULL,
+    tipo_contrato VARCHAR(80) NULL,
+    entidade_responsavel VARCHAR(150) NULL,
+
+    ultima_manutencao DATE NULL,
+    proxima_manutencao DATE NULL,
+    periodicidade_manutencao VARCHAR(50) NULL,
+
+    ultima_calibracao DATE NULL,
+    proxima_calibracao DATE NULL,
+
+    responsavel_tecnico VARCHAR(150) NULL,
+
+    observacoes TEXT,
+
+    isActive TINYINT(1) NOT NULL DEFAULT 1,
+
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_equipamento_familia
+        FOREIGN KEY (id_familia_equipamento)
+        REFERENCES familias_equipamento(id_familia_equipamento),
+
+    CONSTRAINT fk_equipamento_localizacao
+        FOREIGN KEY (id_localizacao)
+        REFERENCES localizacoes(id_localizacao),
+
+    CONSTRAINT uk_familia_numero
+        UNIQUE (id_familia_equipamento, numero_sequencial)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+  
+  CREATE TABLE equipamentos_fornecedores (
+    id_equipamento_fornecedor INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_equipamento INT NOT NULL,
+    id_fornecedor INT NOT NULL,
+
+    contrato_associado VARCHAR(100) NULL,
+    data_inicio DATE NULL,
+    data_fim DATE NULL,
+
+    observacoes TEXT,
+
+    isActive TINYINT(1) NOT NULL DEFAULT 1,
+
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_equipamento_fornecedor_equipamento
+        FOREIGN KEY (id_equipamento)
+        REFERENCES equipamentos(id_equipamento),
+
+    CONSTRAINT fk_equipamento_fornecedor_fornecedor
+        FOREIGN KEY (id_fornecedor)
+        REFERENCES fornecedores(id_fornecedor),
+
+    CONSTRAINT uk_equipamento_fornecedor
+        UNIQUE (id_equipamento, id_fornecedor)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+

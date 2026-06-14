@@ -832,47 +832,105 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 
-//Temporário
 // Nova localização
 
-document.addEventListener("DOMContentLoaded", function () {
+/* =========================================================
+   NOVA LOCALIZAÇÃO / FICHA LOCALIZAÇÃO
+   Geração automática do código da localização
+   ========================================================= */
 
+document.addEventListener("DOMContentLoaded", function () {
+    const departamentoSigla = document.getElementById("departamentoSigla");
+    const pisoLocalizacao = document.getElementById("pisoLocalizacao");
+    const salaLocalizacao = document.getElementById("salaLocalizacao");
+    const codigoLocalizacao = document.getElementById("codigoLocalizacao");
+
+    if (!departamentoSigla || !pisoLocalizacao || !salaLocalizacao || !codigoLocalizacao) {
+        return;
+    }
+
+    function limparTextoCodigo(texto) {
+        return texto
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-zA-Z0-9-]/g, "")
+            .toUpperCase();
+    }
+
+    function normalizarPisoParaCodigo(piso) {
+        const pisoLimpo = piso.trim();
+
+        if (pisoLimpo === "-1") {
+            return "M1";
+        }
+
+        if (pisoLimpo.startsWith("-")) {
+            return "M" + pisoLimpo.replace("-", "");
+        }
+
+        return limparTextoCodigo(pisoLimpo);
+    }
+
+    function gerarCodigoLocalizacao() {
+        const sigla = limparTextoCodigo(departamentoSigla.value.trim());
+        const piso = normalizarPisoParaCodigo(pisoLocalizacao.value.trim());
+        const sala = limparTextoCodigo(salaLocalizacao.value.trim());
+
+        if (sigla === "" || piso === "" || sala === "") {
+            codigoLocalizacao.value = "";
+            return;
+        }
+
+        codigoLocalizacao.value = sigla + "-P" + piso + "-S" + sala;
+    }
+
+    departamentoSigla.addEventListener("input", gerarCodigoLocalizacao);
+    pisoLocalizacao.addEventListener("input", gerarCodigoLocalizacao);
+    salaLocalizacao.addEventListener("input", gerarCodigoLocalizacao);
+
+    gerarCodigoLocalizacao();
+});
+
+/* =========================================================
+   BOTÃO LIMPAR - NOVA LOCALIZAÇÃO
+   Limpa o formulário sem impedir o POST normal do PHP
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
     const formNovaLocalizacao = document.getElementById("formNovaLocalizacao");
     const btnLimparNovaLocalizacao = document.getElementById("btnLimparNovaLocalizacao");
 
-    if (!formNovaLocalizacao) return;
-
-    if (btnLimparNovaLocalizacao) {
-        btnLimparNovaLocalizacao.addEventListener("click", function () {
-            formNovaLocalizacao.querySelectorAll("input, select, textarea").forEach(function (campo) {
-                if (campo.type === "radio" || campo.type === "checkbox") {
-                    campo.checked = false;
-                } else if (campo.tagName === "SELECT") {
-                    campo.selectedIndex = 0;
-                } else {
-                    campo.value = "";
-                }
-            });
-
-            const permiteCriticosSim = document.getElementById("permiteCriticosSim");
-            const suporteVidaNao = document.getElementById("suporteVidaNao");
-
-            if (permiteCriticosSim) permiteCriticosSim.checked = true;
-            if (suporteVidaNao) suporteVidaNao.checked = true;
-        });
+    if (!formNovaLocalizacao || !btnLimparNovaLocalizacao) {
+        return;
     }
 
-    formNovaLocalizacao.addEventListener("submit", function (event) {
-        event.preventDefault();
+    btnLimparNovaLocalizacao.addEventListener("click", function () {
+        formNovaLocalizacao.querySelectorAll("input, select, textarea").forEach(function (campo) {
+            if (campo.type === "hidden") {
+                return;
+            }
 
-        mostrarPopupSucesso(
-            "Nova localização guardada",
-            "A nova localização foi registada com sucesso.",
-            "lista_localizacoes.html"
-        );
+            if (campo.type === "radio" || campo.type === "checkbox") {
+                campo.checked = false;
+                return;
+            }
+
+            if (campo.tagName === "SELECT") {
+                campo.selectedIndex = 0;
+                return;
+            }
+
+            campo.value = "";
+        });
+
+        const permiteCriticosNao = document.getElementById("permiteCriticosNao");
+
+        if (permiteCriticosNao) {
+            permiteCriticosNao.checked = true;
+        }
     });
-
 });
+
 
 // Dados temporários das localizações
 // Alteração feita por mim
@@ -1301,6 +1359,8 @@ function preencherTabelaEquipamentosFichaLocalizacao(localizacao) {
 document.addEventListener("DOMContentLoaded", function () {
 
     // Inicializa apenas a página ficha_localizacao.html.
+    if (!window.location.pathname.endsWith("ficha_localizacao.html")) return;
+
     const formFicha = document.getElementById("formFichaLocalizacao");
 
     if (!formFicha) return;
@@ -1453,16 +1513,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     formFicha.addEventListener("input", atualizarResumoLocalizacao);
     formFicha.addEventListener("change", atualizarResumoLocalizacao);
-
-    formFicha.addEventListener("submit", function (event) {
-        event.preventDefault();
-
-        mostrarPopupSucesso(
-            "Alterações registadas",
-            "As alterações na localização foram registadas com sucesso.",
-            "lista_localizacoes.html"
-        );
-    });
 
     guardarValoresOriginais();
     atualizarResumoLocalizacao();

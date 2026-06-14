@@ -1,6 +1,29 @@
 <?php
 require_once __DIR__ . '/../../includes/funcoes.php';
 redirect_if_not_logged();
+
+require_once __DIR__ . '/../../../config/config.php';
+
+$pdo = new PDO(
+    'mysql:host=' . MYSQL_HOST . ';port=' . MYSQL_PORT . ';dbname=' . MYSQL_DATABASE . ';charset=utf8mb4',
+    MYSQL_USERNAME,
+    MYSQL_PASSWORD,
+    [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]
+);
+
+$stmt = $pdo->prepare("
+    SELECT *
+    FROM localizacoes
+    WHERE isActive = 1
+    ORDER BY id_localizacao ASC
+");
+
+$stmt->execute();
+$localizacoes = $stmt->fetchAll();
+
 require_once __DIR__ . '/../../includes/header.php';
 require_once __DIR__ . '/../../includes/nav.php';
 require_once __DIR__ . '/../../includes/sidebar.php';
@@ -70,91 +93,53 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>LOC-001</td>
-                        <td>Unidade de Cuidados Intensivos</td>
-                        <td>Edifício A</td>
-                        <td>2</td>
-                        <td>Sala 201</td>
-                        <td><span class="estado estado-ativo">Ativa</span></td>
-                        <td>8</td>
-                        <td class="text-center">
-                            <a href="ficha_localizacao.php?id=LOC-001" class="btn btn-sm btn-ficha" title="Abrir ficha da localização">
-                                <i class="fa-solid fa-file-lines"></i>
-                            </a>
-                            <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-localizacao" title="Eliminar localização" data-bs-toggle="modal" data-bs-target="#modalApagarLocalizacao" data-codigo="LOC-001" data-departamento="Unidade de Cuidados Intensivos" data-edificio="Edifício A" data-piso="2" data-sala="Sala 201" data-tipo="UCI" data-responsavel="Enf. Maria Costa" data-estado="Ativa" data-equipamentos="8">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>LOC-002</td>
-                        <td>Urgência</td>
-                        <td>Edifício B</td>
-                        <td>0</td>
-                        <td>Sala 1</td>
-                        <td><span class="estado estado-ativo">Ativa</span></td>
-                        <td>12</td>
-                        <td class="text-center">
-                            <a href="ficha_localizacao.php?id=LOC-002" class="btn btn-sm btn-ficha" title="Abrir ficha da localização">
-                                <i class="fa-solid fa-file-lines"></i>
-                            </a>
-                            <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-localizacao" title="Eliminar localização" data-bs-toggle="modal" data-bs-target="#modalApagarLocalizacao" data-codigo="LOC-002" data-departamento="Urgência" data-edificio="Edifício B" data-piso="0" data-sala="Sala 1" data-tipo="Urgência" data-responsavel="Dr. João Martins" data-estado="Ativa" data-equipamentos="12">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>LOC-003</td>
-                        <td>Bloco Operatório</td>
-                        <td>Edifício C</td>
-                        <td>1</td>
-                        <td>BO-02</td>
-                        <td><span class="estado estado-ativo">Ativa</span></td>
-                        <td>6</td>
-                        <td class="text-center">
-                            <a href="ficha_localizacao.php?id=LOC-003" class="btn btn-sm btn-ficha" title="Abrir ficha da localização">
-                                <i class="fa-solid fa-file-lines"></i>
-                            </a>
-                            <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-localizacao" title="Eliminar localização" data-bs-toggle="modal" data-bs-target="#modalApagarLocalizacao" data-codigo="LOC-003" data-departamento="Bloco Operatório" data-edificio="Edifício C" data-piso="1" data-sala="BO-02" data-tipo="Bloco Operatório" data-responsavel="Enf. Ricardo Silva" data-estado="Ativa" data-equipamentos="6">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>LOC-004</td>
-                        <td>Laboratório Clínico</td>
-                        <td>Edifício D</td>
-                        <td>1</td>
-                        <td>Lab-105</td>
-                        <td><span class="estado estado-manutencao">Em manutenção</span></td>
-                        <td>10</td>
-                        <td class="text-center">
-                            <a href="ficha_localizacao.php?id=LOC-004" class="btn btn-sm btn-ficha" title="Abrir ficha da localização">
-                                <i class="fa-solid fa-file-lines"></i>
-                            </a>
-                            <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-localizacao" title="Eliminar localização" data-bs-toggle="modal" data-bs-target="#modalApagarLocalizacao" data-codigo="LOC-004" data-departamento="Laboratório Clínico" data-edificio="Edifício D" data-piso="1" data-sala="Lab-105" data-tipo="Laboratório" data-responsavel="Téc. Ana Ferreira" data-estado="Em manutenção" data-equipamentos="10">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>LOC-005</td>
-                        <td>Armazém Técnico</td>
-                        <td>Edifício Técnico</td>
-                        <td>-1</td>
-                        <td>ARM-01</td>
-                        <td><span class="estado estado-inativo">Inativa</span></td>
-                        <td>4</td>
-                        <td class="text-center">
-                            <a href="ficha_localizacao.php?id=LOC-005" class="btn btn-sm btn-ficha" title="Abrir ficha da localização">
-                                <i class="fa-solid fa-file-lines"></i>
-                            </a>
-                            <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-localizacao" title="Eliminar localização" data-bs-toggle="modal" data-bs-target="#modalApagarLocalizacao" data-codigo="LOC-005" data-departamento="Armazém Técnico" data-edificio="Edifício Técnico" data-piso="-1" data-sala="ARM-01" data-tipo="Armazém Técnico" data-responsavel="Eng. Gonçalo Brito" data-estado="Inativa" data-equipamentos="4">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
+                    <?php if (empty($localizacoes)): ?>
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">
+                                Não existem localizações registadas.
+                            </td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach ($localizacoes as $localizacao): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($localizacao['codigo']); ?></td>
+                                <td><?php echo htmlspecialchars($localizacao['departamento_nome']); ?></td>
+                                <td><?php echo htmlspecialchars($localizacao['edificio']); ?></td>
+                                <td><?php echo htmlspecialchars($localizacao['piso']); ?></td>
+                                <td><?php echo htmlspecialchars($localizacao['sala']); ?></td>
+                                <td>
+                                    <span class="estado <?php echo $localizacao['estado'] === 'Ativa' ? 'estado-ativo' : ($localizacao['estado'] === 'Em manutenção' ? 'estado-manutencao' : 'estado-inativo'); ?>">
+                                        <?php echo htmlspecialchars($localizacao['estado']); ?>
+                                    </span>
+                                </td>
+                                <td><?php echo htmlspecialchars($localizacao['capacidade_equipamentos'] ?? '-'); ?></td>
+                                <td class="text-center">
+                                    <a href="ficha_localizacao.php?id=<?php echo urlencode($localizacao['id_localizacao']); ?>"
+                                    class="btn btn-sm btn-ficha"
+                                    title="Abrir ficha da localização">
+                                        <i class="fa-solid fa-file-lines"></i>
+                                    </a>
+
+                                    <button type="button"
+                                            class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-localizacao"
+                                            title="Eliminar localização"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalApagarLocalizacao"
+                                            data-id="<?php echo htmlspecialchars($localizacao['id_localizacao']); ?>"
+                                            data-codigo="<?php echo htmlspecialchars($localizacao['codigo']); ?>"
+                                            data-departamento="<?php echo htmlspecialchars($localizacao['departamento_nome']); ?>"
+                                            data-edificio="<?php echo htmlspecialchars($localizacao['edificio']); ?>"
+                                            data-piso="<?php echo htmlspecialchars($localizacao['piso']); ?>"
+                                            data-sala="<?php echo htmlspecialchars($localizacao['sala']); ?>"
+                                            data-tipo="<?php echo htmlspecialchars($localizacao['tipo_espaco']); ?>"
+                                            data-estado="<?php echo htmlspecialchars($localizacao['estado']); ?>"
+                                            data-equipamentos="<?php echo htmlspecialchars($localizacao['capacidade_equipamentos'] ?? '-'); ?>">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>

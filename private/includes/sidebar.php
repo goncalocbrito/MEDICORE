@@ -76,6 +76,12 @@ function submenu_ativo($caminho)
                                         <i class="fa-solid fa-boxes-stacked me-2"></i> Consumíveis
                                     </a>
                                 </li>
+
+                                <li>
+                                    <a href="/MEDICORE/private/views/equipamentos/lista_familias_equipamentos.php">
+                                        <i class="fa-solid fa-layer-group me-2"></i> Famílias de Equipamentos
+                                    </a>
+                                </li>
                             </ul>
                         </li>
 
