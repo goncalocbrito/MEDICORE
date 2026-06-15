@@ -3689,3 +3689,29 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
+
+/* =========================================================
+   MODAL EDITAR FAMÍLIA DE EQUIPAMENTOS
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+    const botoesEditarFamilia = document.querySelectorAll(".btn-editar-familia");
+
+    const campoId = document.getElementById("modalIdFamilia");
+    const campoCodigo = document.getElementById("modalCodigoFamilia");
+    const campoNome = document.getElementById("modalNomeFamilia");
+    const campoDescricao = document.getElementById("modalDescricaoFamilia");
+
+    if (!botoesEditarFamilia.length || !campoId || !campoCodigo || !campoNome || !campoDescricao) {
+        return;
+    }
+
+    botoesEditarFamilia.forEach(function (botao) {
+        botao.addEventListener("click", function () {
+            campoId.value = botao.dataset.id || "";
+            campoCodigo.value = botao.dataset.codigo || "";
+            campoNome.value = botao.dataset.nome || "";
+            campoDescricao.value = botao.dataset.descricao || "";
+        });
+    });
+});

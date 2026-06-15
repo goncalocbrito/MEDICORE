@@ -78,7 +78,7 @@ function submenu_ativo($caminho)
                                 </li>
 
                                 <li>
-                                    <a href="/MEDICORE/private/views/equipamentos/lista_familias_equipamentos.php">
+                                    <a href="/MEDICORE/private/views/equipamentos/lista_familia_equipamentos.php">
                                         <i class="fa-solid fa-layer-group me-2"></i> Famílias de Equipamentos
                                     </a>
                                 </li>
