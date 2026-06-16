@@ -1818,6 +1818,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!formFicha) return;
 
+    const fichaUsaDadosEstaticos = window.location.pathname.endsWith("ficha_equipamento.html");
+
+    if (fichaUsaDadosEstaticos) {
     const equipamento = obterEquipamentoSelecionado();
 
     if (!equipamento) {
@@ -1827,6 +1830,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     preencherCamposEquipamento(equipamento);
+    }
 
     const btnAtivarEdicao = document.getElementById("btnAtivarEdicao");
     const btnCancelarEdicao = document.getElementById("btnCancelarEdicao");
@@ -1984,6 +1988,7 @@ document.addEventListener("DOMContentLoaded", function () {
     formFicha.addEventListener("input", atualizarResumoFicha);
     formFicha.addEventListener("change", atualizarResumoFicha);
 
+    if (fichaUsaDadosEstaticos) {
     formFicha.addEventListener("submit", function (event) {
         event.preventDefault();
 
@@ -1993,6 +1998,7 @@ document.addEventListener("DOMContentLoaded", function () {
             "lista_equipamentos.html"
         );
     });
+    }
 
     guardarValoresOriginais();
     atualizarResumoFicha();
@@ -2010,6 +2016,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const modalApagar = document.getElementById("modalApagarEquipamento");
     const btnConfirmarApagar = document.getElementById("btnConfirmarApagarEquipamento");
+    const listaEquipamentosPhp = window.location.pathname.endsWith("lista_equipamentos.php");
 
     let linhaEquipamentoSelecionada = null;
 
@@ -2024,6 +2031,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         linhaEquipamentoSelecionada = botao.closest("tr");
 
+        const id = botao.getAttribute("data-id");
         const codigo = botao.getAttribute("data-codigo");
         const nome = botao.getAttribute("data-nome");
         const categoria = botao.getAttribute("data-categoria");
@@ -2033,7 +2041,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const localizacao = botao.getAttribute("data-localizacao");
         const estado = botao.getAttribute("data-estado");
 
-        document.getElementById("modalApagarIdEquipamento").value = codigo;
+        document.getElementById("modalApagarIdEquipamento").value = id || codigo;
 
         document.getElementById("modalApagarCodigo").textContent = codigo;
         document.getElementById("modalApagarNome").textContent = nome;
@@ -2047,6 +2055,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Quando o utilizador confirma a remoção
     btnConfirmarApagar.addEventListener("click", function () {
+
+        if (listaEquipamentosPhp) return;
 
         const codigo = document.getElementById("modalApagarIdEquipamento").value;
         const nome = document.getElementById("modalApagarNome").textContent;
@@ -2134,6 +2144,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Guardar novo equipamento com pop-up visual
+    if (window.location.pathname.endsWith("novo_equipamento.html")) {
     formNovoEquipamento.addEventListener("submit", function (event) {
         event.preventDefault();
 
@@ -2143,6 +2154,7 @@ document.addEventListener("DOMContentLoaded", function () {
             "lista_equipamentos.html"
         );
     });
+    }
 
 });
 
@@ -3714,4 +3726,29 @@ document.addEventListener("DOMContentLoaded", function () {
             campoDescricao.value = botao.dataset.descricao || "";
         });
     });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const campoGarantia = document.getElementById("cobertaPorGarantia");
+    const campoCusto = document.getElementById("custoManutencao");
+
+    if (!campoGarantia || !campoCusto) return;
+
+    function atualizarCustoManutencao() {
+        if (campoGarantia.value === "1") {
+            campoCusto.value = "0.00";
+            campoCusto.readOnly = true;
+            campoCusto.classList.add("campo-bloqueado");
+        } else {
+            campoCusto.readOnly = false;
+            campoCusto.classList.remove("campo-bloqueado");
+
+            if (campoCusto.value === "0.00") {
+                campoCusto.value = "";
+            }
+        }
+    }
+
+    campoGarantia.addEventListener("change", atualizarCustoManutencao);
+    atualizarCustoManutencao();
 });
