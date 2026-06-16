@@ -3752,3 +3752,194 @@ document.addEventListener("DOMContentLoaded", function () {
     campoGarantia.addEventListener("change", atualizarCustoManutencao);
     atualizarCustoManutencao();
 });
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    const $ = function (id) {
+        return document.getElementById(id);
+    };
+
+    const seletorEquipamento = $('seletorEquipamentoAcessoriosBD');
+    const pesquisa = $('pesquisaAcessoriosBD');
+    const btnLimpar = $('btnLimparPesquisaAcessoriosBD');
+    const tabela = $('tabelaAcessoriosBD');
+
+    const modalAcessorio = $('modalAcessorioBD');
+    const form = $('formAcessorioBD');
+    const tituloModal = $('modalAcessorioBDLabel');
+
+    const periodicidadeManutencao = $('periodicidadeManutencaoBD');
+    const periodicidadeCalibracao = $('periodicidadeCalibracaoBD');
+
+    function setValue(id, valor) {
+        const campo = $(id);
+        if (campo) {
+            campo.value = valor ?? '';
+        }
+    }
+
+    function setText(id, valor) {
+        const campo = $(id);
+        if (campo) {
+            campo.textContent = valor || '---';
+        }
+    }
+
+    function setChecked(id, ativo) {
+        const campo = $(id);
+        if (campo) {
+            campo.checked = Boolean(ativo);
+        }
+    }
+
+    function normalizarTexto(texto) {
+        return String(texto || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .trim();
+    }
+
+    function filtrarTabela() {
+        if (!tabela || !pesquisa) return;
+
+        const termo = normalizarTexto(pesquisa.value);
+        const linhas = tabela.querySelectorAll('tbody tr');
+
+        linhas.forEach(function (linha) {
+            if (linha.classList.contains('linha-sem-acessorios')) return;
+            linha.classList.toggle('d-none', Boolean(termo) && !normalizarTexto(linha.textContent).includes(termo));
+        });
+    }
+
+    function atualizarPeriodicidades() {
+        const manutencaoSim = $('requerManutencaoSimBD')?.checked === true;
+        const calibracaoSim = $('requerCalibracaoSimBD')?.checked === true;
+
+        if (periodicidadeManutencao) {
+            periodicidadeManutencao.disabled = !manutencaoSim;
+            if (!manutencaoSim) periodicidadeManutencao.value = '';
+        }
+
+        if (periodicidadeCalibracao) {
+            periodicidadeCalibracao.disabled = !calibracaoSim;
+            if (!calibracaoSim) periodicidadeCalibracao.value = '';
+        }
+    }
+
+    function prepararModalCriacao(botao) {
+        if (form) form.reset();
+
+        setValue('acaoAcessorioBD', 'criar');
+        setValue('idAcessorioBD', '');
+        setValue('codigoAcessorioBD', botao?.dataset.codigoPreview || 'Gerado automaticamente');
+
+        if (tituloModal) {
+            tituloModal.innerHTML = '<i class="fa-solid fa-plug-circle-bolt me-2"></i>Adicionar Acessório';
+        }
+
+        setChecked('requerManutencaoNaoBD', true);
+        setChecked('requerManutencaoSimBD', false);
+        setChecked('requerCalibracaoNaoBD', true);
+        setChecked('requerCalibracaoSimBD', false);
+        atualizarPeriodicidades();
+    }
+
+    function prepararModalEdicao(botao) {
+        if (form) form.reset();
+        if (!botao) return;
+
+        setValue('acaoAcessorioBD', 'editar');
+        setValue('idAcessorioBD', botao.dataset.idAcessorio || '');
+        setValue('codigoAcessorioBD', botao.dataset.codigo || '---');
+        setValue('designacaoAcessorioBD', botao.dataset.designacao || '');
+        setValue('tipoAcessorioBD', botao.dataset.tipo || '');
+        setValue('fabricanteAcessorioBD', botao.dataset.fabricante || '');
+        setValue('modeloAcessorioBD', botao.dataset.modelo || '');
+        setValue('numeroSerieAcessorioBD', botao.dataset.numeroSerie || '');
+        setValue('estadoAcessorioBD', botao.dataset.estado || 'ativo');
+        setValue('idFornecedorGarantiaBD', botao.dataset.idFornecedorGarantia || '');
+        setValue('dataInicioGarantiaBD', botao.dataset.dataInicioGarantia || '');
+        setValue('dataFimGarantiaBD', botao.dataset.dataFimGarantia || '');
+        setValue('observacoesAcessorioBD', botao.dataset.observacoes || '');
+
+        const requerManutencao = botao.dataset.requerManutencao === '1';
+        const requerCalibracao = botao.dataset.requerCalibracao === '1';
+
+        setChecked('requerManutencaoSimBD', requerManutencao);
+        setChecked('requerManutencaoNaoBD', !requerManutencao);
+        setChecked('requerCalibracaoSimBD', requerCalibracao);
+        setChecked('requerCalibracaoNaoBD', !requerCalibracao);
+
+        atualizarPeriodicidades();
+
+        if (periodicidadeManutencao && requerManutencao) {
+            periodicidadeManutencao.value = botao.dataset.periodicidadeManutencao || '';
+        }
+
+        if (periodicidadeCalibracao && requerCalibracao) {
+            periodicidadeCalibracao.value = botao.dataset.periodicidadeCalibracao || '';
+        }
+
+        if (tituloModal) {
+            tituloModal.innerHTML = '<i class="fa-solid fa-file-pen me-2"></i>Editar Acessório';
+        }
+    }
+
+    if (modalAcessorio) {
+        modalAcessorio.addEventListener('show.bs.modal', function (event) {
+            const botao = event.relatedTarget;
+
+            if (botao && botao.classList.contains('btn-editar-acessorio-bd')) {
+                prepararModalEdicao(botao);
+            } else {
+                prepararModalCriacao(botao);
+            }
+        });
+    }
+
+    if (seletorEquipamento) {
+        seletorEquipamento.addEventListener('change', function () {
+            if (this.value) {
+                window.location.href = 'acessorios.php?id_equipamento=' + encodeURIComponent(this.value);
+            }
+        });
+    }
+
+    if (pesquisa) {
+        pesquisa.addEventListener('input', filtrarTabela);
+    }
+
+    if (btnLimpar) {
+        btnLimpar.addEventListener('click', function () {
+            if (pesquisa) pesquisa.value = '';
+            filtrarTabela();
+        });
+    }
+
+    document.querySelectorAll('input[name="requerManutencao"]').forEach(function (campo) {
+        campo.addEventListener('change', atualizarPeriodicidades);
+    });
+
+    document.querySelectorAll('input[name="requerCalibracao"]').forEach(function (campo) {
+        campo.addEventListener('change', atualizarPeriodicidades);
+    });
+
+    const modalEliminar = $('modalEliminarAcessorioBD');
+
+    if (modalEliminar) {
+        modalEliminar.addEventListener('show.bs.modal', function (event) {
+            const botao = event.relatedTarget;
+            if (!botao) return;
+
+            setValue('idAcessorioEliminarBD', botao.dataset.idAcessorio || '');
+            setText('modalEliminarAcessorioCodigoBD', botao.dataset.codigo || '---');
+            setText('modalEliminarAcessorioNomeBD', botao.dataset.designacao || '---');
+            setText('modalEliminarAcessorioTipoBD', botao.dataset.tipo || '---');
+            setText('modalEliminarAcessorioSerieBD', botao.dataset.serie || '---');
+            setText('modalEliminarAcessorioEstadoBD', botao.dataset.estado || '---');
+        });
+    }
+
+    atualizarPeriodicidades();
+});

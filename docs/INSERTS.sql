@@ -1036,3 +1036,633 @@ INSERT INTO documentos_equipamentos (
 
 
 
+INSERT INTO acessorios_equipamento (
+    id_equipamento,
+    numero_sequencial,
+    designacao,
+    tipo,
+    fabricante,
+    modelo,
+    numero_serie,
+    estado,
+    requer_manutencao,
+    periodicidade_manutencao,
+    requer_calibracao,
+    periodicidade_calibracao,
+    id_fornecedor_garantia,
+    data_inicio_garantia,
+    data_fim_garantia,
+    observacoes,
+    atualizado_por
+) VALUES
+
+-- =========================================================
+-- 01.001 - Ventilador Pulmonar
+-- =========================================================
+
+(
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '01.001' LIMIT 1),
+    1,
+    'Circuito respiratório reutilizável',
+    'modulo',
+    'Drager',
+    'Reusable Breathing Circuit',
+    'SN-ACC-01001001',
+    'ativo',
+    1,
+    'semestral',
+    0,
+    NULL,
+    (SELECT ef.id_fornecedor_garantia
+     FROM equipamentos_fornecedores ef
+     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
+     WHERE e.codigo_equipamento = '01.001'
+     LIMIT 1),
+    '2022-03-15',
+    '2025-03-15',
+    'Acessório associado ao ventilador pulmonar.',
+    'admin'
+),
+(
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '01.001' LIMIT 1),
+    2,
+    'Sensor de fluxo expiratório',
+    'sensor',
+    'Drager',
+    'FlowSensor Pro',
+    'SN-ACC-01001002',
+    'ativo',
+    1,
+    'anual',
+    1,
+    'anual',
+    (SELECT ef.id_fornecedor_garantia
+     FROM equipamentos_fornecedores ef
+     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
+     WHERE e.codigo_equipamento = '01.001'
+     LIMIT 1),
+    '2022-03-15',
+    '2025-03-15',
+    'Sensor sujeito a verificação funcional e calibração periódica.',
+    'admin'
+),
+
+-- =========================================================
+-- 01.002 - Desfibrilhador Externo
+-- =========================================================
+
+(
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '01.002' LIMIT 1),
+    1,
+    'Pás de desfibrilhação adulto',
+    'modulo',
+    'Philips',
+    'Adult Defib Paddles',
+    'SN-ACC-01002001',
+    'ativo',
+    1,
+    'anual',
+    0,
+    NULL,
+    (SELECT ef.id_fornecedor_garantia
+     FROM equipamentos_fornecedores ef
+     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
+     WHERE e.codigo_equipamento = '01.002'
+     LIMIT 1),
+    '2021-07-20',
+    '2024-07-20',
+    'Pás reutilizáveis para desfibrilhação adulto.',
+    'admin'
+),
+(
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '01.002' LIMIT 1),
+    2,
+    'Bateria recarregável',
+    'bateria',
+    'Philips',
+    'Defib Battery Pack',
+    'SN-ACC-01002002',
+    'ativo',
+    1,
+    'anual',
+    0,
+    NULL,
+    (SELECT ef.id_fornecedor_garantia
+     FROM equipamentos_fornecedores ef
+     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
+     WHERE e.codigo_equipamento = '01.002'
+     LIMIT 1),
+    '2021-07-20',
+    '2024-07-20',
+    'Bateria principal do desfibrilhador.',
+    'admin'
+),
+
+-- =========================================================
+-- 02.001 - Ecógrafo Portátil
+-- =========================================================
+
+(
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '02.001' LIMIT 1),
+    1,
+    'Sonda convexa',
+    'sensor',
+    'Philips',
+    'C5-2 Convex Probe',
+    'SN-ACC-02001001',
+    'ativo',
+    1,
+    'anual',
+    1,
+    'anual',
+    (SELECT ef.id_fornecedor_garantia
+     FROM equipamentos_fornecedores ef
+     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
+     WHERE e.codigo_equipamento = '02.001'
+     LIMIT 1),
+    '2021-09-01',
+    '2024-09-01',
+    'Sonda convexa para exames abdominais.',
+    'admin'
+),
+(
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '02.001' LIMIT 1),
+    2,
+    'Sonda linear',
+    'sensor',
+    'Philips',
+    'L12-4 Linear Probe',
+    'SN-ACC-02001002',
+    'ativo',
+    1,
+    'anual',
+    1,
+    'anual',
+    (SELECT ef.id_fornecedor_garantia
+     FROM equipamentos_fornecedores ef
+     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
+     WHERE e.codigo_equipamento = '02.001'
+     LIMIT 1),
+    '2021-09-01',
+    '2024-09-01',
+    'Sonda linear para exames superficiais e vasculares.',
+    'admin'
+),
+
+-- =========================================================
+-- 03.001 - Centrífuga Laboratorial
+-- =========================================================
+
+(
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '03.001' LIMIT 1),
+    1,
+    'Rotor para tubos de 15 mL',
+    'modulo',
+    'Biomedical Solutions',
+    'Rotor 15mL',
+    'SN-ACC-03001001',
+    'ativo',
+    1,
+    'anual',
+    0,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    'Rotor utilizado para centrifugação de amostras clínicas.',
+    'admin'
+),
+(
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '03.001' LIMIT 1),
+    2,
+    'Adaptador para microtubos',
+    'adaptador',
+    'Biomedical Solutions',
+    'Microtube Adapter',
+    'SN-ACC-03001002',
+    'ativo',
+    0,
+    NULL,
+    0,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    'Adaptador para utilização de microtubos na centrífuga.',
+    'admin'
+),
+
+-- =========================================================
+-- 04.001 - Monitor Multiparamétrico
+-- =========================================================
+
+(
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '04.001' LIMIT 1),
+    1,
+    'Cabo ECG 5 derivações',
+    'cabo',
+    'Philips',
+    'ECG 5 Lead Cable',
+    'SN-ACC-04001001',
+    'ativo',
+    1,
+    'anual',
+    0,
+    NULL,
+    (SELECT ef.id_fornecedor_garantia
+     FROM equipamentos_fornecedores ef
+     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
+     WHERE e.codigo_equipamento = '04.001'
+     LIMIT 1),
+    '2022-08-20',
+    '2025-08-20',
+    'Cabo ECG associado ao monitor multiparamétrico.',
+    'admin'
+),
+(
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '04.001' LIMIT 1),
+    2,
+    'Sensor SpO2 adulto',
+    'sensor',
+    'Philips',
+    'SpO2 Adult Sensor',
+    'SN-ACC-04001002',
+    'ativo',
+    1,
+    'anual',
+    1,
+    'bienal',
+    (SELECT ef.id_fornecedor_garantia
+     FROM equipamentos_fornecedores ef
+     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
+     WHERE e.codigo_equipamento = '04.001'
+     LIMIT 1),
+    '2022-08-20',
+    '2025-08-20',
+    'Sensor de oximetria sujeito a verificação periódica.',
+    'admin'
+),
+(
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '04.001' LIMIT 1),
+    3,
+    'Braçadeira NIBP adulto',
+    'consumivel_reutilizavel',
+    'Philips',
+    'NIBP Adult Cuff',
+    'SN-ACC-04001003',
+    'ativo',
+    1,
+    'anual',
+    0,
+    NULL,
+    (SELECT ef.id_fornecedor_garantia
+     FROM equipamentos_fornecedores ef
+     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
+     WHERE e.codigo_equipamento = '04.001'
+     LIMIT 1),
+    '2022-08-20',
+    '2025-08-20',
+    'Braçadeira reutilizável para medição não invasiva da pressão arterial.',
+    'admin'
+),
+
+-- =========================================================
+-- 05.001 - Bomba Infusora Volumétrica
+-- =========================================================
+
+(
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '05.001' LIMIT 1),
+    1,
+    'Suporte para seringa/linha de infusão',
+    'adaptador',
+    'MedSupply Portugal',
+    'Infusion Line Holder',
+    'SN-ACC-05001001',
+    'ativo',
+    1,
+    'anual',
+    0,
+    NULL,
+    (SELECT ef.id_fornecedor_garantia
+     FROM equipamentos_fornecedores ef
+     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
+     WHERE e.codigo_equipamento = '05.001'
+     LIMIT 1),
+    '2023-03-10',
+    '2026-03-10',
+    'Acessório de suporte à administração intravenosa.',
+    'admin'
+),
+(
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '05.001' LIMIT 1),
+    2,
+    'Sensor de gotas',
+    'sensor',
+    'MedSupply Portugal',
+    'Drop Sensor DS-100',
+    'SN-ACC-05001002',
+    'ativo',
+    1,
+    'anual',
+    1,
+    'anual',
+    (SELECT ef.id_fornecedor_garantia
+     FROM equipamentos_fornecedores ef
+     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
+     WHERE e.codigo_equipamento = '05.001'
+     LIMIT 1),
+    '2023-03-10',
+    '2026-03-10',
+    'Sensor associado ao controlo do fluxo de perfusão.',
+    'admin'
+),
+
+-- =========================================================
+-- 06.001 - Eletrocardiógrafo
+-- =========================================================
+
+(
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '06.001' LIMIT 1),
+    1,
+    'Cabo ECG 10 derivações',
+    'cabo',
+    'Philips',
+    'ECG 10 Lead Cable',
+    'SN-ACC-06001001',
+    'ativo',
+    1,
+    'anual',
+    0,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    'Cabo principal para aquisição de ECG de 12 derivações.',
+    'admin'
+),
+(
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '06.001' LIMIT 1),
+    2,
+    'Conjunto de elétrodos reutilizáveis',
+    'consumivel_reutilizavel',
+    'Philips',
+    'Reusable ECG Electrodes',
+    'SN-ACC-06001002',
+    'ativo',
+    1,
+    'anual',
+    0,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    'Elétrodos reutilizáveis associados ao eletrocardiógrafo.',
+    'admin'
+),
+
+-- =========================================================
+-- 07.001 - Incubadora Neonatal
+-- =========================================================
+
+(
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '07.001' LIMIT 1),
+    1,
+    'Sensor de temperatura neonatal',
+    'sensor',
+    'Drager',
+    'NeoTemp Sensor',
+    'SN-ACC-07001001',
+    'ativo',
+    1,
+    'semestral',
+    1,
+    'anual',
+    (SELECT ef.id_fornecedor_garantia
+     FROM equipamentos_fornecedores ef
+     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
+     WHERE e.codigo_equipamento = '07.001'
+     LIMIT 1),
+    '2022-01-20',
+    '2025-01-20',
+    'Sensor crítico para controlo térmico neonatal.',
+    'admin'
+),
+(
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '07.001' LIMIT 1),
+    2,
+    'Sensor de humidade',
+    'sensor',
+    'Drager',
+    'NeoHumidity Sensor',
+    'SN-ACC-07001002',
+    'ativo',
+    1,
+    'semestral',
+    1,
+    'anual',
+    (SELECT ef.id_fornecedor_garantia
+     FROM equipamentos_fornecedores ef
+     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
+     WHERE e.codigo_equipamento = '07.001'
+     LIMIT 1),
+    '2022-01-20',
+    '2025-01-20',
+    'Sensor sujeito a verificação e calibração periódica.',
+    'admin'
+),
+
+-- =========================================================
+-- 08.001 - Autoclave Hospitalar
+-- =========================================================
+
+(
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '08.001' LIMIT 1),
+    1,
+    'Cesto de esterilização',
+    'modulo',
+    'Biomedical Solutions',
+    'Sterilization Basket',
+    'SN-ACC-08001001',
+    'ativo',
+    1,
+    'anual',
+    0,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    'Cesto utilizado nos ciclos de esterilização.',
+    'admin'
+),
+(
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '08.001' LIMIT 1),
+    2,
+    'Sonda de temperatura da câmara',
+    'sensor',
+    'Biomedical Solutions',
+    'Chamber Temp Probe',
+    'SN-ACC-08001002',
+    'em_manutencao',
+    1,
+    'semestral',
+    1,
+    'anual',
+    NULL,
+    NULL,
+    NULL,
+    'Sonda em avaliação técnica devido a instabilidade de leitura.',
+    'admin'
+),
+
+-- =========================================================
+-- 09.001 - Cama Hospitalar Elétrica
+-- =========================================================
+
+(
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '09.001' LIMIT 1),
+    1,
+    'Comando elétrico da cama',
+    'modulo',
+    'HospitalTech Equipamentos',
+    'Bed Remote Control',
+    'SN-ACC-09001001',
+    'ativo',
+    1,
+    'anual',
+    0,
+    NULL,
+    (SELECT ef.id_fornecedor_garantia
+     FROM equipamentos_fornecedores ef
+     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
+     WHERE e.codigo_equipamento = '09.001'
+     LIMIT 1),
+    '2023-01-20',
+    '2025-01-20',
+    'Comando elétrico associado à cama hospitalar.',
+    'admin'
+),
+(
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '09.001' LIMIT 1),
+    2,
+    'Bateria de emergência',
+    'bateria',
+    'HospitalTech Equipamentos',
+    'Emergency Battery Pack',
+    'SN-ACC-09001002',
+    'ativo',
+    1,
+    'anual',
+    0,
+    NULL,
+    (SELECT ef.id_fornecedor_garantia
+     FROM equipamentos_fornecedores ef
+     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
+     WHERE e.codigo_equipamento = '09.001'
+     LIMIT 1),
+    '2023-01-20',
+    '2025-01-20',
+    'Bateria de apoio para movimentação em caso de falha elétrica.',
+    'admin'
+);
+
+UPDATE acessorios_equipamento a
+INNER JOIN equipamentos e
+    ON e.id_equipamento = a.id_equipamento
+SET a.id_localizacao = e.id_localizacao
+WHERE a.id_localizacao IS NULL;
+
+INSERT INTO historico_etapas_processos (
+    tipo_processo,
+    id_manutencao,
+    id_calibracao,
+    estado_anterior,
+    estado_novo,
+    responsavel_etapa,
+    tipo_responsavel,
+    id_fornecedor_responsavel,
+    observacoes,
+    data_registo,
+    atualizado_por
+)
+SELECT
+    'manutencao',
+    m.id_manutencao,
+    NULL,
+    NULL,
+    'processo_finalizado',
+
+    COALESCE(m.tecnico_interno, f.nome_empresa, 'Registo migrado'),
+
+    CASE
+        WHEN m.id_fornecedor_responsavel IS NULL AND m.tecnico_interno IS NOT NULL THEN 'interno'
+        WHEN m.id_fornecedor_responsavel IS NOT NULL THEN 'fornecedor'
+        ELSE 'sistema'
+    END,
+
+    m.id_fornecedor_responsavel,
+
+    'Registo antigo migrado para o novo modelo de processos.',
+
+    COALESCE(CONCAT(m.data_finalizacao, ' 09:00:00'), m.criado_em, NOW()),
+
+    COALESCE(m.atualizado_por, 'admin')
+FROM manutencoes_equipamento m
+LEFT JOIN fornecedores f
+    ON f.id_fornecedor = m.id_fornecedor_responsavel
+WHERE m.isActive = 1
+  AND m.estado_processo = 'processo_finalizado'
+  AND NOT EXISTS (
+      SELECT 1
+      FROM historico_etapas_processos h
+      WHERE h.tipo_processo = 'manutencao'
+        AND h.id_manutencao = m.id_manutencao
+        AND h.estado_novo = 'processo_finalizado'
+  );
+  
+  INSERT INTO historico_etapas_processos (
+    tipo_processo,
+    id_manutencao,
+    id_calibracao,
+    estado_anterior,
+    estado_novo,
+    responsavel_etapa,
+    tipo_responsavel,
+    id_fornecedor_responsavel,
+    observacoes,
+    data_registo,
+    atualizado_por
+)
+SELECT
+    'calibracao',
+    NULL,
+    c.id_calibracao,
+    NULL,
+    'processo_finalizado',
+
+    COALESCE(c.tecnico_interno, f.nome_empresa, 'Registo migrado'),
+
+    CASE
+        WHEN c.id_fornecedor_responsavel IS NULL AND c.tecnico_interno IS NOT NULL THEN 'interno'
+        WHEN c.id_fornecedor_responsavel IS NOT NULL THEN 'fornecedor'
+        ELSE 'sistema'
+    END,
+
+    c.id_fornecedor_responsavel,
+
+    'Registo antigo migrado para o novo modelo de processos.',
+
+    COALESCE(CONCAT(c.data_finalizacao, ' 09:00:00'), c.criado_em, NOW()),
+
+    COALESCE(c.atualizado_por, 'admin')
+FROM calibracoes_equipamento c
+LEFT JOIN fornecedores f
+    ON f.id_fornecedor = c.id_fornecedor_responsavel
+WHERE c.isActive = 1
+  AND c.estado_processo = 'processo_finalizado'
+  AND NOT EXISTS (
+      SELECT 1
+      FROM historico_etapas_processos h
+      WHERE h.tipo_processo = 'calibracao'
+        AND h.id_calibracao = c.id_calibracao
+        AND h.estado_novo = 'processo_finalizado'
+  );

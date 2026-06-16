@@ -1,5 +1,9 @@
 <?php
 require_once __DIR__ . '/../../config/config.php';
+
+if (!headers_sent()) {
+    header('Content-Type: text/html; charset=UTF-8');
+}
 ?>
 
 <!DOCTYPE html>

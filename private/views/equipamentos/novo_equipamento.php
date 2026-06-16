@@ -25,23 +25,33 @@ function h_novo_equipamento($valor)
 
 function valor_novo_equipamento($campo, $padrao = '')
 {
-    return h_novo_equipamento($_POST[$campo] ?? $padrao);
+    global $chaveSessao;
+
+    return valor_temporario($chaveSessao, $campo, $padrao);
 }
 
 function selected_novo_equipamento($campo, $valor, $padrao = '')
 {
-    return (string) ($_POST[$campo] ?? $padrao) === (string) $valor ? 'selected' : '';
+    global $chaveSessao;
+
+    $valorAtual = $_SESSION[$chaveSessao][$campo] ?? $padrao;
+
+    return (string) $valorAtual === (string) $valor ? 'selected' : '';
 }
 
 function data_novo_equipamento($campo)
 {
-    $valor = trim($_POST[$campo] ?? '');
+    global $chaveSessao;
+
+    $valor = trim($_SESSION[$chaveSessao][$campo] ?? $_POST[$campo] ?? '');
     return $valor !== '' ? $valor : null;
 }
 
 function decimal_novo_equipamento($campo)
 {
-    $valor = trim($_POST[$campo] ?? '');
+    global $chaveSessao;
+
+    $valor = trim($_SESSION[$chaveSessao][$campo] ?? $_POST[$campo] ?? '');
     return $valor !== '' ? (float) str_replace(',', '.', $valor) : null;
 }
 
@@ -232,41 +242,217 @@ $fornecedoresComerciais = $pdo->query("
 ")->fetchAll();
 
 
+/* =========================================================
+   FORMULÁRIO POR ETAPAS DO NOVO EQUIPAMENTO
+   Usa as funções genéricas de funcoes.php para guardar dados
+   temporários em sessão antes da criação final.
+   ========================================================= */
+$chaveSessao = 'novo_equipamento';
+$ficheiroAtual = 'novo_equipamento.php';
+
+$etapas = [
+    'identificacao',
+    'estado_localizacao',
+    'aquisicao',
+    'fornecedores',
+    'observacoes',
+    'documentos'
+];
+
+$nomesEtapasEquipamento = [
+    'identificacao' => 'Identificação',
+    'estado_localizacao' => 'Estado e Localização',
+    'aquisicao' => 'Aquisição',
+    'fornecedores' => 'Fornecedores',
+    'observacoes' => 'Observações',
+    'documentos' => 'Documentos'
+];
+
+$camposPorEtapa = [
+    'identificacao' => [
+        'idFamiliaEquipamento',
+        'nomeEquipamento',
+        'modelo',
+        'numeroSerie',
+        'tipoEntrada'
+    ],
+    'estado_localizacao' => [
+        'idLocalizacao',
+        'estado',
+        'criticidade',
+        'periodicidadeManutencao',
+        'periodicidadeCalibracao',
+        'responsavelEquipamento'
+    ],
+    'aquisicao' => [
+        'valorAquisicao',
+        'dataFabrico',
+        'dataAquisicao',
+        'dataInstalacao'
+    ],
+    'fornecedores' => [
+        'idFornecedorFabricante',
+        'idFornecedorComercial',
+        'fornecedorGarantia',
+        'dataInicioGarantia',
+        'dataFimGarantia',
+        'observacoesFornecedor'
+    ],
+    'observacoes' => [
+        'observacoes'
+    ],
+    'documentos' => []
+];
+
+$camposObrigatorios = [
+    'identificacao' => [
+        'idFamiliaEquipamento',
+        'nomeEquipamento',
+        'modelo',
+        'numeroSerie'
+    ],
+    'estado_localizacao' => [
+        'idLocalizacao',
+        'estado',
+        'criticidade'
+    ],
+    'aquisicao' => [],
+    'fornecedores' => [
+        'idFornecedorFabricante',
+        'idFornecedorComercial'
+    ],
+    'observacoes' => [],
+    'documentos' => []
+];
+
+$labelsCampos = [
+    'idFamiliaEquipamento' => 'Família do equipamento',
+    'nomeEquipamento' => 'Designação do equipamento',
+    'modelo' => 'Modelo',
+    'numeroSerie' => 'Número de série',
+    'idLocalizacao' => 'Localização',
+    'estado' => 'Estado',
+    'criticidade' => 'Criticidade',
+    'idFornecedorFabricante' => 'Fornecedor fabricante',
+    'idFornecedorComercial' => 'Fornecedor comercial'
+];
+
 $errosEquipamento = [];
 
-/* =========================================================
-   PROCESSAMENTO DO NOVO EQUIPAMENTO
-   ========================================================= */
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'inserir') {
-    $camposObrigatorios = [
-        'idFamiliaEquipamento' => 'Família do equipamento',
-        'nomeEquipamento' => 'Designação do equipamento',
-        'modelo' => 'Modelo',
-        'numeroSerie' => 'Número de série',
-        'idLocalizacao' => 'Localização',
-        'estado' => 'Estado',
-        'criticidade' => 'Criticidade',
-        'idFornecedorFabricante' => 'Fornecedor fabricante',
-        'idFornecedorComercial' => 'Fornecedor comercial'
-    ];
+if (isset($_GET['limpar'])) {
+    unset($_SESSION[$chaveSessao]);
+    header('Location: ' . $ficheiroAtual);
+    exit;
+}
 
-    foreach ($camposObrigatorios as $campo => $label) {
-        if (trim($_POST[$campo] ?? '') === '') {
-            $errosEquipamento[] = 'O campo "' . $label . '" é obrigatório.';
+$etapaAtual = $_GET['etapa'] ?? $etapas[0];
+
+if (!in_array($etapaAtual, $etapas, true)) {
+    $etapaAtual = $etapas[0];
+}
+
+if (!isset($_SESSION[$chaveSessao]['estado'])) {
+    $_SESSION[$chaveSessao]['estado'] = 'ativo';
+}
+
+/* =========================================================
+   PROCESSAMENTO DO NOVO EQUIPAMENTO POR ETAPAS
+   ========================================================= */
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $etapaSubmetida = $_POST['etapa_atual'] ?? $etapaAtual;
+
+    if (!in_array($etapaSubmetida, $etapas, true)) {
+        $etapaSubmetida = $etapas[0];
+    }
+
+    $acaoEtapa = $_POST['acao_etapa'] ?? '';
+
+    if ($acaoEtapa === 'limpar_etapa') {
+        limpar_etapa_temporaria($chaveSessao, $etapaSubmetida, $camposPorEtapa);
+
+        header('Location: ' . $ficheiroAtual . '?etapa=' . urlencode($etapaSubmetida));
+        exit;
+    }
+
+    guardar_etapa_temporaria($chaveSessao, $etapaSubmetida, $camposPorEtapa);
+
+    if ($acaoEtapa === 'anterior') {
+        header('Location: ' . $ficheiroAtual . '?etapa=' . urlencode(etapa_anterior($etapaSubmetida, $etapas)));
+        exit;
+    }
+
+    if (isset($_POST['etapa_destino'])) {
+        $etapaDestino = $_POST['etapa_destino'];
+
+        if (!in_array($etapaDestino, $etapas, true)) {
+            $etapaDestino = $etapaSubmetida;
+        }
+
+        $indiceSubmetida = indice_etapa($etapaSubmetida, $etapas);
+        $indiceDestino = indice_etapa($etapaDestino, $etapas);
+
+        if ($indiceDestino <= $indiceSubmetida) {
+            header('Location: ' . $ficheiroAtual . '?etapa=' . urlencode($etapaDestino));
+            exit;
+        }
+
+        for ($i = 0; $i < $indiceDestino; $i++) {
+            $etapaValidar = $etapas[$i];
+            $errosEtapa = validar_etapa_temporaria($chaveSessao, $etapaValidar, $camposObrigatorios, $labelsCampos);
+
+            if (!empty($errosEtapa)) {
+                $errosEquipamento = $errosEtapa;
+                $etapaAtual = $etapaValidar;
+                break;
+            }
+        }
+
+        if (empty($errosEquipamento)) {
+            header('Location: ' . $ficheiroAtual . '?etapa=' . urlencode($etapaDestino));
+            exit;
         }
     }
 
-    $opcaoFornecedorGarantia = trim($_POST['fornecedorGarantia'] ?? '');
+    if (empty($errosEquipamento)) {
+        $errosEquipamento = validar_etapa_temporaria($chaveSessao, $etapaSubmetida, $camposObrigatorios, $labelsCampos);
 
-    if (!in_array($opcaoFornecedorGarantia, ['', 'fabricante', 'comercial'], true)) {
-        $errosEquipamento[] = 'O fornecedor da garantia só pode ser o fabricante, o fornecedor comercial ou ficar vazio.';
+        if (!empty($errosEquipamento)) {
+            $etapaAtual = $etapaSubmetida;
+        } else {
+            $proximaEtapa = proxima_etapa($etapaSubmetida, $etapas);
+
+            if ($proximaEtapa !== null) {
+                header('Location: ' . $ficheiroAtual . '?etapa=' . urlencode($proximaEtapa));
+                exit;
+            }
+        }
     }
 
-    if (
-        $opcaoFornecedorGarantia !== '' &&
-        data_novo_equipamento('dataFimGarantia') === null
-    ) {
-        $errosEquipamento[] = 'Se indicar um fornecedor de garantia, indique também a data de fim da garantia.';
+    if (empty($errosEquipamento)) {
+        foreach ($etapas as $etapa) {
+            $errosEtapa = validar_etapa_temporaria($chaveSessao, $etapa, $camposObrigatorios, $labelsCampos);
+
+            if (!empty($errosEtapa)) {
+                $errosEquipamento = $errosEtapa;
+                $etapaAtual = $etapa;
+                break;
+            }
+        }
+    }
+
+    if (empty($errosEquipamento)) {
+        $dadosEquipamento = $_SESSION[$chaveSessao] ?? [];
+        $opcaoFornecedorGarantia = trim($dadosEquipamento['fornecedorGarantia'] ?? '');
+
+        if (!in_array($opcaoFornecedorGarantia, ['', 'fabricante', 'comercial'], true)) {
+            $errosEquipamento[] = 'O fornecedor da garantia só pode ser o fabricante, o fornecedor comercial ou ficar vazio.';
+            $etapaAtual = 'fornecedores';
+        }
+
+        if ($opcaoFornecedorGarantia !== '' && data_novo_equipamento('dataFimGarantia') === null) {
+            $errosEquipamento[] = 'Se indicar um fornecedor de garantia, indique também a data de fim da garantia.';
+            $etapaAtual = 'fornecedores';
+        }
     }
 
     if (empty($errosEquipamento)) {
@@ -275,7 +461,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'inserir
 
             $codigoEquipamento = gerar_codigo_novo_equipamento(
                 $pdo,
-                (int) $_POST['idFamiliaEquipamento']
+                (int) $dadosEquipamento['idFamiliaEquipamento']
             );
 
             if (!$codigoEquipamento) {
@@ -329,24 +515,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'inserir
             ");
 
             $stmtInserirEquipamento->execute([
-                ':id_familia_equipamento' => (int) $_POST['idFamiliaEquipamento'],
+                ':id_familia_equipamento' => (int) $dadosEquipamento['idFamiliaEquipamento'],
                 ':numero_sequencial' => $codigoEquipamento['numero_sequencial'],
                 ':codigo_equipamento' => $codigoEquipamento['codigo_equipamento'],
-                ':designacao' => trim($_POST['nomeEquipamento']),
-                ':modelo' => trim($_POST['modelo']),
-                ':numero_serie' => trim($_POST['numeroSerie']),
-                ':tipo_entrada' => trim($_POST['tipoEntrada'] ?? '') ?: null,
+                ':designacao' => trim($dadosEquipamento['nomeEquipamento'] ?? ''),
+                ':modelo' => trim($dadosEquipamento['modelo'] ?? ''),
+                ':numero_serie' => trim($dadosEquipamento['numeroSerie'] ?? ''),
+                ':tipo_entrada' => trim($dadosEquipamento['tipoEntrada'] ?? '') ?: null,
                 ':valor_aquisicao' => decimal_novo_equipamento('valorAquisicao'),
-                ':id_localizacao' => (int) $_POST['idLocalizacao'],
-                ':estado' => trim($_POST['estado']),
-                ':criticidade' => trim($_POST['criticidade']),
-                ':periodicidade_manutencao' => trim($_POST['periodicidadeManutencao'] ?? '') ?: null,
-                ':periodicidade_calibracao' => trim($_POST['periodicidadeCalibracao'] ?? '') ?: null,
+                ':id_localizacao' => (int) $dadosEquipamento['idLocalizacao'],
+                ':estado' => trim($dadosEquipamento['estado'] ?? 'ativo'),
+                ':criticidade' => trim($dadosEquipamento['criticidade'] ?? ''),
+                ':periodicidade_manutencao' => trim($dadosEquipamento['periodicidadeManutencao'] ?? '') ?: null,
+                ':periodicidade_calibracao' => trim($dadosEquipamento['periodicidadeCalibracao'] ?? '') ?: null,
                 ':data_fabrico' => data_novo_equipamento('dataFabrico'),
                 ':data_aquisicao' => data_novo_equipamento('dataAquisicao'),
                 ':data_instalacao' => data_novo_equipamento('dataInstalacao'),
-                ':responsavel_equipamento' => trim($_POST['responsavelEquipamento'] ?? '') ?: null,
-                ':observacoes' => trim($_POST['observacoes'] ?? '') ?: null,
+                ':responsavel_equipamento' => trim($dadosEquipamento['responsavelEquipamento'] ?? '') ?: null,
+                ':observacoes' => trim($dadosEquipamento['observacoes'] ?? '') ?: null,
                 ':atualizado_por' => $_SESSION['nome'] ?? $_SESSION['username'] ?? 'sistema'
             ]);
 
@@ -376,10 +562,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'inserir
                 )
             ");
 
-            $idFornecedorFabricante = (int) $_POST['idFornecedorFabricante'];
-            $idFornecedorComercial = (int) $_POST['idFornecedorComercial'];
-            $opcaoFornecedorGarantia = trim($_POST['fornecedorGarantia'] ?? '');
-
+            $idFornecedorFabricante = (int) $dadosEquipamento['idFornecedorFabricante'];
+            $idFornecedorComercial = (int) $dadosEquipamento['idFornecedorComercial'];
             $idFornecedorGarantia = null;
 
             if ($opcaoFornecedorGarantia === 'fabricante') {
@@ -395,7 +579,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'inserir
                 ':id_fornecedor_garantia' => $idFornecedorGarantia,
                 ':data_inicio_garantia' => data_novo_equipamento('dataInicioGarantia'),
                 ':data_fim_garantia' => data_novo_equipamento('dataFimGarantia'),
-                ':observacoes' => trim($_POST['observacoesFornecedor'] ?? '') ?: null,
+                ':observacoes' => trim($dadosEquipamento['observacoesFornecedor'] ?? '') ?: null,
                 ':atualizado_por' => $_SESSION['nome'] ?? $_SESSION['username'] ?? 'sistema'
             ]);
 
@@ -410,6 +594,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'inserir
 
             $pdo->commit();
 
+            unset($_SESSION[$chaveSessao]);
             header('Location: ficha_equipamento.php?id=' . urlencode((string) $idEquipamento) . '&criado=1');
             exit;
 
@@ -433,13 +618,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'inserir
         }
     }
 }
-
 require_once __DIR__ . '/../../includes/header.php';
 require_once __DIR__ . '/../../includes/nav.php';
 require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
 
-<main class="conteudo-private novo-equipamento-page">
+<main class="conteudo-private ficha-equipamento-page novo-equipamento-page">
 
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
         <div>
@@ -448,18 +632,39 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 Registe os dados principais do equipamento, os fornecedores associados e a documentação inicial.
             </p>
         </div>
-
         <div class="form-actions">
-            <a href="lista_equipamentos.php" class="btn btn-voltar">
-                <i class="fa-solid fa-arrow-left me-2"></i> Voltar à Lista
+            <a href="lista_equipamentos.php" class="btn btn-cancelar">
+                <i class="fa-solid fa-xmark me-2"></i> Cancelar
             </a>
 
-            <button type="button" class="btn btn-limpar" id="btnLimparNovoEquipamento">
+            <button type="submit"
+                    class="btn btn-limpar"
+                    name="acao_etapa"
+                    value="limpar_etapa"
+                    form="formNovoEquipamento"
+                    formnovalidate>
                 <i class="fa-solid fa-eraser me-2"></i> Limpar
             </button>
 
-            <button type="submit" class="btn btn-guardar" form="formNovoEquipamento">
-                <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Equipamento
+            <?php if ($etapaAtual !== $etapas[0]): ?>
+                <button type="submit"
+                        class="btn btn-limpar"
+                        name="acao_etapa"
+                        value="anterior"
+                        form="formNovoEquipamento"
+                        formnovalidate>
+                    <i class="fa-solid fa-arrow-left me-2"></i> Anterior
+                </button>
+            <?php endif; ?>
+
+            <button type="submit"
+                    class="btn btn-guardar"
+                    name="acao_etapa"
+                    value="<?php echo $etapaAtual === 'documentos' ? 'finalizar' : 'continuar'; ?>"
+                    form="formNovoEquipamento"
+                    formnovalidate>
+                <i class="fa-solid <?php echo $etapaAtual === 'documentos' ? 'fa-floppy-disk' : 'fa-arrow-right'; ?> me-2"></i>
+                <?php echo $etapaAtual === 'documentos' ? 'Guardar Equipamento' : 'Guardar e Continuar'; ?>
             </button>
         </div>
     </div>
@@ -468,8 +673,10 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         <div class="form-alerta-erros" role="alert">
             <strong>
                 <i class="fa-solid fa-triangle-exclamation me-2"></i>
-                Não foi possível guardar o equipamento.
+                Não é possível avançar para essa etapa.
             </strong>
+
+            <p class="mb-2 mt-2">Preencha os campos obrigatórios antes de continuar.</p>
 
             <ul>
                 <?php foreach ($errosEquipamento as $erro): ?>
@@ -481,49 +688,77 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
     <form class="form-equipamento form-ficha-equipamento"
           id="formNovoEquipamento"
-          action="novo_equipamento.php"
+          action="novo_equipamento.php?etapa=<?php echo urlencode($etapaAtual); ?>"
           method="post"
           enctype="multipart/form-data">
 
-        <input type="hidden" name="acao" value="inserir">
+        <input type="hidden" name="etapa_atual" value="<?php echo htmlspecialchars($etapaAtual); ?>">
+
+        <div class="form-stepper"
+             style="grid-template-columns: repeat(<?php echo count($etapas); ?>, minmax(0, 1fr));"
+             aria-label="Progresso do registo do equipamento">
+            <?php foreach ($etapas as $indice => $etapa): ?>
+                <div class="<?php echo classe_stepper($etapa, $etapaAtual, $etapas); ?>">
+                    <span class="form-step-numero">
+                        <?php if (indice_etapa($etapa, $etapas) < indice_etapa($etapaAtual, $etapas)): ?>
+                            <i class="fa-solid fa-check"></i>
+                        <?php else: ?>
+                            <?php echo $indice + 1; ?>
+                        <?php endif; ?>
+                    </span>
+
+                    <span class="form-step-label">
+                        <?php echo htmlspecialchars($nomesEtapasEquipamento[$etapa]); ?>
+                    </span>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <div class="form-step-heading">
+            <h3>
+                Etapa <?php echo indice_etapa($etapaAtual, $etapas) + 1; ?>
+                de <?php echo count($etapas); ?>:
+                <?php echo htmlspecialchars($nomesEtapasEquipamento[$etapaAtual]); ?>
+            </h3>
+        </div>
 
         <div class="ficha-area">
 
             <ul class="nav nav-tabs ficha-tabs" id="tabsNovoEquipamento" role="tablist">
 
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="identificacao-tab" data-bs-toggle="tab" data-bs-target="#identificacao" type="button" role="tab" aria-controls="identificacao" aria-selected="true">
+                    <button type="submit" class="<?php echo classe_tab('identificacao', $etapaAtual); ?>" id="identificacao-tab" name="etapa_destino" value="identificacao" formnovalidate role="tab" aria-controls="identificacao" aria-selected="<?php echo aria_tab('identificacao', $etapaAtual); ?>">
                         <i class="fa-solid fa-barcode me-2"></i> Identificação
                     </button>
                 </li>
 
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="estado-localizacao-tab" data-bs-toggle="tab" data-bs-target="#estado-localizacao" type="button" role="tab" aria-controls="estado-localizacao" aria-selected="false">
+                    <button type="submit" class="<?php echo classe_tab('estado_localizacao', $etapaAtual); ?>" id="estado-localizacao-tab" name="etapa_destino" value="estado_localizacao" formnovalidate role="tab" aria-controls="estado-localizacao" aria-selected="<?php echo aria_tab('estado_localizacao', $etapaAtual); ?>">
                         <i class="fa-solid fa-location-dot me-2"></i> Estado e Localização
                     </button>
                 </li>
 
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="aquisicao-tab" data-bs-toggle="tab" data-bs-target="#aquisicao" type="button" role="tab" aria-controls="aquisicao" aria-selected="false">
+                    <button type="submit" class="<?php echo classe_tab('aquisicao', $etapaAtual); ?>" id="aquisicao-tab" name="etapa_destino" value="aquisicao" formnovalidate role="tab" aria-controls="aquisicao" aria-selected="<?php echo aria_tab('aquisicao', $etapaAtual); ?>">
                         <i class="fa-solid fa-file-invoice-dollar me-2"></i> Aquisição
                     </button>
                 </li>
 
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="fornecedores-tab" data-bs-toggle="tab" data-bs-target="#fornecedores" type="button" role="tab" aria-controls="fornecedores" aria-selected="false">
+                    <button type="submit" class="<?php echo classe_tab('fornecedores', $etapaAtual); ?>" id="fornecedores-tab" name="etapa_destino" value="fornecedores" formnovalidate role="tab" aria-controls="fornecedores" aria-selected="<?php echo aria_tab('fornecedores', $etapaAtual); ?>">
                         <i class="fa-solid fa-truck-medical me-2"></i> Fornecedores
                     </button>
                 </li>
 
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="documentos-tab" data-bs-toggle="tab" data-bs-target="#documentos" type="button" role="tab" aria-controls="documentos" aria-selected="false">
-                        <i class="fa-solid fa-folder-open me-2"></i> Documentos
+                    <button type="submit" class="<?php echo classe_tab('observacoes', $etapaAtual); ?>" id="observacoes-tab" name="etapa_destino" value="observacoes" formnovalidate role="tab" aria-controls="observacoes-tab-pane" aria-selected="<?php echo aria_tab('observacoes', $etapaAtual); ?>">
+                        <i class="fa-solid fa-clipboard-list me-2"></i> Observações
                     </button>
                 </li>
 
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="observacoes-tab" data-bs-toggle="tab" data-bs-target="#observacoes-tab-pane" type="button" role="tab" aria-controls="observacoes-tab-pane" aria-selected="false">
-                        <i class="fa-solid fa-clipboard-list me-2"></i> Observações
+                    <button type="submit" class="<?php echo classe_tab('documentos', $etapaAtual); ?>" id="documentos-tab" name="etapa_destino" value="documentos" formnovalidate role="tab" aria-controls="documentos" aria-selected="<?php echo aria_tab('documentos', $etapaAtual); ?>">
+                        <i class="fa-solid fa-folder-open me-2"></i> Documentos
                     </button>
                 </li>
 
@@ -532,7 +767,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             <div class="tab-content ficha-tab-content" id="tabsNovoEquipamentoContent">
 
                 <!-- IDENTIFICAÇÃO -->
-                <div class="tab-pane fade show active" id="identificacao" role="tabpanel" aria-labelledby="identificacao-tab" tabindex="0">
+                <div class="<?php echo classe_painel('identificacao', $etapaAtual); ?>" id="identificacao" role="tabpanel" aria-labelledby="identificacao-tab" tabindex="0">
 
                     <div class="secao-ficha-titulo">
                         <h4>Identificação do Equipamento</h4>
@@ -584,7 +819,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 </div>
 
                 <!-- ESTADO E LOCALIZAÇÃO -->
-                <div class="tab-pane fade" id="estado-localizacao" role="tabpanel" aria-labelledby="estado-localizacao-tab" tabindex="0">
+                <div class="<?php echo classe_painel('estado_localizacao', $etapaAtual); ?>" id="estado-localizacao" role="tabpanel" aria-labelledby="estado-localizacao-tab" tabindex="0">
 
                     <div class="secao-ficha-titulo">
                         <h4>Estado, Criticidade e Localização</h4>
@@ -679,7 +914,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 </div>
 
                 <!-- AQUISIÇÃO -->
-                <div class="tab-pane fade" id="aquisicao" role="tabpanel" aria-labelledby="aquisicao-tab" tabindex="0">
+                <div class="<?php echo classe_painel('aquisicao', $etapaAtual); ?>" id="aquisicao" role="tabpanel" aria-labelledby="aquisicao-tab" tabindex="0">
 
                     <div class="secao-ficha-titulo">
                         <h4>Aquisição e Datas</h4>
@@ -712,7 +947,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 </div>
 
                 <!-- FORNECEDORES -->
-                <div class="tab-pane fade" id="fornecedores" role="tabpanel" aria-labelledby="fornecedores-tab" tabindex="0">
+                <div class="<?php echo classe_painel('fornecedores', $etapaAtual); ?>" id="fornecedores" role="tabpanel" aria-labelledby="fornecedores-tab" tabindex="0">
 
                     <div class="secao-ficha-titulo">
                         <h4>Fornecedores e Garantia</h4>
@@ -775,8 +1010,21 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     </div>
                 </div>
 
+                <!-- OBSERVAÇÕES -->
+                <div class="<?php echo classe_painel('observacoes', $etapaAtual); ?>" id="observacoes-tab-pane" role="tabpanel" aria-labelledby="observacoes-tab" tabindex="0">
+
+                    <div class="secao-ficha-titulo">
+                        <h4>Observações Técnicas</h4>
+                        <p>Registe notas relevantes sobre utilização, limitações, condição física ou contexto do equipamento.</p>
+                    </div>
+
+                    <textarea class="form-control" id="observacoes" name="observacoes" rows="7" placeholder="Indique observações relevantes sobre o equipamento."><?php echo valor_novo_equipamento('observacoes'); ?></textarea>
+                </div>
+
+            
+
                 <!-- DOCUMENTOS -->
-                <div class="tab-pane fade" id="documentos" role="tabpanel" aria-labelledby="documentos-tab" tabindex="0">
+                <div class="<?php echo classe_painel('documentos', $etapaAtual); ?>" id="documentos" role="tabpanel" aria-labelledby="documentos-tab" tabindex="0">
 
                     <div class="secao-ficha-titulo d-flex justify-content-between align-items-start gap-3 flex-wrap">
                         <div>
@@ -840,20 +1088,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- OBSERVAÇÕES -->
-                <div class="tab-pane fade" id="observacoes-tab-pane" role="tabpanel" aria-labelledby="observacoes-tab" tabindex="0">
-
-                    <div class="secao-ficha-titulo">
-                        <h4>Observações Técnicas</h4>
-                        <p>Registe notas relevantes sobre utilização, limitações, condição física ou contexto do equipamento.</p>
-                    </div>
-
-                    <textarea class="form-control" id="observacoes" name="observacoes" rows="7" placeholder="Indique observações relevantes sobre o equipamento."><?php echo valor_novo_equipamento('observacoes'); ?></textarea>
-                </div>
-
-            </div>
+                </div></div>
         </div>
 
     </form>
@@ -882,14 +1117,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (opcaoFabricante) {
             opcaoFabricante.textContent = nomeFabricante
-                ? 'Fabricante — ' + nomeFabricante
+                ? 'Fabricante - ' + nomeFabricante
                 : 'Fornecedor fabricante selecionado';
             opcaoFabricante.disabled = !nomeFabricante;
         }
 
         if (opcaoComercial) {
             opcaoComercial.textContent = nomeComercial
-                ? 'Comercial — ' + nomeComercial
+                ? 'Comercial - ' + nomeComercial
                 : 'Fornecedor comercial selecionado';
             opcaoComercial.disabled = !nomeComercial;
         }
