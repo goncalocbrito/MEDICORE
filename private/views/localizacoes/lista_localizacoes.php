@@ -45,41 +45,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         </div>
         <!-- Tabela principal. Cada linha abre ficha ou modal de remoção. -->
         <!-- Pesquisa e filtros da tabela de localizações. -->
-        <section class="filtros-tabela" data-tabela=".tabela-localizacoes" aria-label="Pesquisa e filtros de localizações">
-            <div class="row g-3 align-items-end">
-                <div class="col-lg-4 col-md-6">
-                    <label for="pesquisaLocalizacoes" class="form-label">Pesquisar</label>
-                    <input type="search" class="form-control" id="pesquisaLocalizacoes" data-filtro="texto" placeholder="Código, serviço, edifício, piso ou sala">
-                </div>
-                <div class="col-lg-2 col-md-6">
-                    <label for="filtroEdificioLocalizacoes" class="form-label">Edifício</label>
-                    <select class="form-select" id="filtroEdificioLocalizacoes" data-filtro="coluna" data-coluna="2">
-                        <option value="">Todos</option>
-                        <option value="Edifício A">Edifício A</option>
-                        <option value="Edifício B">Edifício B</option>
-                        <option value="Edifício C">Edifício C</option>
-                        <option value="Edifício D">Edifício D</option>
-                        <option value="Edifício Técnico">Edifício Técnico</option>
-                    </select>
-                </div>
-                                <div class="col-lg-2 col-md-6">
-                    <label for="filtroEstadoLocalizacoes" class="form-label">Estado</label>
-                    <select class="form-select" id="filtroEstadoLocalizacoes" data-filtro="coluna" data-coluna="5">
-                        <option value="">Todos</option>
-                        <option value="Ativa">Ativa</option>
-                        <option value="Em manutenção">Em manutenção</option>
-                        <option value="Inativa">Inativa</option>
-                    </select>
-                </div>
-                <div class="col-lg-2 col-md-12">
-                    <button type="button" class="btn btn-limpar-filtros w-100" data-limpar-filtros>
-                        <i class="fa-solid fa-rotate-left me-2"></i> Limpar
-                    </button>
-                </div>
-            </div>
-        </section>
         <div class="table-responsive tabela-container">
-            <table class="table table-hover align-middle tabela-localizacoes">
+            <table id="tabela-localizacoes" class="table table-hover align-middle tabela-localizacoes tabela-datatables-medicore">
                 <thead>
                     <tr>
                         <th>Código</th>
@@ -93,13 +60,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (empty($localizacoes)): ?>
-                        <tr>
-                            <td colspan="8" class="text-center text-muted">
-                                Não existem localizações registadas.
-                            </td>
-                        </tr>
-                    <?php else: ?>
+                    <?php if (!empty($localizacoes)): ?>
                         <?php foreach ($localizacoes as $localizacao): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($localizacao['codigo']); ?></td>

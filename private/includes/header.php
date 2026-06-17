@@ -23,7 +23,7 @@ if (!headers_sent()) {
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
 
     <!-- estilos CSS -->
-    <link rel="stylesheet" href="/MEDICORE/private/assets/css/1230404.css">
+    <link rel="stylesheet" href="<?php echo PRIVATE_ASSETS_URL; ?>/css/1230404.css?v=<?php echo filemtime(__DIR__ . '/../assets/css/1230404.css'); ?>">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

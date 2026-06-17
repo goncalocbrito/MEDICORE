@@ -215,82 +215,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
     <?php endif; ?>
 
     <!-- Pesquisa e filtros da tabela de equipamentos -->
-    <section class="filtros-tabela" data-tabela=".tabela-equipamentos" aria-label="Pesquisa e filtros de equipamentos">
-        <div class="row g-3 align-items-end">
-
-            <div class="col-lg-3 col-md-6">
-                <label for="pesquisaEquipamentos" class="form-label">Pesquisar</label>
-                <input 
-                    type="search" 
-                    class="form-control" 
-                    id="pesquisaEquipamentos" 
-                    data-filtro="texto" 
-                    placeholder="Código, equipamento, modelo, localização ou estado">
-            </div>
-
-            <div class="col-lg-2 col-md-6">
-                <label for="filtroFamiliaEquipamentos" class="form-label">Família</label>
-                <select class="form-select" id="filtroFamiliaEquipamentos" data-filtro="coluna" data-coluna="2">
-                    <option value="">Todas</option>
-
-                    <?php foreach ($familiasFiltro as $familia): ?>
-                        <option value="<?php echo h($familia); ?>">
-                            <?php echo h($familia); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div class="col-lg-2 col-md-6">
-                <label for="filtroLocalizacaoEquipamentos" class="form-label">Localização</label>
-                <select class="form-select" id="filtroLocalizacaoEquipamentos" data-filtro="coluna" data-coluna="4">
-                    <option value="">Todas</option>
-
-                    <?php foreach ($localizacoesFiltro as $localizacao): ?>
-                        <option value="<?php echo h($localizacao); ?>">
-                            <?php echo h($localizacao); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div class="col-lg-2 col-md-6">
-                <label for="filtroEstadoEquipamentos" class="form-label">Estado</label>
-                <select class="form-select" id="filtroEstadoEquipamentos" data-filtro="coluna" data-coluna="5">
-                    <option value="">Todos</option>
-
-                    <?php foreach ($estadosFiltro as $estado): ?>
-                        <option value="<?php echo h(textoEstadoEquipamento($estado)); ?>">
-                            <?php echo h(textoEstadoEquipamento($estado)); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div class="col-lg-2 col-md-6">
-                <label for="filtroCriticidadeEquipamentos" class="form-label">Criticidade</label>
-                <select class="form-select" id="filtroCriticidadeEquipamentos" data-filtro="coluna" data-coluna="6">
-                    <option value="">Todas</option>
-
-                    <?php foreach ($criticidadesFiltro as $criticidade): ?>
-                        <option value="<?php echo h(textoCriticidadeEquipamento($criticidade)); ?>">
-                            <?php echo h(textoCriticidadeEquipamento($criticidade)); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div class="col-lg-1 col-md-6">
-                <button type="button" class="btn btn-limpar-filtros w-100" data-limpar-filtros>
-                    <i class="fa-solid fa-rotate-left"></i>
-                </button>
-            </div>
-
-        </div>
-    </section>
-
     <div class="table-responsive tabela-container">
-        <table class="table table-hover align-middle tabela-equipamentos">
+        <table id="tabela-equipamentos" class="table table-hover align-middle tabela-equipamentos tabela-datatables-medicore">
 
             <thead>
                 <tr>
@@ -306,23 +232,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             </thead>
 
             <tbody>
-                <?php if (!empty($erro_bd)): ?>
-
-                    <tr>
-                        <td colspan="8" class="text-center">
-                            <?php echo h($erro_bd); ?>
-                        </td>
-                    </tr>
-
-                <?php elseif (empty($equipamentos)): ?>
-
-                    <tr>
-                        <td colspan="8" class="text-center">
-                            Não existem equipamentos registados.
-                        </td>
-                    </tr>
-
-                <?php else: ?>
+                <?php if (empty($erro_bd) && !empty($equipamentos)): ?>
 
                     <?php foreach ($equipamentos as $equipamento): ?>
 

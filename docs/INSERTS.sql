@@ -1594,9 +1594,8 @@ SELECT
     COALESCE(m.tecnico_interno, f.nome_empresa, 'Registo migrado'),
 
     CASE
-        WHEN m.id_fornecedor_responsavel IS NULL AND m.tecnico_interno IS NOT NULL THEN 'interno'
         WHEN m.id_fornecedor_responsavel IS NOT NULL THEN 'fornecedor'
-        ELSE 'sistema'
+        ELSE 'interno'
     END,
 
     m.id_fornecedor_responsavel,
@@ -1619,7 +1618,474 @@ WHERE m.isActive = 1
         AND h.estado_novo = 'processo_finalizado'
   );
   
-  INSERT INTO historico_etapas_processos (
+/* =========================================================
+   MEDICORE - Inserts de processos corrigidos
+   Compatível com:
+   - tipo_execucao ENUM('interna', 'externa')
+   - tipo_responsavel ENUM('interno', 'fornecedor')
+   ========================================================= */
+
+
+/* =========================================================
+   NOTA IMPORTANTE
+   Se ainda não permitiste fornecedores do tipo Calibração,
+   executa este ALTER antes dos inserts de fornecedores de calibração.
+   ========================================================= */
+
+ALTER TABLE fornecedores
+MODIFY tipo_fornecedor ENUM(
+    'Manutenção',
+    'Comercial',
+    'Fabricante',
+    'Calibração'
+) NOT NULL;
+
+
+/* =========================================================
+   1. Mais inserts para manutencoes_equipamento
+   ========================================================= */
+
+INSERT INTO manutencoes_equipamento (
+    codigo_processo,
+    id_equipamento,
+    id_acessorio,
+    tipo_manutencao,
+    tipo_execucao,
+    estado_processo,
+
+    data_abertura,
+    data_prevista,
+    data_recolha,
+    data_inicio_procedimento,
+    data_fim_procedimento,
+    data_emissao_relatorio,
+    data_finalizacao,
+
+    id_fornecedor_responsavel,
+    tecnico_interno,
+
+    data_manutencao,
+    proxima_manutencao,
+    numero_relatorio,
+
+    descricao_procedimento,
+    resultado,
+
+    coberta_por_garantia,
+    custo,
+    observacoes,
+    atualizado_por
+) VALUES
+
+-- Processo aberto: manutenção preventiva externa ao ventilador
+(
+    'MAN-2026-0101',
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '01.001' LIMIT 1),
+    NULL,
+    'preventiva',
+    'externa',
+    'aguarda_recolha',
+
+    '2026-06-10',
+    '2026-06-20',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+
+    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'Drager Portugal' LIMIT 1),
+    NULL,
+
+    NULL,
+    '2026-12-20',
+    NULL,
+
+    NULL,
+    NULL,
+
+    0,
+    180.00,
+    'Processo aberto para manutenção preventiva semestral do ventilador.',
+    'admin'
+),
+
+-- Processo aberto: manutenção corretiva externa em acessório do monitor multiparamétrico
+(
+    'MAN-2026-0102',
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '04.001' LIMIT 1),
+    (
+        SELECT a.id_acessorio
+        FROM acessorios_equipamento a
+        INNER JOIN equipamentos e ON e.id_equipamento = a.id_equipamento
+        WHERE e.codigo_equipamento = '04.001'
+          AND a.numero_sequencial = 2
+        LIMIT 1
+    ),
+    'corretiva',
+    'externa',
+    'procedimento_a_decorrer',
+
+    '2026-06-08',
+    '2026-06-18',
+    '2026-06-10',
+    '2026-06-12',
+    NULL,
+    NULL,
+    NULL,
+
+    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'Biomedical Solutions' LIMIT 1),
+    NULL,
+
+    NULL,
+    NULL,
+    NULL,
+
+    'Análise técnica do sensor SpO2 com leituras intermitentes.',
+    NULL,
+
+    0,
+    95.00,
+    'Sensor SpO2 enviado para avaliação técnica externa.',
+    'admin'
+),
+
+-- Processo aberto: manutenção interna em eletrocardiógrafo
+(
+    'MAN-2026-0103',
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '06.001' LIMIT 1),
+    NULL,
+    'preventiva',
+    'interna',
+    'procedimento_efetuado',
+
+    '2026-06-05',
+    '2026-06-15',
+    NULL,
+    '2026-06-12',
+    '2026-06-12',
+    NULL,
+    NULL,
+
+    NULL,
+    'Técnico Interno - Engenharia Clínica',
+
+    '2026-06-12',
+    '2027-06-12',
+    NULL,
+
+    'Inspeção visual, limpeza técnica, verificação de cabo ECG e teste funcional.',
+    'realizada',
+
+    0,
+    NULL,
+    'A aguardar emissão de relatório interno.',
+    'admin'
+),
+
+-- Processo finalizado: manutenção corretiva externa em autoclave
+(
+    'MAN-2026-0104',
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '08.001' LIMIT 1),
+    (
+        SELECT a.id_acessorio
+        FROM acessorios_equipamento a
+        INNER JOIN equipamentos e ON e.id_equipamento = a.id_equipamento
+        WHERE e.codigo_equipamento = '08.001'
+          AND a.numero_sequencial = 2
+        LIMIT 1
+    ),
+    'corretiva',
+    'externa',
+    'processo_finalizado',
+
+    '2026-05-20',
+    '2026-05-30',
+    '2026-05-21',
+    '2026-05-23',
+    '2026-05-24',
+    '2026-05-27',
+    '2026-05-28',
+
+    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'CalibraMed' LIMIT 1),
+    'Técnico Interno - Engenharia Clínica',
+
+    '2026-05-24',
+    NULL,
+    'REL-MAN-2026-0104',
+
+    'Correção de instabilidade na sonda de temperatura da câmara e validação funcional posterior.',
+    'realizada_com_observacoes',
+
+    0,
+    275.00,
+    'Processo finalizado com recomendação de vigilância no próximo ciclo.',
+    'admin'
+),
+
+-- Processo finalizado: manutenção externa coberta por garantia numa bomba infusora
+(
+    'MAN-2026-0105',
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '05.001' LIMIT 1),
+    NULL,
+    'preventiva',
+    'externa',
+    'processo_finalizado',
+
+    '2026-03-01',
+    '2026-03-10',
+    '2026-03-03',
+    '2026-03-06',
+    '2026-03-06',
+    '2026-03-08',
+    '2026-03-10',
+
+    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'MedSupply Portugal' LIMIT 1),
+    NULL,
+
+    '2026-03-06',
+    '2027-03-06',
+    'REL-MAN-2026-0105',
+
+    'Manutenção preventiva, verificação de alarmes, inspeção mecânica e teste funcional.',
+    'realizada',
+
+    1,
+    0.00,
+    'Manutenção realizada no âmbito da garantia.',
+    'admin'
+);
+
+
+/* =========================================================
+   2. Mais inserts para calibracoes_equipamento
+   ========================================================= */
+
+INSERT INTO calibracoes_equipamento (
+    codigo_processo,
+    id_equipamento,
+    id_acessorio,
+
+    id_fornecedor_responsavel,
+    tipo_execucao,
+    estado_processo,
+
+    data_abertura,
+    data_prevista,
+    data_recolha,
+    data_inicio_procedimento,
+    data_fim_procedimento,
+    data_emissao_relatorio,
+    data_finalizacao,
+
+    tecnico_interno,
+
+    data_calibracao,
+    proxima_calibracao,
+    numero_certificado,
+
+    resultado,
+    procedimento,
+
+    coberta_por_garantia,
+    custo,
+    observacoes,
+    atualizado_por
+) VALUES
+
+-- Processo aberto: calibração externa de sensor de fluxo do ventilador
+(
+    'CAL-2026-0101',
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '01.001' LIMIT 1),
+    (
+        SELECT a.id_acessorio
+        FROM acessorios_equipamento a
+        INNER JOIN equipamentos e ON e.id_equipamento = a.id_equipamento
+        WHERE e.codigo_equipamento = '01.001'
+          AND a.numero_sequencial = 2
+        LIMIT 1
+    ),
+
+    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'CalibraMed Portugal' LIMIT 1),
+    'externa',
+    'aguarda_recolha',
+
+    '2026-06-10',
+    '2026-06-25',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+
+    NULL,
+
+    NULL,
+    '2027-06-25',
+    NULL,
+
+    NULL,
+    NULL,
+
+    0,
+    95.00,
+    'Calibração programada do sensor de fluxo expiratório.',
+    'admin'
+),
+
+-- Processo aberto: calibração externa de sensor SpO2
+(
+    'CAL-2026-0102',
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '04.001' LIMIT 1),
+    (
+        SELECT a.id_acessorio
+        FROM acessorios_equipamento a
+        INNER JOIN equipamentos e ON e.id_equipamento = a.id_equipamento
+        WHERE e.codigo_equipamento = '04.001'
+          AND a.numero_sequencial = 2
+        LIMIT 1
+    ),
+
+    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'TecnoCalibra Saúde' LIMIT 1),
+    'externa',
+    'procedimento_a_decorrer',
+
+    '2026-06-01',
+    '2026-06-18',
+    '2026-06-05',
+    '2026-06-12',
+    NULL,
+    NULL,
+    NULL,
+
+    NULL,
+
+    NULL,
+    '2028-06-18',
+    NULL,
+
+    NULL,
+    'Verificação metrológica do sensor SpO2 em curso.',
+    0,
+    75.00,
+    'Processo em execução no fornecedor externo.',
+    'admin'
+),
+
+-- Processo aberto: calibração/verificação interna funcional do ECG
+(
+    'CAL-2026-0103',
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '06.001' LIMIT 1),
+    NULL,
+
+    NULL,
+    'interna',
+    'emissao_relatorio',
+
+    '2026-05-28',
+    '2026-06-05',
+    NULL,
+    '2026-06-03',
+    '2026-06-03',
+    '2026-06-04',
+    NULL,
+
+    'Técnico Interno - Engenharia Clínica',
+
+    '2026-06-03',
+    '2028-06-03',
+    'VER-06-001-2026',
+
+    'aprovado',
+    'Verificação funcional interna dos parâmetros elétricos e aquisição de sinal.',
+    0,
+    NULL,
+    'A aguardar validação final do relatório interno.',
+    'admin'
+),
+
+-- Processo finalizado: calibração externa de bomba infusora
+(
+    'CAL-2026-0104',
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '05.001' LIMIT 1),
+    NULL,
+
+    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'CalibraMed Portugal' LIMIT 1),
+    'externa',
+    'processo_finalizado',
+
+    '2026-04-01',
+    '2026-04-12',
+    '2026-04-02',
+    '2026-04-05',
+    '2026-04-05',
+    '2026-04-08',
+    '2026-04-10',
+
+    NULL,
+
+    '2026-04-05',
+    '2027-04-05',
+    'CERT-05-001-2026',
+
+    'aprovado',
+    'Ensaio metrológico de caudal e volume administrado com analisador de fluxo.',
+    0,
+    90.00,
+    'Bomba infusora aprovada para utilização clínica.',
+    'admin'
+),
+
+-- Processo finalizado: calibração externa coberta por garantia da incubadora
+(
+    'CAL-2026-0105',
+    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '07.001' LIMIT 1),
+    (
+        SELECT a.id_acessorio
+        FROM acessorios_equipamento a
+        INNER JOIN equipamentos e ON e.id_equipamento = a.id_equipamento
+        WHERE e.codigo_equipamento = '07.001'
+          AND a.numero_sequencial = 1
+        LIMIT 1
+    ),
+
+    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'CalibraMed Portugal' LIMIT 1),
+    'externa',
+    'processo_finalizado',
+
+    '2026-02-01',
+    '2026-02-15',
+    '2026-02-03',
+    '2026-02-07',
+    '2026-02-07',
+    '2026-02-10',
+    '2026-02-12',
+
+    NULL,
+
+    '2026-02-07',
+    '2027-02-07',
+    'CERT-07-001-2026',
+
+    'aprovado_com_restricoes',
+    'Calibração do sensor de temperatura neonatal e verificação de alarmes térmicos.',
+    1,
+    0.00,
+    'Aprovado com recomendação de vigilância periódica do sensor.',
+    'admin'
+);
+
+
+/* =========================================================
+   3. Histórico coerente para calibrações existentes
+   Compatível com tipo_responsavel apenas:
+   - interno
+   - fornecedor
+   ========================================================= */
+
+
+/* 3.1. Etapa inicial: aguarda_recolha */
+INSERT INTO historico_etapas_processos (
     tipo_processo,
     id_manutencao,
     id_calibracao,
@@ -1637,21 +2103,252 @@ SELECT
     NULL,
     c.id_calibracao,
     NULL,
-    'processo_finalizado',
+    'aguarda_recolha',
 
-    COALESCE(c.tecnico_interno, f.nome_empresa, 'Registo migrado'),
+    COALESCE(c.tecnico_interno, f.nome_empresa, 'Responsável não definido'),
 
     CASE
-        WHEN c.id_fornecedor_responsavel IS NULL AND c.tecnico_interno IS NOT NULL THEN 'interno'
         WHEN c.id_fornecedor_responsavel IS NOT NULL THEN 'fornecedor'
-        ELSE 'sistema'
+        WHEN c.tecnico_interno IS NOT NULL THEN 'interno'
+        ELSE NULL
     END,
 
     c.id_fornecedor_responsavel,
 
-    'Registo antigo migrado para o novo modelo de processos.',
+    'Processo de calibração aberto e a aguardar recolha ou início do procedimento.',
 
-    COALESCE(CONCAT(c.data_finalizacao, ' 09:00:00'), c.criado_em, NOW()),
+    COALESCE(CONCAT(c.data_abertura, ' 09:00:00'), c.criado_em, NOW()),
+
+    COALESCE(c.atualizado_por, 'admin')
+FROM calibracoes_equipamento c
+LEFT JOIN fornecedores f
+    ON f.id_fornecedor = c.id_fornecedor_responsavel
+WHERE c.isActive = 1
+  AND NOT EXISTS (
+      SELECT 1
+      FROM historico_etapas_processos h
+      WHERE h.tipo_processo = 'calibracao'
+        AND h.id_calibracao = c.id_calibracao
+        AND h.estado_novo = 'aguarda_recolha'
+  );
+
+
+/* 3.2. Etapa: procedimento_a_decorrer */
+INSERT INTO historico_etapas_processos (
+    tipo_processo,
+    id_manutencao,
+    id_calibracao,
+    estado_anterior,
+    estado_novo,
+    responsavel_etapa,
+    tipo_responsavel,
+    id_fornecedor_responsavel,
+    observacoes,
+    data_registo,
+    atualizado_por
+)
+SELECT
+    'calibracao',
+    NULL,
+    c.id_calibracao,
+    'aguarda_recolha',
+    'procedimento_a_decorrer',
+
+    COALESCE(c.tecnico_interno, f.nome_empresa, 'Responsável não definido'),
+
+    CASE
+        WHEN c.id_fornecedor_responsavel IS NOT NULL THEN 'fornecedor'
+        WHEN c.tecnico_interno IS NOT NULL THEN 'interno'
+        ELSE NULL
+    END,
+
+    c.id_fornecedor_responsavel,
+
+    'Procedimento de calibração iniciado.',
+
+    COALESCE(CONCAT(c.data_inicio_procedimento, ' 10:00:00'), CONCAT(c.data_calibracao, ' 10:00:00'), c.criado_em, NOW()),
+
+    COALESCE(c.atualizado_por, 'admin')
+FROM calibracoes_equipamento c
+LEFT JOIN fornecedores f
+    ON f.id_fornecedor = c.id_fornecedor_responsavel
+WHERE c.isActive = 1
+  AND (
+      c.estado_processo IN (
+          'procedimento_a_decorrer',
+          'procedimento_efetuado',
+          'emissao_relatorio',
+          'processo_finalizado'
+      )
+      OR c.data_inicio_procedimento IS NOT NULL
+      OR c.data_calibracao IS NOT NULL
+  )
+  AND NOT EXISTS (
+      SELECT 1
+      FROM historico_etapas_processos h
+      WHERE h.tipo_processo = 'calibracao'
+        AND h.id_calibracao = c.id_calibracao
+        AND h.estado_novo = 'procedimento_a_decorrer'
+  );
+
+
+/* 3.3. Etapa: procedimento_efetuado */
+INSERT INTO historico_etapas_processos (
+    tipo_processo,
+    id_manutencao,
+    id_calibracao,
+    estado_anterior,
+    estado_novo,
+    responsavel_etapa,
+    tipo_responsavel,
+    id_fornecedor_responsavel,
+    observacoes,
+    data_registo,
+    atualizado_por
+)
+SELECT
+    'calibracao',
+    NULL,
+    c.id_calibracao,
+    'procedimento_a_decorrer',
+    'procedimento_efetuado',
+
+    COALESCE(c.tecnico_interno, f.nome_empresa, 'Responsável não definido'),
+
+    CASE
+        WHEN c.id_fornecedor_responsavel IS NOT NULL THEN 'fornecedor'
+        WHEN c.tecnico_interno IS NOT NULL THEN 'interno'
+        ELSE NULL
+    END,
+
+    c.id_fornecedor_responsavel,
+
+    'Procedimento de calibração efetuado.',
+
+    COALESCE(CONCAT(c.data_fim_procedimento, ' 15:00:00'), CONCAT(c.data_calibracao, ' 15:00:00'), c.criado_em, NOW()),
+
+    COALESCE(c.atualizado_por, 'admin')
+FROM calibracoes_equipamento c
+LEFT JOIN fornecedores f
+    ON f.id_fornecedor = c.id_fornecedor_responsavel
+WHERE c.isActive = 1
+  AND (
+      c.estado_processo IN (
+          'procedimento_efetuado',
+          'emissao_relatorio',
+          'processo_finalizado'
+      )
+      OR c.data_fim_procedimento IS NOT NULL
+      OR c.data_calibracao IS NOT NULL
+  )
+  AND NOT EXISTS (
+      SELECT 1
+      FROM historico_etapas_processos h
+      WHERE h.tipo_processo = 'calibracao'
+        AND h.id_calibracao = c.id_calibracao
+        AND h.estado_novo = 'procedimento_efetuado'
+  );
+
+
+/* 3.4. Etapa: emissao_relatorio */
+INSERT INTO historico_etapas_processos (
+    tipo_processo,
+    id_manutencao,
+    id_calibracao,
+    estado_anterior,
+    estado_novo,
+    responsavel_etapa,
+    tipo_responsavel,
+    id_fornecedor_responsavel,
+    observacoes,
+    data_registo,
+    atualizado_por
+)
+SELECT
+    'calibracao',
+    NULL,
+    c.id_calibracao,
+    'procedimento_efetuado',
+    'emissao_relatorio',
+
+    COALESCE(c.tecnico_interno, f.nome_empresa, 'Responsável não definido'),
+
+    CASE
+        WHEN c.id_fornecedor_responsavel IS NOT NULL THEN 'fornecedor'
+        WHEN c.tecnico_interno IS NOT NULL THEN 'interno'
+        ELSE NULL
+    END,
+
+    c.id_fornecedor_responsavel,
+
+    CASE
+        WHEN c.numero_certificado IS NOT NULL
+            THEN CONCAT('Emissão do certificado ', c.numero_certificado, '.')
+        ELSE 'Etapa de emissão do relatório/certificado de calibração.'
+    END,
+
+    COALESCE(CONCAT(c.data_emissao_relatorio, ' 11:00:00'), CONCAT(c.data_calibracao, ' 16:00:00'), c.criado_em, NOW()),
+
+    COALESCE(c.atualizado_por, 'admin')
+FROM calibracoes_equipamento c
+LEFT JOIN fornecedores f
+    ON f.id_fornecedor = c.id_fornecedor_responsavel
+WHERE c.isActive = 1
+  AND (
+      c.estado_processo IN (
+          'emissao_relatorio',
+          'processo_finalizado'
+      )
+      OR c.data_emissao_relatorio IS NOT NULL
+      OR c.numero_certificado IS NOT NULL
+  )
+  AND NOT EXISTS (
+      SELECT 1
+      FROM historico_etapas_processos h
+      WHERE h.tipo_processo = 'calibracao'
+        AND h.id_calibracao = c.id_calibracao
+        AND h.estado_novo = 'emissao_relatorio'
+  );
+
+
+/* 3.5. Etapa final: processo_finalizado */
+INSERT INTO historico_etapas_processos (
+    tipo_processo,
+    id_manutencao,
+    id_calibracao,
+    estado_anterior,
+    estado_novo,
+    responsavel_etapa,
+    tipo_responsavel,
+    id_fornecedor_responsavel,
+    observacoes,
+    data_registo,
+    atualizado_por
+)
+SELECT
+    'calibracao',
+    NULL,
+    c.id_calibracao,
+    'emissao_relatorio',
+    'processo_finalizado',
+
+    COALESCE(c.tecnico_interno, f.nome_empresa, 'Responsável não definido'),
+
+    CASE
+        WHEN c.id_fornecedor_responsavel IS NOT NULL THEN 'fornecedor'
+        WHEN c.tecnico_interno IS NOT NULL THEN 'interno'
+        ELSE NULL
+    END,
+
+    c.id_fornecedor_responsavel,
+
+    CASE
+        WHEN c.resultado IS NOT NULL
+            THEN CONCAT('Processo de calibração finalizado com resultado: ', REPLACE(c.resultado, '_', ' '), '.')
+        ELSE 'Processo de calibração finalizado.'
+    END,
+
+    COALESCE(CONCAT(c.data_finalizacao, ' 17:00:00'), CONCAT(c.data_calibracao, ' 17:00:00'), c.criado_em, NOW()),
 
     COALESCE(c.atualizado_por, 'admin')
 FROM calibracoes_equipamento c
@@ -1665,4 +2362,89 @@ WHERE c.isActive = 1
       WHERE h.tipo_processo = 'calibracao'
         AND h.id_calibracao = c.id_calibracao
         AND h.estado_novo = 'processo_finalizado'
+  );
+
+
+/* =========================================================
+   4. Query de verificação
+   ========================================================= */
+
+SELECT
+    c.codigo_processo,
+    c.numero_certificado,
+    e.codigo_equipamento,
+    c.tipo_execucao,
+    c.estado_processo,
+    h.estado_anterior,
+    h.estado_novo,
+    h.responsavel_etapa,
+    h.tipo_responsavel,
+    h.data_registo
+FROM historico_etapas_processos h
+INNER JOIN calibracoes_equipamento c
+    ON c.id_calibracao = h.id_calibracao
+INNER JOIN equipamentos e
+    ON e.id_equipamento = c.id_equipamento
+WHERE h.tipo_processo = 'calibracao'
+ORDER BY c.codigo_processo ASC, h.data_registo ASC;
+
+
+INSERT INTO utilizadores (
+    codigo_utilizador, nome, tipo_utilizador, estado,
+    cartao_cidadao, nif, data_nascimento, numero_mecanografico,
+    email, telefone, extensao, morada, codigo_postal, localidade,
+    username, password_hash, perfil_acesso, data_ativacao, validade_acesso,
+    departamento, funcao, superior_hierarquico, edificio, piso, data_admissao,
+    observacoes, isActive, atualizado_por
+) VALUES
+('USR-001', 'Administrador MEDICORE', 'Administrador', 'Ativo',
+ '100000001', '200000001', '1985-02-14', 'ADM001',
+ 'admin@medicore.pt', '220000001', '1001', 'Rua Central do Hospital', '4200-001', 'Porto',
+ 'admin', '$2y$10$n8zhehnR214fGYtzUx5Zj.e7IWEiL4bmSptDxABQhG8D1UDNupEzC', 'Acesso total', '2026-01-01', NULL,
+ 'Administração', 'Administrador do Sistema', NULL, 'Edifício Técnico', '0', '2026-01-01',
+ 'Conta administrativa principal.', 1, 'sistema'),
+
+('USR-002', 'João Ferreira', 'Engenheiro', 'Ativo',
+ '100000002', '200000002', '1992-06-20', 'ENG001',
+ 'joao.ferreira@medicore.pt', '220000002', '1201', 'Avenida da Saúde, 25', '4100-002', 'Porto',
+ 'jferreira', '$2y$10$f7eHOPgbI6W7nyNCu75V/ekB9S9YbLD7jW4Cw9Q9fxtXv0JVGG9jK', 'Gestão técnica', '2026-01-01', NULL,
+ 'Engenharia Biomédica', 'Engenheiro Biomédico', 'Administrador MEDICORE', 'Edifício Técnico', '1', '2026-01-02',
+ 'Responsável por equipamentos e processos técnicos.', 1, 'sistema'),
+
+('USR-003', 'Ana Martins', 'Enfermeiro', 'Ativo',
+ '100000003', '200000003', '1994-09-11', 'ENF001',
+ 'ana.martins@medicore.pt', '220000003', '2301', 'Rua Clínica, 10', '4000-003', 'Porto',
+ 'amartins', '$2y$10$hlPRCqmcyuVURgq9L4zQQ.RSkPmykTbEI.Xkx.ldvkMu6G6fIrQ.K', 'Consulta clínica', '2026-01-01', NULL,
+ 'UCI', 'Enfermeira', 'João Ferreira', 'Edifício A', '2', '2026-01-03',
+ 'Acesso orientado à consulta de equipamentos e localizações.', 1, 'sistema');
+ 
+ INSERT IGNORE INTO utilizadores_permissoes (
+    id_utilizador, id_permissao, isActive, atualizado_por
+)
+SELECT u.id_utilizador, p.id_permissao, 1, 'sistema'
+FROM utilizadores u
+JOIN permissoes_sistema p
+WHERE u.codigo_utilizador = 'USR-001';
+
+INSERT IGNORE INTO utilizadores_permissoes (
+    id_utilizador, id_permissao, isActive, atualizado_por
+)
+SELECT u.id_utilizador, p.id_permissao, 1, 'sistema'
+FROM utilizadores u
+JOIN permissoes_sistema p
+WHERE u.codigo_utilizador = 'USR-002'
+  AND p.codigo_permissao IN (
+      'dashboard', 'equipamentos', 'calibracoes', 'localizacoes',
+      'fornecedores', 'acessorios', 'consumiveis', 'documentos'
+  );
+
+INSERT IGNORE INTO utilizadores_permissoes (
+    id_utilizador, id_permissao, isActive, atualizado_por
+)
+SELECT u.id_utilizador, p.id_permissao, 1, 'sistema'
+FROM utilizadores u
+JOIN permissoes_sistema p
+WHERE u.codigo_utilizador = 'USR-003'
+  AND p.codigo_permissao IN (
+      'dashboard', 'equipamentos', 'localizacoes', 'acessorios', 'consumiveis'
   );

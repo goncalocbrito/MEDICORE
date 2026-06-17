@@ -1,225 +1,247 @@
 <?php
 require_once __DIR__ . '/../../includes/funcoes.php';
 redirect_if_not_logged();
+
+$pdo = new PDO(
+    'mysql:host=' . MYSQL_HOST . ';port=' . MYSQL_PORT . ';dbname=' . MYSQL_DATABASE . ';charset=utf8mb4',
+    MYSQL_USERNAME,
+    MYSQL_PASSWORD,
+    [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]
+);
+
+function h($valor)
+{
+    return htmlspecialchars((string) ($valor ?? ''), ENT_QUOTES, 'UTF-8');
+}
+
+function utilizador_sessao()
+{
+    return $_SESSION['nome'] ?? $_SESSION['username'] ?? 'sistema';
+}
+
+function classe_tipo_utilizador($tipo)
+{
+    return [
+        'Administrador' => 'tipo-administrador',
+        'Engenheiro' => 'tipo-engenheiro',
+        'Enfermeiro' => 'tipo-enfermeiro'
+    ][$tipo] ?? 'tipo-engenheiro';
+}
+
+function classe_estado_utilizador($estado)
+{
+    return $estado === 'Ativo'
+        ? 'estado-ativo'
+        : ($estado === 'Pendente' ? 'estado-manutencao' : 'estado-inativo');
+}
+
+$mensagemSucesso = '';
+$mensagemErro = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'desativar_utilizador') {
+    $idUtilizador = (int) ($_POST['id_utilizador'] ?? 0);
+
+    try {
+        $pdo->beginTransaction();
+
+        $stmt = $pdo->prepare("SELECT * FROM utilizadores WHERE id_utilizador = :id LIMIT 1");
+        $stmt->execute([':id' => $idUtilizador]);
+        $utilizador = $stmt->fetch();
+
+        if (!$utilizador) {
+            throw new Exception('Utilizador não encontrado.');
+        }
+
+        $stmt = $pdo->prepare("
+            UPDATE utilizadores
+            SET isActive = 0,
+                estado = 'Inativo',
+                atualizado_por = :atualizado_por
+            WHERE id_utilizador = :id
+        ");
+        $stmt->execute([
+            ':atualizado_por' => utilizador_sessao(),
+            ':id' => $idUtilizador
+        ]);
+
+        $stmt = $pdo->prepare("
+            INSERT INTO historico_utilizadores (
+                id_utilizador_alvo, codigo_utilizador, acao, campo_alterado,
+                valor_anterior, valor_novo, observacoes, realizado_por
+            ) VALUES (
+                :id_utilizador_alvo, :codigo_utilizador, 'remocao_utilizador', 'isActive',
+                '1', '0', :observacoes, :realizado_por
+            )
+        ");
+        $stmt->execute([
+            ':id_utilizador_alvo' => $idUtilizador,
+            ':codigo_utilizador' => $utilizador['codigo_utilizador'],
+            ':observacoes' => 'Utilizador desativado logicamente na lista de utilizadores.',
+            ':realizado_por' => utilizador_sessao()
+        ]);
+
+        $pdo->commit();
+        $mensagemSucesso = 'Utilizador removido da lista com sucesso.';
+    } catch (Exception $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        $mensagemErro = 'Erro ao remover utilizador: ' . $e->getMessage();
+    }
+}
+
+$stmt = $pdo->query("
+    SELECT
+        u.*,
+        (
+            SELECT COUNT(*)
+            FROM utilizadores_permissoes up
+            WHERE up.id_utilizador = u.id_utilizador
+              AND up.isActive = 1
+        ) AS total_permissoes_ativas
+    FROM utilizadores u
+    WHERE u.isActive = 1
+    ORDER BY u.nome ASC
+");
+$utilizadores = $stmt->fetchAll();
+
 require_once __DIR__ . '/../../includes/header.php';
 require_once __DIR__ . '/../../includes/nav.php';
 require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
 
+<main class="conteudo-private">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h2 class="titulo-pagina">Gestão de Utilizadores</h2>
+            <p class="subtitulo-pagina">Consulta, criação e gestão dos acessos dos utilizadores do sistema.</p>
+        </div>
 
-    <!-- =========================================================
-         CONTEÚDO PRINCIPAL DA LISTA DE UTILIZADORES
-         Mostra a equipa registada no sistema e as ações disponíveis.
-         ========================================================= -->
-    <main class="conteudo-private">
-        <!-- =====================================================
-             TÍTULO E AÇÃO PRINCIPAL
-             Mantém o mesmo padrão usado nas listas dos outros módulos.
-             ===================================================== -->
-        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-            <div>
-                <h2 class="titulo-pagina">Gestão de Utilizadores</h2>
-                <p class="subtitulo-pagina">
-                    Consulta, criação e gestão dos acessos dos administradores, engenheiros e enfermeiros.
-                </p>
+        <a href="novo_utilizador.php" class="btn btn-adicionar">
+            <i class="fa-solid fa-plus me-2"></i> Adicionar Utilizador
+        </a>
+    </div>
+
+    <?php if ($mensagemSucesso): ?>
+        <div class="alert alert-success rounded-4 fw-bold"><?php echo h($mensagemSucesso); ?></div>
+    <?php endif; ?>
+
+    <?php if ($mensagemErro): ?>
+        <div class="alert alert-danger rounded-4 fw-bold"><?php echo h($mensagemErro); ?></div>
+    <?php endif; ?>
+
+    <div class="table-responsive tabela-container">
+        <table id="tabela-utilizadores" class="table table-hover align-middle tabela-utilizadores tabela-datatables-medicore">
+            <thead>
+                <tr>
+                    <th>Utilizador</th>
+                    <th>Tipo</th>
+                    <th>Serviço</th>
+                    <th>Email</th>
+                    <th>Acessos</th>
+                    <th>Estado</th>
+                    <th class="text-center">Ações</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <?php foreach ($utilizadores as $utilizador): ?>
+                    <tr>
+                        <td>
+                            <strong><?php echo h($utilizador['nome']); ?></strong><br>
+                            <small class="text-muted"><?php echo h($utilizador['codigo_utilizador']); ?></small>
+                        </td>
+                        <td>
+                            <span class="tipo-utilizador <?php echo h(classe_tipo_utilizador($utilizador['tipo_utilizador'])); ?>">
+                                <?php echo h($utilizador['tipo_utilizador']); ?>
+                            </span>
+                        </td>
+                        <td><?php echo h($utilizador['departamento'] ?: '---'); ?></td>
+                        <td><?php echo h($utilizador['email']); ?></td>
+                        <td><?php echo h($utilizador['total_permissoes_ativas']); ?></td>
+                        <td>
+                            <span class="estado <?php echo h(classe_estado_utilizador($utilizador['estado'])); ?>">
+                                <?php echo h($utilizador['estado']); ?>
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <a href="ficha_utilizador.php?id=<?php echo h($utilizador['id_utilizador']); ?>" class="btn btn-sm btn-ficha" title="Abrir ficha">
+                                <i class="fa-solid fa-file-lines"></i>
+                            </a>
+
+                            <button type="button"
+                                    class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-utilizador"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalApagarUtilizador"
+                                    data-id="<?php echo h($utilizador['id_utilizador']); ?>"
+                                    data-codigo="<?php echo h($utilizador['codigo_utilizador']); ?>"
+                                    data-nome="<?php echo h($utilizador['nome']); ?>"
+                                    data-tipo="<?php echo h($utilizador['tipo_utilizador']); ?>"
+                                    data-cartao="<?php echo h($utilizador['cartao_cidadao']); ?>"
+                                    data-email="<?php echo h($utilizador['email']); ?>"
+                                    data-telefone="<?php echo h($utilizador['telefone']); ?>"
+                                    data-servico="<?php echo h($utilizador['departamento']); ?>"
+                                    data-estado="<?php echo h($utilizador['estado']); ?>"
+                                    title="Remover utilizador">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<div class="modal fade" id="modalApagarUtilizador" tabindex="-1" aria-labelledby="modalApagarUtilizadorLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-remocao-dialog">
+        <div class="modal-content modal-apagar-equipamento">
+            <div class="modal-header modal-remocao-header">
+                <div>
+                    <h5 class="modal-title" id="modalApagarUtilizadorLabel">
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                        Remover utilizador
+                    </h5>
+                    <p class="modal-remocao-subtitulo">Confirme os dados antes de remover o utilizador.</p>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
-            <a href="novo_utilizador.php" class="btn btn-adicionar">
-                <i class="fa-solid fa-plus me-2"></i> Adicionar Utilizador
-            </a>
-        </div>
-        <!-- =====================================================
-             TABELA DE UTILIZADORES
-             Cada linha apresenta a identificação essencial e permite
-             editar ou abrir o modal de remoção do utilizador.
-             ===================================================== -->
-        <!-- Pesquisa e filtros da tabela de utilizadores. -->
-        <section class="filtros-tabela" data-tabela=".tabela-utilizadores" aria-label="Pesquisa e filtros de utilizadores">
-            <div class="row g-3 align-items-end">
-                <div class="col-lg-4 col-md-6">
-                    <label for="pesquisaUtilizadores" class="form-label">Pesquisar</label>
-                    <input type="search" class="form-control" id="pesquisaUtilizadores" data-filtro="texto" placeholder="Código, nome, tipo, serviço ou estado">
+
+            <div class="modal-body modal-remocao-body">
+                <div class="modal-resumo-equipamento modal-resumo-remocao">
+                    <div class="modal-linha"><strong>Código</strong><span id="modalApagarUtilizadorCodigo">---</span></div>
+                    <div class="modal-linha"><strong>Nome</strong><span id="modalApagarUtilizadorNome">---</span></div>
+                    <div class="modal-linha"><strong>Tipo</strong><span id="modalApagarUtilizadorTipo">---</span></div>
+                    <div class="modal-linha"><strong>N.º CC</strong><span id="modalApagarUtilizadorCartao">---</span></div>
+                    <div class="modal-linha"><strong>Email</strong><span id="modalApagarUtilizadorEmail">---</span></div>
+                    <div class="modal-linha"><strong>Telefone</strong><span id="modalApagarUtilizadorTelefone">---</span></div>
+                    <div class="modal-linha"><strong>Serviço</strong><span id="modalApagarUtilizadorServico">---</span></div>
+                    <div class="modal-linha"><strong>Estado</strong><span id="modalApagarUtilizadorEstado">---</span></div>
                 </div>
-                <div class="col-lg-2 col-md-6">
-                    <label for="filtroTipoUtilizadores" class="form-label">Tipo</label>
-                    <select class="form-select" id="filtroTipoUtilizadores" data-filtro="coluna" data-coluna="2">
-                        <option value="">Todos</option>
-                        <option value="Administrador">Administrador</option>
-                        <option value="Engenheiro">Engenheiro</option>
-                        <option value="Enfermeiro">Enfermeiro</option>
-                    </select>
-                </div>
-                <div class="col-lg-2 col-md-6">
-                    <label for="filtroServicoUtilizadores" class="form-label">Serviço</label>
-                    <select class="form-select" id="filtroServicoUtilizadores" data-filtro="coluna" data-coluna="3">
-                        <option value="">Todos</option>
-                        <option value="Administração">Administração</option>
-                        <option value="Engenharia Biomédica">Engenharia Biomédica</option>
-                        <option value="Unidade de Cuidados Intensivos">UCI</option>
-                        <option value="Bloco Operatório">Bloco Operatório</option>
-                    </select>
-                </div>
-                <div class="col-lg-2 col-md-6">
-                    <label for="filtroEstadoUtilizadores" class="form-label">Estado</label>
-                    <select class="form-select" id="filtroEstadoUtilizadores" data-filtro="coluna" data-coluna="4">
-                        <option value="">Todos</option>
-                        <option value="Ativo">Ativo</option>
-                        <option value="Inativo">Inativo</option>
-                    </select>
-                </div>
-                <div class="col-lg-2 col-md-12">
-                    <button type="button" class="btn btn-limpar-filtros w-100" data-limpar-filtros>
-                        <i class="fa-solid fa-rotate-left me-2"></i> Limpar
-                    </button>
-                </div>
+
+                <p class="texto-confirmacao-remocao">Confirma que pretende remover este utilizador da lista?</p>
             </div>
-        </section>
-        <div class="table-responsive tabela-container">
-            <table class="table table-hover align-middle tabela-utilizadores">
-                <thead>
-                    <tr>
-                        <th>Código</th>
-                        <th>Nome</th>
-                        <th>Tipo</th>
-                        <th>Serviço</th>
-                        <th>Estado</th>
-                        <th class="text-center">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>USR-001</td>
-                        <td>Ana Martins</td>
-                        <td><span class="tipo-utilizador tipo-administrador">Administrador</span></td>
-                        <td>Administração</td>
-                        <td><span class="estado estado-ativo">Ativo</span></td>
-                        <td class="text-center">
-                            <a href="ficha_utilizador.php?id=USR-001" class="btn btn-sm btn-ficha" title="Abrir ficha do utilizador">
-                                <i class="fa-solid fa-file-lines"></i>
-                            </a>
-                            <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-utilizador" title="Eliminar utilizador" data-bs-toggle="modal" data-bs-target="#modalApagarUtilizador" data-codigo="USR-001" data-nome="Ana Martins" data-tipo="Administrador" data-cartao="12345678" data-email="ana.martins@medicore.pt" data-telefone="+351 220 000 100" data-servico="Administração" data-estado="Ativo">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>USR-002</td>
-                        <td>Gonçalo Brito</td>
-                        <td><span class="tipo-utilizador tipo-engenheiro">Engenheiro</span></td>
-                        <td>Engenharia Biomédica</td>
-                        <td><span class="estado estado-ativo">Ativo</span></td>
-                        <td class="text-center">
-                            <a href="ficha_utilizador.php?id=USR-002" class="btn btn-sm btn-ficha" title="Abrir ficha do utilizador">
-                                <i class="fa-solid fa-file-lines"></i>
-                            </a>
-                            <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-utilizador" title="Eliminar utilizador" data-bs-toggle="modal" data-bs-target="#modalApagarUtilizador" data-codigo="USR-002" data-nome="Gonçalo Brito" data-tipo="Engenheiro" data-cartao="87654321" data-email="g.brito@medicore.pt" data-telefone="+351 220 000 200" data-servico="Engenharia Biomédica" data-estado="Ativo">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>USR-003</td>
-                        <td>Maria Costa</td>
-                        <td><span class="tipo-utilizador tipo-enfermeiro">Enfermeiro</span></td>
-                        <td>Unidade de Cuidados Intensivos</td>
-                        <td><span class="estado estado-ativo">Ativo</span></td>
-                        <td class="text-center">
-                            <a href="ficha_utilizador.php?id=USR-003" class="btn btn-sm btn-ficha" title="Abrir ficha do utilizador">
-                                <i class="fa-solid fa-file-lines"></i>
-                            </a>
-                            <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-utilizador" title="Eliminar utilizador" data-bs-toggle="modal" data-bs-target="#modalApagarUtilizador" data-codigo="USR-003" data-nome="Maria Costa" data-tipo="Enfermeiro" data-cartao="23456789" data-email="maria.costa@medicore.pt" data-telefone="+351 220 000 300" data-servico="Unidade de Cuidados Intensivos" data-estado="Ativo">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>USR-004</td>
-                        <td>Ricardo Silva</td>
-                        <td><span class="tipo-utilizador tipo-enfermeiro">Enfermeiro</span></td>
-                        <td>Bloco Operatório</td>
-                        <td><span class="estado estado-inativo">Inativo</span></td>
-                        <td class="text-center">
-                            <a href="ficha_utilizador.php?id=USR-004" class="btn btn-sm btn-ficha" title="Abrir ficha do utilizador">
-                                <i class="fa-solid fa-file-lines"></i>
-                            </a>
-                            <button type="button" class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-utilizador" title="Eliminar utilizador" data-bs-toggle="modal" data-bs-target="#modalApagarUtilizador" data-codigo="USR-004" data-nome="Ricardo Silva" data-tipo="Enfermeiro" data-cartao="34567890" data-email="ricardo.silva@medicore.pt" data-telefone="+351 220 000 301" data-servico="Bloco Operatório" data-estado="Inativo">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </main>
-    <!-- =========================================================
-         MODAL DE REMOÇÃO DE UTILIZADOR
-         Confirma a eliminação antes de remover visualmente a linha.
-         ========================================================= -->
-    <div class="modal fade" id="modalApagarUtilizador" tabindex="-1" aria-labelledby="modalApagarUtilizadorLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-remocao-dialog">
-            <div class="modal-content modal-apagar-equipamento">
-                <div class="modal-header modal-remocao-header">
-                    <div>
-                        <h5 class="modal-title" id="modalApagarUtilizadorLabel">
-                            <i class="fa-solid fa-triangle-exclamation me-2"></i> Remover utilizador
-                        </h5>
-                        <p class="modal-remocao-subtitulo">
-                            Confirme os dados antes de remover o utilizador.
-                        </p>
-                    </div>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                </div>
-                <div class="modal-body modal-remocao-body">
-                    <input type="hidden" id="modalApagarIdUtilizador">
-                    <div class="modal-resumo-remocao">
-                        <div class="modal-linha">
-                            <strong>Código</strong>
-                            <span id="modalApagarUtilizadorCodigo">---</span>
-                        </div>
-                        <div class="modal-linha">
-                            <strong>Nome</strong>
-                            <span id="modalApagarUtilizadorNome">---</span>
-                        </div>
-                        <div class="modal-linha">
-                            <strong>Tipo</strong>
-                            <span id="modalApagarUtilizadorTipo">---</span>
-                        </div>
-                        <div class="modal-linha">
-                            <strong>Nº CC</strong>
-                            <span id="modalApagarUtilizadorCartao">---</span>
-                        </div>
-                        <div class="modal-linha">
-                            <strong>Email</strong>
-                            <span id="modalApagarUtilizadorEmail">---</span>
-                        </div>
-                        <div class="modal-linha">
-                            <strong>Telefone</strong>
-                            <span id="modalApagarUtilizadorTelefone">---</span>
-                        </div>
-                        <div class="modal-linha">
-                            <strong>Serviço</strong>
-                            <span id="modalApagarUtilizadorServico">---</span>
-                        </div>
-                        <div class="modal-linha">
-                            <strong>Estado</strong>
-                            <span id="modalApagarUtilizadorEstado">---</span>
-                        </div>
-                    </div>
-                    <p class="texto-confirmacao-remocao">
-                        Confirma que pretende remover este utilizador da lista?
-                    </p>
-                </div>
-                <div class="modal-footer modal-remocao-footer">
-                    <button type="button" class="btn btn-cancelar-modal" data-bs-dismiss="modal">
-                        <i class="fa-solid fa-xmark me-2"></i> Cancelar
+
+            <div class="modal-footer modal-remocao-footer">
+                <button type="button" class="btn btn-cancelar-modal" data-bs-dismiss="modal">
+                    <i class="fa-solid fa-xmark me-2"></i> Cancelar
+                </button>
+
+                <form method="post" action="lista_utilizadores.php">
+                    <input type="hidden" name="acao" value="desativar_utilizador">
+                    <input type="hidden" name="id_utilizador" id="modalApagarIdUtilizador">
+
+                    <button type="submit" class="btn btn-confirmar-remocao">
+                        <i class="fa-solid fa-trash me-2"></i> Guardar Alteração
                     </button>
-                    <button type="button" class="btn btn-confirmar-remocao" id="btnConfirmarApagarUtilizador">
-                        <i class="fa-solid fa-trash me-2"></i> Remover Utilizador
-                    </button>
-                </div>
+                </form>
             </div>
         </div>
     </div>
+</div>
 
-<?php
-require_once __DIR__ . '/../../includes/footer.php';
-?>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>

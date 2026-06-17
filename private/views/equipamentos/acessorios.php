@@ -598,10 +598,10 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         </div>
     <?php endif; ?>
 
-    <section class="filtros-tabela" aria-label="Pesquisa de equipamento para acessórios">
+    <section class="filtros-tabela" aria-label="Seleção de equipamento para acessórios">
         <div class="row g-3 align-items-end">
 
-            <div class="col-lg-5 col-md-6">
+            <div class="col-lg-12">
                 <label for="seletorEquipamentoAcessoriosBD" class="form-label">Equipamento</label>
                 <select class="form-select" id="seletorEquipamentoAcessoriosBD">
                     <?php if (empty($equipamentos)): ?>
@@ -617,22 +617,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </select>
-            </div>
-
-            <div class="col-lg-5 col-md-6">
-                <label for="pesquisaAcessoriosBD" class="form-label">Pesquisar acessórios</label>
-                <input
-                    type="search"
-                    class="form-control"
-                    id="pesquisaAcessoriosBD"
-                    placeholder="Código, nome, tipo, série, estado ou intervenção">
-            </div>
-
-            <div class="col-lg-2 col-md-12">
-                <button type="button" class="btn btn-limpar-filtros w-100" id="btnLimparPesquisaAcessoriosBD">
-                    <i class="fa-solid fa-rotate-left me-2"></i>
-                    Limpar
-                </button>
             </div>
 
         </div>
@@ -666,7 +650,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         </div>
 
         <div class="table-responsive">
-            <table class="table table-hover align-middle tabela-acessorios" id="tabelaAcessoriosBD">
+            <table class="table table-hover align-middle tabela-acessorios tabela-datatables-medicore" id="tabelaAcessoriosBD">
                 <thead>
                     <tr>
                         <th>Código</th>
@@ -683,13 +667,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 </thead>
 
                 <tbody>
-                    <?php if (empty($acessorios)): ?>
-                        <tr class="linha-sem-acessorios">
-                            <td colspan="10" class="text-center text-muted">
-                                Não existem acessórios registados para este equipamento.
-                            </td>
-                        </tr>
-                    <?php else: ?>
+                    <?php if (!empty($acessorios)): ?>
                         <?php foreach ($acessorios as $acessorio): ?>
                             <?php
                                 $codigoAcessorio = $acessorio['codigo_acessorio'];

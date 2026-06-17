@@ -598,7 +598,7 @@ DROP COLUMN localizacao_stock;
 
 ALTER TABLE manutencoes_equipamento
 ADD COLUMN codigo_processo VARCHAR(30) NULL AFTER id_manutencao,
-ADD COLUMN tipo_execucao ENUM('interna', 'externa', 'mista') NOT NULL DEFAULT 'externa' AFTER tipo_manutencao,
+ADD COLUMN tipo_execucao ENUM('interna', 'externa') NOT NULL DEFAULT 'externa' AFTER tipo_manutencao,
 ADD COLUMN estado_processo ENUM(
     'aguarda_recolha',
     'procedimento_a_decorrer',
@@ -627,7 +627,7 @@ MODIFY resultado ENUM(
 
 ALTER TABLE calibracoes_equipamento
 ADD COLUMN codigo_processo VARCHAR(30) NULL AFTER id_calibracao,
-ADD COLUMN tipo_execucao ENUM('interna', 'externa', 'mista') NOT NULL DEFAULT 'externa' AFTER id_fornecedor_responsavel,
+ADD COLUMN tipo_execucao ENUM('interna', 'externa') NOT NULL DEFAULT 'externa' AFTER id_fornecedor_responsavel,
 ADD COLUMN estado_processo ENUM(
     'aguarda_recolha',
     'procedimento_a_decorrer',
@@ -683,9 +683,7 @@ CREATE TABLE historico_etapas_processos (
 
     tipo_responsavel ENUM(
         'interno',
-        'fornecedor',
-        'sistema',
-        'outro'
+        'fornecedor'
     ) NULL,
 
     id_fornecedor_responsavel INT NULL,
@@ -734,7 +732,6 @@ UPDATE manutencoes_equipamento
 SET
     tipo_execucao = CASE
         WHEN id_fornecedor_responsavel IS NULL AND tecnico_interno IS NOT NULL THEN 'interna'
-        WHEN id_fornecedor_responsavel IS NOT NULL AND tecnico_interno IS NOT NULL THEN 'mista'
         ELSE 'externa'
     END,
 
@@ -758,7 +755,6 @@ UPDATE calibracoes_equipamento
 SET
     tipo_execucao = CASE
         WHEN id_fornecedor_responsavel IS NULL AND tecnico_interno IS NOT NULL THEN 'interna'
-        WHEN id_fornecedor_responsavel IS NOT NULL AND tecnico_interno IS NOT NULL THEN 'mista'
         ELSE 'externa'
     END,
 
@@ -772,3 +768,219 @@ SET
     data_emissao_relatorio = COALESCE(data_emissao_relatorio, data_calibracao),
     data_finalizacao = COALESCE(data_finalizacao, data_calibracao, DATE(criado_em), CURDATE())
 WHERE isActive = 1;
+
+-- 1. Corrigir valores antigos antes de alterar o ENUM
+UPDATE manutencoes_equipamento
+SET tipo_execucao = CASE
+    WHEN id_fornecedor_responsavel IS NOT NULL THEN 'externa'
+    WHEN tecnico_interno IS NOT NULL THEN 'interna'
+    ELSE 'externa'
+END
+WHERE tipo_execucao NOT IN ('interna', 'externa');
+
+UPDATE calibracoes_equipamento
+SET tipo_execucao = CASE
+    WHEN id_fornecedor_responsavel IS NOT NULL THEN 'externa'
+    WHEN tecnico_interno IS NOT NULL THEN 'interna'
+    ELSE 'externa'
+END
+WHERE tipo_execucao NOT IN ('interna', 'externa');
+
+UPDATE historico_etapas_processos
+SET tipo_responsavel = CASE
+    WHEN id_fornecedor_responsavel IS NOT NULL THEN 'fornecedor'
+    ELSE 'interno'
+END
+WHERE tipo_responsavel NOT IN ('interno', 'fornecedor')
+   OR tipo_responsavel IS NULL;
+
+-- 2. Alterar os ENUM para aceitar apenas os valores pretendidos
+ALTER TABLE manutencoes_equipamento
+MODIFY tipo_execucao ENUM('interna', 'externa') NOT NULL DEFAULT 'externa';
+
+ALTER TABLE calibracoes_equipamento
+MODIFY tipo_execucao ENUM('interna', 'externa') NOT NULL DEFAULT 'externa';
+
+ALTER TABLE historico_etapas_processos
+MODIFY tipo_responsavel ENUM('interno', 'fornecedor') NULL;
+
+
+
+
+-- =========================================================
+-- MEDICORE | Utilizadores, permissões e histórico/auditoria
+-- Executar depois das tabelas principais do projeto.
+-- =========================================================
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- =========================================================
+-- 1) Tabela principal de utilizadores
+-- =========================================================
+CREATE TABLE IF NOT EXISTS utilizadores (
+    id_utilizador INT AUTO_INCREMENT PRIMARY KEY,
+
+    codigo_utilizador VARCHAR(30) NOT NULL UNIQUE,
+    nome VARCHAR(180) NOT NULL,
+
+    tipo_utilizador ENUM('Administrador', 'Engenheiro', 'Enfermeiro') NOT NULL,
+    estado ENUM('Ativo', 'Inativo', 'Pendente') NOT NULL DEFAULT 'Ativo',
+
+    cartao_cidadao VARCHAR(30) NOT NULL UNIQUE,
+    nif VARCHAR(20) NULL UNIQUE,
+    data_nascimento DATE NULL,
+    numero_mecanografico VARCHAR(50) NULL UNIQUE,
+
+    email VARCHAR(150) NOT NULL UNIQUE,
+    telefone VARCHAR(30) NULL,
+    extensao VARCHAR(30) NULL,
+    morada VARCHAR(255) NULL,
+    codigo_postal VARCHAR(20) NULL,
+    localidade VARCHAR(100) NULL,
+
+    username VARCHAR(80) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+
+    perfil_acesso ENUM('Acesso total', 'Gestão técnica', 'Consulta clínica') NULL,
+    data_ativacao DATE NULL,
+    validade_acesso DATE NULL,
+
+    departamento VARCHAR(120) NULL,
+    funcao VARCHAR(120) NULL,
+    superior_hierarquico VARCHAR(150) NULL,
+    edificio VARCHAR(80) NULL,
+    piso VARCHAR(30) NULL,
+    data_admissao DATE NULL,
+
+    observacoes TEXT NULL,
+
+    ultimo_login DATETIME NULL,
+
+    isActive TINYINT(1) NOT NULL DEFAULT 1,
+
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    atualizado_por VARCHAR(150) NULL
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+
+-- =========================================================
+-- 2) Catálogo de permissões/autorizacões por módulo
+-- =========================================================
+CREATE TABLE IF NOT EXISTS permissoes_sistema (
+    id_permissao INT AUTO_INCREMENT PRIMARY KEY,
+
+    codigo_permissao VARCHAR(60) NOT NULL UNIQUE,
+    nome_permissao VARCHAR(120) NOT NULL,
+    descricao VARCHAR(255) NULL,
+
+    isActive TINYINT(1) NOT NULL DEFAULT 1,
+
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    atualizado_por VARCHAR(150) NULL
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+
+INSERT IGNORE INTO permissoes_sistema (
+    codigo_permissao,
+    nome_permissao,
+    descricao,
+    isActive,
+    atualizado_por
+) VALUES
+('dashboard', 'Dashboard Técnico', 'Permite consultar o painel técnico inicial.', 1, 'sistema'),
+('equipamentos', 'Equipamentos', 'Permite aceder à gestão e consulta de equipamentos.', 1, 'sistema'),
+('calibracoes', 'Calibrações/Manutenções', 'Permite aceder aos processos de calibração e manutenção.', 1, 'sistema'),
+('localizacoes', 'Localizações', 'Permite aceder à gestão de localizações hospitalares.', 1, 'sistema'),
+('fornecedores', 'Fornecedores', 'Permite aceder à gestão de fornecedores.', 1, 'sistema'),
+('utilizadores', 'Utilizadores', 'Permite aceder à gestão de utilizadores e permissões.', 1, 'sistema'),
+('acessorios', 'Acessórios', 'Permite aceder à gestão de acessórios de equipamentos.', 1, 'sistema'),
+('consumiveis', 'Consumíveis', 'Permite aceder à gestão de consumíveis e stock.', 1, 'sistema'),
+('documentos', 'Documentos', 'Permite aceder à gestão documental associada aos equipamentos.', 1, 'sistema'),
+('backoffice', 'Backoffice', 'Permite aceder à gestão de conteúdos do front office.', 1, 'sistema');
+
+
+-- =========================================================
+-- 3) Permissões atribuídas a cada utilizador
+--    Remover autorização = colocar isActive = 0.
+--    Reativar autorização = colocar isActive = 1.
+-- =========================================================
+CREATE TABLE IF NOT EXISTS utilizadores_permissoes (
+    id_utilizador_permissao INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_utilizador INT NOT NULL,
+    id_permissao INT NOT NULL,
+
+    isActive TINYINT(1) NOT NULL DEFAULT 1,
+
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    atualizado_por VARCHAR(150) NULL,
+
+    CONSTRAINT fk_utilizador_permissao_utilizador
+        FOREIGN KEY (id_utilizador)
+        REFERENCES utilizadores(id_utilizador),
+
+    CONSTRAINT fk_utilizador_permissao_permissao
+        FOREIGN KEY (id_permissao)
+        REFERENCES permissoes_sistema(id_permissao),
+
+    CONSTRAINT uk_utilizador_permissao
+        UNIQUE (id_utilizador, id_permissao)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+
+-- =========================================================
+-- 4) Histórico/auditoria de utilizadores e autorizações
+-- =========================================================
+CREATE TABLE IF NOT EXISTS historico_utilizadores (
+    id_historico_utilizador INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_utilizador_alvo INT NULL,
+    codigo_utilizador VARCHAR(30) NULL,
+
+    acao ENUM(
+        'criacao_utilizador',
+        'edicao_utilizador',
+        'remocao_utilizador',
+        'reativacao_utilizador',
+        'adicao_autorizacao',
+        'remocao_autorizacao',
+        'reativacao_autorizacao',
+        'edicao_autorizacao'
+    ) NOT NULL,
+
+    campo_alterado VARCHAR(100) NULL,
+    valor_anterior TEXT NULL,
+    valor_novo TEXT NULL,
+
+    id_permissao INT NULL,
+    codigo_permissao VARCHAR(60) NULL,
+
+    observacoes TEXT NULL,
+
+    realizado_por VARCHAR(150) NULL,
+    data_registo DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_historico_utilizadores_alvo
+        FOREIGN KEY (id_utilizador_alvo)
+        REFERENCES utilizadores(id_utilizador),
+
+    CONSTRAINT fk_historico_utilizadores_permissao
+        FOREIGN KEY (id_permissao)
+        REFERENCES permissoes_sistema(id_permissao)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci;
+
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+
