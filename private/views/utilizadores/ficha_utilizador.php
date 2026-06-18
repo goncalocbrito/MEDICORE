@@ -49,7 +49,7 @@ function icone_permissao($codigo)
     ][$codigo] ?? 'fa-lock';
 }
 
-$idUtilizador = (int) ($_GET['id'] ?? 0);
+$idUtilizador = id_from_request();
 $mensagemSucesso = '';
 $mensagemErro = '';
 
@@ -275,7 +275,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
     <form class="form-equipamento form-ficha-equipamento modo-consulta"
           id="formFichaUtilizador"
-          action="ficha_utilizador.php?id=<?php echo h($idUtilizador); ?>"
+          action="ficha_utilizador.php?ref=<?php echo url_ref($idUtilizador); ?>"
           method="post">
 
         <input type="hidden" id="modoFormularioUtilizador" name="modoFormularioUtilizador" value="ver">

@@ -24,6 +24,27 @@ if (!empty($_SESSION['server_error'])) {
     $server_error = $_SESSION['server_error'];
     unset($_SESSION['server_error']);
 }
+
+$credenciaisRapidas = [
+    [
+        'perfil' => 'Administrador',
+        'username' => 'admin',
+        'password' => 'admin123',
+        'icone' => 'fa-user-shield'
+    ],
+    [
+        'perfil' => 'Engenheiro',
+        'username' => 'jferreira',
+        'password' => 'engenheiro123',
+        'icone' => 'fa-user-gear'
+    ],
+    [
+        'perfil' => 'Enfermeiro',
+        'username' => 'amartins',
+        'password' => 'enfermeiro123',
+        'icone' => 'fa-user-nurse'
+    ]
+];
 ?>
 <!DOCTYPE html>
 <html lang="pt">
@@ -44,7 +65,7 @@ if (!empty($_SESSION['server_error'])) {
     <link rel="stylesheet" href="assets/fontawesome/all.min.css">
 
     <!-- estilos da página -->
-    <link rel="stylesheet" href="assets/css/login.css?v=4">
+    <link rel="stylesheet" href="assets/css/login.css?v=<?php echo filemtime(__DIR__ . '/assets/css/login.css'); ?>">
 </head>
 
 <body>
@@ -77,6 +98,18 @@ if (!empty($_SESSION['server_error'])) {
                     <div><?php echo htmlspecialchars($server_error); ?></div>
                 </div>
             <?php endif; ?>
+
+            <div class="login-credenciais-rapidas">
+                <?php foreach ($credenciaisRapidas as $credencial): ?>
+                    <button type="button"
+                            class="btn-credencial-login"
+                            data-username="<?php echo htmlspecialchars($credencial['username']); ?>"
+                            data-password="<?php echo htmlspecialchars($credencial['password']); ?>">
+                        <i class="fa-solid <?php echo htmlspecialchars($credencial['icone']); ?>"></i>
+                        <?php echo htmlspecialchars($credencial['perfil']); ?>
+                    </button>
+                <?php endforeach; ?>
+            </div>
 
             <form id="loginForm" action="../private/processa_login.php" method="post">
 
@@ -135,6 +168,14 @@ if (!empty($_SESSION['server_error'])) {
     </main>
 
     <script src="assets/js/1230404.js"></script>
+    <script>
+        document.querySelectorAll('.btn-credencial-login').forEach(function (botao) {
+            botao.addEventListener('click', function () {
+                document.getElementById('email').value = botao.dataset.username || '';
+                document.getElementById('password').value = botao.dataset.password || '';
+            });
+        });
+    </script>
 
 </body>
 </html>

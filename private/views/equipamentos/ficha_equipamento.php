@@ -310,7 +310,7 @@ function guardar_documentos_ficha_equipamento($pdo, $idEquipamento, $codigoEquip
 /* =========================================================
    IDENTIFICAÇÃO DO EQUIPAMENTO
    ========================================================= */
-$idEquipamento = (int) ($_POST['idEquipamento'] ?? $_GET['id'] ?? 0);
+$idEquipamento = (int) ($_POST['idEquipamento'] ?? id_from_request());
 
 if ($idEquipamento <= 0) {
     header('Location: lista_equipamentos.php');
@@ -558,7 +558,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualiz
 
             $pdo->commit();
 
-            header('Location: ficha_equipamento.php?id=' . urlencode((string) $idEquipamento) . '&guardado=1');
+            header('Location: ficha_equipamento.php?ref=' . url_ref($idEquipamento) . '&guardado=1');
             exit;
 
         } catch (PDOException $e) {
@@ -785,7 +785,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
     <form class="form-equipamento form-ficha-equipamento"
           id="formFichaEquipamento"
-          action="ficha_equipamento.php?id=<?php echo urlencode((string) $idEquipamento); ?>"
+          action="ficha_equipamento.php?ref=<?php echo url_ref($idEquipamento); ?>"
           method="post"
           enctype="multipart/form-data">
 

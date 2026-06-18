@@ -270,7 +270,7 @@ try {
                 ':atualizado_por' => $utilizadorAtual
             ]);
 
-            header('Location: acessorios.php?id_equipamento=' . $idEquipamentoPost . '&criado=1');
+            header('Location: acessorios.php?ref_equipamento=' . url_ref($idEquipamentoPost) . '&criado=1');
             exit;
         }
 
@@ -352,8 +352,8 @@ try {
                 ':atualizado_por' => $utilizadorAtual
             ]);
 
-            $idEquipamentoRedirecionar = $idEquipamentoPost > 0 ? $idEquipamentoPost : (int) ($_GET['id_equipamento'] ?? 0);
-            header('Location: acessorios.php?id_equipamento=' . $idEquipamentoRedirecionar . '&editado=1');
+            $idEquipamentoRedirecionar = $idEquipamentoPost > 0 ? $idEquipamentoPost : id_from_request('id_equipamento', 'ref_equipamento');
+            header('Location: acessorios.php?ref_equipamento=' . url_ref($idEquipamentoRedirecionar) . '&editado=1');
             exit;
         }
 
@@ -376,8 +376,8 @@ try {
                 ]);
             }
 
-            $idEquipamentoRedirecionar = $idEquipamentoPost > 0 ? $idEquipamentoPost : (int) ($_GET['id_equipamento'] ?? 0);
-            header('Location: acessorios.php?id_equipamento=' . $idEquipamentoRedirecionar . '&removido=1');
+            $idEquipamentoRedirecionar = $idEquipamentoPost > 0 ? $idEquipamentoPost : id_from_request('id_equipamento', 'ref_equipamento');
+            header('Location: acessorios.php?ref_equipamento=' . url_ref($idEquipamentoRedirecionar) . '&removido=1');
             exit;
         }
     }
@@ -394,7 +394,7 @@ try {
 
     $equipamentos = $stmtEquipamentos->fetchAll();
 
-    $idEquipamentoSelecionado = (int) ($_GET['id_equipamento'] ?? 0);
+    $idEquipamentoSelecionado = id_from_request('id_equipamento', 'ref_equipamento');
 
     if ($idEquipamentoSelecionado <= 0 && !empty($equipamentos)) {
         $idEquipamentoSelecionado = (int) $equipamentos[0]['id_equipamento'];
@@ -610,6 +610,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <?php foreach ($equipamentos as $equipamento): ?>
                             <option
                                 value="<?php echo h($equipamento['id_equipamento']); ?>"
+                                data-ref="<?php echo url_ref($equipamento['id_equipamento']); ?>"
                                 data-id-localizacao="<?php echo h($equipamento['id_localizacao']); ?>"
                                 <?php echo selected_option($idEquipamentoSelecionado, $equipamento['id_equipamento']); ?>>
                                 <?php echo h($equipamento['codigo_equipamento'] . ' - ' . $equipamento['designacao']); ?>
@@ -772,7 +773,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
     <div class="modal-dialog modal-xl modal-dialog-centered modal-acessorio-dialog">
         <div class="modal-content modal-acessorio">
 
-            <form action="acessorios.php?id_equipamento=<?php echo h($idEquipamentoSelecionado); ?>" method="post" id="formAcessorioBD">
+            <form action="acessorios.php?ref_equipamento=<?php echo url_ref($idEquipamentoSelecionado); ?>" method="post" id="formAcessorioBD">
                 <input type="hidden" name="acao" id="acaoAcessorioBD" value="criar">
                 <input type="hidden" name="id_acessorio" id="idAcessorioBD" value="">
                 <input type="hidden" name="id_equipamento" value="<?php echo h($idEquipamentoSelecionado); ?>">
@@ -1093,7 +1094,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     Cancelar
                 </button>
 
-                <form action="acessorios.php?id_equipamento=<?php echo h($idEquipamentoSelecionado); ?>" method="post">
+                <form action="acessorios.php?ref_equipamento=<?php echo url_ref($idEquipamentoSelecionado); ?>" method="post">
                     <input type="hidden" name="acao" value="apagar">
                     <input type="hidden" name="id_equipamento" value="<?php echo h($idEquipamentoSelecionado); ?>">
                     <input type="hidden" name="id_acessorio" id="idAcessorioEliminarBD" value="">
@@ -1260,8 +1261,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (seletorEquipamento) {
         seletorEquipamento.addEventListener('change', function () {
-            if (this.value) {
-                window.location.href = 'acessorios.php?id_equipamento=' + encodeURIComponent(this.value);
+            const opcaoSelecionada = this.options[this.selectedIndex];
+
+            if (opcaoSelecionada && opcaoSelecionada.dataset.ref) {
+                window.location.href = 'acessorios.php?ref_equipamento=' + encodeURIComponent(opcaoSelecionada.dataset.ref);
             }
         });
     }

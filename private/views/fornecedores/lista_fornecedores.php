@@ -107,7 +107,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             <td><?php echo htmlspecialchars($fornecedor['localidade']); ?></td>
                             <td><span class="estado estado-ativo">Ativo</span></td>
                             <td class="text-center">
-                                <a href="ficha_fornecedor.php?id=<?php echo $fornecedor['id_fornecedor']; ?>"
+                                <a href="ficha_fornecedor.php?ref=<?php echo url_ref($fornecedor['id_fornecedor']); ?>"
                                 class="btn btn-sm btn-ficha">
                                     <i class="fa-solid fa-file-lines"></i>
                                 </a>

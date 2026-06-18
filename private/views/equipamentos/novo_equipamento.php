@@ -595,7 +595,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->commit();
 
             unset($_SESSION[$chaveSessao]);
-            header('Location: ficha_equipamento.php?id=' . urlencode((string) $idEquipamento) . '&criado=1');
+            header('Location: ficha_equipamento.php?ref=' . url_ref($idEquipamento) . '&criado=1');
             exit;
 
         } catch (PDOException $e) {

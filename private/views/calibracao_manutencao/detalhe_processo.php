@@ -338,8 +338,7 @@ function obter_processo(PDO $pdo, $tipo, $id)
     return $stmt->fetch();
 }
 
-$tipo = $_GET['tipo'] ?? $_POST['tipo'] ?? '';
-$id = (int) ($_GET['id'] ?? $_POST['id'] ?? 0);
+[$tipo, $id] = processo_from_request();
 
 if (!in_array($tipo, ['manutencao', 'calibracao'], true) || $id <= 0) {
     die('Processo inválido.');
@@ -782,9 +781,6 @@ $descricaoProcedimento = $tipo === 'manutencao' ? ($processo['descricao_procedim
         <section class="processo-progresso-topo" aria-label="Progresso do processo">
             <div class="processo-progresso-topo-header">
                 <h3>Progresso do processo</h3>
-                <span class="<?php echo h(classe_estado_processo($processo['estado_processo'] ?? '')); ?>">
-                    <?php echo h(texto_estado_processo($processo['estado_processo'] ?? '')); ?>
-                </span>
             </div>
 
             <?php render_progresso_visual_processo($processo['estado_processo'] ?? ''); ?>

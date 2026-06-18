@@ -308,7 +308,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->commit();
             unset($_SESSION[$chaveSessao]);
 
-            header('Location: ficha_utilizador.php?id=' . urlencode((string) $idUtilizador) . '&criado=1');
+            header('Location: ficha_utilizador.php?ref=' . url_ref($idUtilizador) . '&criado=1');
             exit;
         } catch (Exception $e) {
             if ($pdo->inTransaction()) {

@@ -314,7 +314,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </td>
                             <td class="text-center">
                                 <a class="btn btn-sm btn-ficha" title="Abrir detalhe"
-                                   href="detalhe_processo.php?tipo=<?php echo h($processo['origem']); ?>&id=<?php echo h($processo['id_processo']); ?>">
+                                   href="detalhe_processo.php?ref=<?php echo processo_ref($processo['origem'], $processo['id_processo']); ?>">
                                     <i class="fa-solid fa-file-lines"></i>
                                 </a>
                             </td>

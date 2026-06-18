@@ -15,4 +15,9 @@ define('MYSQL_PORT', '10464');
 define('MYSQL_DATABASE', 'db1230404');
 define('MYSQL_USERNAME', '1230404');
 define('MYSQL_PASSWORD', 'brito_404');
+
+// Configuracao usada para esconder identificadores internos nas URLs.
+define('OPENSSL_METHOD', 'AES-256-CBC');
+define('OPENSSL_KEY', 'MEDICORE_1230404_KEY_PRIVATE_32X');
+define('OPENSSL_IV', 'MEDICORE_IV_2026');
 ?>

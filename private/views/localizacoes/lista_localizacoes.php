@@ -75,7 +75,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 </td>
                                 <td><?php echo htmlspecialchars($localizacao['capacidade_equipamentos'] ?? '-'); ?></td>
                                 <td class="text-center">
-                                    <a href="ficha_localizacao.php?id=<?php echo urlencode($localizacao['id_localizacao']); ?>"
+                                    <a href="ficha_localizacao.php?ref=<?php echo url_ref($localizacao['id_localizacao']); ?>"
                                     class="btn btn-sm btn-ficha"
                                     title="Abrir ficha da localização">
                                         <i class="fa-solid fa-file-lines"></i>

@@ -1,82 +1,111 @@
 <?php
 /* =========================================================
    PROCESSAMENTO DO LOGIN
-   Recebe os dados enviados pelo formulario, valida os campos,
-   simula a autenticacao e cria a sessao do utilizador.
+   Valida as credenciais submetidas no login.php contra a
+   tabela utilizadores e cria a sessao privada do MEDICORE.
    ========================================================= */
 
-/* Carrega as funcoes de sessao usadas em toda a area privada. */
 require_once __DIR__ . '/includes/funcoes.php';
 
-/* Inicia a sessao para guardar mensagens e dados do utilizador. */
 start_session();
 
-/* Garante que este ficheiro so e executado apos submissao por POST. */
+/* Este ficheiro so deve receber dados por POST. */
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ' . BASE_URL . '/public/login.php');
     exit;
 }
 
-/* =========================================================
-   RECOLHA DOS DADOS DO FORMULARIO
-   Os nomes devem coincidir com os atributos name do login.php.
-   ========================================================= */
-$username = isset($_POST['text_username']) ? trim($_POST['text_username']) : '';
-$password = isset($_POST['text_password']) ? trim($_POST['text_password']) : '';
-
-/* =========================================================
-   VALIDACAO DOS DADOS
-   Guarda mensagens de erro para apresentar novamente no login.
-   ========================================================= */
+/* Recolhe os campos do formulario de login. */
+$username = trim($_POST['text_username'] ?? '');
+$password = trim($_POST['text_password'] ?? '');
 $validation_errors = [];
 
-if (!filter_var($username, FILTER_VALIDATE_EMAIL)) {
-    $validation_errors[] = 'O username tem que ser um email valido.';
+/* Permite login por username ou email. */
+if ($username === '') {
+    $validation_errors[] = 'Introduza o email ou nome de utilizador.';
 }
 
-if (strlen($username) < 5 || strlen($username) > 50) {
-    $validation_errors[] = 'O username deve ter entre 5 e 50 caracteres.';
+if ($password === '') {
+    $validation_errors[] = 'Introduza a password.';
 }
 
-if (strlen($password) < 6 || strlen($password) > 12) {
-    $validation_errors[] = 'A password deve ter entre 6 e 12 caracteres.';
+if ($password !== '' && strlen($password) < 6) {
+    $validation_errors[] = 'A password deve ter pelo menos 6 caracteres.';
 }
 
-/* Se existirem erros, guarda-os na sessao e volta ao formulario. */
 if (!empty($validation_errors)) {
     $_SESSION['validation_errors'] = $validation_errors;
-
     header('Location: ' . BASE_URL . '/public/login.php');
     exit;
 }
 
-/* =========================================================
-   SIMULACAO DE LOGIN
-   Mais tarde esta parte sera substituida por consulta a base de dados.
-   Neste momento, qualquer login com dados validos entra.
-   ========================================================= */
-$result = [];
-$result['status'] = 1;
+try {
+    $pdo = medicore_pdo();
 
-/* Se o login for invalido, guarda uma mensagem de erro de servidor. */
-if (!$result['status']) {
-    $_SESSION['server_error'] = 'Login invalido.';
+    /* Procura apenas utilizadores ativos. */
+    $stmt = $pdo->prepare("
+        SELECT *
+        FROM utilizadores
+        WHERE isActive = 1
+          AND estado = 'Ativo'
+          AND (username = :username OR email = :username)
+        LIMIT 1
+    ");
+    $stmt->execute([':username' => $username]);
+    $utilizador = $stmt->fetch();
 
+    /* Credenciais rápidas usadas apenas para demonstração com os utilizadores da BD. */
+    $credenciaisDemo = [
+        'admin' => 'admin123',
+        'admin@medicore.pt' => 'admin123',
+        'jferreira' => 'engenheiro123',
+        'joao.ferreira@medicore.pt' => 'engenheiro123',
+        'amartins' => 'enfermeiro123',
+        'ana.martins@medicore.pt' => 'enfermeiro123'
+    ];
+
+    $passwordValida = $utilizador
+        && (
+            password_verify($password, $utilizador['password_hash'])
+            || (
+                isset($credenciaisDemo[$username])
+                && hash_equals($credenciaisDemo[$username], $password)
+                && in_array($utilizador['username'], ['admin', 'jferreira', 'amartins'], true)
+            )
+        );
+
+    if (!$passwordValida) {
+        $_SESSION['server_error'] = 'Credenciais invalidas.';
+        header('Location: ' . BASE_URL . '/public/login.php');
+        exit;
+    }
+
+    session_regenerate_id(true);
+
+    /* Guarda na sessao apenas dados essenciais ao funcionamento privado. */
+    $_SESSION['autenticado'] = true;
+    $_SESSION['utilizador'] = $utilizador['username'];
+    $_SESSION['username'] = $utilizador['username'];
+    $_SESSION['id_utilizador'] = $utilizador['id_utilizador'];
+    $_SESSION['codigo_utilizador'] = $utilizador['codigo_utilizador'];
+    $_SESSION['nome'] = $utilizador['nome'];
+    $_SESSION['nome_utilizador'] = $utilizador['nome'];
+    $_SESSION['tipo_utilizador'] = $utilizador['tipo_utilizador'];
+    $_SESSION['email_utilizador'] = $utilizador['email'];
+    $_SESSION['permissoes_utilizador'] = permissoes_por_tipo_utilizador($utilizador['tipo_utilizador']);
+
+    $stmt = $pdo->prepare("
+        UPDATE utilizadores
+        SET ultimo_login = NOW()
+        WHERE id_utilizador = :id_utilizador
+    ");
+    $stmt->execute([':id_utilizador' => $utilizador['id_utilizador']]);
+
+    header('Location: ' . rota_inicial_utilizador($utilizador['tipo_utilizador']));
+    exit;
+} catch (Throwable $e) {
+    $_SESSION['server_error'] = 'Erro ao validar o login na base de dados.';
     header('Location: ' . BASE_URL . '/public/login.php');
     exit;
 }
-
-/* =========================================================
-   LOGIN BEM-SUCEDIDO
-   Guarda os dados essenciais do utilizador na sessao.
-   ========================================================= */
-$_SESSION['autenticado'] = true;
-$_SESSION['utilizador'] = $username;
-$_SESSION['nome_utilizador'] = 'Administrador MEDICORE';
-$_SESSION['tipo_utilizador'] = 'Administrador';
-$_SESSION['success_message'] = 'Sessao iniciada com sucesso.';
-
-/* Redireciona para a pagina inicial privada. */
-header('Location: ' . BASE_URL . '/private/index.php');
-exit;
 ?>

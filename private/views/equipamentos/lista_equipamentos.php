@@ -281,7 +281,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             <td class="text-center">
 
                                 <a 
-                                    href="ficha_equipamento.php?id=<?php echo urlencode($equipamento['id_equipamento']); ?>"
+                                    href="ficha_equipamento.php?ref=<?php echo url_ref($equipamento['id_equipamento']); ?>"
                                     class="btn btn-sm btn-ficha"
                                     title="Abrir ficha do equipamento">
                                     <i class="fa-solid fa-file-lines"></i>

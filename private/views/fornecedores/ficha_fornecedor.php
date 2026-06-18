@@ -13,7 +13,7 @@ $pdo = new PDO(
     ]
 );
 
-$id_fornecedor = $_GET['id'] ?? 0;
+$id_fornecedor = id_from_request();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = $pdo->prepare("
@@ -116,7 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    header('Location: ficha_fornecedor.php?id=' . urlencode($id_fornecedor));
+    header('Location: ficha_fornecedor.php?ref=' . url_ref($id_fornecedor));
     exit;
 }
 
@@ -210,7 +210,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
              ===================================================== -->
         <form class="form-equipamento form-ficha-equipamento"
               id="formFichaFornecedor"
-              action="ficha_fornecedor.php?id=<?php echo urlencode($fornecedor['id_fornecedor']); ?>"
+              action="ficha_fornecedor.php?ref=<?php echo url_ref($fornecedor['id_fornecedor']); ?>"
               method="post"
               enctype="multipart/form-data">
 

@@ -2448,3 +2448,7 @@ WHERE u.codigo_utilizador = 'USR-003'
   AND p.codigo_permissao IN (
       'dashboard', 'equipamentos', 'localizacoes', 'acessorios', 'consumiveis'
   );
+
+UPDATE utilizadores SET password_hash = '$2y$10$upuIEklOVMbnYyH6cC0hl.QE0yZk0CDudXiU.V3VWUjgA0w8t0weG' WHERE username = 'admin';
+UPDATE utilizadores SET password_hash = '$2y$10$u5eTI2zY1Rx5WRkkqijgyuC28FM8NeSgmis1DS40.pQ7bJoQIsnvi' WHERE username = 'jferreira';
+UPDATE utilizadores SET password_hash = '$2y$10$CVonDPUaVhypLcjt4dBUM.BAFiwTN25fAdPwd8sCbjqfOLH06soRC' WHERE username = 'amartins';

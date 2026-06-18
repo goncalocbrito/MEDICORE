@@ -14,9 +14,9 @@ $pdo = new PDO(
     ]
 );
 
-$idLocalizacao = $_GET['id'] ?? null;
+$idLocalizacao = id_from_request();
 
-if (!$idLocalizacao || !is_numeric($idLocalizacao)) {
+if (!$idLocalizacao) {
     header('Location: lista_localizacoes.php');
     exit;
 }
@@ -31,9 +31,9 @@ function normalizar_codigo_localizacao($texto)
 
 $errosLocalizacao = [];
 
-$idLocalizacao = $_GET['id'] ?? ($_POST['idLocalizacao'] ?? null);
+$idLocalizacao = (int) ($_POST['idLocalizacao'] ?? $idLocalizacao);
 
-if (!$idLocalizacao || !is_numeric($idLocalizacao)) {
+if (!$idLocalizacao) {
     header('Location: lista_localizacoes.php');
     exit;
 }
@@ -118,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':id_localizacao' => $idLocalizacao
             ]);
 
-            header('Location: ficha_localizacao.php?id=' . urlencode($idLocalizacao) . '&atualizado=1');
+            header('Location: ficha_localizacao.php?ref=' . url_ref($idLocalizacao) . '&atualizado=1');
             exit;
 
         } catch (PDOException $e) {
@@ -237,7 +237,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
     <form class="form-equipamento form-ficha-equipamento"
       id="formFichaLocalizacao"
-      action="ficha_localizacao.php?id=<?php echo urlencode($localizacao['id_localizacao']); ?>"
+      action="ficha_localizacao.php?ref=<?php echo url_ref($localizacao['id_localizacao']); ?>"
       method="post">
 
         <input type="hidden"

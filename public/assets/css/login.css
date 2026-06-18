@@ -178,6 +178,37 @@ body {
     margin-right: 8px;
 }
 
+.login-credenciais-rapidas {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.btn-credencial-login {
+    border: 1px solid #cfe4e4;
+    border-radius: 10px;
+    background-color: #f4f8f8;
+    color: var(--cor-principal);
+    padding: 8px 6px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: border-color 0.25s, background-color 0.25s, color 0.25s;
+}
+
+.btn-credencial-login i {
+    display: block;
+    color: var(--cor-secundaria);
+    margin-bottom: 3px;
+}
+
+.btn-credencial-login:hover {
+    border-color: var(--cor-secundaria);
+    background-color: rgba(79, 179, 164, 0.12);
+    color: var(--cor-secundaria-escura);
+}
+
 @media (max-width: 560px) {
     body {
         padding: 16px;
@@ -194,5 +225,9 @@ body {
 
     .login-card-logo {
         width: 168px;
+    }
+
+    .login-credenciais-rapidas {
+        grid-template-columns: 1fr;
     }
 }

@@ -1754,6 +1754,15 @@ body {
     box-shadow: 0 14px 32px rgba(18, 60, 70, 0.14);
 }
 
+.indicador-card-alerta {
+    border-color: #efb7b7;
+    box-shadow: 0 10px 26px rgba(192, 57, 43, 0.12);
+}
+
+.dashboard-engenheiro-header {
+    border-left-color: #c0392b;
+}
+
 .indicador-icone {
     width: 58px;
     height: 58px;

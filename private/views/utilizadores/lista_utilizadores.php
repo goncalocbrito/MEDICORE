@@ -169,7 +169,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </span>
                         </td>
                         <td class="text-center">
-                            <a href="ficha_utilizador.php?id=<?php echo h($utilizador['id_utilizador']); ?>" class="btn btn-sm btn-ficha" title="Abrir ficha">
+                            <a href="ficha_utilizador.php?ref=<?php echo url_ref($utilizador['id_utilizador']); ?>" class="btn btn-sm btn-ficha" title="Abrir ficha">
                                 <i class="fa-solid fa-file-lines"></i>
                             </a>
 
