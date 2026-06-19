@@ -1,6 +1,6 @@
 <?php
 /* =========================================================
-   FUNCOES DE SESSAO
+   FUNÇÕES DE SESSÃO
    Centraliza as funcoes usadas para iniciar sessoes,
    validar acessos privados e terminar sessao.
    ========================================================= */
@@ -21,9 +21,10 @@ function check_session()
 {
     start_session();
 
-    return !empty($_SESSION['autenticado']) || !empty($_SESSION['utilizador']);
+    return isset($_SESSION['autenticado'], $_SESSION['utilizador'])
+        && $_SESSION['autenticado'] === true
+        && trim((string) $_SESSION['utilizador']) !== '';
 }
-
 /* Redireciona para o login quando o utilizador nao tem sessao ativa. */
 function redirect_if_not_logged($redirect_to = null)
 {
@@ -31,6 +32,8 @@ function redirect_if_not_logged($redirect_to = null)
 
     if ($redirect_to === null) {
         $redirect_to = BASE_URL . '/public/login.php';
+    } elseif (strpos($redirect_to, '/') === 0 && strpos($redirect_to, BASE_URL) !== 0) {
+        $redirect_to = BASE_URL . $redirect_to;
     }
 
     if (!check_session()) {
@@ -46,7 +49,6 @@ function redirect_if_not_logged($redirect_to = null)
         exit;
     }
 }
-
 /* Termina a sessao atual e redireciona o utilizador. */
 function logout_and_redirect($redirect_to = null)
 {
@@ -54,6 +56,24 @@ function logout_and_redirect($redirect_to = null)
 
     if ($redirect_to === null) {
         $redirect_to = BASE_URL . '/public/login.php';
+    } elseif (strpos($redirect_to, '/') === 0 && strpos($redirect_to, BASE_URL) !== 0) {
+        $redirect_to = BASE_URL . $redirect_to;
+    }
+
+    $_SESSION = [];
+
+    if (ini_get('session.use_cookies')) {
+        $params = session_get_cookie_params();
+
+        setcookie(
+            session_name(),
+            '',
+            time() - 42000,
+            $params['path'],
+            $params['domain'],
+            $params['secure'],
+            $params['httponly']
+        );
     }
 
     session_unset();
@@ -62,7 +82,6 @@ function logout_and_redirect($redirect_to = null)
     header("Location: $redirect_to");
     exit;
 }
-
 /* Cria uma ligacao PDO reutilizavel com a base de dados configurada. */
 function medicore_pdo()
 {
@@ -166,11 +185,6 @@ function permissoes_por_tipo_utilizador($tipo)
             'fornecedores',
             'calibracoes'
         ],
-        'Enfermeiro' => [
-            'equipamentos',
-            'acessorios',
-            'consumiveis'
-        ]
     ];
 
     return $permissoes[$tipo] ?? [];
@@ -197,10 +211,7 @@ function rota_inicial_utilizador($tipo = null)
             return BASE_URL . '/private/index.php';
 
         case 'Engenheiro':
-            return BASE_URL . '/private/views/equipamentos/dashboard_engenheiro.php';
-
-        case 'Enfermeiro':
-            return BASE_URL . '/private/views/equipamentos/lista_equipamentos.php';
+            return BASE_URL . '/private/views/dashboard/dashboard_engenheiro.php';
 
         default:
             return BASE_URL . '/public/login.php';
@@ -227,6 +238,10 @@ function permissao_por_caminho($caminho)
 
     if (strpos($caminho, '/private/views/backoffice/') !== false) {
         return 'backoffice';
+    }
+
+    if (strpos($caminho, '/private/views/dashboard/dashboard_engenheiro.php') !== false) {
+        return 'equipamentos';
     }
 
     if (strpos($caminho, '/private/views/localizacoes/') !== false) {

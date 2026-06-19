@@ -44,7 +44,7 @@ const equipamentosMEDICORE = {
                 tipo: "Cabo",
                 serie: "ECG-5D-2024",
                 estado: "Ativo",
-                intervencao: "NÃ£o",
+                intervencao: "não",
                 proximaIntervencao: "Por definir"
             },
             {
@@ -85,7 +85,7 @@ const equipamentosMEDICORE = {
         localizacao: "UrgÃªncia - Sala 1",
         estado: "Em manutenÃ§Ã£o",
         criticidade: "CrÃ­tica",
-        operacional: "NÃ£o operacional",
+        operacional: "não operacional",
         fornecedor: "Biomedical Solutions",
         dataFabrico: "2022-12-05",
         dataAquisicao: "2023-06-10",
@@ -132,7 +132,7 @@ const equipamentosMEDICORE = {
         localizacao: "Bloco OperatÃ³rio",
         estado: "Avariado",
         criticidade: "CrÃ­tica",
-        operacional: "NÃ£o operacional",
+        operacional: "não operacional",
         fornecedor: "ClinicalTech Equipamentos",
         dataFabrico: "2021-05-20",
         dataAquisicao: "2022-09-02",
@@ -160,7 +160,7 @@ const equipamentosMEDICORE = {
                 proximaIntervencao: "Por definir"
             }
         ],
-        observacoes: "Equipamento sinalizado como avariado. Deve permanecer indisponÃ­vel atÃ© avaliaÃ§Ã£o tÃ©cnica e reparaÃ§Ã£o."
+        observacoes: "Equipamento sinalizado como avariado. Deve permanecer indisponÃ­vel até avaliaÃ§Ã£o tÃ©cnica e reparaÃ§Ã£o."
     }
 };
 
@@ -310,7 +310,7 @@ function criarLinhaAcessorioEquipamento(acessorio) {
         <td>${escaparTextoPedido(acessorio.tipo || "---")}</td>
         <td>${escaparTextoPedido(acessorio.serie || "---")}</td>
         <td><span class="estado ${classeEstado(acessorio.estado || "Ativo")}">${escaparTextoPedido(acessorio.estado || "Ativo")}</span></td>
-        <td>${escaparTextoPedido(acessorio.intervencao || "NÃ£o")}</td>
+        <td>${escaparTextoPedido(acessorio.intervencao || "não")}</td>
         <td>${formatarDataPT(acessorio.proximaIntervencao || "")}</td>
     `;
 
@@ -346,7 +346,7 @@ function atualizarResumoFicha() {
     const localizacao = $("sala")?.value || $("departamento")?.value || "localizaÃ§Ã£o por definir";
     const estado = $("estado")?.value || "Estado";
     const criticidade = $("criticidade")?.value || "Criticidade";
-    const operacional = $("operacionalSim")?.checked ? "Operacional" : "NÃ£o operacional";
+    const operacional = $("operacionalSim")?.checked ? "Operacional" : "não operacional";
 
     definirTexto("resumoNomeEquipamento", nome);
     definirTexto("tituloPaginaEquipamento", `Ficha do Equipamento - ${codigo}`);
@@ -654,7 +654,7 @@ const fornecedoresMEDICORE = {
         pais: "Portugal",
         estado: "Inativo",
         estadoClasse: "estado-inativo",
-        contrato: "NÃ£o",
+        contrato: "não",
         inicioContrato: "2023-01-01",
         fimContrato: "2024-12-31",
         qtdEquipamentos: "3",
@@ -710,7 +710,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!graficoEstado) return;
 
     if (typeof Chart === "undefined") {
-        console.warn("Chart.js nÃ£o foi carregado.");
+        console.warn("Chart.js não foi carregado.");
         return;
     }
 
@@ -893,7 +893,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 /* =========================================================
    BOTÃƒO LIMPAR - NOVA LOCALIZAÃ‡ÃƒO
-   Limpa o formulÃ¡rio sem impedir o POST normal do PHP
+   Limpa o formulário sem impedir o POST normal do PHP
    ========================================================= */
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -1076,7 +1076,7 @@ const localizacoesMEDICORE = {
         acesso: "Acesso tÃ©cnico",
         criticidade: "Alta",
         permiteCriticos: "Sim",
-        suporteVida: "NÃ£o",
+        suporteVida: "não",
         capacidade: "12 equipamentos",
         qtdEquipamentos: 10,
         equipamentosAtivos: 8,
@@ -1102,8 +1102,8 @@ const localizacoesMEDICORE = {
         notasContacto: "EspaÃ§o reservado a equipamentos em stock ou abatidos.",
         acesso: "Acesso tÃ©cnico",
         criticidade: "Baixa",
-        permiteCriticos: "NÃ£o",
-        suporteVida: "NÃ£o",
+        permiteCriticos: "não",
+        suporteVida: "não",
         capacidade: "20 equipamentos",
         qtdEquipamentos: 4,
         equipamentosAtivos: 0,
@@ -1130,7 +1130,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const localizacao = localizacoesMEDICORE[idLocalizacao];
 
     if (!localizacao) {
-        alert("LocalizaÃ§Ã£o nÃ£o encontrada.");
+        alert("LocalizaÃ§Ã£o não encontrada.");
         window.location.href = "lista_localizacoes.html";
         return;
     }
@@ -1186,7 +1186,7 @@ document.addEventListener("DOMContentLoaded", function () {
         tabela.innerHTML = `
             <tr>
                 <td colspan="7" class="text-center text-muted">
-                    NÃ£o existem equipamentos associados a esta localizaÃ§Ã£o.
+                    não existem equipamentos associados a esta localizaÃ§Ã£o.
                 </td>
             </tr>
         `;
@@ -1212,7 +1212,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 
-// PÃ¡gina apagar_localizacao.html
+// Página apagar_localizacao.html
 // Preencher dados da localizaÃ§Ã£o e confirmar remoÃ§Ã£o
 // AlteraÃ§Ã£o feita por mim
 
@@ -1227,7 +1227,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const localizacao = localizacoesMEDICORE[idLocalizacao];
 
     if (!localizacao) {
-        alert("LocalizaÃ§Ã£o nÃ£o encontrada.");
+        alert("LocalizaÃ§Ã£o não encontrada.");
         window.location.href = "lista_localizacoes.html";
         return;
     }
@@ -1272,7 +1272,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function obterLocalizacaoSelecionada() {
     // LÃª o id da localizaÃ§Ã£o na query string.
-    // Se nÃ£o existir id, usa LOC-001 como exemplo para a ficha abrir preenchida.
+    // Se não existir id, usa LOC-001 como exemplo para a ficha abrir preenchida.
     const id = obterParametroURL("id") || "LOC-001";
     return {
         id: id,
@@ -1332,7 +1332,7 @@ function preencherTabelaEquipamentosFichaLocalizacao(localizacao) {
         tabela.innerHTML = `
             <tr>
                 <td colspan="7" class="text-center text-muted">
-                    NÃ£o existem equipamentos associados a esta localizaÃ§Ã£o.
+                    não existem equipamentos associados a esta localizaÃ§Ã£o.
                 </td>
             </tr>
         `;
@@ -1358,7 +1358,7 @@ function preencherTabelaEquipamentosFichaLocalizacao(localizacao) {
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    // Inicializa apenas a pÃ¡gina ficha_localizacao.html.
+    // Inicializa apenas a Página ficha_localizacao.html.
     if (!window.location.pathname.endsWith("ficha_localizacao.html")) return;
 
     const formFicha = document.getElementById("formFichaLocalizacao");
@@ -1369,7 +1369,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const localizacao = localizacaoSelecionada.dados;
 
     if (!localizacao) {
-        alert("LocalizaÃ§Ã£o nÃ£o encontrada.");
+        alert("LocalizaÃ§Ã£o não encontrada.");
         window.location.href = "lista_localizacoes.html";
         return;
     }
@@ -1565,8 +1565,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    // Inicializa apenas a pÃ¡gina ficha_utilizador.html.
-    // Se o formulÃ¡rio da ficha nÃ£o existir, esta funÃ§Ã£o termina sem afetar outras pÃ¡ginas.
+    // Inicializa apenas a Página ficha_utilizador.html.
+    // Se o formulário da ficha não existir, esta funÃ§Ã£o termina sem afetar outras Páginas.
     const formFicha = document.getElementById("formFichaUtilizador");
 
     if (!formFicha) return;
@@ -1598,7 +1598,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function restaurarValoresOriginaisUtilizador() {
         // Reverte os campos para o Ãºltimo estado guardado.
-        // Campos de password tambÃ©m voltam a vazio se nÃ£o tinham valor anterior.
+        // Campos de password tambÃ©m voltam a vazio se não tinham valor anterior.
         camposFicha.forEach(function (campo) {
             if (!campo.id || !(campo.id in valoresOriginais)) return;
 
@@ -1715,7 +1715,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if ((password || confirmarPassword) && password !== confirmarPassword) {
             event.preventDefault();
-            alert("A password e a confirmaÃ§Ã£o da password nÃ£o coincidem.");
+            alert("A password e a confirmaÃ§Ã£o da password não coincidem.");
             return;
         }
 
@@ -1897,7 +1897,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return celula ? normalizarTextoFiltro(celula.textContent) : "";
     }
 
-    // Cria ou reaproveita uma linha informativa quando nÃ£o existem resultados visÃ­veis.
+    // Cria ou reaproveita uma linha informativa quando não existem resultados visÃ­veis.
     function obterLinhaSemResultados(tabela) {
         const corpo = tabela.tBodies[0];
         let linha = corpo.querySelector(".linha-sem-resultados");
@@ -1905,7 +1905,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!linha) {
             linha = document.createElement("tr");
             linha.className = "linha-sem-resultados d-none";
-            linha.innerHTML = `<td colspan="${tabela.tHead.rows[0].cells.length}" class="text-center">NÃ£o foram encontrados resultados para os filtros aplicados.</td>`;
+            linha.innerHTML = `<td colspan="${tabela.tHead.rows[0].cells.length}" class="text-center">não foram encontrados resultados para os filtros aplicados.</td>`;
             corpo.appendChild(linha);
         }
 
@@ -2043,7 +2043,7 @@ document.addEventListener("DOMContentLoaded", function () {
             <td>${escaparTextoPedido(acessorio.tipo || "---")}</td>
             <td>${escaparTextoPedido(acessorio.serie || "---")}</td>
             <td><span class="estado ${classeEstado(acessorio.estado || "Ativo")}">${escaparTextoPedido(acessorio.estado || "Ativo")}</span></td>
-            <td>${escaparTextoPedido(acessorio.intervencao || "NÃ£o")}</td>
+            <td>${escaparTextoPedido(acessorio.intervencao || "não")}</td>
             <td>${formatarDataPT(acessorio.proximaIntervencao || "")}</td>
             <td class="text-center">
                 <button type="button" class="btn btn-sm btn-editar btn-editar-acessorio" title="Observar/editar acessÃ³rio">
@@ -2091,7 +2091,7 @@ document.addEventListener("DOMContentLoaded", function () {
         definirValor("modalAcessorioModelo", "");
         definirValor("modalAcessorioSerie", "");
         definirValor("modalAcessorioEstado", "Ativo");
-        definirValor("modalAcessorioVerificacao", "NÃ£o");
+        definirValor("modalAcessorioVerificacao", "não");
         definirValor("modalAcessorioProximaIntervencao", "");
         definirValor("modalAcessorioObservacoes", "");
     }
@@ -2107,7 +2107,7 @@ document.addEventListener("DOMContentLoaded", function () {
         definirValor("modalAcessorioModelo", acessorio.modelo || "");
         definirValor("modalAcessorioSerie", acessorio.serie || "");
         definirValor("modalAcessorioEstado", acessorio.estado || "Ativo");
-        definirValor("modalAcessorioVerificacao", acessorio.intervencao || "NÃ£o");
+        definirValor("modalAcessorioVerificacao", acessorio.intervencao || "não");
         definirValor("modalAcessorioProximaIntervencao", valorDataParaInput(acessorio.proximaIntervencao));
         definirValor("modalAcessorioObservacoes", acessorio.observacoes || "");
     }
@@ -2121,7 +2121,7 @@ document.addEventListener("DOMContentLoaded", function () {
             modelo: document.getElementById("modalAcessorioModelo")?.value.trim() || "---",
             serie: document.getElementById("modalAcessorioSerie")?.value.trim() || "---",
             estado: document.getElementById("modalAcessorioEstado")?.value || "Ativo",
-            intervencao: document.getElementById("modalAcessorioVerificacao")?.value || "NÃ£o",
+            intervencao: document.getElementById("modalAcessorioVerificacao")?.value || "não",
             proximaIntervencao: document.getElementById("modalAcessorioProximaIntervencao")?.value || "Por definir",
             observacoes: document.getElementById("modalAcessorioObservacoes")?.value.trim() || "",
             equipamentoCodigo: seletorEquipamento.value,
@@ -2265,7 +2265,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.addEventListener("DOMContentLoaded", function () {
 
-    // Inicializa apenas a pÃ¡gina private/views/backoffice/backoffice.html.
+    // Inicializa apenas a Página private/views/backoffice/backoffice.html.
     const formBackoffice = document.getElementById("formBackofficePublico");
     const btnPreVisualizar = document.getElementById("btnPreVisualizarIndex");
 
@@ -2280,7 +2280,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function obterDadosBackoffice() {
-        // Converte o formulÃ¡rio num objeto simples para simular persistÃªncia.
+        // Converte o formulário num objeto simples para simular persistÃªncia.
         // No backend real, estes dados devem ir para MySQL ou para um ficheiro de configuraÃ§Ã£o.
         const dados = {};
         const formData = new FormData(formBackoffice);
@@ -2302,7 +2302,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (btnPreVisualizar) {
         btnPreVisualizar.addEventListener("click", function () {
-            // Abre a pÃ¡gina pÃºblica atual. Quando o backend existir, esta prÃ©-visualizaÃ§Ã£o pode usar dados temporÃ¡rios.
+            // Abre a Página pÃºblica atual. Quando o backend existir, esta prÃ©-visualizaÃ§Ã£o pode usar dados temporÃ¡rios.
             window.open("../../../public/index.php", "_blank");
         });
     }
@@ -2314,7 +2314,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         mostrarPopupPedido(
             "ConteÃºdos guardados",
-            "As alteraÃ§Ãµes da pÃ¡gina pÃºblica foram guardadas no backoffice."
+            "As alteraÃ§Ãµes da Página pÃºblica foram guardadas no backoffice."
         );
     });
 
@@ -2328,14 +2328,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const tabelasMedicore = [
-        { id: "tabela-fornecedores", entidade: "fornecedores", vazio: "NÃ£o existem fornecedores registados." },
-        { id: "tabela-equipamentos", entidade: "equipamentos", vazio: "NÃ£o existem equipamentos registados." },
-        { id: "tabela-localizacoes", entidade: "localizaÃ§Ãµes", vazio: "NÃ£o existem localizaÃ§Ãµes registadas." },
-        { id: "tabela-utilizadores", entidade: "utilizadores", vazio: "NÃ£o existem utilizadores registados." },
-        { id: "tabela-manutencoes-abertas", entidade: "processos", vazio: "NÃ£o existem processos de manutenÃ§Ã£o abertos." },
-        { id: "tabela-calibracoes-abertas", entidade: "processos", vazio: "NÃ£o existem processos de calibraÃ§Ã£o abertos." },
-        { id: "tabela-processos-finalizados", entidade: "processos", vazio: "NÃ£o existem processos finalizados." },
-        { id: "tabelaAcessoriosBD", entidade: "acessÃ³rios", vazio: "NÃ£o existem acessÃ³rios registados para este equipamento." }
+        { id: "tabela-fornecedores", entidade: "fornecedores", vazio: "não existem fornecedores registados." },
+        { id: "tabela-equipamentos", entidade: "equipamentos", vazio: "não existem equipamentos registados." },
+        { id: "tabela-localizacoes", entidade: "localizações", vazio: "não existem localizações registadas." },
+        { id: "tabela-utilizadores", entidade: "utilizadores", vazio: "não existem utilizadores registados." },
+        { id: "tabela-manutencoes-abertas", entidade: "processos", vazio: "não existem processos de manutenção abertos." },
+        { id: "tabela-calibracoes-abertas", entidade: "processos", vazio: "não existem processos de calibração abertos." },
+        { id: "tabela-processos-finalizados", entidade: "processos", vazio: "não existem processos finalizados." },
+        { id: "tabelaAcessoriosBD", entidade: "acessórios", vazio: "não existem acessórios registados para este equipamento." }
     ];
 
     const idiomaBaseDataTables = {
@@ -2346,7 +2346,7 @@ document.addEventListener("DOMContentLoaded", function () {
         search: "Pesquisar:",
         paginate: {
             first: "Primeira",
-            last: "Ãšltima",
+            last: "Última",
             next: "Seguinte",
             previous: "Anterior"
         },
@@ -2378,10 +2378,10 @@ document.addEventListener("DOMContentLoaded", function () {
             language: {
                 ...idiomaBaseDataTables,
                 emptyTable: config.vazio,
-                info: "Mostrando _START_ atÃ© _END_ de _TOTAL_ " + config.entidade,
-                infoEmpty: "Mostrando 0 atÃ© 0 de 0 " + config.entidade,
+                info: "Mostrando _START_ até _END_ de _TOTAL_ " + config.entidade,
+                infoEmpty: "Mostrando 0 até 0 de 0 " + config.entidade,
                 infoFiltered: "(filtrado de _MAX_ " + config.entidade + " no total)",
-                lengthMenu: "Mostrar _MENU_ " + config.entidade + " por pÃ¡gina",
+                lengthMenu: "Mostrar _MENU_ " + config.entidade + " por Página",
                 zeroRecords: "Nenhum resultado encontrado."
             }
         });

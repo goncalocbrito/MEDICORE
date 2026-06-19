@@ -19,6 +19,23 @@ function submenu_ativo($caminho)
     return $paginaAtual === $caminho ? 'submenu-active' : '';
 }
 
+function menu_equipamentos_ativo()
+{
+    global $paginaAtual;
+
+    $paginasEquipamentos = [
+        BASE_URL . '/private/views/equipamentos/lista_equipamentos.php',
+        BASE_URL . '/private/views/equipamentos/ficha_equipamento.php',
+        BASE_URL . '/private/views/equipamentos/novo_equipamento.php',
+        BASE_URL . '/private/views/equipamentos/acessorios.php',
+        BASE_URL . '/private/views/equipamentos/consumiveis.php',
+        BASE_URL . '/private/views/equipamentos/lista_familia_equipamentos.php',
+        BASE_URL . '/private/views/equipamentos/nova_familia_equipamentos.php'
+    ];
+
+    return in_array($paginaAtual, $paginasEquipamentos, true) ? ' active' : '';
+}
+
 function pode_ver($permissao)
 {
     return user_has_permission($permissao);
@@ -56,8 +73,8 @@ $isEngenheiro = strpos($tipoUtilizadorNormalizado, 'engenheiro') !== false
 
                 <?php if ($isEngenheiro): ?>
                     <li class="nav-item">
-                        <a href="<?php echo BASE_URL; ?>/private/views/equipamentos/dashboard_engenheiro.php"
-                           class="nav-link<?php echo menu_ativo(BASE_URL . '/private/views/equipamentos/dashboard_engenheiro.php'); ?>">
+                        <a href="<?php echo BASE_URL; ?>/private/views/dashboard/dashboard_engenheiro.php"
+                           class="nav-link<?php echo menu_ativo(BASE_URL . '/private/views/dashboard/dashboard_engenheiro.php'); ?>">
                             <i class="fa-solid fa-gauge-high me-2"></i> Dashboard Engenheiro
                         </a>
                     </li>
@@ -66,7 +83,7 @@ $isEngenheiro = strpos($tipoUtilizadorNormalizado, 'engenheiro') !== false
                 <?php if ($podeVerEquipamentos): ?>
                     <li class="nav-item menu-dropdown-hover">
                         <a href="<?php echo pode_ver('equipamentos') ? BASE_URL . '/private/views/equipamentos/lista_equipamentos.php' : BASE_URL . '/private/views/equipamentos/lista_familia_equipamentos.php'; ?>"
-                           class="nav-link<?php echo menu_ativo(BASE_URL . '/private/views/equipamentos/'); ?>">
+                           class="nav-link<?php echo menu_equipamentos_ativo(); ?>">
                             <i class="fa-solid fa-stethoscope me-2"></i> Equipamentos
                             <i class="fa-solid fa-chevron-down ms-1 small"></i>
                         </a>

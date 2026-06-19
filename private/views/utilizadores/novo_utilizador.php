@@ -60,7 +60,6 @@ function permissoes_padrao($tipo)
     return [
         'Administrador' => ['dashboard', 'equipamentos', 'calibracoes', 'localizacoes', 'fornecedores', 'utilizadores', 'acessorios', 'consumiveis', 'documentos', 'backoffice'],
         'Engenheiro' => ['dashboard', 'equipamentos', 'calibracoes', 'localizacoes', 'fornecedores', 'acessorios', 'consumiveis', 'documentos'],
-        'Enfermeiro' => ['dashboard', 'equipamentos', 'localizacoes', 'acessorios', 'consumiveis']
     ][$tipo] ?? [];
 }
 
@@ -422,7 +421,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 <option value="">Selecionar</option>
                                 <option value="Administrador" <?php echo selected_temporario($chaveSessao, 'tipoUtilizador', 'Administrador'); ?>>Administrador</option>
                                 <option value="Engenheiro" <?php echo selected_temporario($chaveSessao, 'tipoUtilizador', 'Engenheiro'); ?>>Engenheiro</option>
-                                <option value="Enfermeiro" <?php echo selected_temporario($chaveSessao, 'tipoUtilizador', 'Enfermeiro'); ?>>Enfermeiro</option>
                             </select>
                         </div>
                         <div class="col-md-2">

@@ -310,7 +310,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             <select class="form-select campo-ficha campo-editavel" id="tipoUtilizador" name="tipoUtilizador" required>
                                 <option value="Administrador" <?php echo selected_valor($utilizador['tipo_utilizador'], 'Administrador'); ?>>Administrador</option>
                                 <option value="Engenheiro" <?php echo selected_valor($utilizador['tipo_utilizador'], 'Engenheiro'); ?>>Engenheiro</option>
-                                <option value="Enfermeiro" <?php echo selected_valor($utilizador['tipo_utilizador'], 'Enfermeiro'); ?>>Enfermeiro</option>
                             </select>
                         </div>
                         <div class="col-md-2">

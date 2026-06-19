@@ -1,88 +1,94 @@
 <?php
 /* =========================================================
    PROCESSAMENTO DO LOGIN
-   Valida as credenciais submetidas no login.php contra a
-   tabela utilizadores e cria a sessao privada do MEDICORE.
+   Estrutura baseada na Ficha 14: recebe o formulário por POST,
+   valida os dados, confirma o utilizador na base de dados,
+   guarda a sessão e redireciona para a área privada.
    ========================================================= */
 
-require_once __DIR__ . '/includes/funcoes.php';
+require_once 'includes/funcoes.php';
 
 start_session();
 
-/* Este ficheiro so deve receber dados por POST. */
+// --------------------------------------------------------------------
+// SEGURANÇA: impede acesso direto a este script.
+// Este ficheiro deve ser acedido apenas por submissão do formulário.
+// --------------------------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ' . BASE_URL . '/public/login.php');
     exit;
 }
 
-/* Recolhe os campos do formulario de login. */
-$username = trim($_POST['text_username'] ?? '');
-$password = trim($_POST['text_password'] ?? '');
+// --------------------------------------------------------------------
+// RECOLHA DOS DADOS DO FORMULÁRIO
+// --------------------------------------------------------------------
+$username = isset($_POST['text_username']) ? trim($_POST['text_username']) : '';
+$password = isset($_POST['text_password']) ? trim($_POST['text_password']) : '';
+$usernameNormalizado = strtolower($username);
+
+// --------------------------------------------------------------------
+// VALIDAÇÃO DOS DADOS
+// --------------------------------------------------------------------
 $validation_errors = [];
 
-/* Permite login por username ou email. */
 if ($username === '') {
     $validation_errors[] = 'Introduza o email ou nome de utilizador.';
+}
+
+if ($username !== '' && strlen($username) < 3) {
+    $validation_errors[] = 'O utilizador deve ter pelo menos 3 caracteres.';
 }
 
 if ($password === '') {
     $validation_errors[] = 'Introduza a password.';
 }
 
-if ($password !== '' && strlen($password) < 6) {
-    $validation_errors[] = 'A password deve ter pelo menos 6 caracteres.';
+if ($password !== '' && (strlen($password) < 6 || strlen($password) > 30)) {
+    $validation_errors[] = 'A password deve ter entre 6 e 30 caracteres.';
 }
 
+// Se existirem erros, guarda-os na sessão e volta ao login.
 if (!empty($validation_errors)) {
     $_SESSION['validation_errors'] = $validation_errors;
     header('Location: ' . BASE_URL . '/public/login.php');
     exit;
 }
 
+// --------------------------------------------------------------------
+// VALIDAÇÃO DO UTILIZADOR NA BASE DE DADOS
+// --------------------------------------------------------------------
 try {
-    $pdo = medicore_pdo();
+    $ligacao = medicore_pdo();
 
-    /* Procura apenas utilizadores ativos. */
-    $stmt = $pdo->prepare("
+    $comando = $ligacao->prepare("
         SELECT *
         FROM utilizadores
         WHERE isActive = 1
           AND estado = 'Ativo'
-          AND (username = :username OR email = :username)
+          AND (LOWER(username) = :username OR LOWER(email) = :username)
         LIMIT 1
     ");
-    $stmt->execute([':username' => $username]);
-    $utilizador = $stmt->fetch();
 
-    /* Credenciais rápidas usadas apenas para demonstração com os utilizadores da BD. */
-    $credenciaisDemo = [
-        'admin' => 'admin123',
-        'admin@medicore.pt' => 'admin123',
-        'jferreira' => 'engenheiro123',
-        'joao.ferreira@medicore.pt' => 'engenheiro123',
-        'amartins' => 'enfermeiro123',
-        'ana.martins@medicore.pt' => 'enfermeiro123'
-    ];
+    $comando->execute([
+        ':username' => $usernameNormalizado
+    ]);
 
-    $passwordValida = $utilizador
-        && (
-            password_verify($password, $utilizador['password_hash'])
-            || (
-                isset($credenciaisDemo[$username])
-                && hash_equals($credenciaisDemo[$username], $password)
-                && in_array($utilizador['username'], ['admin', 'jferreira', 'amartins'], true)
-            )
-        );
+    $utilizador = $comando->fetch();
 
-    if (!$passwordValida) {
-        $_SESSION['server_error'] = 'Credenciais invalidas.';
+    // A password é sempre validada contra o hash guardado na base de dados.
+    // As credenciais de teste, quando usadas, são preenchidas apenas no login.php.
+    if (!$utilizador || !password_verify($password, $utilizador['password_hash'])) {
+        $_SESSION['server_error'] = 'Login inválido.';
         header('Location: ' . BASE_URL . '/public/login.php');
         exit;
     }
 
+    // --------------------------------------------------------------------
+    // LOGIN BEM-SUCEDIDO: guardar dados essenciais na sessão
+    // --------------------------------------------------------------------
+    $_SESSION = [];
     session_regenerate_id(true);
 
-    /* Guarda na sessao apenas dados essenciais ao funcionamento privado. */
     $_SESSION['autenticado'] = true;
     $_SESSION['utilizador'] = $utilizador['username'];
     $_SESSION['username'] = $utilizador['username'];
@@ -94,18 +100,22 @@ try {
     $_SESSION['email_utilizador'] = $utilizador['email'];
     $_SESSION['permissoes_utilizador'] = permissoes_por_tipo_utilizador($utilizador['tipo_utilizador']);
 
-    $stmt = $pdo->prepare("
+    // Atualiza a data/hora do último login.
+    $stmt = $ligacao->prepare("
         UPDATE utilizadores
         SET ultimo_login = NOW()
         WHERE id_utilizador = :id_utilizador
     ");
-    $stmt->execute([':id_utilizador' => $utilizador['id_utilizador']]);
-
-    header('Location: ' . rota_inicial_utilizador($utilizador['tipo_utilizador']));
-    exit;
-} catch (Throwable $e) {
-    $_SESSION['server_error'] = 'Erro ao validar o login na base de dados.';
+    $stmt->execute([
+        ':id_utilizador' => $utilizador['id_utilizador']
+    ]);
+} catch (PDOException $e) {
+    $_SESSION['server_error'] = 'Erro ao ligar à base de dados.';
     header('Location: ' . BASE_URL . '/public/login.php');
     exit;
 }
+
+// Redireciona para a página principal privada, tal como na Ficha 14.
+header('Location: ' . BASE_URL . '/private/home.php');
+exit;
 ?>

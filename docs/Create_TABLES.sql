@@ -984,3 +984,29 @@ CREATE TABLE IF NOT EXISTS historico_utilizadores (
 SET FOREIGN_KEY_CHECKS = 1;
 
 
+/* 19/06/2026*/
+
+DELETE FROM utilizadores_permissoes
+WHERE id_utilizador IN (
+    SELECT id_utilizador
+    FROM utilizadores
+    WHERE tipo_utilizador = 'Enfermeiro'
+);
+
+DELETE FROM utilizadores
+WHERE tipo_utilizador = 'Enfermeiro';
+
+ALTER TABLE utilizadores
+MODIFY tipo_utilizador ENUM('Administrador', 'Engenheiro') NOT NULL;
+
+DELETE FROM utilizadores
+WHERE tipo_utilizador = 'Enfermeiro';
+
+ALTER TABLE utilizadores
+MODIFY tipo_utilizador ENUM('Administrador', 'Engenheiro') NOT NULL;
+
+DELETE FROM utilizadores
+WHERE tipo_utilizador = 'Enfermeiro';
+
+ALTER TABLE utilizadores
+MODIFY tipo_utilizador ENUM('Administrador', 'Engenheiro') NOT NULL;

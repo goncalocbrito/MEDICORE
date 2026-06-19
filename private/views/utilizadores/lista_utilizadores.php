@@ -27,7 +27,6 @@ function classe_tipo_utilizador($tipo)
     return [
         'Administrador' => 'tipo-administrador',
         'Engenheiro' => 'tipo-engenheiro',
-        'Enfermeiro' => 'tipo-enfermeiro'
     ][$tipo] ?? 'tipo-engenheiro';
 }
 

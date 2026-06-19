@@ -20,10 +20,10 @@ if (!headers_sent()) {
     <link rel="shortcut icon" href="<?php echo PRIVATE_ASSETS_URL; ?>/img/MEDICORE_icon.png" type="image/png">
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="<?php echo PRIVATE_ASSETS_URL; ?>/bootstrap/bootstrap.min.css">
 
     <!-- DataTables Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="<?php echo PRIVATE_ASSETS_URL; ?>/datatables/DataTables-1.13.1/css/dataTables.bootstrap5.min.css">
 
     <!-- estilos CSS -->
     <link rel="stylesheet" href="<?php echo PRIVATE_ASSETS_URL; ?>/css/1230404.css?v=<?php echo filemtime(__DIR__ . '/../assets/css/1230404.css'); ?>">
