@@ -176,14 +176,16 @@ function permissoes_por_tipo_utilizador($tipo)
             'localizacoes',
             'utilizadores',
             'backoffice',
-            'familias_equipamentos'
+            'familias_equipamentos',
+            'mobilidade'
         ],
         'Engenheiro' => [
             'equipamentos',
             'acessorios',
             'consumiveis',
             'fornecedores',
-            'calibracoes'
+            'calibracoes',
+            'mobilidade'
         ],
     ];
 
@@ -275,6 +277,10 @@ function permissao_por_caminho($caminho)
 
     if (strpos($caminho, '/private/views/equipamentos/') !== false) {
         return 'equipamentos';
+    }
+
+    if (strpos($caminho, '/private/views/mobilidade/') !== false) {
+        return 'mobilidade';
     }
 
     return null;

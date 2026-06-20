@@ -614,59 +614,6 @@ body {
     color: var(--cor-branco);
 }
 
-/*novo_equipamento.html*/
-
-/* Dropdown no menu Equipamentos - alteração feita por mim */
-.menu-dropdown-hover {
-    position: relative;
-    width: 220px; /* Define o tamanho do botão Equipamentos */
-}
-
-/* Garante que o link Equipamentos ocupa toda a largura definida */
-.menu-dropdown-hover > .nav-link {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Submenu com o mesmo tamanho do botão Equipamentos */
-.submenu-equipamentos {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 220px; /* Mesmo tamanho do menu Equipamentos */
-    padding: 8px 0;
-    margin: 0;
-    list-style: none;
-    background-color: #123c46;
-    border-radius: 0 0 16px 16px;
-    box-shadow: 0 12px 28px rgba(18, 60, 70, 0.22);
-    z-index: 1200;
-    overflow: hidden;
-}
-
-.menu-dropdown-hover:hover .submenu-equipamentos {
-    display: block;
-}
-
-.submenu-equipamentos li a {
-    display: flex;
-    align-items: center;
-    color: #dff7f0;
-    text-decoration: none;
-    padding: 12px 16px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.submenu-equipamentos li a:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
-}
-
 /* Item ativo no submenu de Equipamentos */
 .submenu-equipamentos li a.submenu-active {
     background-color: rgba(255, 255, 255, 0.10);
@@ -1122,62 +1069,6 @@ body {
     }
 }
 
-/* Lista de Fornecedores */
-/* Página Lista de Fornecedores */
-
-.menu-dropdown-hover-fornecedores {
-    position: relative;
-    width: 230px;
-}
-
-.menu-dropdown-hover-fornecedores > .nav-link {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.submenu-fornecedores {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 230px;
-    padding: 8px 0;
-    margin: 0;
-    list-style: none;
-    background-color: #123c46;
-    border-radius: 0 0 16px 16px;
-    box-shadow: 0 12px 28px rgba(18, 60, 70, 0.22);
-    z-index: 1200;
-    overflow: hidden;
-}
-
-.menu-dropdown-hover-fornecedores:hover .submenu-fornecedores {
-    display: block;
-}
-
-.submenu-fornecedores li a {
-    display: flex;
-    align-items: center;
-    color: #dff7f0;
-    text-decoration: none;
-    padding: 12px 16px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.submenu-fornecedores li a:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
-}
-
-.submenu-fornecedores li a.submenu-active {
-    background-color: rgba(255, 255, 255, 0.10);
-    color: #ffffff;
-    border-left: 4px solid var(--cor-secundaria);
-}
 
 .fornecedores-info {
     margin-top: 10px;
@@ -1497,20 +1388,6 @@ body {
     opacity: 0.78;
 }
 
-@media (max-width: 768px) {
-    .menu-dropdown-hover-fornecedores {
-        width: 100%;
-    }
-
-    .submenu-fornecedores {
-        position: static;
-        display: block;
-        width: 100%;
-        box-shadow: none;
-        border-radius: 0;
-        background-color: rgba(255, 255, 255, 0.04);
-    }
-}
 
 /* Formulários de fornecedores */
 
@@ -1907,118 +1784,6 @@ body {
     }
 }
 
-/* Página Lista de Localizações - alteração feita por mim */
-
-.menu-dropdown-hover-localizacoes {
-    position: relative;
-    width: 230px;
-}
-
-.menu-dropdown-hover-localizacoes > .nav-link {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.submenu-localizacoes {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 230px;
-    padding: 8px 0;
-    margin: 0;
-    list-style: none;
-    background-color: #123c46;
-    border-radius: 0 0 16px 16px;
-    box-shadow: 0 12px 28px rgba(18, 60, 70, 0.22);
-    z-index: 1200;
-    overflow: hidden;
-}
-
-.menu-dropdown-hover-localizacoes:hover .submenu-localizacoes {
-    display: block;
-}
-
-.submenu-localizacoes li a {
-    display: flex;
-    align-items: center;
-    color: #dff7f0;
-    text-decoration: none;
-    padding: 12px 16px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.submenu-localizacoes li a:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
-}
-
-.submenu-localizacoes li a.submenu-active {
-    background-color: rgba(255, 255, 255, 0.10);
-    color: #ffffff;
-    border-left: 4px solid var(--cor-secundaria);
-}
-
-/* Menu Calibrações / Manutenções */
-
-.menu-dropdown-hover-calibracoes {
-    position: relative;
-    width: 260px;
-}
-
-.menu-dropdown-hover-calibracoes > .nav-link {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.submenu-calibracoes {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 260px;
-    padding: 8px 0;
-    margin: 0;
-    list-style: none;
-    background-color: #123c46;
-    border-radius: 0 0 16px 16px;
-    box-shadow: 0 12px 28px rgba(18, 60, 70, 0.22);
-    z-index: 1200;
-    overflow: hidden;
-}
-
-.menu-dropdown-hover-calibracoes:hover .submenu-calibracoes {
-    display: block;
-}
-
-.submenu-calibracoes li a {
-    display: flex;
-    align-items: center;
-    color: #dff7f0;
-    text-decoration: none;
-    padding: 12px 16px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.submenu-calibracoes li a:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
-}
-
-.submenu-calibracoes li a.submenu-active {
-    background-color: rgba(255, 255, 255, 0.10);
-    color: #ffffff;
-    border-left: 4px solid var(--cor-secundaria);
-}
-
 .tabela-localizacoes {
     margin-bottom: 0;
 }
@@ -2073,34 +1838,6 @@ body {
 .tipo-armazem {
     background-color: #e2e3e5;
     color: #555;
-}
-
-@media (max-width: 768px) {
-    .menu-dropdown-hover-localizacoes {
-        width: 100%;
-    }
-
-    .submenu-localizacoes {
-        position: static;
-        display: block;
-        width: 100%;
-        box-shadow: none;
-        border-radius: 0;
-        background-color: rgba(255, 255, 255, 0.04);
-    }
-
-    .menu-dropdown-hover-calibracoes {
-        width: 100%;
-    }
-
-    .submenu-calibracoes {
-        position: static;
-        display: block;
-        width: 100%;
-        box-shadow: none;
-        border-radius: 0;
-        background-color: rgba(255, 255, 255, 0.04);
-    }
 }
 
 /* DataTables - padrao MEDICORE reutilizavel nas listas principais */
@@ -2388,10 +2125,11 @@ textarea[readonly] {
 }
 
 .menu-horizontal .navbar-nav {
-    width: 100%;
-    max-width: 1400px;
+    width: auto;
+    max-width: none;
     margin: 0 auto;
-    justify-content: space-between;
+    justify-content: center;
+    gap: 0;
 }
 
 .menu-horizontal .nav-item {
@@ -2433,8 +2171,11 @@ textarea[readonly] {
     }
 
     .menu-horizontal .nav-link {
-        min-width: 0;
-        text-align: left;
+        min-width: 260px;
+        min-height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 }
 
@@ -2777,152 +2518,6 @@ textarea[readonly] {
     }
 }
 
-/* Menu Utilizadores */
-
-.menu-dropdown-hover-utilizadores {
-    position: relative;
-    width: 230px;
-}
-
-.menu-dropdown-hover-utilizadores > .nav-link {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.submenu-utilizadores {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 230px;
-    padding: 8px 0;
-    margin: 0;
-    list-style: none;
-    background-color: #123c46;
-    border-radius: 0 0 16px 16px;
-    box-shadow: 0 12px 28px rgba(18, 60, 70, 0.22);
-    z-index: 1200;
-    overflow: hidden;
-}
-
-.menu-dropdown-hover-utilizadores:hover .submenu-utilizadores {
-    display: block;
-}
-
-.submenu-utilizadores li a {
-    display: flex;
-    align-items: center;
-    color: #dff7f0;
-    text-decoration: none;
-    padding: 12px 16px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.submenu-utilizadores li a:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
-}
-
-.submenu-utilizadores li a.submenu-active {
-    background-color: rgba(255, 255, 255, 0.10);
-    color: #ffffff;
-    border-left: 4px solid var(--cor-secundaria);
-}
-
-/* Menu horizontal em desktop: alinha cada submenu com a largura do menu pai. */
-@media (min-width: 992px) {
-    .menu-horizontal .navbar-nav {
-        max-width: none;
-        justify-content: center;
-        gap: 4px;
-        flex-wrap: nowrap;
-    }
-
-    .menu-horizontal .nav-item {
-        flex: 0 0 auto;
-    }
-
-    .menu-horizontal .nav-link {
-        min-width: 0;
-        white-space: nowrap;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 14px 7px;
-        font-size: 0.84rem;
-    }
-
-    .menu-dropdown-hover,
-    .menu-dropdown-hover-calibracoes,
-    .menu-dropdown-hover-localizacoes,
-    .menu-dropdown-hover-fornecedores,
-    .menu-dropdown-hover-utilizadores {
-        position: relative;
-    }
-
-    .menu-dropdown-hover {
-        width: 230px;
-    }
-
-    .menu-dropdown-hover-calibracoes {
-        width: 250px;
-    }
-
-    .menu-dropdown-hover-localizacoes,
-    .menu-dropdown-hover-fornecedores,
-    .menu-dropdown-hover-utilizadores {
-        width: 205px;
-    }
-
-    .menu-dropdown-hover > .nav-link,
-    .menu-dropdown-hover-calibracoes > .nav-link,
-    .menu-dropdown-hover-localizacoes > .nav-link,
-    .menu-dropdown-hover-fornecedores > .nav-link,
-    .menu-dropdown-hover-utilizadores > .nav-link {
-        width: 100%;
-    }
-
-    .submenu-equipamentos,
-    .submenu-calibracoes,
-    .submenu-localizacoes,
-    .submenu-fornecedores,
-    .submenu-utilizadores {
-        left: 0;
-        right: auto;
-        min-width: 100%;
-        width: 100%;
-        max-width: none;
-    }
-
-    .submenu-equipamentos li a,
-    .submenu-calibracoes li a,
-    .submenu-localizacoes li a,
-    .submenu-fornecedores li a,
-    .submenu-utilizadores li a {
-        padding: 10px 10px;
-        font-size: 0.76rem;
-        white-space: nowrap;
-    }
-}
-
-@media (max-width: 768px) {
-    .menu-dropdown-hover-utilizadores {
-        width: 100%;
-    }
-
-    .submenu-utilizadores {
-        position: static;
-        display: block;
-        width: 100%;
-        box-shadow: none;
-        border-radius: 0;
-        background-color: rgba(255, 255, 255, 0.04);
-    }
-}
 
 /* =========================================================
    BACKOFFICE DA PÁGINA PÚBLICA
@@ -3025,133 +2620,6 @@ textarea[readonly] {
     .backoffice-preview-publico {
         align-items: flex-start;
         flex-direction: column;
-    }
-}
-
-/* =========================================================
-   TOPO E MENU COLAPSADO
-   Mantém o utilizador no canto superior direito e mostra submenus só por clique.
-   ========================================================= */
-
-@media (max-width: 991px) {
-    .top-header .row {
-        display: grid;
-        grid-template-columns: auto minmax(0, 1fr) auto;
-        align-items: center;
-        min-height: 82px;
-    }
-
-    .top-header .col-md-4 {
-        width: auto;
-        max-width: none;
-        flex: none;
-    }
-
-    .top-header .text-center {
-        justify-content: center;
-        min-width: 0;
-    }
-
-    .top-header .text-md-end {
-        justify-self: end;
-        text-align: right !important;
-    }
-
-    .user-button {
-        margin-top: 0;
-        white-space: nowrap;
-    }
-
-    .mensagem-topo {
-        max-width: 100%;
-        font-size: 0.84rem;
-        padding: 8px 12px;
-        white-space: nowrap;
-    }
-
-    .menu-horizontal .navbar-collapse {
-        padding: 8px 0 14px;
-    }
-
-    .menu-horizontal .navbar-nav {
-        width: 100%;
-        gap: 0;
-        align-items: stretch;
-    }
-
-    .menu-horizontal .nav-item,
-    .menu-dropdown-hover,
-    .menu-dropdown-hover-calibracoes,
-    .menu-dropdown-hover-localizacoes,
-    .menu-dropdown-hover-fornecedores,
-    .menu-dropdown-hover-utilizadores {
-        width: 100%;
-        text-align: left;
-        position: relative;
-    }
-
-    .menu-horizontal .nav-link {
-        width: 100%;
-        min-width: 0;
-        justify-content: flex-start;
-        padding: 13px 18px;
-        border-bottom: 0;
-        border-left: 4px solid transparent;
-        font-size: 0.98rem;
-    }
-
-    .menu-horizontal .nav-link:hover,
-    .menu-horizontal .nav-link.active {
-        border-left-color: var(--cor-secundaria);
-        border-bottom-color: transparent;
-    }
-
-    .submenu-equipamentos,
-    .submenu-calibracoes,
-    .submenu-localizacoes,
-    .submenu-fornecedores,
-    .submenu-utilizadores {
-        position: static;
-        display: none !important;
-        width: 100%;
-        margin: 0;
-        padding: 4px 0 8px;
-        box-shadow: none;
-        border-radius: 0;
-        background-color: rgba(255, 255, 255, 0.04);
-    }
-
-    .menu-dropdown-hover.submenu-aberto .submenu-equipamentos,
-    .menu-dropdown-hover-calibracoes.submenu-aberto .submenu-calibracoes,
-    .menu-dropdown-hover-localizacoes.submenu-aberto .submenu-localizacoes,
-    .menu-dropdown-hover-fornecedores.submenu-aberto .submenu-fornecedores,
-    .menu-dropdown-hover-utilizadores.submenu-aberto .submenu-utilizadores {
-        display: block !important;
-    }
-
-    .submenu-equipamentos li a,
-    .submenu-calibracoes li a,
-    .submenu-localizacoes li a,
-    .submenu-fornecedores li a,
-    .submenu-utilizadores li a {
-        padding: 10px 34px;
-        font-size: 0.88rem;
-        white-space: normal;
-    }
-}
-
-@media (max-width: 576px) {
-    .logo-private {
-        height: 34px;
-    }
-
-    .mensagem-topo span {
-        display: none;
-    }
-
-    .user-button {
-        padding: 8px 12px;
-        font-size: 0.9rem;
     }
 }
 
@@ -3540,4 +3008,114 @@ textarea[readonly] {
 
 .lista-checkbox-custom:not(.ativo) {
     display: none;
+}
+
+/* =========================================================
+   SIDEBAR / MENU HORIZONTAL PRIVADO
+   Estilo único para menus com submenu
+   ========================================================= */
+
+.menu-dropdown-hover {
+    position: relative;
+    width: 260px;
+}
+
+.menu-dropdown-hover > .nav-link {
+    width: 100%;
+    min-width: 260px;
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.submenu-private {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 260px;
+    min-width: 260px;
+    padding: 8px 0;
+    margin: 0;
+    list-style: none;
+    background-color: #123c46;
+    border-radius: 0 0 16px 16px;
+    box-shadow: 0 12px 28px rgba(18, 60, 70, 0.22);
+    z-index: 1200;
+    overflow: hidden;
+}
+
+.menu-dropdown-hover:hover .submenu-private,
+.menu-dropdown-hover.submenu-aberto .submenu-private {
+    display: block;
+}
+
+.submenu-private li a {
+    width: 100%;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 16px;
+    color: #dff7f0;
+    text-decoration: none;
+    font-family: inherit;
+    font-size: 0.98rem;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    transition: color 0.3s, background-color 0.3s;
+}
+
+.submenu-private li a:hover,
+.submenu-private li a.submenu-active {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.10);
+}
+
+.submenu-private li a.submenu-active {
+    border-left: 4px solid var(--cor-secundaria);
+}
+
+/* Reduz ligeiramente a altura do topo e do menu */
+.logo-private {
+    height: 40px;
+}
+
+.user-button {
+    padding: 7px 16px;
+}
+
+.menu-horizontal .nav-link {
+    padding: 10px 16px;
+}
+
+.menu-dropdown-hover > .nav-link {
+    min-height: 56px;
+}
+
+.campo-pesquisa-registo {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+}
+
+.pesquisa-registo-custom {
+    width: 100%;
+    max-width: 100%;
+}
+
+.lista-registos-custom {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    max-height: 220px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.modal-body .lista-registos-custom {
+    position: static;
 }

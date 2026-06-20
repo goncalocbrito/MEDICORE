@@ -88,7 +88,7 @@ $isEngenheiro = strpos($tipoUtilizadorNormalizado, 'engenheiro') !== false
                             <i class="fa-solid fa-chevron-down ms-1 small"></i>
                         </a>
 
-                        <ul class="submenu-equipamentos">
+                        <ul class="submenu-private">
                             <?php if (pode_ver('equipamentos')): ?>
                                 <li>
                                     <a href="<?php echo BASE_URL; ?>/private/views/equipamentos/lista_equipamentos.php"
@@ -138,14 +138,14 @@ $isEngenheiro = strpos($tipoUtilizadorNormalizado, 'engenheiro') !== false
                 <?php endif; ?>
 
                 <?php if (pode_ver('calibracoes')): ?>
-                    <li class="nav-item menu-dropdown-hover-calibracoes">
+                    <li class="nav-item menu-dropdown-hover">
                         <a href="<?php echo BASE_URL; ?>/private/views/calibracao_manutencao/calibracao_manutencao.php"
                            class="nav-link<?php echo menu_ativo(BASE_URL . '/private/views/calibracao_manutencao/'); ?>">
                             <i class="fa-solid fa-screwdriver-wrench me-2"></i> Calibracoes/Manutencoes
                             <i class="fa-solid fa-chevron-down ms-1 small"></i>
                         </a>
 
-                        <ul class="submenu-calibracoes">
+                        <ul class="submenu-private">
                             <li>
                                 <a href="<?php echo BASE_URL; ?>/private/views/calibracao_manutencao/calibracao_manutencao.php"
                                    class="<?php echo submenu_ativo(BASE_URL . '/private/views/calibracao_manutencao/calibracao_manutencao.php'); ?>">
@@ -163,14 +163,14 @@ $isEngenheiro = strpos($tipoUtilizadorNormalizado, 'engenheiro') !== false
                 <?php endif; ?>
 
                 <?php if (pode_ver('localizacoes')): ?>
-                    <li class="nav-item menu-dropdown-hover-localizacoes">
+                    <li class="nav-item menu-dropdown-hover">
                         <a href="<?php echo BASE_URL; ?>/private/views/localizacoes/lista_localizacoes.php"
                            class="nav-link<?php echo menu_ativo(BASE_URL . '/private/views/localizacoes/'); ?>">
                             <i class="fa-solid fa-location-dot me-2"></i> Localizacoes
                             <i class="fa-solid fa-chevron-down ms-1 small"></i>
                         </a>
 
-                        <ul class="submenu-localizacoes">
+                        <ul class="submenu-private">
                             <li>
                                 <a href="<?php echo BASE_URL; ?>/private/views/localizacoes/lista_localizacoes.php"
                                    class="<?php echo submenu_ativo(BASE_URL . '/private/views/localizacoes/lista_localizacoes.php'); ?>">
@@ -187,15 +187,40 @@ $isEngenheiro = strpos($tipoUtilizadorNormalizado, 'engenheiro') !== false
                     </li>
                 <?php endif; ?>
 
+                <?php if (pode_ver('mobilidade')): ?>
+                    <li class="nav-item menu-dropdown-hover">
+                        <a href="<?php echo BASE_URL; ?>/private/views/mobilidade/transferencia.php"
+                        class="nav-link<?php echo menu_ativo(BASE_URL . '/private/views/mobilidade/'); ?>">
+                            <i class="fa-solid fa-route me-2"></i> Mobilidade
+                            <i class="fa-solid fa-chevron-down ms-1 small"></i>
+                        </a>
+
+                        <ul class="submenu-private">
+                            <li>
+                                <a href="<?php echo BASE_URL; ?>/private/views/mobilidade/transferencia.php"
+                                class="<?php echo submenu_ativo(BASE_URL . '/private/views/mobilidade/transferencia.php'); ?>">
+                                    <i class="fa-solid fa-right-left me-2"></i> Transferências
+                                </a>
+                            </li>
+                            <li>
+                                <a href="<?php echo BASE_URL; ?>/private/views/mobilidade/emprestimo.php"
+                                class="<?php echo submenu_ativo(BASE_URL . '/private/views/mobilidade/emprestimo.php'); ?>">
+                                    <i class="fa-solid fa-handshake me-2"></i> Empréstimos
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                <?php endif; ?>
+
                 <?php if (pode_ver('fornecedores')): ?>
-                    <li class="nav-item menu-dropdown-hover-fornecedores">
+                    <li class="nav-item menu-dropdown-hover">
                         <a href="<?php echo BASE_URL; ?>/private/views/fornecedores/lista_fornecedores.php"
                            class="nav-link<?php echo menu_ativo(BASE_URL . '/private/views/fornecedores/'); ?>">
                             <i class="fa-solid fa-truck-medical me-2"></i> Fornecedores
                             <i class="fa-solid fa-chevron-down ms-1 small"></i>
                         </a>
 
-                        <ul class="submenu-fornecedores">
+                        <ul class="submenu-private">
                             <li>
                                 <a href="<?php echo BASE_URL; ?>/private/views/fornecedores/lista_fornecedores.php"
                                    class="<?php echo submenu_ativo(BASE_URL . '/private/views/fornecedores/lista_fornecedores.php'); ?>">
@@ -213,14 +238,14 @@ $isEngenheiro = strpos($tipoUtilizadorNormalizado, 'engenheiro') !== false
                 <?php endif; ?>
 
                 <?php if (pode_ver('utilizadores')): ?>
-                    <li class="nav-item menu-dropdown-hover-utilizadores">
+                    <li class="nav-item menu-dropdown-hover">
                         <a href="<?php echo BASE_URL; ?>/private/views/utilizadores/lista_utilizadores.php"
                            class="nav-link<?php echo menu_ativo(BASE_URL . '/private/views/utilizadores/'); ?>">
                             <i class="fa-solid fa-user me-2"></i> Utilizadores
                             <i class="fa-solid fa-chevron-down ms-1 small"></i>
                         </a>
 
-                        <ul class="submenu-utilizadores">
+                        <ul class="submenu-private">
                             <li>
                                 <a href="<?php echo BASE_URL; ?>/private/views/utilizadores/lista_utilizadores.php"
                                    class="<?php echo submenu_ativo(BASE_URL . '/private/views/utilizadores/lista_utilizadores.php'); ?>">

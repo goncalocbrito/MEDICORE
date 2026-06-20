@@ -1979,33 +1979,7 @@ document.addEventListener("DOMContentLoaded", function () {
    Em ecrÃ£s menores, abre e fecha cada submenu com clique no menu pai.
    ========================================================= */
 
-document.addEventListener("DOMContentLoaded", function () {
-
-    const itensComSubmenu = document.querySelectorAll(
-        ".menu-dropdown-hover, .menu-dropdown-hover-calibracoes, .menu-dropdown-hover-localizacoes, .menu-dropdown-hover-fornecedores, .menu-dropdown-hover-utilizadores"
-    );
-
-    itensComSubmenu.forEach(function (item) {
-        const linkPrincipal = item.querySelector(":scope > .nav-link");
-
-        if (!linkPrincipal) return;
-
-        linkPrincipal.addEventListener("click", function (event) {
-            if (!window.matchMedia("(max-width: 991px)").matches) return;
-
-            event.preventDefault();
-
-            itensComSubmenu.forEach(function (outroItem) {
-                if (outroItem !== item) {
-                    outroItem.classList.remove("submenu-aberto");
-                }
-            });
-
-            item.classList.toggle("submenu-aberto");
-        });
-    });
-
-});
+document.querySelectorAll(".menu-dropdown-hover")
 
 /* =========================================================
    BACKOFFICE DA PÃGINA PÃšBLICA
@@ -2514,17 +2488,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
         input.addEventListener("input", function () {
             const termo = input.value.toLowerCase().trim();
-            lista.classList.add("ativo");
+            const deveMostrarLista = termo.length > 0;
+
+            lista.classList.toggle("ativo", deveMostrarLista);
             hidden.value = "";
 
             opcoes.forEach(function (opcao) {
                 const texto = (opcao.dataset.texto || "").toLowerCase();
-                opcao.style.display = texto.includes(termo) ? "" : "none";
-            });
-        });
+                const mostrar = deveMostrarLista && texto.includes(termo);
 
-        input.addEventListener("focus", function () {
-            lista.classList.add("ativo");
+                opcao.hidden = !mostrar;
+                opcao.style.display = mostrar ? "" : "none";
+            });
         });
 
         opcoes.forEach(function (opcao) {
