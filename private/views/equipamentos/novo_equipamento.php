@@ -225,19 +225,11 @@ $localizacoes = $pdo->query("
     ORDER BY codigo ASC
 ")->fetchAll();
 
-$fornecedoresFabricantes = $pdo->query("
-    SELECT id_fornecedor, nome_empresa
+$fornecedoresGarantia = $pdo->query("
+    SELECT id_fornecedor, nome_empresa, tipo_fornecedor
     FROM fornecedores
     WHERE isActive = 1
-      AND tipo_fornecedor = 'Fabricante'
-    ORDER BY nome_empresa ASC
-")->fetchAll();
-
-$fornecedoresComerciais = $pdo->query("
-    SELECT id_fornecedor, nome_empresa
-    FROM fornecedores
-    WHERE isActive = 1
-      AND tipo_fornecedor = 'Comercial'
+      AND tipo_fornecedor IN ('Fabricante', 'Comercial', 'Manutenção')
     ORDER BY nome_empresa ASC
 ")->fetchAll();
 
@@ -291,9 +283,7 @@ $camposPorEtapa = [
         'dataInstalacao'
     ],
     'fornecedores' => [
-        'idFornecedorFabricante',
-        'idFornecedorComercial',
-        'fornecedorGarantia',
+        'idFornecedorGarantia',
         'dataInicioGarantia',
         'dataFimGarantia',
         'observacoesFornecedor'
@@ -317,10 +307,6 @@ $camposObrigatorios = [
         'criticidade'
     ],
     'aquisicao' => [],
-    'fornecedores' => [
-        'idFornecedorFabricante',
-        'idFornecedorComercial'
-    ],
     'observacoes' => [],
     'documentos' => []
 ];
@@ -333,8 +319,7 @@ $labelsCampos = [
     'idLocalizacao' => 'Localização',
     'estado' => 'Estado',
     'criticidade' => 'Criticidade',
-    'idFornecedorFabricante' => 'Fornecedor fabricante',
-    'idFornecedorComercial' => 'Fornecedor comercial'
+    'idFornecedorGarantia' => 'Fornecedor responsável pela garantia'
 ];
 
 $errosEquipamento = [];
@@ -442,17 +427,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errosEquipamento)) {
         $dadosEquipamento = $_SESSION[$chaveSessao] ?? [];
-        $opcaoFornecedorGarantia = trim($dadosEquipamento['fornecedorGarantia'] ?? '');
-
-        if (!in_array($opcaoFornecedorGarantia, ['', 'fabricante', 'comercial'], true)) {
-            $errosEquipamento[] = 'O fornecedor da garantia só pode ser o fabricante, o fornecedor comercial ou ficar vazio.';
-            $etapaAtual = 'fornecedores';
-        }
-
-        if ($opcaoFornecedorGarantia !== '' && data_novo_equipamento('dataFimGarantia') === null) {
-            $errosEquipamento[] = 'Se indicar um fornecedor de garantia, indique também a data de fim da garantia.';
-            $etapaAtual = 'fornecedores';
-        }
     }
 
     if (empty($errosEquipamento)) {
@@ -541,8 +515,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmtInserirFornecedores = $pdo->prepare("
                 INSERT INTO equipamentos_fornecedores (
                     id_equipamento,
-                    id_fornecedor_fabricante,
-                    id_fornecedor_comercial,
                     id_fornecedor_garantia,
                     data_inicio_garantia,
                     data_fim_garantia,
@@ -551,8 +523,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     atualizado_por
                 ) VALUES (
                     :id_equipamento,
-                    :id_fornecedor_fabricante,
-                    :id_fornecedor_comercial,
                     :id_fornecedor_garantia,
                     :data_inicio_garantia,
                     :data_fim_garantia,
@@ -562,21 +532,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 )
             ");
 
-            $idFornecedorFabricante = (int) $dadosEquipamento['idFornecedorFabricante'];
-            $idFornecedorComercial = (int) $dadosEquipamento['idFornecedorComercial'];
-            $idFornecedorGarantia = null;
-
-            if ($opcaoFornecedorGarantia === 'fabricante') {
-                $idFornecedorGarantia = $idFornecedorFabricante;
-            } elseif ($opcaoFornecedorGarantia === 'comercial') {
-                $idFornecedorGarantia = $idFornecedorComercial;
-            }
-
             $stmtInserirFornecedores->execute([
                 ':id_equipamento' => $idEquipamento,
-                ':id_fornecedor_fabricante' => $idFornecedorFabricante,
-                ':id_fornecedor_comercial' => $idFornecedorComercial,
-                ':id_fornecedor_garantia' => $idFornecedorGarantia,
+                ':id_fornecedor_garantia' => trim($dadosEquipamento['idFornecedorGarantia'] ?? '') !== ''
+                    ? (int) $dadosEquipamento['idFornecedorGarantia']
+                    : null,
                 ':data_inicio_garantia' => data_novo_equipamento('dataInicioGarantia'),
                 ':data_fim_garantia' => data_novo_equipamento('dataFimGarantia'),
                 ':observacoes' => trim($dadosEquipamento['observacoesFornecedor'] ?? '') ?: null,
@@ -855,32 +815,26 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="col-md-4">
-                            <label for="criticidade" class="form-label d-flex align-items-center">
+                            <label for="criticidade" class="form-label">
                                 Criticidade *
-
-                                <button type="button"
-                                        class="btn-ajuda-criticidade ms-2"
-                                        data-bs-toggle="popover"
-                                        data-bs-trigger="focus"
-                                        data-bs-html="true"
-                                        data-bs-placement="top"
-                                        title="Tipos de criticidade"
-                                        data-bs-content="<strong>Baixa:</strong> impacto reduzido.<br><strong>Média:</strong> afeta o serviço, mas existem alternativas.<br><strong>Alta:</strong> impacto significativo na prestação de cuidados.<br><strong>Crítica:</strong> essencial para suporte de vida ou emergência.">
+                                <span class="tooltip-ajuda" tabindex="0">
                                     ?
-                                </button>
+                                    <span class="tooltip-ajuda-texto">
+                                        <strong>Baixa:</strong> existem alternativas disponíveis.<br>
+                                        <strong>Média:</strong> pode atrasar o serviço, mas existem alternativas.<br>
+                                        <strong>Alta:</strong> impacto direto no funcionamento clínico.<br>
+                                        <strong>Crítica:</strong> equipamento essencial para prestação de cuidados.
+                                    </span>
+                                </span>
                             </label>
 
                             <select class="form-select" id="criticidade" name="criticidade" required>
                                 <option value="">Selecionar criticidade</option>
-                                <option value="baixa" <?php echo selected_novo_equipamento('criticidade', 'baixa'); ?>>Baixa</option>
-                                <option value="media" <?php echo selected_novo_equipamento('criticidade', 'media'); ?>>Média</option>
-                                <option value="alta" <?php echo selected_novo_equipamento('criticidade', 'alta'); ?>>Alta</option>
-                                <option value="critica" <?php echo selected_novo_equipamento('criticidade', 'critica'); ?>>Crítica</option>
+                                <option value="baixa">Baixa</option>
+                                <option value="media">Média</option>
+                                <option value="alta">Alta</option>
+                                <option value="critica">Crítica</option>
                             </select>
-
-                            <small id="descricaoCriticidade" class="texto-ajuda-form">
-                                Selecione uma criticidade para ver a descrição.
-                            </small>
                         </div>
 
                         <div class="col-md-4">
@@ -951,45 +905,54 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                     <div class="secao-ficha-titulo">
                         <h4>Fornecedores e Garantia</h4>
-                        <p>Associe o fabricante, o fornecedor comercial e, se existir, o fornecedor responsável pela garantia.</p>
+                        <p>Associe o fornecedor responsável pela garantia.</p>
                     </div>
 
                     <div class="row g-4">
 
-                        <div class="col-md-4">
-                            <label for="idFornecedorFabricante" class="form-label">Fornecedor Fabricante *</label>
-                            <select class="form-select" id="idFornecedorFabricante" name="idFornecedorFabricante" required>
-                                <option value="">Selecionar fabricante</option>
+                        <?php
+                        $fornecedorGarantiaTexto = '';
 
-                                <?php foreach ($fornecedoresFabricantes as $fornecedor): ?>
-                                    <option value="<?php echo h_novo_equipamento($fornecedor['id_fornecedor']); ?>" <?php echo selected_novo_equipamento('idFornecedorFabricante', $fornecedor['id_fornecedor']); ?>>
-                                        <?php echo h_novo_equipamento($fornecedor['nome_empresa']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+                        foreach ($fornecedoresGarantia as $fornecedor) {
+                            if ((string) valor_novo_equipamento('idFornecedorGarantia') === (string) $fornecedor['id_fornecedor']) {
+                                $fornecedorGarantiaTexto = $fornecedor['nome_empresa'] . ' (' . $fornecedor['tipo_fornecedor'] . ')';
+                                break;
+                            }
+                        }
+                        ?>
 
-                        <div class="col-md-4">
-                            <label for="idFornecedorComercial" class="form-label">Fornecedor Comercial *</label>
-                            <select class="form-select" id="idFornecedorComercial" name="idFornecedorComercial" required>
-                                <option value="">Selecionar fornecedor comercial</option>
+                        <div class="col-md-6">
+                            <label for="fornecedorGarantiaPesquisa" class="form-label">
+                                Fornecedor responsável pela garantia
+                            </label>
 
-                                <?php foreach ($fornecedoresComerciais as $fornecedor): ?>
-                                    <option value="<?php echo h_novo_equipamento($fornecedor['id_fornecedor']); ?>" <?php echo selected_novo_equipamento('idFornecedorComercial', $fornecedor['id_fornecedor']); ?>>
-                                        <?php echo h_novo_equipamento($fornecedor['nome_empresa']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+                            <div class="campo-pesquisa-fornecedor">
+                                <input type="text"
+                                    class="form-control pesquisa-fornecedor-custom"
+                                    id="fornecedorGarantiaPesquisa"
+                                    data-hidden-target="idFornecedorGarantia"
+                                    data-lista-target="listaFornecedoresGarantia"
+                                    value="<?php echo h_novo_equipamento($fornecedorGarantiaTexto); ?>"
+                                    placeholder="Pesquisar e selecionar fornecedor"
+                                    autocomplete="off">
 
-                        <div class="col-md-4">
-                            <label for="fornecedorGarantia" class="form-label">Fornecedor da Garantia</label>
-                            <select class="form-select" id="fornecedorGarantia" name="fornecedorGarantia">
-                                <option value="" <?php echo selected_novo_equipamento('fornecedorGarantia', ''); ?>>Sem fornecedor de garantia</option>
-                                <option value="fabricante" <?php echo selected_novo_equipamento('fornecedorGarantia', 'fabricante'); ?>>Fornecedor fabricante selecionado</option>
-                                <option value="comercial" <?php echo selected_novo_equipamento('fornecedorGarantia', 'comercial'); ?>>Fornecedor comercial selecionado</option>
-                            </select>
-                            <small class="texto-ajuda-form">A garantia só pode ficar associada ao fabricante ou ao fornecedor comercial escolhidos acima.</small>
+                                <input type="hidden"
+                                    id="idFornecedorGarantia"
+                                    name="idFornecedorGarantia"
+                                    value="<?php echo valor_novo_equipamento('idFornecedorGarantia'); ?>">
+
+                                <div class="lista-fornecedores-custom" id="listaFornecedoresGarantia">
+                                    <?php foreach ($fornecedoresGarantia as $fornecedor): ?>
+                                        <button type="button"
+                                                class="opcao-fornecedor-custom"
+                                                data-id="<?php echo h_novo_equipamento($fornecedor['id_fornecedor']); ?>"
+                                                data-texto="<?php echo h_novo_equipamento($fornecedor['nome_empresa'] . ' (' . $fornecedor['tipo_fornecedor'] . ')'); ?>">
+                                            <span><?php echo h_novo_equipamento($fornecedor['nome_empresa']); ?></span>
+                                            <small><?php echo h_novo_equipamento($fornecedor['tipo_fornecedor']); ?></small>
+                                        </button>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="col-md-3">
@@ -1093,56 +1056,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
     </form>
 </main>
-
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const fabricante = document.getElementById('idFornecedorFabricante');
-    const comercial = document.getElementById('idFornecedorComercial');
-    const garantia = document.getElementById('fornecedorGarantia');
-
-    if (!fabricante || !comercial || !garantia) return;
-
-    function textoSelecionado(select) {
-        const opcao = select.options[select.selectedIndex];
-        return opcao && opcao.value ? opcao.textContent.trim() : '';
-    }
-
-    function atualizarOpcoesGarantia() {
-        const opcaoFabricante = garantia.querySelector('option[value="fabricante"]');
-        const opcaoComercial = garantia.querySelector('option[value="comercial"]');
-
-        const nomeFabricante = textoSelecionado(fabricante);
-        const nomeComercial = textoSelecionado(comercial);
-
-        if (opcaoFabricante) {
-            opcaoFabricante.textContent = nomeFabricante
-                ? 'Fabricante - ' + nomeFabricante
-                : 'Fornecedor fabricante selecionado';
-            opcaoFabricante.disabled = !nomeFabricante;
-        }
-
-        if (opcaoComercial) {
-            opcaoComercial.textContent = nomeComercial
-                ? 'Comercial - ' + nomeComercial
-                : 'Fornecedor comercial selecionado';
-            opcaoComercial.disabled = !nomeComercial;
-        }
-
-        if (garantia.value === 'fabricante' && !nomeFabricante) {
-            garantia.value = '';
-        }
-
-        if (garantia.value === 'comercial' && !nomeComercial) {
-            garantia.value = '';
-        }
-    }
-
-    fabricante.addEventListener('change', atualizarOpcoesGarantia);
-    comercial.addEventListener('change', atualizarOpcoesGarantia);
-    atualizarOpcoesGarantia();
-});
-</script>
 
 <?php
 require_once __DIR__ . '/../../includes/footer.php';

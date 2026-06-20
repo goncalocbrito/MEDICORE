@@ -463,31 +463,6 @@ function mostrarPopupSucesso(titulo, mensagem, paginaDestino) {
     }, 2600);
 }
 
-function inicializarCriticidade() {
-    const campoCriticidade = $("criticidade");
-    const descricaoCriticidade = $("descricaoCriticidade");
-
-    if (!campoCriticidade || !descricaoCriticidade) return;
-
-    const descricoes = {
-        baixa: "Baixa: falha com impacto reduzido. Exemplos: balanÃ§a clÃ­nica, termÃ³metro digital ou otoscÃ³pio.",
-        media: "MÃ©dia: pode atrasar o serviÃ§o, mas existem alternativas. Exemplos: eletrocardiÃ³grafo de rotina, aspirador portÃ¡til ou equipamento de fisioterapia.",
-        "mÃ©dia": "MÃ©dia: pode atrasar o serviÃ§o, mas existem alternativas. Exemplos: eletrocardiÃ³grafo de rotina, aspirador portÃ¡til ou equipamento de fisioterapia.",
-        alta: "Alta: impacto significativo na prestaÃ§Ã£o de cuidados. Exemplos: monitor multiparamÃ©trico de urgÃªncia, ecÃ³grafo ou incubadora neonatal.",
-        critica: "CrÃ­tica: equipamento essencial para suporte de vida ou emergÃªncia. Exemplos: ventilador pulmonar, desfibrilhador ou mÃ¡quina de anestesia.",
-        "crÃ­tica": "CrÃ­tica: equipamento essencial para suporte de vida ou emergÃªncia. Exemplos: ventilador pulmonar, desfibrilhador ou mÃ¡quina de anestesia.",
-        "suporte de vida": "Suporte de vida: falha pode colocar em risco imediato a vida do doente. Exemplos: ventilador pulmonar ou desfibrilhador."
-    };
-
-    function atualizarDescricao() {
-        const chave = campoCriticidade.value.toLowerCase();
-        descricaoCriticidade.textContent = descricoes[chave] || "Selecione uma criticidade para ver a descriÃ§Ã£o.";
-    }
-
-    campoCriticidade.addEventListener("change", atualizarDescricao);
-    atualizarDescricao();
-}
-
 function inicializarPopovers() {
     const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
 
@@ -1266,8 +1241,8 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 /* =========================================================
-   FICHA DA LOCALIZAÃ‡ÃƒO
-   Modo consulta por defeito + modo ediÃ§Ã£o ao clicar em Editar.
+   FICHA DA LOCALIZAÇÃO
+   Atualiza os dados/resumos da ficha enquanto os campos são editados.
    ========================================================= */
 
 function obterLocalizacaoSelecionada() {
@@ -1369,109 +1344,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const localizacao = localizacaoSelecionada.dados;
 
     if (!localizacao) {
-        alert("LocalizaÃ§Ã£o não encontrada.");
+        alert("Localização não encontrada.");
         window.location.href = "lista_localizacoes.html";
         return;
     }
 
     preencherCamposLocalizacao(localizacaoSelecionada.id, localizacao);
     preencherTabelaEquipamentosFichaLocalizacao(localizacao);
-
-    const btnAtivarEdicao = document.getElementById("btnAtivarEdicaoLocalizacao");
-    const btnCancelarEdicao = document.getElementById("btnCancelarEdicaoLocalizacao");
-    const botoesEdicao = document.querySelectorAll(".botao-edicao");
-    const botoesConsulta = document.querySelectorAll(".botao-consulta");
-    const camposFicha = formFicha.querySelectorAll(".campo-ficha");
-    const camposEditaveis = formFicha.querySelectorAll(".campo-editavel");
-
-    let valoresOriginais = {};
-
-    function guardarValoresOriginais() {
-        // Guarda os valores antes de editar para permitir cancelar alteraÃ§Ãµes.
-        valoresOriginais = {};
-
-        camposFicha.forEach(function (campo) {
-            if (!campo.id) return;
-
-            if (campo.type === "radio" || campo.type === "checkbox") {
-                valoresOriginais[campo.id] = campo.checked;
-            } else {
-                valoresOriginais[campo.id] = campo.value;
-            }
-        });
-    }
-
-    function restaurarValoresOriginais() {
-        // RepÃµe os valores guardados quando o utilizador cancela a ediÃ§Ã£o.
-        camposFicha.forEach(function (campo) {
-            if (!campo.id || !(campo.id in valoresOriginais)) return;
-
-            if (campo.type === "radio" || campo.type === "checkbox") {
-                campo.checked = valoresOriginais[campo.id];
-            } else {
-                campo.value = valoresOriginais[campo.id];
-            }
-        });
-
-        atualizarResumoLocalizacao();
-    }
-
-    function aplicarModoConsulta() {
-        // Bloqueia os campos editÃ¡veis e mostra Voltar + Editar.
-        camposEditaveis.forEach(function (campo) {
-            if (campo.tagName === "SELECT" || campo.type === "radio" || campo.type === "checkbox") {
-                campo.disabled = true;
-            } else {
-                campo.readOnly = true;
-            }
-        });
-
-        document.querySelectorAll(".campo-bloqueado").forEach(function (campo) {
-            campo.readOnly = true;
-            campo.disabled = false;
-        });
-
-        botoesEdicao.forEach(function (elemento) {
-            elemento.classList.add("d-none");
-        });
-
-        botoesConsulta.forEach(function (elemento) {
-            elemento.classList.remove("d-none");
-        });
-
-        formFicha.classList.remove("modo-edicao");
-        formFicha.classList.add("modo-consulta");
-
-        document.getElementById("modoFormularioLocalizacao").value = "ver";
-    }
-
-    function aplicarModoEdicao() {
-        // Liberta os campos editÃ¡veis e mostra Cancelar + Guardar.
-        camposEditaveis.forEach(function (campo) {
-            if (campo.tagName === "SELECT" || campo.type === "radio" || campo.type === "checkbox") {
-                campo.disabled = false;
-            } else {
-                campo.readOnly = false;
-            }
-        });
-
-        document.querySelectorAll(".campo-bloqueado").forEach(function (campo) {
-            campo.readOnly = true;
-        });
-
-        botoesEdicao.forEach(function (elemento) {
-            elemento.classList.remove("d-none");
-        });
-
-        botoesConsulta.forEach(function (elemento) {
-            elemento.classList.add("d-none");
-        });
-
-        formFicha.classList.remove("modo-consulta");
-        formFicha.classList.add("modo-edicao");
-
-        document.getElementById("modoFormularioLocalizacao").value = "editar";
-    }
 
     function atualizarResumoLocalizacao() {
         // Atualiza os elementos ocultos de resumo/badges sempre que a ficha muda.
@@ -1497,26 +1376,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    if (btnAtivarEdicao) {
-        btnAtivarEdicao.addEventListener("click", function () {
-            guardarValoresOriginais();
-            aplicarModoEdicao();
-        });
-    }
-
-    if (btnCancelarEdicao) {
-        btnCancelarEdicao.addEventListener("click", function () {
-            restaurarValoresOriginais();
-            aplicarModoConsulta();
-        });
-    }
 
     formFicha.addEventListener("input", atualizarResumoLocalizacao);
     formFicha.addEventListener("change", atualizarResumoLocalizacao);
 
-    guardarValoresOriginais();
     atualizarResumoLocalizacao();
-    aplicarModoConsulta();
 });
 
 /* =========================================================
@@ -1560,7 +1424,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 /* =========================================================
    FICHA DO UTILIZADOR
-   ComeÃ§a bloqueada em modo observaÃ§Ã£o e sÃ³ edita apÃ³s clicar em Editar.
+   Atualiza os resumos da ficha enquanto os campos são editados.
    ========================================================= */
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -1570,106 +1434,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const formFicha = document.getElementById("formFichaUtilizador");
 
     if (!formFicha) return;
-
-    const btnAtivarEdicao = document.getElementById("btnAtivarEdicaoUtilizador");
-    const btnCancelarEdicao = document.getElementById("btnCancelarEdicaoUtilizador");
-    const botoesEdicao = document.querySelectorAll(".botao-edicao");
-    const botoesConsulta = document.querySelectorAll(".botao-consulta");
-    const camposFicha = formFicha.querySelectorAll(".campo-ficha");
-    const camposEditaveis = formFicha.querySelectorAll(".campo-editavel");
-
-    let valoresOriginais = {};
-
-    function guardarValoresOriginaisUtilizador() {
-        // Guarda os valores atuais antes de ativar ediÃ§Ã£o.
-        // O botÃ£o Cancelar usa esta cÃ³pia para repor a ficha.
-        valoresOriginais = {};
-
-        camposFicha.forEach(function (campo) {
-            if (!campo.id) return;
-
-            if (campo.type === "radio" || campo.type === "checkbox") {
-                valoresOriginais[campo.id] = campo.checked;
-            } else {
-                valoresOriginais[campo.id] = campo.value;
-            }
-        });
-    }
-
-    function restaurarValoresOriginaisUtilizador() {
-        // Reverte os campos para o Ãºltimo estado guardado.
-        // Campos de password tambÃ©m voltam a vazio se não tinham valor anterior.
-        camposFicha.forEach(function (campo) {
-            if (!campo.id || !(campo.id in valoresOriginais)) return;
-
-            if (campo.type === "radio" || campo.type === "checkbox") {
-                campo.checked = valoresOriginais[campo.id];
-            } else if (campo.type !== "file") {
-                campo.value = valoresOriginais[campo.id];
-            }
-        });
-
-        atualizarResumoUtilizador();
-    }
-
-    function aplicarModoConsultaUtilizador() {
-        // Bloqueia os campos e mostra apenas os botÃµes de observaÃ§Ã£o.
-        // Este Ã© o modo inicial da ficha do utilizador.
-        camposEditaveis.forEach(function (campo) {
-            if (campo.tagName === "SELECT" || campo.type === "radio" || campo.type === "checkbox" || campo.type === "file") {
-                campo.disabled = true;
-            } else {
-                campo.readOnly = true;
-            }
-        });
-
-        document.querySelectorAll(".campo-bloqueado").forEach(function (campo) {
-            campo.readOnly = true;
-            campo.disabled = false;
-        });
-
-        botoesEdicao.forEach(function (elemento) {
-            elemento.classList.add("d-none");
-        });
-
-        botoesConsulta.forEach(function (elemento) {
-            elemento.classList.remove("d-none");
-        });
-
-        formFicha.classList.remove("modo-edicao");
-        formFicha.classList.add("modo-consulta");
-
-        definirValor("modoFormularioUtilizador", "ver");
-    }
-
-    function aplicarModoEdicaoUtilizador() {
-        // Liberta os campos editÃ¡veis e troca os botÃµes para Cancelar/Guardar.
-        // O cÃ³digo interno continua bloqueado para evitar alterar a referÃªncia.
-        camposEditaveis.forEach(function (campo) {
-            if (campo.tagName === "SELECT" || campo.type === "radio" || campo.type === "checkbox" || campo.type === "file") {
-                campo.disabled = false;
-            } else {
-                campo.readOnly = false;
-            }
-        });
-
-        document.querySelectorAll(".campo-bloqueado").forEach(function (campo) {
-            campo.readOnly = true;
-        });
-
-        botoesEdicao.forEach(function (elemento) {
-            elemento.classList.remove("d-none");
-        });
-
-        botoesConsulta.forEach(function (elemento) {
-            elemento.classList.add("d-none");
-        });
-
-        formFicha.classList.remove("modo-consulta");
-        formFicha.classList.add("modo-edicao");
-
-        definirValor("modoFormularioUtilizador", "editar");
-    }
 
     function atualizarResumoUtilizador() {
         // Atualiza os textos ocultos de resumo para manter o padrÃ£o das outras fichas.
@@ -1692,19 +1456,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    if (btnAtivarEdicao) {
-        btnAtivarEdicao.addEventListener("click", function () {
-            guardarValoresOriginaisUtilizador();
-            aplicarModoEdicaoUtilizador();
-        });
-    }
-
-    if (btnCancelarEdicao) {
-        btnCancelarEdicao.addEventListener("click", function () {
-            restaurarValoresOriginaisUtilizador();
-            aplicarModoConsultaUtilizador();
-        });
-    }
 
     formFicha.addEventListener("input", atualizarResumoUtilizador);
     formFicha.addEventListener("change", atualizarResumoUtilizador);
@@ -1715,15 +1466,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if ((password || confirmarPassword) && password !== confirmarPassword) {
             event.preventDefault();
-            alert("A password e a confirmaÃ§Ã£o da password não coincidem.");
+            alert("A password e a confirmação da password não coincidem.");
             return;
         }
 
     });
 
-    guardarValoresOriginaisUtilizador();
     atualizarResumoUtilizador();
-    aplicarModoConsultaUtilizador();
 
 });
 
@@ -2638,5 +2387,180 @@ document.addEventListener('DOMContentLoaded', function () {
     atualizarPeriodicidades();
 });
 
+/* =========================================================
+   FICHAS EDITÁVEIS COM CONFIRMAÇÃO AO SAIR
+   Abre as fichas em modo edição e avisa se voltar sem guardar.
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+    const formularios = document.querySelectorAll(
+        "#formFichaEquipamento, #formFichaFornecedor, #formFichaLocalizacao, #formFichaUtilizador"
+    );
+
+    formularios.forEach(function (formulario) {
+        const camposEditaveis = formulario.querySelectorAll(".campo-editavel");
+        const camposBloqueados = formulario.querySelectorAll(".campo-bloqueado");
+        const botoesVoltar = document.querySelectorAll(".btn-voltar-lista-com-confirmacao");
+
+        let formularioAlterado = false;
+
+        camposEditaveis.forEach(function (campo) {
+            if (campo.tagName === "SELECT" || campo.type === "radio" || campo.type === "checkbox" || campo.type === "file") {
+                campo.disabled = false;
+            } else {
+                campo.readOnly = false;
+            }
+        });
+
+        camposBloqueados.forEach(function (campo) {
+            campo.readOnly = true;
+            campo.disabled = false;
+        });
+
+        formulario.querySelectorAll('input[type="hidden"][id^="modoFormulario"], input[type="hidden"][name^="modoFormulario"]').forEach(function (campo) {
+            campo.value = "editar";
+        });
+
+        formulario.addEventListener("input", function () {
+            formularioAlterado = true;
+        });
+
+        formulario.addEventListener("change", function () {
+            formularioAlterado = true;
+        });
+
+        formulario.addEventListener("submit", function () {
+            formularioAlterado = false;
+        });
+
+        botoesVoltar.forEach(function (botao) {
+            botao.addEventListener("click", function (event) {
+                if (!formularioAlterado) return;
+
+                event.preventDefault();
+
+                const destino = botao.getAttribute("href");
+                const botaoConfirmar = document.getElementById("btnConfirmarSairSemGuardar");
+                const modalElemento = document.getElementById("modalSairSemGuardar");
+
+                if (!botaoConfirmar || !modalElemento) {
+                    window.location.href = destino;
+                    return;
+                }
+
+                botaoConfirmar.setAttribute("href", destino);
+
+                const modal = new bootstrap.Modal(modalElemento);
+                modal.show();
+            });
+        });
+    });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".pesquisa-select").forEach(function (input) {
+        const select = document.getElementById(input.dataset.targetSelect);
+
+        if (!select) return;
+
+        const opcoesOriginais = Array.from(select.options).map(function (opcao) {
+            return {
+                value: opcao.value,
+                text: opcao.textContent,
+                search: (opcao.dataset.search || opcao.textContent).toLowerCase(),
+                selected: opcao.selected
+            };
+        });
+
+        input.addEventListener("input", function () {
+            const termo = input.value.trim().toLowerCase();
+            const valorAtual = select.value;
+
+            select.innerHTML = "";
+
+            opcoesOriginais.forEach(function (opcao, index) {
+                if (index !== 0 && termo && !opcao.search.includes(termo)) return;
+
+                const novaOpcao = document.createElement("option");
+                novaOpcao.value = opcao.value;
+                novaOpcao.textContent = opcao.text;
+
+                if (opcao.value === valorAtual) {
+                    novaOpcao.selected = true;
+                }
+
+                select.appendChild(novaOpcao);
+            });
+        });
+    });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".pesquisa-fornecedor-custom").forEach(function (input) {
+        const hidden = document.getElementById(input.dataset.hiddenTarget);
+        const lista = document.getElementById(input.dataset.listaTarget);
+
+        if (!hidden || !lista) return;
+
+        const opcoes = Array.from(lista.querySelectorAll(".opcao-fornecedor-custom"));
+
+        function abrirLista() {
+            lista.classList.add("ativo");
+        }
+
+        function fecharLista() {
+            lista.classList.remove("ativo");
+        }
+
+        function limparSelecaoSeTextoManual() {
+            const textoExiste = opcoes.some(function (opcao) {
+                return opcao.dataset.texto === input.value.trim();
+            });
+
+            if (!textoExiste) {
+                hidden.value = "";
+            }
+        }
+
+        function filtrarOpcoes() {
+            const pesquisa = input.value.trim().toLowerCase();
+            let totalVisiveis = 0;
+
+            opcoes.forEach(function (opcao) {
+                const texto = (opcao.dataset.texto || "").toLowerCase();
+                const visivel = texto.includes(pesquisa);
+
+                opcao.classList.toggle("d-none", !visivel);
+
+                if (visivel) totalVisiveis++;
+            });
+
+            if (totalVisiveis > 0) {
+                abrirLista();
+            } else {
+                fecharLista();
+            }
+
+            limparSelecaoSeTextoManual();
+        }
+
+        input.addEventListener("focus", filtrarOpcoes);
+        input.addEventListener("input", filtrarOpcoes);
+
+        opcoes.forEach(function (opcao) {
+            opcao.addEventListener("click", function () {
+                input.value = opcao.dataset.texto || "";
+                hidden.value = opcao.dataset.id || "";
+                fecharLista();
+            });
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!input.contains(event.target) && !lista.contains(event.target)) {
+                fecharLista();
+            }
+        });
+    });
+});
 
 

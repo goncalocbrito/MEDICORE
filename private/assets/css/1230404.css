@@ -3304,3 +3304,201 @@ textarea[readonly] {
         padding: 1rem;
     }
 }
+
+/* =========================================================
+   DROPDOWN CUSTOM DE FORNECEDORES
+   Permite pesquisar e escolher fornecedores sem usar o estilo
+   automático do browser.
+   ========================================================= */
+
+/* Impede que o card corte a lista de fornecedores */
+.ficha-area,
+.ficha-tab-content,
+.ficha-tab-content .tab-pane,
+.ficha-tab-content .tab-pane.active,
+.tab-content,
+.tab-pane {
+    overflow: visible;
+}
+
+/* Lista aberta por baixo do input */
+.lista-fornecedores-custom {
+    display: none;
+
+    position: static;
+    width: 100%;
+    margin-top: 10px;
+
+    background-color: #ffffff;
+    border: 1px solid #cfe7e4;
+    border-radius: 14px;
+    box-shadow: 0 12px 28px rgba(0, 43, 52, 0.10);
+
+    max-height: 272px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Mostra a lista quando o JS adiciona a classe ativo */
+.lista-fornecedores-custom.ativo {
+    display: block;
+}
+
+/* Cada opção da lista */
+.opcao-fornecedor-custom {
+    width: 100%;
+    min-height: 64px;
+    border: 0;
+    border-bottom: 1px solid #e3f0ee;
+    background-color: #ffffff;
+    padding: 12px 16px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #29445c;
+    text-align: left;
+    cursor: pointer;
+}
+
+/* Remove linha no último item */
+.opcao-fornecedor-custom:last-child {
+    border-bottom: 0;
+}
+
+/* Hover da opção */
+.opcao-fornecedor-custom:hover,
+.opcao-fornecedor-custom:focus {
+    background-color: #eef9f6;
+    color: #003746;
+}
+
+/* Nome do fornecedor */
+.opcao-fornecedor-custom span {
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 500;
+    color: inherit;
+}
+
+/* Tipo do fornecedor */
+.opcao-fornecedor-custom small {
+    font-family: inherit;
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: #2e8d80;
+    background-color: #dff4ef;
+    border-radius: 999px;
+    padding: 5px 10px;
+    white-space: nowrap;
+}
+
+/* Scrollbar da lista */
+.lista-fornecedores-custom::-webkit-scrollbar {
+    width: 8px;
+}
+
+.lista-fornecedores-custom::-webkit-scrollbar-thumb {
+    background-color: #9bcac4;
+    border-radius: 999px;
+}
+
+.lista-fornecedores-custom::-webkit-scrollbar-track {
+    background-color: #eef7f5;
+}
+
+.tooltip-ajuda {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin-left: 8px;
+    border: 1px solid #c6ebe5;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #e9fbf7 0%, #d9f3ee 100%);
+    color: #208a7d;
+    font-size: 0.9rem;
+    font-weight: 800;
+    cursor: help;
+    box-shadow: 0 6px 16px rgba(46, 141, 128, 0.14);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.tooltip-ajuda:hover,
+.tooltip-ajuda:focus {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(46, 141, 128, 0.22);
+}
+
+.tooltip-ajuda-texto {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 12px);
+    transform: translateX(-50%) translateY(4px);
+    width: 360px;
+    max-width: min(360px, calc(100vw - 48px));
+    padding: 14px 16px;
+
+    background-color: #ffffff;
+    color: #29445c;
+    border: 1px solid #2e8dce;
+    border-radius: 16px;
+
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.55;
+    text-align: left;
+
+    box-shadow: 0 14px 32px rgba(41, 68, 92, 0.16);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    z-index: 3000;
+
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+}
+
+.tooltip-ajuda-texto strong {
+    color: #003746;
+    font-weight: 800;
+}
+
+.tooltip-ajuda-texto::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translateX(-50%);
+
+    border-width: 8px 8px 0 8px;
+    border-style: solid;
+    border-color: #ffffff transparent transparent transparent;
+}
+
+.tooltip-ajuda-texto::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 1px);
+    transform: translateX(-50%);
+
+    border-width: 8px 8px 0 8px;
+    border-style: solid;
+    border-color: #2e8dce transparent transparent transparent;
+}
+
+.tooltip-ajuda:hover .tooltip-ajuda-texto,
+.tooltip-ajuda:focus .tooltip-ajuda-texto,
+.tooltip-ajuda:focus-within .tooltip-ajuda-texto {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}

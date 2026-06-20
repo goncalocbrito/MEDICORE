@@ -248,19 +248,11 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
 <main class="conteudo-private ficha-equipamento-page">
     <div class="ficha-toolbar">
-        <a href="lista_utilizadores.php" class="btn btn-voltar botao-consulta">
+        <a href="lista_utilizadores.php" class="btn btn-voltar btn-voltar-lista-com-confirmacao">
             <i class="fa-solid fa-arrow-left me-2"></i> Voltar à Lista
         </a>
 
-        <button type="button" class="btn btn-editar-ficha botao-consulta" id="btnAtivarEdicaoUtilizador">
-            <i class="fa-solid fa-pen me-2"></i> Editar
-        </button>
-
-        <button type="button" class="btn btn-cancelar botao-edicao d-none" id="btnCancelarEdicaoUtilizador">
-            <i class="fa-solid fa-xmark me-2"></i> Cancelar
-        </button>
-
-        <button type="submit" class="btn btn-guardar botao-edicao d-none" form="formFichaUtilizador">
+        <button type="submit" class="btn btn-guardar" form="formFichaUtilizador">
             <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Alterações
         </button>
     </div>
@@ -273,12 +265,12 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         <div class="alert alert-danger rounded-4 fw-bold"><?php echo h($mensagemErro); ?></div>
     <?php endif; ?>
 
-    <form class="form-equipamento form-ficha-equipamento modo-consulta"
+    <form class="form-equipamento form-ficha-equipamento modo-edicao"
           id="formFichaUtilizador"
           action="ficha_utilizador.php?ref=<?php echo url_ref($idUtilizador); ?>"
           method="post">
 
-        <input type="hidden" id="modoFormularioUtilizador" name="modoFormularioUtilizador" value="ver">
+        <input type="hidden" id="modoFormularioUtilizador" name="modoFormularioUtilizador" value="editar">
 
         <div class="ficha-area">
             <ul class="nav nav-tabs ficha-tabs" id="tabsFichaUtilizador" role="tablist">

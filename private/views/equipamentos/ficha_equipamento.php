@@ -337,22 +337,6 @@ $localizacoes = $pdo->query("
     ORDER BY codigo ASC
 ")->fetchAll();
 
-$fornecedoresFabricantes = $pdo->query("
-    SELECT id_fornecedor, nome_empresa
-    FROM fornecedores
-    WHERE isActive = 1
-      AND tipo_fornecedor = 'Fabricante'
-    ORDER BY nome_empresa ASC
-")->fetchAll();
-
-$fornecedoresComerciais = $pdo->query("
-    SELECT id_fornecedor, nome_empresa
-    FROM fornecedores
-    WHERE isActive = 1
-      AND tipo_fornecedor = 'Comercial'
-    ORDER BY nome_empresa ASC
-")->fetchAll();
-
 $fornecedoresGarantia = $pdo->query("
     SELECT id_fornecedor, nome_empresa, tipo_fornecedor
     FROM fornecedores
@@ -371,9 +355,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualiz
         'numeroSerie' => 'Número de série',
         'idLocalizacao' => 'Localização',
         'estado' => 'Estado',
-        'criticidade' => 'Criticidade',
-        'idFornecedorFabricante' => 'Fornecedor fabricante',
-        'idFornecedorComercial' => 'Fornecedor comercial'
+        'criticidade' => 'Criticidade'
     ];
 
     foreach ($camposObrigatorios as $campo => $label) {
@@ -382,25 +364,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualiz
         }
     }
 
-    $idFornecedorFabricantePost = (int) ($_POST['idFornecedorFabricante'] ?? 0);
-    $idFornecedorComercialPost = (int) ($_POST['idFornecedorComercial'] ?? 0);
     $idFornecedorGarantiaPost = trim($_POST['idFornecedorGarantia'] ?? '') !== ''
         ? (int) $_POST['idFornecedorGarantia']
         : null;
-
-    if (
-        $idFornecedorGarantiaPost !== null &&
-        data_post_equipamento('dataFimGarantia') === null
-    ) {
-        $errosEquipamento[] = 'Se indicar um fornecedor de garantia, indique também a data de fim da garantia.';
-    }
-
-    if (
-        $idFornecedorGarantiaPost !== null &&
-        !in_array($idFornecedorGarantiaPost, [$idFornecedorFabricantePost, $idFornecedorComercialPost], true)
-    ) {
-        $errosEquipamento[] = 'O fornecedor da garantia só pode ser o fabricante ou o fornecedor comercial selecionado.';
-    }
 
     if (empty($errosEquipamento)) {
         try {
@@ -490,13 +456,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualiz
                 ':id_equipamento' => $idEquipamento
             ]);
 
-            $idFornecedorGarantia = $idFornecedorGarantiaPost;
-
             $stmtFornecedores = $pdo->prepare("
                 INSERT INTO equipamentos_fornecedores (
                     id_equipamento,
-                    id_fornecedor_fabricante,
-                    id_fornecedor_comercial,
                     id_fornecedor_garantia,
                     data_inicio_garantia,
                     data_fim_garantia,
@@ -505,8 +467,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualiz
                     atualizado_por
                 ) VALUES (
                     :id_equipamento,
-                    :id_fornecedor_fabricante,
-                    :id_fornecedor_comercial,
                     :id_fornecedor_garantia,
                     :data_inicio_garantia,
                     :data_fim_garantia,
@@ -515,8 +475,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualiz
                     :atualizado_por
                 )
                 ON DUPLICATE KEY UPDATE
-                    id_fornecedor_fabricante = VALUES(id_fornecedor_fabricante),
-                    id_fornecedor_comercial = VALUES(id_fornecedor_comercial),
                     id_fornecedor_garantia = VALUES(id_fornecedor_garantia),
                     data_inicio_garantia = VALUES(data_inicio_garantia),
                     data_fim_garantia = VALUES(data_fim_garantia),
@@ -527,9 +485,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualiz
 
             $stmtFornecedores->execute([
                 ':id_equipamento' => $idEquipamento,
-                ':id_fornecedor_fabricante' => (int) $_POST['idFornecedorFabricante'],
-                ':id_fornecedor_comercial' => (int) $_POST['idFornecedorComercial'],
-                ':id_fornecedor_garantia' => $idFornecedorGarantia,
+                ':id_fornecedor_garantia' => $idFornecedorGarantiaPost,
                 ':data_inicio_garantia' => data_post_equipamento('dataInicioGarantia'),
                 ':data_fim_garantia' => data_post_equipamento('dataFimGarantia'),
                 ':observacoes' => trim($_POST['observacoesFornecedor'] ?? '') ?: null,
@@ -601,14 +557,10 @@ $stmtEquipamento = $pdo->prepare("
         l.piso,
         l.sala,
         ef.id_equipamento_fornecedor,
-        ef.id_fornecedor_fabricante,
-        ef.id_fornecedor_comercial,
         ef.id_fornecedor_garantia,
         ef.data_inicio_garantia,
         ef.data_fim_garantia,
         ef.observacoes AS observacoes_fornecedor,
-        fabricante.nome_empresa AS fabricante_nome,
-        comercial.nome_empresa AS comercial_nome,
         garantia.nome_empresa AS garantia_nome
     FROM equipamentos e
     INNER JOIN familias_equipamento fe
@@ -618,10 +570,6 @@ $stmtEquipamento = $pdo->prepare("
     LEFT JOIN equipamentos_fornecedores ef
         ON ef.id_equipamento = e.id_equipamento
        AND ef.isActive = 1
-    LEFT JOIN fornecedores fabricante
-        ON fabricante.id_fornecedor = ef.id_fornecedor_fabricante
-    LEFT JOIN fornecedores comercial
-        ON comercial.id_fornecedor = ef.id_fornecedor_comercial
     LEFT JOIN fornecedores garantia
         ON garantia.id_fornecedor = ef.id_fornecedor_garantia
     WHERE e.id_equipamento = :id_equipamento
@@ -745,19 +693,11 @@ require_once __DIR__ . '/../../includes/sidebar.php';
     </div>
 
     <div class="ficha-toolbar">
-        <a href="lista_equipamentos.php" class="btn btn-voltar botao-consulta">
+        <a href="lista_equipamentos.php" class="btn btn-voltar btn-voltar-lista-com-confirmacao">
             <i class="fa-solid fa-arrow-left me-2"></i> Voltar à Lista
         </a>
 
-        <button type="button" class="btn btn-editar-ficha botao-consulta" id="btnAtivarEdicao">
-            <i class="fa-solid fa-pen me-2"></i> Editar
-        </button>
-
-        <button type="button" class="btn btn-cancelar botao-edicao d-none" id="btnCancelarEdicao">
-            <i class="fa-solid fa-xmark me-2"></i> Cancelar
-        </button>
-
-        <button type="submit" class="btn btn-guardar botao-edicao d-none" form="formFichaEquipamento">
+        <button type="submit" class="btn btn-guardar" form="formFichaEquipamento">
             <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Alterações
         </button>
     </div>
@@ -791,7 +731,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
         <input type="hidden" id="idEquipamento" name="idEquipamento" value="<?php echo h_equipamento($equipamento['id_equipamento']); ?>">
         <input type="hidden" name="acao" value="atualizar">
-        <input type="hidden" id="modoFormulario" name="modoFormulario" value="ver">
+        <input type="hidden" id="modoFormulario" name="modoFormulario" value="editar">
 
         <div class="ficha-area">
 
@@ -861,7 +801,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                         <div class="col-md-4">
                             <label for="idFamiliaEquipamento" class="form-label">Família do Equipamento *</label>
-                            <select class="form-select campo-ficha campo-editavel" id="idFamiliaEquipamento" name="idFamiliaEquipamento" required>
+                            <select class="form-select campo-ficha campo-editavel" id="idFamiliaEquipamento" name="idFamiliaEquipamento">
                                 <option value="">Selecionar família</option>
                                 <?php foreach ($familiasEquipamento as $familia): ?>
                                     <option value="<?php echo h_equipamento($familia['id_familia_equipamento']); ?>" <?php echo selected_equipamento($equipamento['id_familia_equipamento'], $familia['id_familia_equipamento']); ?>>
@@ -935,20 +875,18 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="col-md-4">
-                            <label for="criticidade" class="form-label d-flex align-items-center">
+                            <label for="idCriticidade" class="form-label">
                                 Criticidade *
-                                <button type="button"
-                                        class="btn-ajuda-criticidade ms-2"
-                                        data-bs-toggle="popover"
-                                        data-bs-trigger="focus"
-                                        data-bs-html="true"
-                                        data-bs-placement="top"
-                                        title="Tipos de criticidade"
-                                        data-bs-content="<strong>Baixa:</strong> impacto reduzido.<br><strong>Média:</strong> afeta o serviço, mas existem alternativas.<br><strong>Alta:</strong> impacto significativo na prestação de cuidados.<br><strong>Crítica:</strong> essencial para suporte de vida ou emergência.">
+                                <span class="tooltip-ajuda" tabindex="0">
                                     ?
-                                </button>
+                                    <span class="tooltip-ajuda-texto">
+                                        <strong>Baixa:</strong> existem alternativas disponíveis.<br>
+                                        <strong>Média:</strong> pode atrasar o serviço, mas existem alternativas.<br>
+                                        <strong>Alta:</strong> impacto direto no funcionamento clínico.<br>
+                                        <strong>Crítica:</strong> equipamento essencial para prestação de cuidados.
+                                    </span>
+                                </span>
                             </label>
-
                             <select class="form-select campo-ficha campo-editavel" id="criticidade" name="criticidade" required>
                                 <option value="">Selecionar criticidade</option>
                                 <option value="baixa" <?php echo selected_equipamento($equipamento['criticidade'], 'baixa'); ?>>Baixa</option>
@@ -957,9 +895,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 <option value="critica" <?php echo selected_equipamento($equipamento['criticidade'], 'critica'); ?>>Crítica</option>
                             </select>
 
-                            <small id="descricaoCriticidade" class="texto-ajuda-form">
-                                Selecione uma criticidade para ver a descrição.
-                            </small>
                         </div>
 
                         <div class="col-md-4">
@@ -1035,68 +970,51 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                     <div class="row g-4">
 
-                        <div class="col-md-4">
-                            <label for="idFornecedorFabricante" class="form-label">Fornecedor Fabricante *</label>
-                            <select class="form-select campo-ficha campo-editavel" id="idFornecedorFabricante" name="idFornecedorFabricante" required>
-                                <option value="">Selecionar fabricante</option>
-                                <?php foreach ($fornecedoresFabricantes as $fornecedor): ?>
-                                    <option value="<?php echo h_equipamento($fornecedor['id_fornecedor']); ?>" <?php echo selected_equipamento($equipamento['id_fornecedor_fabricante'], $fornecedor['id_fornecedor']); ?>>
-                                        <?php echo h_equipamento($fornecedor['nome_empresa']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+                        <?php
+                        $fornecedorGarantiaTexto = '';
 
-                        <div class="col-md-4">
-                            <label for="idFornecedorComercial" class="form-label">Fornecedor Comercial *</label>
-                            <select class="form-select campo-ficha campo-editavel" id="idFornecedorComercial" name="idFornecedorComercial" required>
-                                <option value="">Selecionar fornecedor comercial</option>
-                                <?php foreach ($fornecedoresComerciais as $fornecedor): ?>
-                                    <option value="<?php echo h_equipamento($fornecedor['id_fornecedor']); ?>" <?php echo selected_equipamento($equipamento['id_fornecedor_comercial'], $fornecedor['id_fornecedor']); ?>>
-                                        <?php echo h_equipamento($fornecedor['nome_empresa']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+                        foreach ($fornecedoresGarantia as $fornecedor) {
+                            if ((string) ($equipamento['id_fornecedor_garantia'] ?? '') === (string) $fornecedor['id_fornecedor']) {
+                                $fornecedorGarantiaTexto = $fornecedor['nome_empresa'] . ' (' . $fornecedor['tipo_fornecedor'] . ')';
+                                break;
+                            }
+                        }
+                        ?>
 
-                        <div class="col-md-4">
-                            <label for="idFornecedorGarantia" class="form-label">Fornecedor da Garantia</label>
+                        <div class="col-md-6">
+                            <label for="fornecedorGarantiaPesquisaFicha" class="form-label">
+                                Fornecedor responsável pela garantia
+                            </label>
 
-                            <?php
-                                $opcoesGarantia = [];
+                            <div class="campo-pesquisa-fornecedor">
+                                <input type="text"
+                                    class="form-control campo-ficha campo-editavel pesquisa-fornecedor-custom"
+                                    id="fornecedorGarantiaPesquisaFicha"
+                                    data-hidden-target="idFornecedorGarantia"
+                                    data-lista-target="listaFornecedoresGarantiaFicha"
+                                    value="<?php echo h_equipamento($fornecedorGarantiaTexto); ?>"
+                                    placeholder="Pesquisar e selecionar fornecedor"
+                                    autocomplete="off">
 
-                                if (!empty($equipamento['id_fornecedor_fabricante'])) {
-                                    $opcoesGarantia[(int) $equipamento['id_fornecedor_fabricante']] = [
-                                        'nome' => $equipamento['fabricante_nome'] ?: 'Fornecedor fabricante',
-                                        'papel' => 'Fabricante'
-                                    ];
-                                }
+                                <input type="hidden"
+                                    id="idFornecedorGarantia"
+                                    name="idFornecedorGarantia"
+                                    value="<?php echo h_equipamento($equipamento['id_fornecedor_garantia'] ?? ''); ?>">
 
-                                if (!empty($equipamento['id_fornecedor_comercial'])) {
-                                    $idComercialGarantia = (int) $equipamento['id_fornecedor_comercial'];
-
-                                    if (isset($opcoesGarantia[$idComercialGarantia])) {
-                                        $opcoesGarantia[$idComercialGarantia]['papel'] = 'Fabricante e Comercial';
-                                    } else {
-                                        $opcoesGarantia[$idComercialGarantia] = [
-                                            'nome' => $equipamento['comercial_nome'] ?: 'Fornecedor comercial',
-                                            'papel' => 'Comercial'
-                                        ];
-                                    }
-                                }
-                            ?>
-
-                            <select class="form-select campo-ficha campo-editavel" id="idFornecedorGarantia" name="idFornecedorGarantia">
-                                <option value="">Sem fornecedor de garantia</option>
-                                <?php foreach ($opcoesGarantia as $idGarantiaOpcao => $opcaoGarantia): ?>
-                                    <option value="<?php echo h_equipamento($idGarantiaOpcao); ?>" <?php echo selected_equipamento($equipamento['id_fornecedor_garantia'], $idGarantiaOpcao); ?>>
-                                        <?php echo h_equipamento($opcaoGarantia['nome'] . ' (' . $opcaoGarantia['papel'] . ')'); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                            <small class="texto-ajuda-form">A garantia só pode ser atribuída ao fabricante ou ao fornecedor comercial selecionado.</small>
-                        </div>
-
+                                <div class="lista-fornecedores-custom" id="listaFornecedoresGarantiaFicha">
+                                    <?php foreach ($fornecedoresGarantia as $fornecedor): ?>
+                                        <button type="button"
+                                                class="opcao-fornecedor-custom"
+                                                data-id="<?php echo h_equipamento($fornecedor['id_fornecedor']); ?>"
+                                                data-texto="<?php echo h_equipamento($fornecedor['nome_empresa'] . ' (' . $fornecedor['tipo_fornecedor'] . ')'); ?>">
+                                            <span><?php echo h_equipamento($fornecedor['nome_empresa']); ?></span>
+                                            <small><?php echo h_equipamento($fornecedor['tipo_fornecedor']); ?></small>
+                                        </button>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        </div>  
+                        
                         <div class="col-md-3">
                             <label for="dataInicioGarantia" class="form-label">Início da Garantia</label>
                             <input type="date" class="form-control campo-ficha campo-editavel" id="dataInicioGarantia" name="dataInicioGarantia" value="<?php echo valor_data_equipamento($equipamento['data_inicio_garantia']); ?>">
@@ -1110,15 +1028,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <div class="col-md-6">
                             <label for="observacoesFornecedor" class="form-label">Observações da Garantia/Fornecedores</label>
                             <input type="text" class="form-control campo-ficha campo-editavel" id="observacoesFornecedor" name="observacoesFornecedor" value="<?php echo h_equipamento($equipamento['observacoes_fornecedor']); ?>">
-                        </div>
-
-                        <div class="col-12">
-                            <div class="alert alert-info mb-0">
-                                <strong>Resumo atual:</strong>
-                                Fabricante: <?php echo h_equipamento($equipamento['fabricante_nome'] ?: '---'); ?> |
-                                Comercial: <?php echo h_equipamento($equipamento['comercial_nome'] ?: '---'); ?> |
-                                Garantia: <?php echo h_equipamento($equipamento['garantia_nome'] ?: 'sem fornecedor de garantia'); ?>
-                            </div>
                         </div>
 
                     </div>
@@ -1302,7 +1211,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             <p>Manuais, datasheets, contratos, garantias e certificados associados ao equipamento.</p>
                         </div>
 
-                        <button type="button" class="btn btn-adicionar-documento botao-edicao d-none" id="btnAdicionarDocumento">
+                        <button type="button" class="btn btn-adicionar-documento" id="btnAdicionarDocumento">
                             <i class="fa-solid fa-plus me-2"></i> Adicionar Documento
                         </button>
                     </div>
@@ -1344,7 +1253,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     </div>
 
                     <div id="listaDocumentosNovos">
-                        <div class="documento-form-item botao-edicao d-none">
+                        <div class="documento-form-item d-none">
                             <div class="row g-4 align-items-end">
 
                                 <div class="col-md-3">
@@ -1412,79 +1321,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
     </form>
 </main>
-
-
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const fornecedorFabricante = document.getElementById("idFornecedorFabricante");
-    const fornecedorComercial = document.getElementById("idFornecedorComercial");
-    const fornecedorGarantia = document.getElementById("idFornecedorGarantia");
-
-    if (!fornecedorFabricante || !fornecedorComercial || !fornecedorGarantia) {
-        return;
-    }
-
-    function textoOpcaoSelecionada(select) {
-        const opcao = select.options[select.selectedIndex];
-        return opcao ? opcao.textContent.trim() : "";
-    }
-
-    function adicionarOpcao(valor, texto) {
-        const opcao = document.createElement("option");
-        opcao.value = valor;
-        opcao.textContent = texto;
-        fornecedorGarantia.appendChild(opcao);
-    }
-
-    function atualizarOpcoesGarantia() {
-        const valorAtual = fornecedorGarantia.value;
-        const fabricanteId = fornecedorFabricante.value;
-        const comercialId = fornecedorComercial.value;
-        const opcoes = [];
-
-        if (fabricanteId) {
-            opcoes.push({
-                valor: fabricanteId,
-                texto: textoOpcaoSelecionada(fornecedorFabricante) + " (Fabricante)"
-            });
-        }
-
-        if (comercialId) {
-            const opcaoExistente = opcoes.find(function (opcao) {
-                return opcao.valor === comercialId;
-            });
-
-            if (opcaoExistente) {
-                opcaoExistente.texto = textoOpcaoSelecionada(fornecedorComercial) + " (Fabricante e Comercial)";
-            } else {
-                opcoes.push({
-                    valor: comercialId,
-                    texto: textoOpcaoSelecionada(fornecedorComercial) + " (Comercial)"
-                });
-            }
-        }
-
-        fornecedorGarantia.innerHTML = "";
-        adicionarOpcao("", "Sem fornecedor de garantia");
-
-        opcoes.forEach(function (opcao) {
-            adicionarOpcao(opcao.valor, opcao.texto);
-        });
-
-        const valorAindaValido = opcoes.some(function (opcao) {
-            return opcao.valor === valorAtual;
-        });
-
-        fornecedorGarantia.value = valorAindaValido ? valorAtual : "";
-    }
-
-    fornecedorFabricante.addEventListener("change", atualizarOpcoesGarantia);
-    fornecedorComercial.addEventListener("change", atualizarOpcoesGarantia);
-
-    atualizarOpcoesGarantia();
-});
-</script>
 
 <?php
 require_once __DIR__ . '/../../includes/footer.php';

@@ -188,25 +188,11 @@ require_once __DIR__ . '/../../includes/sidebar.php';
     </div>
 
     <div class="ficha-toolbar">
-        <a href="lista_localizacoes.php" class="btn btn-voltar botao-consulta">
+        <a href="lista_localizacoes.php" class="btn btn-voltar btn-voltar-lista-com-confirmacao">
             <i class="fa-solid fa-arrow-left me-2"></i> Voltar à Lista
         </a>
 
-        <button type="button"
-                class="btn btn-editar-ficha botao-consulta"
-                id="btnAtivarEdicaoLocalizacao">
-            <i class="fa-solid fa-pen me-2"></i> Editar
-        </button>
-
-        <button type="button"
-                class="btn btn-cancelar botao-edicao d-none"
-                id="btnCancelarEdicaoLocalizacao">
-            <i class="fa-solid fa-xmark me-2"></i> Cancelar
-        </button>
-
-        <button type="submit"
-                class="btn btn-guardar botao-edicao d-none"
-                form="formFichaLocalizacao">
+        <button type="submit" class="btn btn-guardar" form="formFichaLocalizacao">
             <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Alterações
         </button>
     </div>
@@ -245,10 +231,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                name="idLocalizacao"
                value="<?php echo htmlspecialchars($localizacao['id_localizacao']); ?>">
 
-        <input type="hidden"
-               id="modoFormularioLocalizacao"
-               name="modoFormulario"
-               value="ver">
+        <input type="hidden" id="modoFormularioLocalizacao" name="modoFormulario" value="editar">
 
         <div class="ficha-area">
 

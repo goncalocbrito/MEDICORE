@@ -151,7 +151,7 @@ try {
             l.piso,
             l.sala,
 
-            f_fabricante.nome_empresa AS fabricante
+            f_garantia.nome_empresa AS fornecedor_garantia
 
         FROM equipamentos e
 
@@ -165,8 +165,8 @@ try {
             ON ef.id_equipamento = e.id_equipamento
             AND ef.isActive = 1
 
-        LEFT JOIN fornecedores f_fabricante
-            ON f_fabricante.id_fornecedor = ef.id_fornecedor_fabricante
+        LEFT JOIN fornecedores f_garantia
+            ON f_garantia.id_fornecedor = ef.id_fornecedor_garantia
 
         WHERE e.isActive = 1
 
@@ -242,7 +242,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 ($equipamento['departamento_sigla'] ?? '') . ' - Sala ' .
                                 ($equipamento['sala'] ?? '');
 
-                            $fabricante = $equipamento['fabricante'] ?: '---';
+                            $fabricante = $equipamento['fornecedor_garantia'] ?: '---';
                             $estadoTexto = textoEstadoEquipamento($equipamento['estado']);
                             $criticidadeTexto = textoCriticidadeEquipamento($equipamento['criticidade']);
                         ?>

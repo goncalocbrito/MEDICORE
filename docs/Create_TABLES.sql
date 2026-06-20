@@ -1010,3 +1010,35 @@ WHERE tipo_utilizador = 'Enfermeiro';
 
 ALTER TABLE utilizadores
 MODIFY tipo_utilizador ENUM('Administrador', 'Engenheiro') NOT NULL;
+
+UPDATE equipamentos_fornecedores
+SET id_fornecedor_garantia = COALESCE(
+    id_fornecedor_garantia,
+    id_fornecedor_fabricante,
+    id_fornecedor_comercial
+)
+WHERE id_fornecedor_garantia IS NULL;
+
+ALTER TABLE equipamentos_fornecedores
+DROP FOREIGN KEY fk_eq_forn_fabricante;
+
+ALTER TABLE equipamentos_fornecedores
+DROP FOREIGN KEY fk_eq_forn_comercial;
+
+ALTER TABLE equipamentos_fornecedores
+DROP FOREIGN KEY fk_eq_forn_garantia;
+
+ALTER TABLE equipamentos_fornecedores
+DROP COLUMN id_fornecedor_fabricante,
+DROP COLUMN id_fornecedor_comercial;
+
+ALTER TABLE equipamentos_fornecedores
+MODIFY id_fornecedor_garantia INT NOT NULL;
+
+ALTER TABLE equipamentos_fornecedores
+ADD CONSTRAINT fk_eq_forn_garantia
+FOREIGN KEY (id_fornecedor_garantia)
+REFERENCES fornecedores(id_fornecedor);
+
+ALTER TABLE equipamentos_fornecedores
+MODIFY id_fornecedor_garantia INT NULL;

@@ -18,5 +18,38 @@ require_once __DIR__ . '/../../config/config.php';
     <!-- JavaScript do projeto -->
     <script src="<?php echo PRIVATE_ASSETS_URL; ?>/js/1230404.js?v=<?php echo filemtime(__DIR__ . '/../assets/js/1230404.js'); ?>"></script>
 
+    <div class="modal fade" id="modalSairSemGuardar" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-remocao">
+                <div class="modal-header modal-header-remocao">
+                    <h5 class="modal-title">
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                        Alterações não guardadas
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p class="mb-0">
+                        Existem alterações nesta ficha que ainda não foram guardadas.
+                        Se voltar à lista, essas alterações serão perdidas.
+                    </p>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancelar" data-bs-dismiss="modal">
+                        <i class="fa-solid fa-xmark me-2"></i>
+                        Cancelar
+                    </button>
+
+                    <a href="#" class="btn btn-guardar" id="btnConfirmarSairSemGuardar">
+                        <i class="fa-solid fa-arrow-left me-2"></i>
+                        Confirmar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

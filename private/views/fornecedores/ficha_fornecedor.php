@@ -182,23 +182,13 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
         <!-- =====================================================
              BARRA DE AÇÕES DA FICHA
-             Em modo consulta mostra Voltar + Editar.
-             Em modo edição mostra Cancelar + Guardar Alterações.
              ===================================================== -->
         <div class="ficha-toolbar">
-            <a href="lista_fornecedores.php" class="btn btn-voltar botao-consulta">
+            <a href="lista_fornecedores.php" class="btn btn-voltar btn-voltar-lista-com-confirmacao">
                 <i class="fa-solid fa-arrow-left me-2"></i> Voltar à Lista
             </a>
 
-            <button type="button" class="btn btn-editar-ficha botao-consulta" id="btnAtivarEdicaoFornecedor">
-                <i class="fa-solid fa-pen me-2"></i> Editar
-            </button>
-
-            <button type="button" class="btn btn-cancelar botao-edicao d-none" id="btnCancelarEdicaoFornecedor">
-                <i class="fa-solid fa-xmark me-2"></i> Cancelar
-            </button>
-
-            <button type="submit" class="btn btn-guardar botao-edicao d-none" form="formFichaFornecedor">
+            <button type="submit" class="btn btn-guardar" form="formFichaFornecedor">
                 <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Alterações
             </button>
         </div>
@@ -215,7 +205,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
               enctype="multipart/form-data">
 
             <input type="hidden" id="idFornecedor" name="idFornecedor" value="<?php echo htmlspecialchars($fornecedor['id_fornecedor']); ?>">
-
+            
             <!-- =================================================
                  ÁREA PRINCIPAL DA FICHA
                  Caixa que contém os separadores Bootstrap e o conteúdo.
@@ -578,7 +568,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </div>
 
                             <button type="button"
-                                    class="btn btn-adicionar-documento botao-edicao d-none"
+                                    class="btn btn-adicionar-documento"
                                     id="btnAdicionarDocumento">
                                 <i class="fa-solid fa-plus me-2"></i> Adicionar Documento
                             </button>
@@ -626,7 +616,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div id="listaDocumentosNovos">
-                            <div class="documento-form-item botao-edicao d-none">
+                            <div class="documento-form-item d-none">
                                 <div class="row g-4 align-items-end">
                                     <div class="col-md-3">
                                         <label class="form-label">Tipo de Documento</label>
