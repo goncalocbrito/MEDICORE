@@ -623,7 +623,7 @@ const fornecedoresMEDICORE = {
         contacto: "Marta Costa",
         cargo: "TÃ©cnica de CalibraÃ§Ã£o",
         emailContacto: "marta.costa@calibramed.pt",
-        morada: "Parque TecnolÃ³gico de Braga",
+        morada: "Parque Tecnológico de Braga",
         codigoPostal: "4700-000",
         localidade: "Braga",
         pais: "Portugal",
@@ -633,9 +633,9 @@ const fornecedoresMEDICORE = {
         inicioContrato: "2023-01-01",
         fimContrato: "2024-12-31",
         qtdEquipamentos: "3",
-        area: "CalibraÃ§Ã£o e emissÃ£o de certificados tÃ©cnicos.",
-        equipamentos: "Equipamentos de mediÃ§Ã£o, monitores e dispositivos laboratoriais.",
-        observacoes: "Fornecedor inativo, mantendo apenas histÃ³rico de calibraÃ§Ãµes anteriores."
+        area: "Calibração e emissão de certificados técnicos.",
+        equipamentos: "Equipamentos de medições, monitores e dispositivos laboratoriais.",
+        observacoes: "Fornecedor inativo, mantendo apenas histórico de calibraÃ§Ãµes anteriores."
     }
 };
 
@@ -2389,30 +2389,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
 /* =========================================================
    FICHAS EDITÁVEIS COM CONFIRMAÇÃO AO SAIR
-   Abre as fichas em modo edição e avisa se voltar sem guardar.
+   Deteta alterações por formulário e mostra modal ao voltar.
    ========================================================= */
 
 document.addEventListener("DOMContentLoaded", function () {
-    const formularios = document.querySelectorAll(
+    const formularios = Array.from(document.querySelectorAll(
         "#formFichaEquipamento, #formFichaFornecedor, #formFichaLocalizacao, #formFichaUtilizador"
-    );
+    ));
 
     formularios.forEach(function (formulario) {
-        const camposEditaveis = formulario.querySelectorAll(".campo-editavel");
-        const camposBloqueados = formulario.querySelectorAll(".campo-bloqueado");
-        const botoesVoltar = document.querySelectorAll(".btn-voltar-lista-com-confirmacao");
+        formulario.dataset.alterado = "0";
 
-        let formularioAlterado = false;
-
-        camposEditaveis.forEach(function (campo) {
-            if (campo.tagName === "SELECT" || campo.type === "radio" || campo.type === "checkbox" || campo.type === "file") {
+        formulario.querySelectorAll(".campo-editavel").forEach(function (campo) {
+            if (
+                campo.tagName === "SELECT" ||
+                campo.type === "radio" ||
+                campo.type === "checkbox" ||
+                campo.type === "file"
+            ) {
                 campo.disabled = false;
             } else {
                 campo.readOnly = false;
             }
         });
 
-        camposBloqueados.forEach(function (campo) {
+        formulario.querySelectorAll(".campo-bloqueado").forEach(function (campo) {
             campo.readOnly = true;
             campo.disabled = false;
         });
@@ -2421,38 +2422,44 @@ document.addEventListener("DOMContentLoaded", function () {
             campo.value = "editar";
         });
 
-        formulario.addEventListener("input", function () {
-            formularioAlterado = true;
-        });
+        formulario.querySelectorAll("input, select, textarea").forEach(function (campo) {
+            campo.addEventListener("input", function () {
+                formulario.dataset.alterado = "1";
+            });
 
-        formulario.addEventListener("change", function () {
-            formularioAlterado = true;
+            campo.addEventListener("change", function () {
+                formulario.dataset.alterado = "1";
+            });
         });
 
         formulario.addEventListener("submit", function () {
-            formularioAlterado = false;
+            formulario.dataset.alterado = "0";
         });
+    });
 
-        botoesVoltar.forEach(function (botao) {
-            botao.addEventListener("click", function (event) {
-                if (!formularioAlterado) return;
-
-                event.preventDefault();
-
-                const destino = botao.getAttribute("href");
-                const botaoConfirmar = document.getElementById("btnConfirmarSairSemGuardar");
-                const modalElemento = document.getElementById("modalSairSemGuardar");
-
-                if (!botaoConfirmar || !modalElemento) {
-                    window.location.href = destino;
-                    return;
-                }
-
-                botaoConfirmar.setAttribute("href", destino);
-
-                const modal = new bootstrap.Modal(modalElemento);
-                modal.show();
+    document.querySelectorAll(".btn-voltar-lista-com-confirmacao").forEach(function (botao) {
+        botao.addEventListener("click", function (event) {
+            const formulario = formularios.find(function (form) {
+                return document.body.contains(form);
             });
+
+            if (!formulario || formulario.dataset.alterado !== "1") {
+                return;
+            }
+
+            event.preventDefault();
+
+            const destino = botao.getAttribute("href");
+            const botaoConfirmar = document.getElementById("btnConfirmarSairSemGuardar");
+            const modalElemento = document.getElementById("modalSairSemGuardar");
+
+            if (!botaoConfirmar || !modalElemento || typeof bootstrap === "undefined") {
+                window.location.href = destino;
+                return;
+            }
+
+            botaoConfirmar.setAttribute("href", destino);
+            bootstrap.Modal.getOrCreateInstance(modalElemento).show();
         });
     });
 });
@@ -2495,72 +2502,117 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
+
 document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll(".pesquisa-fornecedor-custom").forEach(function (input) {
+    document.querySelectorAll(".pesquisa-registo-custom").forEach(function (input) {
         const hidden = document.getElementById(input.dataset.hiddenTarget);
         const lista = document.getElementById(input.dataset.listaTarget);
 
         if (!hidden || !lista) return;
 
-        const opcoes = Array.from(lista.querySelectorAll(".opcao-fornecedor-custom"));
+        const opcoes = Array.from(lista.querySelectorAll(".opcao-registo-custom"));
 
-        function abrirLista() {
+        input.addEventListener("input", function () {
+            const termo = input.value.toLowerCase().trim();
             lista.classList.add("ativo");
-        }
-
-        function fecharLista() {
-            lista.classList.remove("ativo");
-        }
-
-        function limparSelecaoSeTextoManual() {
-            const textoExiste = opcoes.some(function (opcao) {
-                return opcao.dataset.texto === input.value.trim();
-            });
-
-            if (!textoExiste) {
-                hidden.value = "";
-            }
-        }
-
-        function filtrarOpcoes() {
-            const pesquisa = input.value.trim().toLowerCase();
-            let totalVisiveis = 0;
+            hidden.value = "";
 
             opcoes.forEach(function (opcao) {
                 const texto = (opcao.dataset.texto || "").toLowerCase();
-                const visivel = texto.includes(pesquisa);
-
-                opcao.classList.toggle("d-none", !visivel);
-
-                if (visivel) totalVisiveis++;
+                opcao.style.display = texto.includes(termo) ? "" : "none";
             });
+        });
 
-            if (totalVisiveis > 0) {
-                abrirLista();
-            } else {
-                fecharLista();
-            }
-
-            limparSelecaoSeTextoManual();
-        }
-
-        input.addEventListener("focus", filtrarOpcoes);
-        input.addEventListener("input", filtrarOpcoes);
+        input.addEventListener("focus", function () {
+            lista.classList.add("ativo");
+        });
 
         opcoes.forEach(function (opcao) {
             opcao.addEventListener("click", function () {
-                input.value = opcao.dataset.texto || "";
-                hidden.value = opcao.dataset.id || "";
-                fecharLista();
+                input.value = opcao.dataset.texto;
+                hidden.value = opcao.dataset.id;
+                lista.classList.remove("ativo");
+                
+                const formulario = input.closest("form");
+                if (formulario) {
+                    formulario.dataset.alterado = "1";
+                }
+
+                const listaFiltradaId = input.dataset.filtraLista;
+                const campoFiltro = input.dataset.filtraCampo;
+
+                if (listaFiltradaId && campoFiltro) {
+                    const pesquisaFiltrada = document.querySelector(
+                        `.pesquisa-checkbox-custom[data-lista-target="${listaFiltradaId}"]`
+                    );
+
+                    if (pesquisaFiltrada) {
+                        pesquisaFiltrada.value = "";
+                    }
+
+                    document.querySelectorAll(`#${listaFiltradaId} .opcao-checkbox-custom`).forEach(function (item) {
+                        const pertenceAoRegisto = item.dataset[campoFiltro] === opcao.dataset.id;
+
+                        item.dataset.visivelFiltroPai = pertenceAoRegisto ? "1" : "0";
+                        item.hidden = true;
+                        item.style.display = "none";
+
+                        const checkbox = item.querySelector('input[type="checkbox"]');
+                        if (checkbox && !pertenceAoRegisto) {
+                            checkbox.checked = false;
+                        }
+                    });
+                }
             });
         });
 
         document.addEventListener("click", function (event) {
             if (!input.contains(event.target) && !lista.contains(event.target)) {
-                fecharLista();
+                lista.classList.remove("ativo");
+            }
+        });
+    });
+
+    document.querySelectorAll(".pesquisa-checkbox-custom").forEach(function (input) {
+        const lista = document.getElementById(input.dataset.listaTarget);
+        if (!lista) return;
+
+        const opcoes = Array.from(lista.querySelectorAll(".opcao-checkbox-custom"));
+
+        lista.classList.remove("ativo");
+
+        opcoes.forEach(function (opcao) {
+            opcao.hidden = true;
+            opcao.style.display = "none";
+        });
+
+        input.addEventListener("input", function () {
+            const termo = input.value.toLowerCase().trim();
+            const deveMostrarLista = termo.length > 0;
+
+            lista.classList.toggle("ativo", deveMostrarLista);
+
+            opcoes.forEach(function (opcao) {
+                const texto = (opcao.dataset.texto || "").toLowerCase();
+                const visivelPeloFiltroPai = opcao.dataset.visivelFiltroPai !== "0";
+                const mostrar = deveMostrarLista && texto.includes(termo) && visivelPeloFiltroPai;
+
+                opcao.hidden = !mostrar;
+                opcao.style.display = mostrar ? "" : "none";
+            });
+        });
+
+        input.addEventListener("focus", function () {
+            if (input.value.trim() !== "") {
+                lista.classList.add("ativo");
+            }
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!input.contains(event.target) && !lista.contains(event.target)) {
+                lista.classList.remove("ativo");
             }
         });
     });
 });
-
 

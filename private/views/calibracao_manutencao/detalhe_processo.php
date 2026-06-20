@@ -237,7 +237,7 @@ function texto_tipo_responsavel($tipo)
     return $tipo === 'fornecedor' ? 'Fornecedor' : 'Interno';
 }
 
-function definir_estado_alvo_final(PDO $pdo, $processo, $origem, $resultado)
+function definir_estado_alvo_final(PDO $pdo, $processo, $origem, $resultado, array $acessoriosProcesso = [])
 {
     $estadoFinal = 'ativo';
 
@@ -249,23 +249,36 @@ function definir_estado_alvo_final(PDO $pdo, $processo, $origem, $resultado)
         $estadoFinal = 'avariado';
     }
 
-    if ($processo['estado_processo'] === 'cancelado') {
+    if (($processo['estado_processo'] ?? '') === 'cancelado') {
         $estadoFinal = 'ativo';
     }
 
-    if (!empty($processo['id_acessorio'])) {
-        $stmt = $pdo->prepare("UPDATE acessorios_equipamento SET estado = :estado WHERE id_acessorio = :id");
-        $stmt->execute([
-            ':estado' => $estadoFinal,
-            ':id' => $processo['id_acessorio']
-        ]);
+    if (!empty($acessoriosProcesso)) {
+        $stmt = $pdo->prepare("
+            UPDATE acessorios_equipamento
+            SET estado = :estado
+            WHERE id_acessorio = :id_acessorio
+        ");
+
+        foreach ($acessoriosProcesso as $acessorio) {
+            $stmt->execute([
+                ':estado' => $estadoFinal,
+                ':id_acessorio' => $acessorio['id_acessorio']
+            ]);
+        }
+
         return;
     }
 
-    $stmt = $pdo->prepare("UPDATE equipamentos SET estado = :estado WHERE id_equipamento = :id");
+    $stmt = $pdo->prepare("
+        UPDATE equipamentos
+        SET estado = :estado
+        WHERE id_equipamento = :id_equipamento
+    ");
+
     $stmt->execute([
         ':estado' => $estadoFinal,
-        ':id' => $processo['id_equipamento']
+        ':id_equipamento' => $processo['id_equipamento']
     ]);
 }
 
@@ -280,8 +293,6 @@ function obter_processo(PDO $pdo, $tipo, $id)
                 m.tipo_manutencao AS tipo_processo,
                 e.codigo_equipamento,
                 e.designacao AS equipamento_nome,
-                a.designacao AS acessorio_nome,
-                CONCAT(e.codigo_equipamento, '.', LPAD(a.numero_sequencial, 3, '0')) AS codigo_acessorio,
                 f.nome_empresa AS fornecedor_nome,
                 l.codigo AS codigo_localizacao,
                 l.departamento_nome,
@@ -291,12 +302,10 @@ function obter_processo(PDO $pdo, $tipo, $id)
             FROM manutencoes_equipamento m
             INNER JOIN equipamentos e
                 ON e.id_equipamento = m.id_equipamento
-            LEFT JOIN acessorios_equipamento a
-                ON a.id_acessorio = m.id_acessorio
             LEFT JOIN fornecedores f
                 ON f.id_fornecedor = m.id_fornecedor_responsavel
             LEFT JOIN localizacoes l
-                ON l.id_localizacao = COALESCE(a.id_localizacao, e.id_localizacao)
+                ON l.id_localizacao = e.id_localizacao
             WHERE m.id_manutencao = :id
               AND m.isActive = 1
             LIMIT 1
@@ -313,8 +322,6 @@ function obter_processo(PDO $pdo, $tipo, $id)
             'calibracao' AS tipo_processo,
             e.codigo_equipamento,
             e.designacao AS equipamento_nome,
-            a.designacao AS acessorio_nome,
-            CONCAT(e.codigo_equipamento, '.', LPAD(a.numero_sequencial, 3, '0')) AS codigo_acessorio,
             f.nome_empresa AS fornecedor_nome,
             l.codigo AS codigo_localizacao,
             l.departamento_nome,
@@ -324,18 +331,74 @@ function obter_processo(PDO $pdo, $tipo, $id)
         FROM calibracoes_equipamento c
         INNER JOIN equipamentos e
             ON e.id_equipamento = c.id_equipamento
-        LEFT JOIN acessorios_equipamento a
-            ON a.id_acessorio = c.id_acessorio
         LEFT JOIN fornecedores f
             ON f.id_fornecedor = c.id_fornecedor_responsavel
         LEFT JOIN localizacoes l
-            ON l.id_localizacao = COALESCE(a.id_localizacao, e.id_localizacao)
+            ON l.id_localizacao = e.id_localizacao
         WHERE c.id_calibracao = :id
           AND c.isActive = 1
         LIMIT 1
     ");
     $stmt->execute([':id' => $id]);
     return $stmt->fetch();
+}
+
+function obter_acessorios_processo(PDO $pdo, $tipo, $id)
+{
+    $sql = $tipo === 'manutencao'
+        ? "
+            SELECT a.id_acessorio,
+                   CONCAT(e.codigo_equipamento, '.', LPAD(a.numero_sequencial, 3, '0')) AS codigo_acessorio,
+                   a.designacao
+            FROM manutencoes_acessorios ma
+            INNER JOIN acessorios_equipamento a ON a.id_acessorio = ma.id_acessorio
+            INNER JOIN equipamentos e ON e.id_equipamento = a.id_equipamento
+            WHERE ma.id_manutencao = :id
+              AND ma.isActive = 1
+            ORDER BY a.numero_sequencial ASC
+        "
+        : "
+            SELECT a.id_acessorio,
+                   CONCAT(e.codigo_equipamento, '.', LPAD(a.numero_sequencial, 3, '0')) AS codigo_acessorio,
+                   a.designacao
+            FROM calibracoes_acessorios ca
+            INNER JOIN acessorios_equipamento a ON a.id_acessorio = ca.id_acessorio
+            INNER JOIN equipamentos e ON e.id_equipamento = a.id_equipamento
+            WHERE ca.id_calibracao = :id
+              AND ca.isActive = 1
+            ORDER BY a.numero_sequencial ASC
+        ";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([':id' => $id]);
+
+    return $stmt->fetchAll();
+}
+
+function obter_consumiveis_processo(PDO $pdo, $tipo, $id)
+{
+    $sql = $tipo === 'manutencao'
+        ? "
+            SELECT c.codigo_consumivel, c.nome, c.unidade, mc.quantidade_utilizada
+            FROM manutencoes_consumiveis mc
+            INNER JOIN consumiveis c ON c.id_consumivel = mc.id_consumivel
+            WHERE mc.id_manutencao = :id
+              AND mc.isActive = 1
+            ORDER BY c.nome ASC
+        "
+        : "
+            SELECT c.codigo_consumivel, c.nome, c.unidade, cc.quantidade_utilizada
+            FROM calibracoes_consumiveis cc
+            INNER JOIN consumiveis c ON c.id_consumivel = cc.id_consumivel
+            WHERE cc.id_calibracao = :id
+              AND cc.isActive = 1
+            ORDER BY c.nome ASC
+        ";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([':id' => $id]);
+
+    return $stmt->fetchAll();
 }
 
 [$tipo, $id] = processo_from_request();
@@ -365,6 +428,8 @@ try {
 
     $utilizadorAtual = $_SESSION['nome'] ?? $_SESSION['username'] ?? 'admin';
     $processo = obter_processo($pdo, $tipo, $id);
+    $acessoriosProcesso = obter_acessorios_processo($pdo, $tipo, $id);
+    $consumiveisProcesso = obter_consumiveis_processo($pdo, $tipo, $id);
 
     if (!$processo) {
         throw new Exception('O processo indicado não foi encontrado.');
@@ -396,7 +461,7 @@ try {
         $dataFinalizacao = data_ou_null($_POST['dataFinalizacao'] ?? null);
         $proximaIntervencao = data_ou_null($_POST['proximaIntervencao'] ?? null);
         $cobertaPorGarantia = (int) ($_POST['cobertaPorGarantia'] ?? 0);
-        $custo = $cobertaPorGarantia === 1 ? 0.00 : decimal_ou_null($_POST['custoProcesso'] ?? null);
+        $custo = null;
         $observacoes = valor_ou_null($_POST['observacoesProcesso'] ?? null);
         $observacoesEtapa = valor_ou_null($_POST['observacoesEtapa'] ?? null);
         $responsavelEtapa = valor_ou_null($_POST['responsavelEtapa'] ?? null);
@@ -672,7 +737,7 @@ try {
             ");
             $stmtDoc->execute([
                 ':id_equipamento' => $processoAtualizado['id_equipamento'],
-                ':id_acessorio' => $processoAtualizado['id_acessorio'] ?? null,
+                ':id_acessorio' => null,
                 ':id_manutencao' => $tipo === 'manutencao' ? $id : null,
                 ':id_calibracao' => $tipo === 'calibracao' ? $id : null,
                 ':tipo_documento' => $tipoDocumento,
@@ -686,7 +751,8 @@ try {
 
         $processoDepois = obter_processo($pdo, $tipo, $id);
         if (in_array($estadoNovo, ['processo_finalizado', 'cancelado'], true)) {
-            definir_estado_alvo_final($pdo, $processoDepois, $tipo, $resultado ?? null);
+            $acessoriosProcessoDepois = obter_acessorios_processo($pdo, $tipo, $id);
+            definir_estado_alvo_final($pdo, $processoDepois, $tipo, $resultado ?? null, $acessoriosProcessoDepois);
         }
 
         $pdo->commit();
@@ -747,8 +813,8 @@ require_once __DIR__ . '/../../includes/header.php';
 require_once __DIR__ . '/../../includes/nav.php';
 require_once __DIR__ . '/../../includes/sidebar.php';
 
-$alvoCodigo = !empty($processo['id_acessorio']) ? ($processo['codigo_acessorio'] ?? '---') : ($processo['codigo_equipamento'] ?? '---');
-$alvoNome = !empty($processo['id_acessorio']) ? ($processo['acessorio_nome'] ?? 'Acessório') : ($processo['equipamento_nome'] ?? 'Equipamento');
+$alvoCodigo = $processo['codigo_equipamento'] ?? '---';
+$alvoNome = $processo['equipamento_nome'] ?? 'Equipamento';
 $proximaIntervencao = $tipo === 'manutencao' ? ($processo['proxima_manutencao'] ?? null) : ($processo['proxima_calibracao'] ?? null);
 $dataIntervencao = $tipo === 'manutencao' ? ($processo['data_manutencao'] ?? null) : ($processo['data_calibracao'] ?? null);
 $descricaoProcedimento = $tipo === 'manutencao' ? ($processo['descricao_procedimento'] ?? null) : ($processo['procedimento'] ?? null);
@@ -765,7 +831,7 @@ $descricaoProcedimento = $tipo === 'manutencao' ? ($processo['descricao_procedim
 
         <a href="calibracao_manutencao.php" class="btn btn-voltar">
             <i class="fa-solid fa-arrow-left me-2"></i>
-            Processos abertos
+            Voltar à Lista
         </a>
     </div>
 
@@ -842,6 +908,35 @@ $descricaoProcedimento = $tipo === 'manutencao' ? ($processo['descricao_procedim
                         <div class="col-md-6">
                             <label class="form-label">Alvo</label>
                             <div class="campo-visualizacao"><?php echo h($alvoCodigo . ' - ' . $alvoNome); ?></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Acessórios associados</label>
+                            <div class="campo-visualizacao">
+                                <?php if (empty($acessoriosProcesso)): ?>
+                                    Equipamento principal
+                                <?php else: ?>
+                                    <?php foreach ($acessoriosProcesso as $acessorio): ?>
+                                        <div><?php echo h($acessorio['codigo_acessorio'] . ' - ' . $acessorio['designacao']); ?></div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Consumíveis utilizados</label>
+                            <div class="campo-visualizacao">
+                                <?php if (empty($consumiveisProcesso)): ?>
+                                    ---
+                                <?php else: ?>
+                                    <?php foreach ($consumiveisProcesso as $consumivel): ?>
+                                        <div>
+                                            <?php echo h($consumivel['codigo_consumivel'] . ' - ' . $consumivel['nome']); ?>
+                                            <?php echo h($consumivel['quantidade_utilizada'] . ' ' . ($consumivel['unidade'] ?? '')); ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
                         </div>
 
                         <div class="col-md-6">
@@ -1054,11 +1149,6 @@ $descricaoProcedimento = $tipo === 'manutencao' ? ($processo['descricao_procedim
                             </select>
                         </div>
 
-                        <div class="col-md-2">
-                            <label for="custoProcesso" class="form-label">Custo (€)</label>
-                            <input type="number" class="form-control" id="custoProcesso" name="custoProcesso" min="0" step="0.01" value="<?php echo valor_decimal($processo['custo'] ?? null); ?>">
-                        </div>
-
                         <div class="col-12">
                             <label for="descricaoProcedimento" class="form-label"><?php echo $tipo === 'manutencao' ? 'Descrição do procedimento' : 'Procedimento de calibração'; ?></label>
                             <textarea class="form-control" id="descricaoProcedimento" name="descricaoProcedimento" rows="4"><?php echo h($descricaoProcedimento); ?></textarea>
@@ -1160,7 +1250,11 @@ $descricaoProcedimento = $tipo === 'manutencao' ? ($processo['descricao_procedim
         </div>
 
         <div class="form-actions mt-4">
-            <a href="calibracao_manutencao.php" class="btn btn-voltar">Cancelar</a>
+            <a href="calibracao_manutencao.php" class="btn btn-voltar">
+                <i class="fa-solid fa-xmark me-2"></i>
+                Voltar
+            </a>
+
             <button type="submit" class="btn btn-guardar">
                 <i class="fa-solid fa-floppy-disk me-2"></i>
                 Guardar Processo
@@ -1218,22 +1312,9 @@ $descricaoProcedimento = $tipo === 'manutencao' ? ($processo['descricao_procedim
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const garantia = document.getElementById('cobertaPorGarantia');
-    const custo = document.getElementById('custoProcesso');
     const tipoExecucao = document.getElementById('tipoExecucao');
     const fornecedor = document.getElementById('idFornecedorResponsavel');
     const tecnico = document.getElementById('tecnicoInterno');
-
-    function atualizarCusto() {
-        if (!garantia || !custo) return;
-        if (garantia.value === '1') {
-            custo.value = '0.00';
-            custo.readOnly = true;
-            custo.classList.add('campo-bloqueado');
-        } else {
-            custo.readOnly = false;
-            custo.classList.remove('campo-bloqueado');
-        }
-    }
 
     function atualizarExecucao() {
         if (!tipoExecucao || !fornecedor || !tecnico) return;
@@ -1241,9 +1322,7 @@ document.addEventListener('DOMContentLoaded', function () {
         tecnico.required = tipoExecucao.value === 'interna';
     }
 
-    garantia?.addEventListener('change', atualizarCusto);
     tipoExecucao?.addEventListener('change', atualizarExecucao);
-    atualizarCusto();
     atualizarExecucao();
 });
 </script>

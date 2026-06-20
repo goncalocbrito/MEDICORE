@@ -544,7 +544,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualiz
 }
 
 if (isset($_GET['guardado'])) {
-    $sucessoEquipamento = 'Alterações guardadas com sucesso.';
+    $sucessoEquipamento = 'Equipamento guardado com sucesso.';
 }
 
 /* =========================================================
@@ -708,8 +708,11 @@ require_once __DIR__ . '/../../includes/sidebar.php';
     </div>
 
     <?php if ($sucessoEquipamento): ?>
-        <div class="alert alert-success">
-            <?php echo h_equipamento($sucessoEquipamento); ?>
+        <div class="form-alerta-sucesso" role="alert">
+            <strong>
+                <i class="fa-solid fa-circle-check me-2"></i>
+                <?php echo h_equipamento($sucessoEquipamento); ?>
+            </strong>
         </div>
     <?php endif; ?>
 
@@ -1002,9 +1005,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 Fornecedor responsável pela garantia
                             </label>
 
-                            <div class="campo-pesquisa-fornecedor">
+                            <div class="campo-pesquisa-registo">
                                 <input type="text"
-                                    class="form-control campo-ficha campo-editavel pesquisa-fornecedor-custom"
+                                    class="form-control campo-ficha campo-editavel pesquisa-registo-custom"
                                     id="fornecedorGarantiaPesquisaFicha"
                                     data-hidden-target="idFornecedorGarantia"
                                     data-lista-target="listaFornecedoresGarantiaFicha"
@@ -1017,10 +1020,10 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     name="idFornecedorGarantia"
                                     value="<?php echo h_equipamento($equipamento['id_fornecedor_garantia'] ?? ''); ?>">
 
-                                <div class="lista-fornecedores-custom" id="listaFornecedoresGarantiaFicha">
+                                <div class="lista-registos-custom" id="listaFornecedoresGarantiaFicha">
                                     <?php foreach ($fornecedoresGarantia as $fornecedor): ?>
                                         <button type="button"
-                                                class="opcao-fornecedor-custom"
+                                                class="opcao-registo-custom"
                                                 data-id="<?php echo h_equipamento($fornecedor['id_fornecedor']); ?>"
                                                 data-texto="<?php echo h_equipamento($fornecedor['nome_empresa'] . ' (' . $fornecedor['tipo_fornecedor'] . ')'); ?>">
                                             <span><?php echo h_equipamento($fornecedor['nome_empresa']); ?></span>

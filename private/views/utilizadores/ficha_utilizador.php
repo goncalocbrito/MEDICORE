@@ -258,7 +258,12 @@ require_once __DIR__ . '/../../includes/sidebar.php';
     </div>
 
     <?php if ($mensagemSucesso): ?>
-        <div class="alert alert-success rounded-4 fw-bold"><?php echo h($mensagemSucesso); ?></div>
+        <div class="form-alerta-sucesso" role="alert">
+            <strong>
+                <i class="fa-solid fa-circle-check me-2"></i>
+                <?php echo h($mensagemSucesso); ?>
+            </strong>
+        </div>
     <?php endif; ?>
 
     <?php if ($mensagemErro): ?>

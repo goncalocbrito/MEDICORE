@@ -129,11 +129,16 @@ try {
                 m.custo,
                 m.coberta_por_garantia,
                 m.id_equipamento,
-                m.id_acessorio,
                 e.codigo_equipamento,
                 e.designacao AS equipamento_nome,
-                a.designacao AS acessorio_nome,
-                CONCAT(e.codigo_equipamento, '.', LPAD(a.numero_sequencial, 3, '0')) AS codigo_acessorio,
+                (
+                    SELECT GROUP_CONCAT(CONCAT(e2.codigo_equipamento, '.', LPAD(a2.numero_sequencial, 3, '0'), ' - ', a2.designacao) SEPARATOR ' || ')
+                    FROM manutencoes_acessorios ma2
+                    INNER JOIN acessorios_equipamento a2 ON a2.id_acessorio = ma2.id_acessorio
+                    INNER JOIN equipamentos e2 ON e2.id_equipamento = a2.id_equipamento
+                    WHERE ma2.id_manutencao = m.id_manutencao
+                    AND ma2.isActive = 1
+                ) AS acessorios_associados,
                 f.nome_empresa AS fornecedor_nome,
                 l.codigo AS codigo_localizacao,
                 l.departamento_nome,
@@ -158,12 +163,10 @@ try {
             FROM manutencoes_equipamento m
             INNER JOIN equipamentos e
                 ON e.id_equipamento = m.id_equipamento
-            LEFT JOIN acessorios_equipamento a
-                ON a.id_acessorio = m.id_acessorio
             LEFT JOIN fornecedores f
                 ON f.id_fornecedor = m.id_fornecedor_responsavel
             LEFT JOIN localizacoes l
-                ON l.id_localizacao = COALESCE(a.id_localizacao, e.id_localizacao)
+                ON l.id_localizacao = e.id_localizacao
             WHERE m.isActive = 1
               AND m.estado_processo = 'processo_finalizado'
 
@@ -181,11 +184,16 @@ try {
                 c.custo,
                 c.coberta_por_garantia,
                 c.id_equipamento,
-                c.id_acessorio,
                 e.codigo_equipamento,
                 e.designacao AS equipamento_nome,
-                a.designacao AS acessorio_nome,
-                CONCAT(e.codigo_equipamento, '.', LPAD(a.numero_sequencial, 3, '0')) AS codigo_acessorio,
+                (
+                    SELECT GROUP_CONCAT(CONCAT(e2.codigo_equipamento, '.', LPAD(a2.numero_sequencial, 3, '0'), ' - ', a2.designacao) SEPARATOR ' || ')
+                    FROM calibracoes_acessorios ca2
+                    INNER JOIN acessorios_equipamento a2 ON a2.id_acessorio = ca2.id_acessorio
+                    INNER JOIN equipamentos e2 ON e2.id_equipamento = a2.id_equipamento
+                    WHERE ca2.id_calibracao = c.id_calibracao
+                    AND ca2.isActive = 1
+                ) AS acessorios_associados,
                 f.nome_empresa AS fornecedor_nome,
                 l.codigo AS codigo_localizacao,
                 l.departamento_nome,
@@ -210,12 +218,10 @@ try {
             FROM calibracoes_equipamento c
             INNER JOIN equipamentos e
                 ON e.id_equipamento = c.id_equipamento
-            LEFT JOIN acessorios_equipamento a
-                ON a.id_acessorio = c.id_acessorio
             LEFT JOIN fornecedores f
                 ON f.id_fornecedor = c.id_fornecedor_responsavel
             LEFT JOIN localizacoes l
-                ON l.id_localizacao = COALESCE(a.id_localizacao, e.id_localizacao)
+                ON l.id_localizacao = e.id_localizacao
             WHERE c.isActive = 1
               AND c.estado_processo = 'processo_finalizado'
         ) processos
@@ -269,17 +275,14 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 <?php if (!empty($processosFinalizados)): ?>
                     <?php foreach ($processosFinalizados as $processo): ?>
                         <?php
-                            $alvoCodigo = !empty($processo['id_acessorio'])
-                                ? ($processo['codigo_acessorio'] ?? '---')
-                                : ($processo['codigo_equipamento'] ?? '---');
+                            $alvoCodigo = $processo['codigo_equipamento'] ?? '---';
+                            $alvoNome = $processo['equipamento_nome'] ?? 'Equipamento';
 
-                            $alvoNome = !empty($processo['id_acessorio'])
-                                ? ($processo['acessorio_nome'] ?? 'Acessório')
-                                : ($processo['equipamento_nome'] ?? 'Equipamento');
+                            $acessoriosAssociados = !empty($processo['acessorios_associados'])
+                                ? explode(' || ', $processo['acessorios_associados'])
+                                : [];
 
-                            $associadoA = !empty($processo['id_acessorio'])
-                                ? (($processo['codigo_equipamento'] ?? '---') . ' - ' . ($processo['equipamento_nome'] ?? '---'))
-                                : 'Equipamento principal';
+                            $associadoA = empty($acessoriosAssociados) ? 'Equipamento principal' : null;
                         ?>
                         <tr>
                             <td><strong><?php echo h($processo['codigo_processo'] ?: '---'); ?></strong></td>
@@ -287,7 +290,15 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 <strong><?php echo h($alvoCodigo); ?></strong><br>
                                 <small class="text-muted"><?php echo h($alvoNome); ?></small>
                             </td>
-                            <td><?php echo h($associadoA); ?></td>
+                            <td>
+                                <?php if (empty($acessoriosAssociados)): ?>
+                                    <?php echo h($associadoA); ?>
+                                <?php else: ?>
+                                    <?php foreach ($acessoriosAssociados as $acessorioAssociado): ?>
+                                        <div><?php echo h($acessorioAssociado); ?></div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </td>
                             <td>
                                 <span class="tipo-fornecedor <?php echo h(classe_tipo_processo($processo['origem'], $processo['tipo_processo'])); ?>">
                                     <?php echo h(texto_tipo_processo($processo['origem'], $processo['tipo_processo'])); ?>

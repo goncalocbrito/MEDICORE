@@ -286,7 +286,6 @@ $camposPorEtapa = [
         'dataInstalacao'
     ],
     'fornecedores' => [
-        'idFornecedorGarantia',
         'dataInicioGarantia',
         'dataFimGarantia',
         'observacoesFornecedor'
@@ -322,7 +321,6 @@ $labelsCampos = [
     'idLocalizacao' => 'Localização',
     'estado' => 'Estado',
     'criticidade' => 'Criticidade',
-    'idFornecedorGarantia' => 'Fornecedor responsável pela garantia'
 ];
 
 $errosEquipamento = [];
@@ -942,9 +940,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 Fornecedor responsável pela garantia
                             </label>
 
-                            <div class="campo-pesquisa-fornecedor">
+                            <div class="campo-pesquisa-registo">
                                 <input type="text"
-                                    class="form-control pesquisa-fornecedor-custom"
+                                    class="form-control pesquisa-registo-custom"
                                     id="fornecedorGarantiaPesquisa"
                                     data-hidden-target="idFornecedorGarantia"
                                     data-lista-target="listaFornecedoresGarantia"
@@ -957,10 +955,10 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     name="idFornecedorGarantia"
                                     value="<?php echo valor_novo_equipamento('idFornecedorGarantia'); ?>">
 
-                                <div class="lista-fornecedores-custom" id="listaFornecedoresGarantia">
+                                <div class="lista-registos-custom" id="listaFornecedoresGarantia">
                                     <?php foreach ($fornecedoresGarantia as $fornecedor): ?>
                                         <button type="button"
-                                                class="opcao-fornecedor-custom"
+                                                class="opcao-registo-custom"
                                                 data-id="<?php echo h_novo_equipamento($fornecedor['id_fornecedor']); ?>"
                                                 data-texto="<?php echo h_novo_equipamento($fornecedor['nome_empresa'] . ' (' . $fornecedor['tipo_fornecedor'] . ')'); ?>">
                                             <span><?php echo h_novo_equipamento($fornecedor['nome_empresa']); ?></span>

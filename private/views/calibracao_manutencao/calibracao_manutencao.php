@@ -144,18 +144,31 @@ function obter_nome_fornecedor(PDO $pdo, $idFornecedor)
     return $stmt->fetchColumn() ?: null;
 }
 
-function definir_estado_alvo(PDO $pdo, $idEquipamento, $idAcessorio, $estado)
+function definir_estado_alvos(PDO $pdo, $idEquipamento, array $idsAcessorios, $estado)
 {
-    if (!empty($idAcessorio)) {
-        $stmt = $pdo->prepare("UPDATE acessorios_equipamento SET estado = :estado WHERE id_acessorio = :id_acessorio");
-        $stmt->execute([
-            ':estado' => $estado,
-            ':id_acessorio' => $idAcessorio
-        ]);
+    if (!empty($idsAcessorios)) {
+        $stmt = $pdo->prepare("
+            UPDATE acessorios_equipamento
+            SET estado = :estado
+            WHERE id_acessorio = :id_acessorio
+        ");
+
+        foreach ($idsAcessorios as $idAcessorio) {
+            $stmt->execute([
+                ':estado' => $estado,
+                ':id_acessorio' => (int) $idAcessorio
+            ]);
+        }
+
         return;
     }
 
-    $stmt = $pdo->prepare("UPDATE equipamentos SET estado = :estado WHERE id_equipamento = :id_equipamento");
+    $stmt = $pdo->prepare("
+        UPDATE equipamentos
+        SET estado = :estado
+        WHERE id_equipamento = :id_equipamento
+    ");
+
     $stmt->execute([
         ':estado' => $estado,
         ':id_equipamento' => $idEquipamento
@@ -190,17 +203,14 @@ function render_tabela_processos_abertos($processos, $tituloTabela, $idTabela)
                 <?php if (!empty($processos)): ?>
                     <?php foreach ($processos as $processo): ?>
                         <?php
-                            $alvoCodigo = !empty($processo['id_acessorio'])
-                                ? ($processo['codigo_acessorio'] ?? '---')
-                                : ($processo['codigo_equipamento'] ?? '---');
+                            $alvoCodigo = $processo['codigo_equipamento'] ?? '---';
+                            $alvoNome = $processo['equipamento_nome'] ?? 'Equipamento';
 
-                            $alvoNome = !empty($processo['id_acessorio'])
-                                ? ($processo['acessorio_nome'] ?? 'Acessório')
-                                : ($processo['equipamento_nome'] ?? 'Equipamento');
+                            $acessoriosAssociados = !empty($processo['acessorios_associados'])
+                                ? explode(' || ', $processo['acessorios_associados'])
+                                : [];
 
-                            $associadoA = !empty($processo['id_acessorio'])
-                                ? (($processo['codigo_equipamento'] ?? '---') . ' - ' . ($processo['equipamento_nome'] ?? '---'))
-                                : 'Equipamento principal';
+                            $associadoA = empty($acessoriosAssociados) ? 'Equipamento principal' : null;
                         ?>
                         <tr>
                             <td><strong><?php echo h($processo['codigo_processo'] ?: '---'); ?></strong></td>
@@ -208,7 +218,15 @@ function render_tabela_processos_abertos($processos, $tituloTabela, $idTabela)
                                 <strong><?php echo h($alvoCodigo); ?></strong><br>
                                 <small class="text-muted"><?php echo h($alvoNome); ?></small>
                             </td>
-                            <td><?php echo h($associadoA); ?></td>
+                            <td>
+                                <?php if (!empty($acessoriosAssociados)): ?>
+                                    <?php foreach ($acessoriosAssociados as $acessorioAssociado): ?>
+                                        <div><?php echo h($acessorioAssociado); ?></div>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <?php echo h($associadoA); ?>
+                                <?php endif; ?>
+                            </td>
                             <td>
                                 <span class="tipo-fornecedor <?php echo h(classe_tipo_processo($processo['origem'], $processo['tipo_processo'])); ?>">
                                     <?php echo h(texto_tipo_processo($processo['origem'], $processo['tipo_processo'])); ?>
@@ -244,6 +262,7 @@ $processosManutencao = [];
 $processosCalibracao = [];
 $equipamentos = [];
 $acessorios = [];
+$consumiveis = [];
 $fornecedores = [];
 
 try {
@@ -265,13 +284,15 @@ try {
         if ($acao === 'criar_processo') {
             $tipoPedido = $_POST['tipoProcesso'] ?? '';
             $idEquipamento = (int) ($_POST['idEquipamento'] ?? 0);
-            $idAcessorio = !empty($_POST['idAcessorio']) ? (int) $_POST['idAcessorio'] : null;
+            $idsAcessorios = $_POST['idsAcessorios'] ?? [];
+            $idsConsumiveis = $_POST['idsConsumiveis'] ?? [];
+            $quantidadesConsumivel = $_POST['quantidadeConsumivel'] ?? [];
             $tipoExecucao = validar_tipo_execucao($_POST['tipoExecucao'] ?? 'externa');
             $idFornecedor = !empty($_POST['idFornecedorResponsavel']) ? (int) $_POST['idFornecedorResponsavel'] : null;
             $tecnicoInterno = valor_ou_null($_POST['tecnicoInterno'] ?? null);
             $dataPrevista = data_ou_null($_POST['dataPrevista'] ?? null);
             $cobertaPorGarantia = (int) ($_POST['cobertaPorGarantia'] ?? 0);
-            $custo = $cobertaPorGarantia === 1 ? 0.00 : decimal_ou_null($_POST['custoProcesso'] ?? null);
+            $custo = null;
             $observacoes = valor_ou_null($_POST['observacoesProcesso'] ?? null);
 
             $erros = [];
@@ -316,7 +337,6 @@ try {
                 $stmt = $pdo->prepare("
                     INSERT INTO calibracoes_equipamento (
                         id_equipamento,
-                        id_acessorio,
                         id_fornecedor_responsavel,
                         tipo_execucao,
                         estado_processo,
@@ -334,7 +354,6 @@ try {
                         atualizado_por
                     ) VALUES (
                         :id_equipamento,
-                        :id_acessorio,
                         :id_fornecedor_responsavel,
                         :tipo_execucao,
                         :estado_processo,
@@ -355,7 +374,6 @@ try {
 
                 $stmt->execute([
                     ':id_equipamento' => $idEquipamento,
-                    ':id_acessorio' => $idAcessorio,
                     ':id_fornecedor_responsavel' => $idFornecedor,
                     ':tipo_execucao' => $tipoExecucao,
                     ':estado_processo' => $estadoInicial,
@@ -371,6 +389,36 @@ try {
                 $idProcesso = (int) $pdo->lastInsertId();
                 $codigoProcesso = 'CAL-' . date('Y') . '-' . str_pad((string) $idProcesso, 4, '0', STR_PAD_LEFT);
 
+                $idsAcessorios = $_POST['idsAcessorios'] ?? [];
+                $idsConsumiveis = $_POST['idsConsumiveis'] ?? [];
+                $quantidadesConsumivel = $_POST['quantidadeConsumivel'] ?? [];
+
+                if ($tipoPedido === 'calibracao') {
+                    $stmtAcessorio = $pdo->prepare("
+                        INSERT INTO calibracoes_acessorios (id_calibracao, id_acessorio)
+                        VALUES (:id_calibracao, :id_acessorio)
+                    ");
+
+                    foreach ($idsAcessorios as $idAcessorioSelecionado) {
+                        $stmtAcessorio->execute([
+                            ':id_calibracao' => $idProcesso,
+                            ':id_acessorio' => (int) $idAcessorioSelecionado
+                        ]);
+                    }
+
+                    $stmtConsumivel = $pdo->prepare("
+                        INSERT INTO calibracoes_consumiveis (id_calibracao, id_consumivel, quantidade_utilizada)
+                        VALUES (:id_calibracao, :id_consumivel, :quantidade_utilizada)
+                    ");
+
+                    foreach ($idsConsumiveis as $idConsumivelSelecionado) {
+                        $stmtConsumivel->execute([
+                            ':id_calibracao' => $idProcesso,
+                            ':id_consumivel' => (int) $idConsumivelSelecionado,
+                            ':quantidade_utilizada' => (float) ($quantidadesConsumivel[$idConsumivelSelecionado] ?? 1)
+                        ]);
+                    }
+                }
                 $stmtCodigo = $pdo->prepare("UPDATE calibracoes_equipamento SET codigo_processo = :codigo WHERE id_calibracao = :id");
                 $stmtCodigo->execute([
                     ':codigo' => $codigoProcesso,
@@ -412,7 +460,7 @@ try {
                     ':atualizado_por' => $utilizadorAtual
                 ]);
 
-                definir_estado_alvo($pdo, $idEquipamento, $idAcessorio, 'em_calibracao');
+                definir_estado_alvos($pdo, $idEquipamento, $idsAcessorios, 'em_calibracao');
                 $mensagem_sucesso = 'Processo de calibração aberto com sucesso.';
             } else {
                 $tipoManutencao = $tipoPedido === 'manutencao_corretiva' ? 'corretiva' : 'preventiva';
@@ -420,7 +468,6 @@ try {
                 $stmt = $pdo->prepare("
                     INSERT INTO manutencoes_equipamento (
                         id_equipamento,
-                        id_acessorio,
                         tipo_manutencao,
                         tipo_execucao,
                         estado_processo,
@@ -439,7 +486,6 @@ try {
                         atualizado_por
                     ) VALUES (
                         :id_equipamento,
-                        :id_acessorio,
                         :tipo_manutencao,
                         :tipo_execucao,
                         :estado_processo,
@@ -461,7 +507,6 @@ try {
 
                 $stmt->execute([
                     ':id_equipamento' => $idEquipamento,
-                    ':id_acessorio' => $idAcessorio,
                     ':tipo_manutencao' => $tipoManutencao,
                     ':tipo_execucao' => $tipoExecucao,
                     ':estado_processo' => $estadoInicial,
@@ -478,6 +523,42 @@ try {
                 $idProcesso = (int) $pdo->lastInsertId();
                 $codigoProcesso = 'MAN-' . date('Y') . '-' . str_pad((string) $idProcesso, 4, '0', STR_PAD_LEFT);
 
+                $stmtAcessorio = $pdo->prepare("
+                    INSERT INTO manutencoes_acessorios (
+                        id_manutencao,
+                        id_acessorio
+                    ) VALUES (
+                        :id_manutencao,
+                        :id_acessorio
+                    )
+                ");
+
+                foreach ($idsAcessorios as $idAcessorioSelecionado) {
+                    $stmtAcessorio->execute([
+                        ':id_manutencao' => $idProcesso,
+                        ':id_acessorio' => (int) $idAcessorioSelecionado
+                    ]);
+                }
+
+                $stmtConsumivel = $pdo->prepare("
+                    INSERT INTO manutencoes_consumiveis (
+                        id_manutencao,
+                        id_consumivel,
+                        quantidade_utilizada
+                    ) VALUES (
+                        :id_manutencao,
+                        :id_consumivel,
+                        :quantidade_utilizada
+                    )
+                ");
+
+                foreach ($idsConsumiveis as $idConsumivelSelecionado) {
+                    $stmtConsumivel->execute([
+                        ':id_manutencao' => $idProcesso,
+                        ':id_consumivel' => (int) $idConsumivelSelecionado,
+                        ':quantidade_utilizada' => (float) ($quantidadesConsumivel[$idConsumivelSelecionado] ?? 1)
+                    ]);
+                }
                 $stmtCodigo = $pdo->prepare("UPDATE manutencoes_equipamento SET codigo_processo = :codigo WHERE id_manutencao = :id");
                 $stmtCodigo->execute([
                     ':codigo' => $codigoProcesso,
@@ -519,7 +600,7 @@ try {
                     ':atualizado_por' => $utilizadorAtual
                 ]);
 
-                definir_estado_alvo($pdo, $idEquipamento, $idAcessorio, 'em_manutencao');
+                definir_estado_alvos($pdo, $idEquipamento, $idsAcessorios, 'em_manutencao');
                 $mensagem_sucesso = 'Processo de manutenção aberto com sucesso.';
             }
 
@@ -549,6 +630,14 @@ try {
     ");
     $acessorios = $stmtAcessorios->fetchAll();
 
+    $stmtConsumiveis = $pdo->query("
+        SELECT id_consumivel, codigo_consumivel, nome, unidade, stock_atual
+        FROM consumiveis
+        WHERE isActive = 1
+        ORDER BY nome ASC
+    ");
+    $consumiveis = $stmtConsumiveis->fetchAll();
+
     $stmtFornecedores = $pdo->query("
         SELECT id_fornecedor, nome_empresa, tipo_fornecedor
         FROM fornecedores
@@ -570,12 +659,21 @@ try {
             m.coberta_por_garantia,
             m.custo,
             m.id_equipamento,
-            m.id_acessorio,
             e.codigo_equipamento,
             e.designacao AS equipamento_nome,
-            a.designacao AS acessorio_nome,
-            CONCAT(e.codigo_equipamento, '.', LPAD(a.numero_sequencial, 3, '0')) AS codigo_acessorio,
-            f.nome_empresa AS fornecedor_nome,
+            (
+                SELECT GROUP_CONCAT(
+                    CONCAT(e2.codigo_equipamento, '.', LPAD(a2.numero_sequencial, 3, '0'), ' - ', a2.designacao)
+                    SEPARATOR ' || '
+                )
+                FROM manutencoes_acessorios ma2
+                INNER JOIN acessorios_equipamento a2
+                    ON a2.id_acessorio = ma2.id_acessorio
+                INNER JOIN equipamentos e2
+                    ON e2.id_equipamento = a2.id_equipamento
+                WHERE ma2.id_manutencao = m.id_manutencao
+                AND ma2.isActive = 1
+            ) AS acessorios_associados,
             l.codigo AS codigo_localizacao,
             l.departamento_nome,
             l.edificio,
@@ -584,17 +682,16 @@ try {
         FROM manutencoes_equipamento m
         INNER JOIN equipamentos e
             ON e.id_equipamento = m.id_equipamento
-        LEFT JOIN acessorios_equipamento a
-            ON a.id_acessorio = m.id_acessorio
         LEFT JOIN fornecedores f
             ON f.id_fornecedor = m.id_fornecedor_responsavel
         LEFT JOIN localizacoes l
-            ON l.id_localizacao = COALESCE(a.id_localizacao, e.id_localizacao)
+            ON l.id_localizacao = e.id_localizacao
         WHERE m.isActive = 1
-          AND m.estado_processo NOT IN ('processo_finalizado', 'cancelado')
+        AND m.estado_processo NOT IN ('processo_finalizado', 'cancelado')
         ORDER BY m.data_prevista ASC, m.criado_em DESC
     ";
     $processosManutencao = $pdo->query($sqlManutencoes)->fetchAll();
+
 
     $sqlCalibracoes = "
         SELECT
@@ -609,11 +706,21 @@ try {
             c.coberta_por_garantia,
             c.custo,
             c.id_equipamento,
-            c.id_acessorio,
             e.codigo_equipamento,
             e.designacao AS equipamento_nome,
-            a.designacao AS acessorio_nome,
-            CONCAT(e.codigo_equipamento, '.', LPAD(a.numero_sequencial, 3, '0')) AS codigo_acessorio,
+            (
+                SELECT GROUP_CONCAT(
+                    CONCAT(e2.codigo_equipamento, '.', LPAD(a2.numero_sequencial, 3, '0'), ' - ', a2.designacao)
+                    SEPARATOR ' || '
+                )
+                FROM calibracoes_acessorios ca2
+                INNER JOIN acessorios_equipamento a2
+                    ON a2.id_acessorio = ca2.id_acessorio
+                INNER JOIN equipamentos e2
+                    ON e2.id_equipamento = a2.id_equipamento
+                WHERE ca2.id_calibracao = c.id_calibracao
+                AND ca2.isActive = 1
+            ) AS acessorios_associados,
             f.nome_empresa AS fornecedor_nome,
             l.codigo AS codigo_localizacao,
             l.departamento_nome,
@@ -623,14 +730,12 @@ try {
         FROM calibracoes_equipamento c
         INNER JOIN equipamentos e
             ON e.id_equipamento = c.id_equipamento
-        LEFT JOIN acessorios_equipamento a
-            ON a.id_acessorio = c.id_acessorio
         LEFT JOIN fornecedores f
             ON f.id_fornecedor = c.id_fornecedor_responsavel
         LEFT JOIN localizacoes l
-            ON l.id_localizacao = COALESCE(a.id_localizacao, e.id_localizacao)
+            ON l.id_localizacao = e.id_localizacao
         WHERE c.isActive = 1
-          AND c.estado_processo NOT IN ('processo_finalizado', 'cancelado')
+        AND c.estado_processo NOT IN ('processo_finalizado', 'cancelado')
         ORDER BY c.data_prevista ASC, c.criado_em DESC
     ";
     $processosCalibracao = $pdo->query($sqlCalibracoes)->fetchAll();
@@ -708,7 +813,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
 <!-- Modal novo processo -->
 <div class="modal fade" id="modalNovoProcesso" tabindex="-1" aria-labelledby="modalNovoProcessoLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-acessorio-dialog">
         <div class="modal-content modal-acessorio">
             <form method="post" action="calibracao_manutencao.php" id="formNovoProcesso">
                 <input type="hidden" name="acao" value="criar_processo">
@@ -737,26 +842,93 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                         <div class="col-md-4">
                             <label for="idEquipamento" class="form-label">Equipamento *</label>
-                            <select class="form-select" id="idEquipamento" name="idEquipamento" required>
-                                <option value="">Selecionar equipamento</option>
-                                <?php foreach ($equipamentos as $equipamento): ?>
-                                    <option value="<?php echo h($equipamento['id_equipamento']); ?>">
-                                        <?php echo h($equipamento['codigo_equipamento'] . ' - ' . $equipamento['designacao']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                            <div class="campo-pesquisa-registo">
+                                <input type="text"
+                                    class="form-control pesquisa-registo-custom"
+                                    id="pesquisaEquipamentoProcesso"
+                                    data-hidden-target="idEquipamento"
+                                    data-lista-target="listaEquipamentosProcesso"
+                                    data-filtra-lista="listaAcessoriosProcesso"
+                                    data-filtra-campo="equipamento"
+                                    placeholder="Pesquisar e selecionar equipamento"
+                                    autocomplete="off"
+                                    required>
+
+                                <input type="hidden" id="idEquipamento" name="idEquipamento">
+
+                                <div class="lista-registos-custom" id="listaEquipamentosProcesso">
+                                    <?php foreach ($equipamentos as $equipamento): ?>
+                                        <button type="button"
+                                                class="opcao-registo-custom"
+                                                data-id="<?php echo h($equipamento['id_equipamento']); ?>"
+                                                data-texto="<?php echo h($equipamento['codigo_equipamento'] . ' - ' . $equipamento['designacao']); ?>">
+                                            <span><?php echo h($equipamento['codigo_equipamento'] . ' - ' . $equipamento['designacao']); ?></span>
+                                        </button>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="col-md-4">
-                            <label for="idAcessorio" class="form-label">Acessório associado</label>
-                            <select class="form-select" id="idAcessorio" name="idAcessorio">
-                                <option value="">Equipamento principal</option>
-                                <?php foreach ($acessorios as $acessorio): ?>
-                                    <option value="<?php echo h($acessorio['id_acessorio']); ?>" data-equipamento="<?php echo h($acessorio['id_equipamento']); ?>">
-                                        <?php echo h($acessorio['codigo_acessorio'] . ' - ' . $acessorio['designacao']); ?>
-                                    </option>
+                            <div class="col-12">
+                                <label for="pesquisaAcessoriosProcesso" class="form-label">Acessórios associados</label>
+
+                                <input type="text"
+                                    class="form-control pesquisa-checkbox-custom"
+                                    id="pesquisaAcessoriosProcesso"
+                                    data-lista-target="listaAcessoriosProcesso"
+                                    placeholder="Pesquisar acessórios do equipamento"
+                                    autocomplete="off">
+
+                                <div class="lista-checkbox-custom mt-2" id="listaAcessoriosProcesso">
+                                    <?php foreach ($acessorios as $acessorio): ?>
+                                        <div class="opcao-checkbox-custom"
+                                            data-equipamento="<?php echo h($acessorio['id_equipamento']); ?>"
+                                            data-texto="<?php echo h($acessorio['codigo_acessorio'] . ' ' . $acessorio['designacao']); ?>">
+                                            <label>
+                                                <input type="checkbox"
+                                                    name="idsAcessorios[]"
+                                                    value="<?php echo h($acessorio['id_acessorio']); ?>">
+                                                <span>
+                                                    <?php echo h($acessorio['codigo_acessorio'] . ' - ' . $acessorio['designacao']); ?>
+                                                </span>
+                                            </label>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="pesquisaConsumiveisProcesso" class="form-label">Consumíveis utilizados</label>
+
+                            <input type="text"
+                                class="form-control pesquisa-checkbox-custom"
+                                id="pesquisaConsumiveisProcesso"
+                                data-lista-target="listaConsumiveisProcesso"
+                                placeholder="Pesquisar consumíveis"
+                                autocomplete="off">
+
+                            <div class="lista-checkbox-custom mt-2" id="listaConsumiveisProcesso">
+                                <?php foreach ($consumiveis as $consumivel): ?>
+                                    <div class="opcao-checkbox-custom"
+                                        data-texto="<?php echo h($consumivel['codigo_consumivel'] . ' ' . $consumivel['nome']); ?>">
+                                        <label>
+                                            <input type="checkbox"
+                                                name="idsConsumiveis[]"
+                                                value="<?php echo h($consumivel['id_consumivel']); ?>">
+                                            <span>
+                                                <?php echo h($consumivel['codigo_consumivel'] . ' - ' . $consumivel['nome']); ?>
+                                            </span>
+                                        </label>
+
+                                        <input type="number"
+                                            name="quantidadeConsumivel[<?php echo h($consumivel['id_consumivel']); ?>]"
+                                            class="form-control form-control-sm"
+                                            min="0"
+                                            step="0.01"
+                                            placeholder="Qtd.">
+                                    </div>
                                 <?php endforeach; ?>
-                            </select>
+                            </div>
                         </div>
 
                         <div class="col-md-4">
@@ -797,11 +969,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </select>
                         </div>
 
-                        <div class="col-md-4">
-                            <label for="custoProcesso" class="form-label">Custo previsto (€)</label>
-                            <input type="number" class="form-control" id="custoProcesso" name="custoProcesso" min="0" step="0.01" placeholder="Ex: 85.00">
-                        </div>
-
                         <div class="col-12">
                             <label for="observacoesProcesso" class="form-label">Observações iniciais</label>
                             <textarea class="form-control" id="observacoesProcesso" name="observacoesProcesso" rows="3" placeholder="Notas sobre a abertura do processo"></textarea>
@@ -826,47 +993,10 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const equipamentoSelect = document.getElementById('idEquipamento');
-    const acessorioSelect = document.getElementById('idAcessorio');
     const garantiaSelect = document.getElementById('cobertaPorGarantia');
-    const custoInput = document.getElementById('custoProcesso');
     const tipoExecucao = document.getElementById('tipoExecucao');
     const fornecedorSelect = document.getElementById('idFornecedorResponsavel');
     const tecnicoInput = document.getElementById('tecnicoInterno');
-
-    function filtrarAcessorios() {
-        if (!equipamentoSelect || !acessorioSelect) return;
-        const idEquipamento = equipamentoSelect.value;
-
-        Array.from(acessorioSelect.options).forEach(function (option) {
-            if (!option.value) {
-                option.hidden = false;
-                return;
-            }
-
-            option.hidden = option.dataset.equipamento !== idEquipamento;
-        });
-
-        if (acessorioSelect.selectedOptions[0] && acessorioSelect.selectedOptions[0].hidden) {
-            acessorioSelect.value = '';
-        }
-    }
-
-    function atualizarCustoGarantia() {
-        if (!garantiaSelect || !custoInput) return;
-
-        if (garantiaSelect.value === '1') {
-            custoInput.value = '0.00';
-            custoInput.readOnly = true;
-            custoInput.classList.add('campo-bloqueado');
-        } else {
-            custoInput.readOnly = false;
-            custoInput.classList.remove('campo-bloqueado');
-            if (custoInput.value === '0.00') {
-                custoInput.value = '';
-            }
-        }
-    }
 
     function atualizarTipoExecucao() {
         if (!tipoExecucao || !fornecedorSelect || !tecnicoInput) return;
@@ -877,12 +1007,8 @@ document.addEventListener('DOMContentLoaded', function () {
         tecnicoInput.required = tipo === 'interna';
     }
 
-    equipamentoSelect?.addEventListener('change', filtrarAcessorios);
-    garantiaSelect?.addEventListener('change', atualizarCustoGarantia);
     tipoExecucao?.addEventListener('change', atualizarTipoExecucao);
 
-    filtrarAcessorios();
-    atualizarCustoGarantia();
     atualizarTipoExecucao();
 });
 </script>

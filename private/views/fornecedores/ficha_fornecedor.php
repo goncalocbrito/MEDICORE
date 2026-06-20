@@ -16,6 +16,25 @@ $pdo = new PDO(
 $id_fornecedor = id_from_request();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $camposObrigatorios = [
+    'nomeFornecedor' => 'Nome do fornecedor',
+    'tipoFornecedor' => 'Tipo de fornecedor',
+    'nifFornecedor' => 'NIF',
+    'emailFornecedor' => 'Email',
+    'telefoneFornecedor' => 'Telefone',
+    'contactoResponsavel' => 'Pessoa de contacto',
+    'telefoneContacto' => 'Telefone de contacto',
+    'emailContacto' => 'Email de contacto',
+    'moradaFornecedor' => 'Morada',
+    'codigoPostalFornecedor' => 'Código postal',
+    'localidadeFornecedor' => 'Localidade'
+];
+
+foreach ($camposObrigatorios as $campo => $label) {
+    if (trim($_POST[$campo] ?? '') === '') {
+        die('O campo "' . $label . '" é obrigatório.');
+    }
+}
     $stmt = $pdo->prepare("
         UPDATE fornecedores
         SET
@@ -116,7 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    header('Location: ficha_fornecedor.php?ref=' . url_ref($id_fornecedor));
+    header('Location: ficha_fornecedor.php?ref=' . url_ref($id_fornecedor) . '&guardado=1');
     exit;
 }
 
@@ -192,6 +211,15 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Alterações
             </button>
         </div>
+
+        <?php if (isset($_GET['guardado'])): ?>
+            <div class="form-alerta-sucesso" role="alert">
+                <strong>
+                    <i class="fa-solid fa-circle-check me-2"></i>
+                    Alteração do fornecedor guardada.
+                </strong>
+            </div>
+        <?php endif; ?>
 
         <!-- =====================================================
              FORMULÁRIO ÚNICO DA FICHA DO FORNECEDOR
@@ -349,9 +377,10 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                         name="tipoFornecedor"
                                         required>
                                     <option value="">Selecionar tipo</option>
-                                    <option value="Manuten��o" <?php echo $fornecedor['tipo_fornecedor'] === 'Manuten��o' ? 'selected' : ''; ?>>Manuten��o</option>
+                                    <option value="Manutenção" <?php echo $fornecedor['tipo_fornecedor'] === 'Manutenção' ? 'selected' : ''; ?>>Manutenção</option>
                                     <option value="Comercial" <?php echo $fornecedor['tipo_fornecedor'] === 'Comercial' ? 'selected' : ''; ?>>Comercial</option>
                                     <option value="Fabricante" <?php echo $fornecedor['tipo_fornecedor'] === 'Fabricante' ? 'selected' : ''; ?>>Fabricante</option>
+                                    <option value="Calibração" <?php echo $fornecedor['tipo_fornecedor'] === 'Calibração' ? 'selected' : ''; ?>>Calibração</option>
                                 </select>
                             </div>
                         </div>
@@ -403,12 +432,13 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </div>
 
                             <div class="col-md-4">
-                                <label for="contactoResponsavel" class="form-label">Pessoa de Contacto</label>
+                                <label for="contactoResponsavel" class="form-label">Pessoa de Contacto *</label>
                                 <input type="text"
-                                       class="form-control campo-ficha campo-editavel"
-                                       id="contactoResponsavel"
-                                       name="contactoResponsavel"
-                                       value="<?php echo htmlspecialchars($fornecedor['pessoa_contacto'] ?? ''); ?>">
+                                    class="form-control campo-ficha campo-editavel"
+                                    id="contactoResponsavel"
+                                    name="contactoResponsavel"
+                                    value="<?php echo htmlspecialchars($fornecedor['pessoa_contacto'] ?? ''); ?>"
+                                    required>
                             </div>
 
                             <div class="col-md-4">
@@ -417,7 +447,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        class="form-control campo-ficha campo-editavel"
                                        id="telefoneContacto"
                                        name="telefoneContacto"
-                                       value="<?php echo htmlspecialchars($fornecedor['telefone_contacto'] ?? ''); ?>">
+                                       value="<?php echo htmlspecialchars($fornecedor['telefone_contacto'] ?? ''); ?>" required>
+
                             </div>
 
                             <div class="col-md-4">
@@ -426,7 +457,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        class="form-control campo-ficha campo-editavel"
                                        id="emailContacto"
                                        name="emailContacto"
-                                       value="<?php echo htmlspecialchars($fornecedor['email_contacto'] ?? ''); ?>">
+                                       value="<?php echo htmlspecialchars($fornecedor['email_contacto'] ?? ''); ?>" required>
                             </div>
                         </div>
                     </div>

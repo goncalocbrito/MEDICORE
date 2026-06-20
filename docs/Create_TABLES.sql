@@ -1042,3 +1042,154 @@ REFERENCES fornecedores(id_fornecedor);
 
 ALTER TABLE equipamentos_fornecedores
 MODIFY id_fornecedor_garantia INT NULL;
+
+
+/* 20/06/2026*/
+
+CREATE TABLE manutencoes_acessorios (
+    id_manutencao_acessorio INT AUTO_INCREMENT PRIMARY KEY,
+    id_manutencao INT NOT NULL,
+    id_acessorio INT NOT NULL,
+    isActive TINYINT(1) NOT NULL DEFAULT 1,
+    criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_manutencao)
+        REFERENCES manutencoes_equipamento(id_manutencao),
+
+    FOREIGN KEY (id_acessorio)
+        REFERENCES acessorios_equipamento(id_acessorio),
+
+    UNIQUE (id_manutencao, id_acessorio)
+);
+
+CREATE TABLE calibracoes_acessorios (
+    id_calibracao_acessorio INT AUTO_INCREMENT PRIMARY KEY,
+    id_calibracao INT NOT NULL,
+    id_acessorio INT NOT NULL,
+    isActive TINYINT(1) NOT NULL DEFAULT 1,
+    criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_calibracao)
+        REFERENCES calibracoes_equipamento(id_calibracao),
+
+    FOREIGN KEY (id_acessorio)
+        REFERENCES acessorios_equipamento(id_acessorio),
+
+    UNIQUE (id_calibracao, id_acessorio)
+);
+
+CREATE TABLE manutencoes_consumiveis (
+    id_manutencao_consumivel INT AUTO_INCREMENT PRIMARY KEY,
+    id_manutencao INT NOT NULL,
+    id_consumivel INT NOT NULL,
+    quantidade_utilizada DECIMAL(10,2) NOT NULL DEFAULT 1,
+    isActive TINYINT(1) NOT NULL DEFAULT 1,
+    criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_manutencao)
+        REFERENCES manutencoes_equipamento(id_manutencao),
+
+    FOREIGN KEY (id_consumivel)
+        REFERENCES consumiveis(id_consumivel),
+
+    UNIQUE (id_manutencao, id_consumivel)
+);
+
+CREATE TABLE calibracoes_consumiveis (
+    id_calibracao_consumivel INT AUTO_INCREMENT PRIMARY KEY,
+    id_calibracao INT NOT NULL,
+    id_consumivel INT NOT NULL,
+    quantidade_utilizada DECIMAL(10,2) NOT NULL DEFAULT 1,
+    isActive TINYINT(1) NOT NULL DEFAULT 1,
+    criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_calibracao)
+        REFERENCES calibracoes_equipamento(id_calibracao),
+
+    FOREIGN KEY (id_consumivel)
+        REFERENCES consumiveis(id_consumivel),
+
+    UNIQUE (id_calibracao, id_consumivel)
+);
+
+ALTER TABLE manutencoes_equipamento
+DROP FOREIGN KEY fk_manutencao_acessorio;
+
+ALTER TABLE equipamentos_fornecedores
+MODIFY id_fornecedor_garantia INT NULL;
+
+
+CREATE TABLE historico_equipamentos (
+    id_historico_equipamento INT AUTO_INCREMENT PRIMARY KEY,
+    id_equipamento INT NOT NULL,
+    id_localizacao INT NULL,
+    id_utilizador INT NULL,
+    tipo_evento ENUM(
+        'criacao',
+        'alteracao_localizacao',
+        'transferencia_pendente',
+        'transferencia_aprovada',
+        'transferencia_rejeitada',
+        'emprestimo_iniciado',
+        'emprestimo_terminado',
+        'manutencao',
+        'calibracao',
+        'alteracao_dados'
+    ) NOT NULL,
+    referencia_tabela VARCHAR(80) NULL,
+    referencia_id INT NULL,
+    descricao VARCHAR(500) NOT NULL,
+    data_evento DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    isActive TINYINT(1) NOT NULL DEFAULT 1,
+
+    FOREIGN KEY (id_equipamento) REFERENCES equipamentos(id_equipamento),
+    FOREIGN KEY (id_localizacao) REFERENCES localizacoes(id_localizacao),
+    FOREIGN KEY (id_utilizador) REFERENCES utilizadores(id_utilizador)
+);
+
+CREATE TABLE transferencias_equipamentos (
+    id_transferencia INT AUTO_INCREMENT PRIMARY KEY,
+    codigo_transferencia VARCHAR(30) NOT NULL UNIQUE,
+    id_equipamento INT NOT NULL,
+    id_localizacao_origem INT NOT NULL,
+    id_localizacao_destino INT NOT NULL,
+    id_utilizador_pedido INT NOT NULL,
+    id_utilizador_aprovacao INT NULL,
+    motivo VARCHAR(255) NULL,
+    estado ENUM('pendente', 'aprovado', 'rejeitado') NOT NULL DEFAULT 'pendente',
+    data_pedido DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    data_aprovacao DATETIME NULL,
+    observacoes VARCHAR(500) NULL,
+    isActive TINYINT(1) NOT NULL DEFAULT 1,
+
+    FOREIGN KEY (id_equipamento) REFERENCES equipamentos(id_equipamento),
+    FOREIGN KEY (id_localizacao_origem) REFERENCES localizacoes(id_localizacao),
+    FOREIGN KEY (id_localizacao_destino) REFERENCES localizacoes(id_localizacao),
+    FOREIGN KEY (id_utilizador_pedido) REFERENCES utilizadores(id_utilizador),
+    FOREIGN KEY (id_utilizador_aprovacao) REFERENCES utilizadores(id_utilizador)
+);
+
+CREATE TABLE emprestimos_equipamentos (
+    id_emprestimo INT AUTO_INCREMENT PRIMARY KEY,
+    codigo_emprestimo VARCHAR(30) NOT NULL UNIQUE,
+    id_equipamento INT NOT NULL,
+    id_localizacao_origem INT NOT NULL,
+    id_localizacao_destino INT NOT NULL,
+    id_utilizador_pedido INT NOT NULL,
+    id_utilizador_termino INT NULL,
+    responsavel_emprestimo VARCHAR(150) NOT NULL,
+    motivo VARCHAR(255) NULL,
+    data_inicio DATE NOT NULL,
+    data_prevista_devolucao DATE NOT NULL,
+    data_termino DATE NULL,
+    estado ENUM('ativo', 'terminado', 'atrasado', 'cancelado') NOT NULL DEFAULT 'ativo',
+    observacoes VARCHAR(500) NULL,
+    isActive TINYINT(1) NOT NULL DEFAULT 1,
+
+    FOREIGN KEY (id_equipamento) REFERENCES equipamentos(id_equipamento),
+    FOREIGN KEY (id_localizacao_origem) REFERENCES localizacoes(id_localizacao),
+    FOREIGN KEY (id_localizacao_destino) REFERENCES localizacoes(id_localizacao),
+    FOREIGN KEY (id_utilizador_pedido) REFERENCES utilizadores(id_utilizador),
+    FOREIGN KEY (id_utilizador_termino) REFERENCES utilizadores(id_utilizador)
+);
+
