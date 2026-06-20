@@ -15,6 +15,9 @@ $pdo = new PDO(
     ]
 );
 
+$tipoUtilizador = $_SESSION['tipo_utilizador'] ?? '';
+$isEngenheiro = ($tipoUtilizador === 'Engenheiro');
+
 /* =========================================================
    FUNÇÕES AUXILIARES
    ========================================================= */
@@ -496,7 +499,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':modelo' => trim($dadosEquipamento['modelo'] ?? ''),
                 ':numero_serie' => trim($dadosEquipamento['numeroSerie'] ?? ''),
                 ':tipo_entrada' => trim($dadosEquipamento['tipoEntrada'] ?? '') ?: null,
-                ':valor_aquisicao' => decimal_novo_equipamento('valorAquisicao'),
+                ':valor_aquisicao' => $isEngenheiro ? null : decimal_novo_equipamento('valorAquisicao'),
                 ':id_localizacao' => (int) $dadosEquipamento['idLocalizacao'],
                 ':estado' => trim($dadosEquipamento['estado'] ?? 'ativo'),
                 ':criticidade' => trim($dadosEquipamento['criticidade'] ?? ''),
@@ -511,6 +514,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
 
             $idEquipamento = (int) $pdo->lastInsertId();
+
+            $valorAquisicao = null;
 
             $stmtInserirFornecedores = $pdo->prepare("
                 INSERT INTO equipamentos_fornecedores (
@@ -877,10 +882,21 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                     <div class="row g-4">
 
-                        <div class="col-md-3">
-                            <label for="valorAquisicao" class="form-label">Valor de Aquisição (€)</label>
-                            <input type="number" step="0.01" min="0" class="form-control" id="valorAquisicao" name="valorAquisicao" value="<?php echo valor_novo_equipamento('valorAquisicao'); ?>" placeholder="Ex: 2450.00">
-                        </div>
+                        <?php if (!$isEngenheiro): ?>
+                            <div class="col-md-4">
+                                <label for="valorAquisicao" class="form-label">Custo de Aquisição</label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    class="form-control"
+                                    id="valorAquisicao"
+                                    name="valorAquisicao"
+                                    value="<?php echo valor_novo_equipamento('valorAquisicao'); ?>"
+                                    placeholder="Ex: 2500.00"
+                                >
+                            </div>
+                        <?php endif; ?>
 
                         <div class="col-md-3">
                             <label for="dataFabrico" class="form-label">Data de Fabrico</label>

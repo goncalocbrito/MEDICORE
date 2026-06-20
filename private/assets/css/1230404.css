@@ -3417,24 +3417,32 @@ textarea[readonly] {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
-    margin-left: 8px;
+
+    width: 20px;
+    height: 20px;
+    margin-left: 6px;
+
     border: 1px solid #c6ebe5;
     border-radius: 50%;
-    background: linear-gradient(180deg, #e9fbf7 0%, #d9f3ee 100%);
+    background-color: #e9fbf7;
     color: #208a7d;
-    font-size: 0.9rem;
+
+    font-size: 0.72rem;
     font-weight: 800;
+    line-height: 1;
+
     cursor: help;
-    box-shadow: 0 6px 16px rgba(46, 141, 128, 0.14);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    vertical-align: middle;
+    transform: translateY(-1px);
+
+    box-shadow: 0 4px 10px rgba(46, 141, 128, 0.12);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .tooltip-ajuda:hover,
 .tooltip-ajuda:focus {
     transform: translateY(-1px);
-    box-shadow: 0 10px 24px rgba(46, 141, 128, 0.22);
+    box-shadow: 0 6px 14px rgba(46, 141, 128, 0.18);
 }
 
 .tooltip-ajuda-texto {

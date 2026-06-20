@@ -15,6 +15,9 @@ $pdo = new PDO(
     ]
 );
 
+$tipoUtilizador = $_SESSION['tipo_utilizador'] ?? '';
+$isEngenheiro = ($tipoUtilizador === 'Engenheiro');
+
 /* =========================================================
    FUNÇÕES AUXILIARES
    ========================================================= */
@@ -441,7 +444,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualiz
                 ':modelo' => trim($_POST['modelo']),
                 ':numero_serie' => trim($_POST['numeroSerie']),
                 ':tipo_entrada' => trim($_POST['tipoEntrada'] ?? '') ?: null,
-                ':valor_aquisicao' => decimal_post_equipamento('valorAquisicao'),
+                ':valor_aquisicao' => $isEngenheiro
+                    ? ($equipamento['valor_aquisicao'] ?? null)
+                    : decimal_post_equipamento('valorAquisicao'),
                 ':id_localizacao' => (int) $_POST['idLocalizacao'],
                 ':estado' => trim($_POST['estado']),
                 ':criticidade' => trim($_POST['criticidade']),
@@ -937,10 +942,21 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                     <div class="row g-4">
 
-                        <div class="col-md-3">
-                            <label for="valorAquisicao" class="form-label">Valor de Aquisição (€)</label>
-                            <input type="number" step="0.01" min="0" class="form-control campo-ficha campo-editavel" id="valorAquisicao" name="valorAquisicao" value="<?php echo valor_decimal_equipamento($equipamento['valor_aquisicao']); ?>">
-                        </div>
+                        <?php if (!$isEngenheiro): ?>
+                            <div class="col-md-4">
+                                <label for="valorAquisicao" class="form-label">Custo de Aquisição</label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    class="form-control"
+                                    id="valorAquisicao"
+                                    name="valorAquisicao"
+                                    value="<?php echo htmlspecialchars($equipamento['valor_aquisicao'] ?? ''); ?>"
+                                    placeholder="Ex: 2500.00"
+                                >
+                            </div>
+                        <?php endif; ?>
 
                         <div class="col-md-3">
                             <label for="dataFabrico" class="form-label">Data de Fabrico</label>
