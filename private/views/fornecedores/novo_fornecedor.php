@@ -28,18 +28,14 @@ $etapasFornecedor = [
     'identificacao',
     'contactos',
     'morada',
-    'contrato',
-    'observacoes',
-    'documentos'
+    'observacoes'
 ];
 
 $camposPorEtapaFornecedor = [
     'identificacao' => ['nomeFornecedor', 'nifFornecedor', 'tipoFornecedor', 'estadoFornecedor'],
     'contactos' => ['emailFornecedor', 'telefoneFornecedor', 'websiteFornecedor', 'contactoResponsavel', 'telefoneContacto', 'emailContacto'],
     'morada' => ['moradaFornecedor', 'codigoPostalFornecedor', 'localidadeFornecedor', 'paisFornecedor'],
-    'contrato' => ['contratoFornecedor', 'inicioContratoFornecedor', 'fimContratoFornecedor', 'areaAtuacaoFornecedor', 'equipamentosAssociadosFornecedor'],
-    'observacoes' => ['observacoesFornecedor'],
-    'documentos' => []
+    'observacoes' => ['observacoesFornecedor']
 ];
 
 $camposObrigatoriosFornecedor = [
@@ -66,17 +62,7 @@ $camposObrigatoriosFornecedor = [
         'paisFornecedor'
     ],
 
-    'contrato' => [
-        'contratoFornecedor',
-        'inicioContratoFornecedor',
-        'fimContratoFornecedor',
-        'areaAtuacaoFornecedor',
-        'equipamentosAssociadosFornecedor'
-    ],
-
-    'observacoes' => [],
-
-    'documentos' => []
+    'observacoes' => []
 ];
 
 $labelsCamposFornecedor = [
@@ -97,18 +83,12 @@ $labelsCamposFornecedor = [
     'localidadeFornecedor' => 'Localidade',
     'paisFornecedor' => 'País',
 
-    'contratoFornecedor' => 'Contrato Ativo',
-    'inicioContratoFornecedor' => 'Início do Contrato',
-    'fimContratoFornecedor' => 'Fim do Contrato',
-    'areaAtuacaoFornecedor' => 'Área de Atuação',
-    'equipamentosAssociadosFornecedor' => 'Equipamentos / Marcas Associadas'
 ];
 
 $nomesEtapasFornecedor = [
     'identificacao' => 'Identificação',
     'contactos' => 'Contactos',
     'morada' => 'Morada',
-    'contrato' => 'Serviços',
     'observacoes' => 'Observações',
     'documentos' => 'Documentos'
 ];
@@ -292,66 +272,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $id_fornecedor = $pdo->lastInsertId();
 
-        if (!empty($_FILES['ficheiroDocumento']['name'][0])) {
-            $pastaDestino = __DIR__ . '/../../uploads/fornecedores/' . $id_fornecedor . '/';
-
-            if (!is_dir($pastaDestino)) {
-                mkdir($pastaDestino, 0777, true);
-            }
-
-            foreach ($_FILES['ficheiroDocumento']['name'] as $index => $nomeOriginal) {
-                if (empty($nomeOriginal)) {
-                    continue;
-                }
-
-                $tipoDocumento = trim($_POST['tipoDocumento'][$index] ?? '');
-                $numeroDocumento = trim($_POST['numeroDocumento'][$index] ?? '');
-                $nomeDocumento = trim($_POST['nomeDocumento'][$index] ?? '');
-
-                if ($tipoDocumento === '' || $numeroDocumento === '' || $nomeDocumento === '') {
-                    continue;
-                }
-
-                $nomeSeguro = date('YmdHis') . '_' . $index . '_' . basename($nomeOriginal);
-                $caminhoFisico = $pastaDestino . $nomeSeguro;
-                $caminhoBD = 'private/uploads/fornecedores/' . $id_fornecedor . '/' . $nomeSeguro;
-
-                if (!move_uploaded_file($_FILES['ficheiroDocumento']['tmp_name'][$index], $caminhoFisico)) {
-                    continue;
-                }
-
-                $stmtDoc = $pdo->prepare("
-                    INSERT INTO documentos_fornecedores (
-                        id_fornecedor,
-                        tipo_documento,
-                        numero_documento,
-                        nome_documento,
-                        caminho_ficheiro,
-                        data_documento,
-                        data_validade
-                    ) VALUES (
-                        :id_fornecedor,
-                        :tipo_documento,
-                        :numero_documento,
-                        :nome_documento,
-                        :caminho_ficheiro,
-                        :data_documento,
-                        :data_validade
-                    )
-                ");
-
-                $stmtDoc->execute([
-                    ':id_fornecedor' => $id_fornecedor,
-                    ':tipo_documento' => $tipoDocumento,
-                    ':numero_documento' => $numeroDocumento,
-                    ':nome_documento' => $nomeDocumento,
-                    ':caminho_ficheiro' => $caminhoBD,
-                    ':data_documento' => ($_POST['dataDocumento'][$index] ?? '') ?: null,
-                    ':data_validade' => ($_POST['dataValidadeDocumento'][$index] ?? '') ?: null
-                ]);
-            }
-        }
-
         unset($_SESSION[$chaveSessao]);
 
         header('Location: lista_fornecedores.php');
@@ -404,11 +324,11 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             <button type="submit"
                     class="btn btn-guardar"
                     name="acao_etapa"
-                    value="<?php echo $etapaAtual === 'documentos' ? 'finalizar' : 'continuar'; ?>"
+                    value="<?php echo $etapaAtual === 'observacoes' ? 'finalizar' : 'continuar'; ?>"
                     form="formNovoFornecedor"
                     formnovalidate>
-                <i class="fa-solid <?php echo $etapaAtual === 'documentos' ? 'fa-floppy-disk' : 'fa-arrow-right'; ?> me-2"></i>
-                <?php echo $etapaAtual === 'documentos' ? 'Guardar Fornecedor' : 'Guardar e Continuar'; ?>
+                <i class="fa-solid <?php echo $etapaAtual === 'observacoes' ? 'fa-floppy-disk' : 'fa-arrow-right'; ?> me-2"></i>
+                <?php echo $etapaAtual === 'observacoes' ? 'Guardar Fornecedor' : 'Guardar e Continuar'; ?>
             </button>
         </div>
 
@@ -522,51 +442,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 aria-selected="<?php echo aria_tab('morada', $etapaAtual); ?>">
                             <i class="fa-solid fa-location-dot me-2"></i>
                             Morada
-                        </button>
-                    </li>
-
-                    <li class="nav-item" role="presentation">
-                        <button type="submit"
-                                class="<?php echo classe_tab('contrato', $etapaAtual); ?>"
-                                id="contrato-tab"
-                                name="etapa_destino"
-                                value="contrato"
-                                formnovalidate
-                                role="tab"
-                                aria-controls="contrato"
-                                aria-selected="<?php echo aria_tab('contrato', $etapaAtual); ?>">
-                            <i class="fa-solid fa-file-contract me-2"></i>
-                            Serviços
-                        </button>
-                    </li>
-
-                    <li class="nav-item" role="presentation">
-                        <button type="submit"
-                                class="<?php echo classe_tab('observacoes', $etapaAtual); ?>"
-                                id="observacoes-tab"
-                                name="etapa_destino"
-                                value="observacoes"
-                                formnovalidate
-                                role="tab"
-                                aria-controls="observacoes-tab-pane"
-                                aria-selected="<?php echo aria_tab('observacoes', $etapaAtual); ?>">
-                            <i class="fa-solid fa-clipboard-list me-2"></i>
-                            Observações
-                        </button>
-                    </li>
-
-                    <li class="nav-item" role="presentation">
-                        <button type="submit"
-                                class="<?php echo classe_tab('documentos', $etapaAtual); ?>"
-                                id="documentos-tab"
-                                name="etapa_destino"
-                                value="documentos"
-                                formnovalidate
-                                role="tab"
-                                aria-controls="documentos"
-                                aria-selected="<?php echo aria_tab('documentos', $etapaAtual); ?>">
-                            <i class="fa-solid fa-folder-open me-2"></i>
-                            Documentos
                         </button>
                     </li>
                 </ul>
@@ -789,171 +664,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        id="paisFornecedor"
                                        name="paisFornecedor"
                                        value="<?php echo valor_temporario($chaveSessao, 'paisFornecedor', 'Portugal'); ?>">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- =========================================
-                         SEPARADOR 4: SERVIÇOS E CONTRATO
-                         Contrato ativo, datas e área de atuação.
-                         ========================================= -->
-                    <div class="<?php echo classe_painel('contrato', $etapaAtual); ?>"
-                         id="contrato"
-                         role="tabpanel"
-                         aria-labelledby="contrato-tab"
-                         tabindex="0">
-
-                        <div class="secao-ficha-titulo">
-                            <h4>Serviços, Contrato e Associação Técnica</h4>
-                            <p>Registe o âmbito da relação técnica e contratual com o fornecedor.</p>
-                        </div>
-
-                        <div class="row g-4">
-                            <div class="col-md-4">
-                                <label for="contratoFornecedor" class="form-label">Contrato Ativo?</label>
-                                <select class="form-select" id="contratoFornecedor" name="contratoFornecedor" required>
-                                    <option value="">Selecionar opção</option>
-
-                                    <option value="Sim" <?php echo selected_temporario($chaveSessao, 'contratoFornecedor', 'Sim'); ?>>
-                                        Sim
-                                    </option>
-
-                                    <option value="Não" <?php echo selected_temporario($chaveSessao, 'contratoFornecedor', 'Não'); ?>>
-                                        Não
-                                    </option>
-
-                                    <option value="Em análise" <?php echo selected_temporario($chaveSessao, 'contratoFornecedor', 'Em análise'); ?>>
-                                        Em análise
-                                    </option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-4">
-                                <label for="inicioContratoFornecedor" class="form-label">Início do Contrato</label>
-                                <input type="date"
-                                       class="form-control"
-                                       id="inicioContratoFornecedor"
-                                       name="inicioContratoFornecedor"
-                                       value="<?php echo valor_temporario($chaveSessao, 'inicioContratoFornecedor'); ?>">
-                            </div>
-
-                            <div class="col-md-4">
-                                <label for="fimContratoFornecedor" class="form-label">Fim do Contrato</label>
-                                <input type="date"
-                                       class="form-control"
-                                       id="fimContratoFornecedor"
-                                       name="fimContratoFornecedor"
-                                       value="<?php echo valor_temporario($chaveSessao, 'fimContratoFornecedor'); ?>">
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="areaAtuacaoFornecedor" class="form-label">Área de Atuação</label>
-                                <textarea class="form-control"
-                                          id="areaAtuacaoFornecedor"
-                                          name="areaAtuacaoFornecedor"
-                                          rows="5"
-                                          placeholder="Ex: venda de equipamentos médicos, manutenção preventiva, calibração de dispositivos clínicos..."><?php echo valor_temporario($chaveSessao, 'areaAtuacaoFornecedor'); ?></textarea>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="equipamentosAssociadosFornecedor" class="form-label">Equipamentos / Marcas Associadas</label>
-                                <textarea class="form-control"
-                                          id="equipamentosAssociadosFornecedor"
-                                          name="equipamentosAssociadosFornecedor"
-                                          rows="5"
-                                          placeholder="Ex: monitores multiparamétricos Philips, ventiladores Dräger, desfibrilhadores Zoll..."><?php echo valor_temporario($chaveSessao, 'equipamentosAssociadosFornecedor'); ?></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- =========================================
-                         SEPARADOR 5: DOCUMENTOS
-                         Permite adicionar contratos, certificados e
-                         outros ficheiros associados ao fornecedor.
-                         ========================================= -->
-                    <div class="<?php echo classe_painel('documentos', $etapaAtual); ?>"
-                         id="documentos"
-                         role="tabpanel"
-                         aria-labelledby="documentos-tab"
-                         tabindex="0">
-
-                        <div class="secao-ficha-titulo d-flex justify-content-between align-items-start gap-3 flex-wrap">
-                            <div>
-                                <h4>Documentos do Fornecedor</h4>
-                                <p>Associe contratos, certificados, catálogos ou outros ficheiros relevantes.</p>
-                            </div>
-
-                            <button type="button"
-                                    class="btn btn-adicionar-documento"
-                                    id="btnAdicionarDocumento">
-                                <i class="fa-solid fa-plus me-2"></i> Adicionar Documento
-                            </button>
-                        </div>
-
-                        <div id="listaDocumentos">
-                            <div class="documento-form-item">
-                                <div class="row g-4 align-items-end">
-                                    <div class="col-md-3">
-                                        <label class="form-label">Tipo de Documento</label>
-                                        <select class="form-select" name="tipoDocumento[]">
-                                            <option value="">Selecionar tipo</option>
-                                            <option value="Contrato de Fornecimento">Contrato de Fornecimento</option>
-                                            <option value="Contrato de Manutenção">Contrato de Manutenção</option>
-                                            <option value="Contrato de Calibração">Contrato de Calibração</option>
-                                            <option value="Certificado Técnico">Certificado Técnico</option>
-                                            <option value="Comprovativo fiscal">Comprovativo fiscal</option>
-                                            <option value="Outro">Outro</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="col-md-3">
-                                        <label class="form-label">Numero do Documento</label>
-                                        <input type="text"
-                                               class="form-control"
-                                               name="numeroDocumento[]"
-                                               maxlength="30"
-                                               placeholder="Ex: DOC-2026-001">
-                                    </div>
-
-                                    <div class="col-md-3">
-                                        <label class="form-label">Nome do Documento</label>
-                                        <input type="text"
-                                               class="form-control"
-                                               name="nomeDocumento[]"
-                                               placeholder="Ex: Contrato de Fornecimento 2026">
-                                    </div>
-
-                                    <div class="col-md-3">
-                                        <label class="form-label">Ficheiro</label>
-                                        <input type="file"
-                                               class="form-control"
-                                               name="ficheiroDocumento[]"
-                                               accept=".pdf,.png,.jpg,.jpeg">
-                                    </div>
-
-                                    <div class="col-md-3">
-                                        <label class="form-label">Data do Documento</label>
-                                        <input type="date"
-                                               class="form-control"
-                                               name="dataDocumento[]">
-                                    </div>
-
-                                    <div class="col-md-3">
-                                        <label class="form-label">Data de Validade</label>
-                                        <input type="date"
-                                               class="form-control"
-                                               name="dataValidadeDocumento[]">
-                                    </div>
-
-
-                                    <div class="col-md-1 text-end">
-                                        <button type="button"
-                                                class="btn btn-remover-documento"
-                                                title="Remover documento">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>

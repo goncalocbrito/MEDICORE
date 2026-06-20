@@ -74,67 +74,6 @@ foreach ($camposObrigatorios as $campo => $label) {
         ':id_fornecedor' => $id_fornecedor
     ]);
 
-    /* Processa novos documentos opcionais submetidos na ficha do fornecedor. */
-    if (!empty($_FILES['ficheiroDocumento']['name'][0])) {
-        $pastaDestino = __DIR__ . '/../../uploads/fornecedores/' . $id_fornecedor . '/';
-
-        if (!is_dir($pastaDestino)) {
-            mkdir($pastaDestino, 0777, true);
-        }
-
-        foreach ($_FILES['ficheiroDocumento']['name'] as $index => $nomeOriginal) {
-            if (empty($nomeOriginal)) {
-                continue;
-            }
-
-            $tipoDocumento = trim($_POST['tipoDocumento'][$index] ?? '');
-            $numeroDocumento = trim($_POST['numeroDocumento'][$index] ?? '');
-            $nomeDocumento = trim($_POST['nomeDocumento'][$index] ?? '');
-
-            if ($tipoDocumento === '' || $numeroDocumento === '' || $nomeDocumento === '') {
-                continue;
-            }
-
-            $nomeSeguro = date('YmdHis') . '_' . $index . '_' . basename($nomeOriginal);
-            $caminhoFisico = $pastaDestino . $nomeSeguro;
-            $caminhoBD = 'private/uploads/fornecedores/' . $id_fornecedor . '/' . $nomeSeguro;
-
-            if (!move_uploaded_file($_FILES['ficheiroDocumento']['tmp_name'][$index], $caminhoFisico)) {
-                continue;
-            }
-
-            $stmtDoc = $pdo->prepare("
-                INSERT INTO documentos_fornecedores (
-                    id_fornecedor,
-                    tipo_documento,
-                    numero_documento,
-                    nome_documento,
-                    caminho_ficheiro,
-                    data_documento,
-                    data_validade
-                ) VALUES (
-                    :id_fornecedor,
-                    :tipo_documento,
-                    :numero_documento,
-                    :nome_documento,
-                    :caminho_ficheiro,
-                    :data_documento,
-                    :data_validade
-                )
-            ");
-
-            $stmtDoc->execute([
-                ':id_fornecedor' => $id_fornecedor,
-                ':tipo_documento' => $tipoDocumento,
-                ':numero_documento' => $numeroDocumento,
-                ':nome_documento' => $nomeDocumento,
-                ':caminho_ficheiro' => $caminhoBD,
-                ':data_documento' => ($_POST['dataDocumento'][$index] ?? '') ?: null,
-                ':data_validade' => ($_POST['dataValidadeDocumento'][$index] ?? '') ?: null
-            ]);
-        }
-    }
-
     header('Location: ficha_fornecedor.php?ref=' . url_ref($id_fornecedor) . '&guardado=1');
     exit;
 }
@@ -157,13 +96,25 @@ if (!$fornecedor) {
     exit;
 }
 
-
 $stmtDocs = $pdo->prepare("
-    SELECT *
-    FROM documentos_fornecedores
-    WHERE id_fornecedor = :id_fornecedor
-      AND isActive = 1
-    ORDER BY data_documento DESC, id_documento_fornecedor DESC
+    SELECT
+        d.id_documento_equipamento,
+        d.tipo_documento,
+        d.nome_documento,
+        d.caminho_ficheiro,
+        d.data_documento,
+        d.data_validade,
+        e.codigo_equipamento,
+        e.designacao AS equipamento
+    FROM documentos_equipamentos d
+    INNER JOIN equipamentos_fornecedores ef
+        ON ef.id_equipamento_fornecedor = d.id_equipamento_fornecedor
+    INNER JOIN equipamentos e
+        ON e.id_equipamento = d.id_equipamento
+    WHERE ef.id_fornecedor_garantia = :id_fornecedor
+      AND d.isActive = 1
+      AND d.tipo_documento IN ('contrato', 'garantia')
+    ORDER BY d.data_documento DESC, d.id_documento_equipamento DESC
 ");
 
 $stmtDocs->execute([
@@ -196,7 +147,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             <span id="resumoDescricaoFornecedor">NIF | Localidade | Contacto</span>
             <span id="badgeEstadoFornecedor">Estado</span>
             <span id="badgeTiposFornecedor">Tipo</span>
-            <span id="badgeContratoFornecedor">Contrato</span>
         </div>
 
         <!-- =====================================================
@@ -283,20 +233,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 aria-selected="false">
                             <i class="fa-solid fa-location-dot me-2"></i>
                             Morada
-                        </button>
-                    </li>
-
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link"
-                                id="contrato-tab"
-                                data-bs-toggle="tab"
-                                data-bs-target="#contrato"
-                                type="button"
-                                role="tab"
-                                aria-controls="contrato"
-                                aria-selected="false">
-                            <i class="fa-solid fa-file-contract me-2"></i>
-                            Serviços
                         </button>
                     </li>
 
@@ -513,70 +449,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        id="paisFornecedor"
                                        name="paisFornecedor"
                                        value="<?php echo htmlspecialchars($fornecedor['pais'] ?? 'Portugal'); ?>">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- =========================================
-                         SEPARADOR 4: SERVIÇOS E CONTRATO
-                         Relação contratual, área de atuação e marcas.
-                         ========================================= -->
-                    <div class="tab-pane fade"
-                         id="contrato"
-                         role="tabpanel"
-                         aria-labelledby="contrato-tab"
-                         tabindex="0">
-
-                        <div class="secao-ficha-titulo">
-                            <h4>Serviços, Contrato e Associação Técnica</h4>
-                            <p>Âmbito de atuação, contrato ativo e equipamentos ou marcas associados.</p>
-                        </div>
-
-                        <div class="row g-4">
-                            <div class="col-md-4">
-                                <label for="contratoFornecedor" class="form-label">Contrato Ativo?</label>
-                                <select class="form-select campo-ficha campo-editavel"
-                                        id="contratoFornecedor"
-                                        name="contratoFornecedor">
-                                    <option value="">Selecionar opção</option>
-                                    <option value="Sim" selected>Sim</option>
-                                    <option value="Não">Não</option>
-                                    <option value="Em análise">Em análise</option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-4">
-                                <label for="inicioContratoFornecedor" class="form-label">Início do Contrato</label>
-                                <input type="date"
-                                       class="form-control campo-ficha campo-editavel"
-                                       id="inicioContratoFornecedor"
-                                       name="inicioContratoFornecedor"
-                                       value="2024-01-01">
-                            </div>
-
-                            <div class="col-md-4">
-                                <label for="fimContratoFornecedor" class="form-label">Fim do Contrato</label>
-                                <input type="date"
-                                       class="form-control campo-ficha campo-editavel"
-                                       id="fimContratoFornecedor"
-                                       name="fimContratoFornecedor"
-                                       value="2027-01-01">
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="areaAtuacaoFornecedor" class="form-label">Área de Atuação</label>
-                                <textarea class="form-control campo-ficha campo-editavel"
-                                          id="areaAtuacaoFornecedor"
-                                          name="areaAtuacaoFornecedor"
-                                          rows="5">Fabrico e suporte técnico de equipamentos de monitorização clínica.</textarea>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="equipamentosAssociadosFornecedor" class="form-label">Equipamentos / Marcas Associadas</label>
-                                <textarea class="form-control campo-ficha campo-editavel"
-                                          id="equipamentosAssociadosFornecedor"
-                                          name="equipamentosAssociadosFornecedor"
-                                          rows="5">Monitores multiparamétricos Philips IntelliVue.</textarea>
                             </div>
                         </div>
                     </div>
