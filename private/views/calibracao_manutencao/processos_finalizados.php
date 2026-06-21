@@ -168,7 +168,7 @@ try {
             LEFT JOIN localizacoes l
                 ON l.id_localizacao = e.id_localizacao
             WHERE m.isActive = 1
-              AND m.estado_processo = 'processo_finalizado'
+              AND m.estado_processo IN ('processo_finalizado', 'cancelado', 'reprovado')
 
             UNION ALL
 
@@ -223,7 +223,7 @@ try {
             LEFT JOIN localizacoes l
                 ON l.id_localizacao = e.id_localizacao
             WHERE c.isActive = 1
-              AND c.estado_processo = 'processo_finalizado'
+              AND c.estado_processo IN ('processo_finalizado', 'cancelado', 'reprovado')
         ) processos
         ORDER BY data_finalizacao DESC, codigo_processo DESC
     ";

@@ -3119,3 +3119,164 @@ textarea[readonly] {
 .modal-body .lista-registos-custom {
     position: static;
 }
+
+.alerta-info-processo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 22px;
+    border: 1px solid #cfe7ea;
+    border-left: 5px solid #55b9aa;
+    border-radius: 8px;
+    background: #f5fbfb;
+    color: #284761;
+    font-weight: 700;
+}
+
+.historico-equipamento-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.historico-equipamento-item {
+    display: grid;
+    grid-template-columns: 46px 1fr;
+    gap: 14px;
+    padding: 16px 18px;
+    border: 1px solid #d4ecef;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.historico-equipamento-icone {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    background: #e9f7f6;
+    color: #0b4b57;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.historico-equipamento-conteudo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.historico-equipamento-topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.historico-equipamento-topo strong {
+    color: #073b46;
+    font-weight: 900;
+}
+
+.historico-equipamento-topo span,
+.historico-equipamento-conteudo small {
+    color: #61758a;
+    font-weight: 600;
+}
+
+.historico-equipamento-conteudo p {
+    margin: 0;
+    color: #284761;
+}
+
+.btn-aprovar-medicore {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: #e2f6f1;
+    color: #0f766e;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    transition: all 0.2s ease;
+}
+
+.btn-aprovar-medicore:hover {
+    background: #4fb8a9;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.localizacao-atual-box {
+    border: 1px solid #cce8e5;
+    background: #f4fbfa;
+    border-radius: 14px;
+    padding: 12px 16px;
+    color: #003747;
+}
+
+.localizacao-atual-box span {
+    display: block;
+    font-size: 0.82rem;
+    color: #607d8b;
+    margin-bottom: 2px;
+}
+
+.localizacao-atual-box strong {
+    font-weight: 800;
+}
+
+.acoes-operacao {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    width: 100%;
+}
+
+.btn-acao-circular {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.btn-acao-detalhe {
+    background: #e8f4f7;
+    color: #003747;
+}
+
+.btn-acao-detalhe:hover {
+    background: #cfe9ee;
+    color: #003747;
+}
+
+.btn-acao-aprovar {
+    background: #e2f6f1;
+    color: #0f766e;
+}
+
+.btn-acao-aprovar:hover {
+    background: #4fb8a9;
+    color: #ffffff;
+}
+
+.btn-acao-rejeitar {
+    background: #f8d7dd;
+    color: #a0142f;
+}
+
+.btn-acao-rejeitar:hover {
+    background: #d7263d;
+    color: #ffffff;
+}

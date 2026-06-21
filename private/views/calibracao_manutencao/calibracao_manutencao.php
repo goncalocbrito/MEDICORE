@@ -65,12 +65,16 @@ function formatar_moeda($valor, $garantia = 0)
 function texto_estado_processo($estado)
 {
     $estados = [
+        'aguarda_decisao' => 'À espera da decisão',
+        'aprovado' => 'Aprovado',
+        'reprovado' => 'Reprovado',
+        'cancelado' => 'Cancelado',
         'aguarda_recolha' => 'Aguarda recolha',
         'procedimento_a_decorrer' => 'Procedimento a decorrer',
         'procedimento_efetuado' => 'Procedimento efetuado',
         'emissao_relatorio' => 'Emissão do relatório',
-        'processo_finalizado' => 'Processo finalizado',
-        'cancelado' => 'Cancelado'
+        'devolucao_equipamento' => 'Devolução do equipamento',
+        'processo_finalizado' => 'Processo finalizado'
     ];
 
     return $estados[$estado] ?? $estado;
@@ -79,18 +83,26 @@ function texto_estado_processo($estado)
 function classe_estado_processo($estado)
 {
     switch ($estado) {
-        case 'aguarda_recolha':
+        case 'aguarda_decisao':
             return 'estado-manutencao';
-        case 'procedimento_a_decorrer':
-            return 'estado-manutencao';
-        case 'procedimento_efetuado':
+
+        case 'aprovado':
             return 'estado-ativo';
-        case 'emissao_relatorio':
-            return 'estado-manutencao';
-        case 'processo_finalizado':
-            return 'estado-ativo';
+
+        case 'reprovado':
         case 'cancelado':
             return 'estado-inativo';
+
+        case 'aguarda_recolha':
+        case 'procedimento_a_decorrer':
+        case 'emissao_relatorio':
+        case 'devolucao_equipamento':
+            return 'estado-manutencao';
+
+        case 'procedimento_efetuado':
+        case 'processo_finalizado':
+            return 'estado-ativo';
+
         default:
             return 'estado-inativo';
     }
@@ -181,7 +193,7 @@ function render_tabela_processos_abertos($processos, $tituloTabela, $idTabela)
     ?>
     <div class="secao-ficha-titulo">
         <h4><?php echo h($tituloTabela); ?></h4>
-        <p>Processos ainda não finalizados nem cancelados.</p>
+        <p>Processos em análise, aprovados ou em execução técnica.</p>
     </div>
 
     <div class="table-responsive tabela-container p-0">
@@ -319,7 +331,8 @@ try {
 
             $pdo->beginTransaction();
 
-            $estadoInicial = 'aguarda_recolha';
+            $estadoInicial = 'aguarda_decisao';
+            $decisaoAdmin = 'pendente';
             $hoje = date('Y-m-d');
             $responsavelEtapa = $tecnicoInterno;
             $tipoResponsavel = null;
@@ -340,6 +353,7 @@ try {
                         id_fornecedor_responsavel,
                         tipo_execucao,
                         estado_processo,
+                        decisao_admin,
                         data_abertura,
                         data_prevista,
                         tecnico_interno,
@@ -357,6 +371,7 @@ try {
                         :id_fornecedor_responsavel,
                         :tipo_execucao,
                         :estado_processo,
+                        :decisao_admin,
                         :data_abertura,
                         :data_prevista,
                         :tecnico_interno,
@@ -377,6 +392,7 @@ try {
                     ':id_fornecedor_responsavel' => $idFornecedor,
                     ':tipo_execucao' => $tipoExecucao,
                     ':estado_processo' => $estadoInicial,
+                    ':decisao_admin' => $decisaoAdmin,
                     ':data_abertura' => $hoje,
                     ':data_prevista' => $dataPrevista,
                     ':tecnico_interno' => $tecnicoInterno,
@@ -460,8 +476,7 @@ try {
                     ':atualizado_por' => $utilizadorAtual
                 ]);
 
-                definir_estado_alvos($pdo, $idEquipamento, $idsAcessorios, 'em_calibracao');
-                $mensagem_sucesso = 'Processo de calibração aberto com sucesso.';
+                $mensagem_sucesso = 'Pedido de calibração criado e enviado para decisão do administrador.';
             } else {
                 $tipoManutencao = $tipoPedido === 'manutencao_corretiva' ? 'corretiva' : 'preventiva';
 
@@ -471,6 +486,7 @@ try {
                         tipo_manutencao,
                         tipo_execucao,
                         estado_processo,
+                        decisao_admin,
                         data_abertura,
                         data_prevista,
                         id_fornecedor_responsavel,
@@ -489,6 +505,7 @@ try {
                         :tipo_manutencao,
                         :tipo_execucao,
                         :estado_processo,
+                        :decisao_admin,
                         :data_abertura,
                         :data_prevista,
                         :id_fornecedor_responsavel,
@@ -510,6 +527,7 @@ try {
                     ':tipo_manutencao' => $tipoManutencao,
                     ':tipo_execucao' => $tipoExecucao,
                     ':estado_processo' => $estadoInicial,
+                    ':decisao_admin' => $decisaoAdmin,
                     ':data_abertura' => $hoje,
                     ':data_prevista' => $dataPrevista,
                     ':id_fornecedor_responsavel' => $idFornecedor,
@@ -600,8 +618,7 @@ try {
                     ':atualizado_por' => $utilizadorAtual
                 ]);
 
-                definir_estado_alvos($pdo, $idEquipamento, $idsAcessorios, 'em_manutencao');
-                $mensagem_sucesso = 'Processo de manutenção aberto com sucesso.';
+                $mensagem_sucesso = 'Pedido de manutenção criado e enviado para decisão do administrador.';
             }
 
             $pdo->commit();
@@ -687,7 +704,7 @@ try {
         LEFT JOIN localizacoes l
             ON l.id_localizacao = e.id_localizacao
         WHERE m.isActive = 1
-        AND m.estado_processo NOT IN ('processo_finalizado', 'cancelado')
+        AND m.estado_processo NOT IN ('processo_finalizado', 'cancelado', 'reprovado')
         ORDER BY m.data_prevista ASC, m.criado_em DESC
     ";
     $processosManutencao = $pdo->query($sqlManutencoes)->fetchAll();
@@ -735,7 +752,7 @@ try {
         LEFT JOIN localizacoes l
             ON l.id_localizacao = e.id_localizacao
         WHERE c.isActive = 1
-        AND c.estado_processo NOT IN ('processo_finalizado', 'cancelado')
+        AND c.estado_processo NOT IN ('processo_finalizado', 'cancelado', 'reprovado')
         ORDER BY c.data_prevista ASC, c.criado_em DESC
     ";
     $processosCalibracao = $pdo->query($sqlCalibracoes)->fetchAll();

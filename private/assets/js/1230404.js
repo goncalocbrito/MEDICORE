@@ -2507,6 +2507,23 @@ document.addEventListener("DOMContentLoaded", function () {
                 input.value = opcao.dataset.texto;
                 hidden.value = opcao.dataset.id;
                 lista.classList.remove("ativo");
+
+                const localizacaoTargetId = input.dataset.localizacaoTarget;
+                const localizacaoAtual = opcao.dataset.localizacaoAtual || "";
+
+                if (localizacaoTargetId) {
+                    const caixaLocalizacao = document.getElementById(localizacaoTargetId);
+
+                    if (caixaLocalizacao) {
+                        const textoLocalizacao = caixaLocalizacao.querySelector("strong");
+
+                        if (textoLocalizacao) {
+                            textoLocalizacao.textContent = localizacaoAtual || "Sem localização registada";
+                        }
+
+                        caixaLocalizacao.classList.toggle("d-none", !localizacaoAtual);
+                    }
+                }
                 
                 const formulario = input.closest("form");
                 if (formulario) {

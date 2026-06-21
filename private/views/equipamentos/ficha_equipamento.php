@@ -682,6 +682,36 @@ $stmtDocumentos->execute([
 ]);
 $documentos = $stmtDocumentos->fetchAll();
 
+$stmtHistoricoEquipamento = $pdo->prepare("
+    SELECT
+        h.id_historico_equipamento,
+        h.tipo_evento,
+        h.descricao,
+        h.data_evento,
+        h.referencia_tabela,
+        h.referencia_id,
+        l.codigo AS codigo_localizacao,
+        l.departamento_nome,
+        l.edificio,
+        l.piso,
+        l.sala,
+        u.nome AS utilizador_nome
+    FROM historico_equipamentos h
+    LEFT JOIN localizacoes l
+        ON l.id_localizacao = h.id_localizacao
+    LEFT JOIN utilizadores u
+        ON u.id_utilizador = h.id_utilizador
+    WHERE h.id_equipamento = :id_equipamento
+      AND h.isActive = 1
+    ORDER BY h.data_evento DESC, h.id_historico_equipamento DESC
+");
+
+$stmtHistoricoEquipamento->execute([
+    ':id_equipamento' => $idEquipamento
+]);
+
+$historicoEquipamento = $stmtHistoricoEquipamento->fetchAll();
+
 require_once __DIR__ . '/../../includes/header.php';
 require_once __DIR__ . '/../../includes/nav.php';
 require_once __DIR__ . '/../../includes/sidebar.php';
@@ -786,7 +816,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <i class="fa-solid fa-clipboard-list me-2"></i> Observações
                     </button>
                 </li>
-
             </ul>
 
             <div class="tab-content ficha-tab-content" id="tabsFichaEquipamentoContent">
@@ -1056,169 +1085,65 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 <div class="tab-pane fade" id="historico" role="tabpanel" aria-labelledby="historico-tab" tabindex="0">
 
                     <div class="secao-ficha-titulo">
-                        <h4>Histórico Técnico</h4>
-                        <p>Consulta das manutenções e calibrações registadas para este equipamento, com os mesmos parâmetros de leitura.</p>
+                        <h4>Histórico do Equipamento</h4>
+                        <p>Consulta cronológica dos eventos técnicos, localizações e alterações associadas ao equipamento.</p>
                     </div>
 
-                    <h5 class="subtitulo-bloco-form">Manutenções</h5>
-                    <div class="table-responsive tabela-container mb-4">
-                        <table class="table table-hover align-middle tabela-calibracoes-manutencoes mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Data</th>
-                                    <th>Processo</th>
-                                    <th>Responsável</th>
-                                    <th>Resultado</th>
-                                    <th>Próxima data</th>
-                                    <th>Garantia</th>
-                                    <th>Custo</th>
-                                    <th>Documento</th>
-                                </tr>
-                            </thead>
+                        <div class="historico-equipamento-lista">
+                            <?php if (empty($historicoEquipamento)): ?>
+                                <p class="texto-secundario">Ainda não existem registos no histórico deste equipamento.</p>
+                            <?php else: ?>
+                                <?php foreach ($historicoEquipamento as $item): ?>
+                                    <div class="historico-equipamento-item">
+                                        <div class="historico-equipamento-icone">
+                                            <i class="fa-solid fa-clock-rotate-left"></i>
+                                        </div>
 
-                            <tbody>
-                                <?php if (empty($manutencoes)): ?>
-                                    <tr>
-                                        <td colspan="8" class="text-center text-muted">Sem manutenções registadas.</td>
-                                    </tr>
-                                <?php else: ?>
-                                    <?php foreach ($manutencoes as $manutencao): ?>
-                                        <?php
-                                            $responsavelManutencao = $manutencao['fornecedor_nome']
-                                                ?: ($manutencao['tecnico_interno'] ?: '---');
+                                        <div class="historico-equipamento-conteudo">
+                                            <div class="historico-equipamento-topo">
+                                                <strong>
+                                                    <?php echo h_equipamento(ucfirst(str_replace('_', ' ', $item['tipo_evento']))); ?>
+                                                </strong>
 
-                                            $resultadoManutencao = !empty($manutencao['resultado'])
-                                                ? ucfirst(str_replace('_', ' ', $manutencao['resultado']))
-                                                : '---';
+                                                <span>
+                                                    <?php echo !empty($item['data_evento'])
+                                                        ? h_equipamento(date('d/m/Y H:i', strtotime($item['data_evento'])))
+                                                        : '---'; ?>
+                                                </span>
+                                            </div>
 
-                                            $garantiaManutencao = ((int) ($manutencao['coberta_por_garantia'] ?? 0) === 1) ? 'Sim' : 'Não';
-                                            $custoManutencao = formatar_custo_equipamento(
-                                                $manutencao['custo'] ?? null,
-                                                $manutencao['coberta_por_garantia'] ?? 0
-                                            );
+                                            <p><?php echo h_equipamento($item['descricao'] ?? 'Sem descrição.'); ?></p>
 
-                                            $nomeDocumentoManutencao = $manutencao['nome_relatorio_manutencao'] ?? '';
-                                            $caminhoDocumentoManutencao = $manutencao['caminho_relatorio_manutencao'] ?? '';
-                                            $urlDocumentoManutencao = $caminhoDocumentoManutencao !== ''
-                                                ? '../../assets/documentos/' . $caminhoDocumentoManutencao
-                                                : '';
+                                            <?php if (!empty($item['codigo_localizacao'])): ?>
+                                                <small>
+                                                    <?php echo h_equipamento($item['codigo_localizacao']); ?> -
+                                                    <?php echo h_equipamento($item['departamento_nome'] ?? ''); ?>
 
-                                            $processoManutencao = !empty($manutencao['tipo_manutencao'])
-                                                ? 'Manutenção ' . ucfirst($manutencao['tipo_manutencao'])
-                                                : 'Manutenção';
-                                        ?>
+                                                    <?php if (!empty($item['edificio'])): ?>
+                                                        | <?php echo h_equipamento($item['edificio']); ?>
+                                                    <?php endif; ?>
 
-                                        <tr>
-                                            <td><?php echo h_equipamento(formatar_data_equipamento($manutencao['data_manutencao'] ?? null)); ?></td>
-                                            <td><?php echo h_equipamento($processoManutencao); ?></td>
-                                            <td><?php echo h_equipamento($responsavelManutencao); ?></td>
-                                            <td><?php echo h_equipamento($resultadoManutencao); ?></td>
-                                            <td><?php echo h_equipamento(formatar_data_equipamento($manutencao['proxima_manutencao'] ?? null)); ?></td>
-                                            <td>
-                                                <?php if ($garantiaManutencao === 'Sim'): ?>
-                                                    <span class="badge-detalhe">Sim</span>
-                                                <?php else: ?>
-                                                    Não
-                                                <?php endif; ?>
-                                            </td>
-                                            <td><?php echo h_equipamento($custoManutencao); ?></td>
-                                            <td>
-                                                <?php if ($nomeDocumentoManutencao !== '' && $urlDocumentoManutencao !== ''): ?>
-                                                    <a href="<?php echo h_equipamento($urlDocumentoManutencao); ?>" target="_blank" rel="noopener" class="btn-documento-ver">
-                                                        <?php echo h_equipamento($nomeDocumentoManutencao); ?>
-                                                    </a>
-                                                <?php elseif ($nomeDocumentoManutencao !== ''): ?>
-                                                    <?php echo h_equipamento($nomeDocumentoManutencao); ?>
-                                                <?php else: ?>
-                                                    ---
-                                                <?php endif; ?>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
+                                                    <?php if (!empty($item['piso'])): ?>
+                                                        | Piso <?php echo h_equipamento($item['piso']); ?>
+                                                    <?php endif; ?>
 
-                    <h5 class="subtitulo-bloco-form">Calibrações</h5>
-                    <div class="table-responsive tabela-container">
-                        <table class="table table-hover align-middle tabela-calibracoes-manutencoes mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Data</th>
-                                    <th>Processo</th>
-                                    <th>Responsável</th>
-                                    <th>Resultado</th>
-                                    <th>Próxima data</th>
-                                    <th>Garantia</th>
-                                    <th>Custo</th>
-                                    <th>Documento</th>
-                                </tr>
-                            </thead>
+                                                    <?php if (!empty($item['sala'])): ?>
+                                                        | Sala <?php echo h_equipamento($item['sala']); ?>
+                                                    <?php endif; ?>
+                                                </small>
+                                            <?php endif; ?>
 
-                            <tbody>
-                                <?php if (empty($calibracoes)): ?>
-                                    <tr>
-                                        <td colspan="8" class="text-center text-muted">Sem calibrações registadas.</td>
-                                    </tr>
-                                <?php else: ?>
-                                    <?php foreach ($calibracoes as $calibracao): ?>
-                                        <?php
-                                            $responsavelCalibracao = $calibracao['fornecedor_nome']
-                                                ?: ($calibracao['tecnico_interno'] ?: '---');
+                                            <?php if (!empty($item['utilizador_nome'])): ?>
+                                                <small>
+                                                    Registado por: <?php echo h_equipamento($item['utilizador_nome']); ?>
+                                                </small>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
 
-                                            $resultadoCalibracao = !empty($calibracao['resultado'])
-                                                ? ucfirst(str_replace('_', ' ', $calibracao['resultado']))
-                                                : '---';
-
-                                            $garantiaCalibracao = ((int) ($calibracao['coberta_por_garantia'] ?? 0) === 1) ? 'Sim' : 'Não';
-                                            $custoCalibracao = formatar_custo_equipamento(
-                                                $calibracao['custo'] ?? null,
-                                                $calibracao['coberta_por_garantia'] ?? 0
-                                            );
-
-                                            $nomeDocumentoCalibracao = $calibracao['nome_documento_calibracao'] ?? '';
-                                            $caminhoDocumentoCalibracao = $calibracao['caminho_documento_calibracao'] ?? '';
-                                            $urlDocumentoCalibracao = $caminhoDocumentoCalibracao !== ''
-                                                ? '../../assets/documentos/' . $caminhoDocumentoCalibracao
-                                                : '';
-
-                                            $processoCalibracao = !empty($calibracao['numero_certificado'])
-                                                ? 'Calibração - ' . $calibracao['numero_certificado']
-                                                : 'Calibração';
-                                        ?>
-
-                                        <tr>
-                                            <td><?php echo h_equipamento(formatar_data_equipamento($calibracao['data_calibracao'] ?? null)); ?></td>
-                                            <td><?php echo h_equipamento($processoCalibracao); ?></td>
-                                            <td><?php echo h_equipamento($responsavelCalibracao); ?></td>
-                                            <td><?php echo h_equipamento($resultadoCalibracao); ?></td>
-                                            <td><?php echo h_equipamento(formatar_data_equipamento($calibracao['proxima_calibracao'] ?? null)); ?></td>
-                                            <td>
-                                                <?php if ($garantiaCalibracao === 'Sim'): ?>
-                                                    <span class="badge-detalhe">Sim</span>
-                                                <?php else: ?>
-                                                    Não
-                                                <?php endif; ?>
-                                            </td>
-                                            <td><?php echo h_equipamento($custoCalibracao); ?></td>
-                                            <td>
-                                                <?php if ($nomeDocumentoCalibracao !== '' && $urlDocumentoCalibracao !== ''): ?>
-                                                    <a href="<?php echo h_equipamento($urlDocumentoCalibracao); ?>" target="_blank" rel="noopener" class="btn-documento-ver">
-                                                        <?php echo h_equipamento($nomeDocumentoCalibracao); ?>
-                                                    </a>
-                                                <?php elseif ($nomeDocumentoCalibracao !== ''): ?>
-                                                    <?php echo h_equipamento($nomeDocumentoCalibracao); ?>
-                                                <?php else: ?>
-                                                    ---
-                                                <?php endif; ?>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
 
                 <!-- DOCUMENTOS -->

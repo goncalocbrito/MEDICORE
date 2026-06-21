@@ -1193,3 +1193,202 @@ CREATE TABLE emprestimos_equipamentos (
     FOREIGN KEY (id_utilizador_termino) REFERENCES utilizadores(id_utilizador)
 );
 
+
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- =========================================================
+-- 1. Atualizar estados dos processos de manutenção
+-- =========================================================
+
+ALTER TABLE manutencoes_equipamento
+MODIFY estado_processo ENUM(
+    'aguarda_decisao',
+    'aprovado',
+    'reprovado',
+    'cancelado',
+    'aguarda_recolha',
+    'procedimento_a_decorrer',
+    'procedimento_efetuado',
+    'emissao_relatorio',
+    'devolucao_equipamento',
+    'processo_finalizado'
+) NOT NULL DEFAULT 'aguarda_decisao';
+
+
+-- =========================================================
+-- 2. Atualizar estados dos processos de calibração
+-- =========================================================
+
+ALTER TABLE calibracoes_equipamento
+MODIFY estado_processo ENUM(
+    'aguarda_decisao',
+    'aprovado',
+    'reprovado',
+    'cancelado',
+    'aguarda_recolha',
+    'procedimento_a_decorrer',
+    'procedimento_efetuado',
+    'emissao_relatorio',
+    'devolucao_equipamento',
+    'processo_finalizado'
+) NOT NULL DEFAULT 'aguarda_decisao';
+
+
+-- =========================================================
+-- 3. Atualizar histórico das etapas dos processos
+-- =========================================================
+
+ALTER TABLE historico_etapas_processos
+MODIFY estado_anterior ENUM(
+    'aguarda_decisao',
+    'aprovado',
+    'reprovado',
+    'cancelado',
+    'aguarda_recolha',
+    'procedimento_a_decorrer',
+    'procedimento_efetuado',
+    'emissao_relatorio',
+    'devolucao_equipamento',
+    'processo_finalizado'
+) NULL,
+MODIFY estado_novo ENUM(
+    'aguarda_decisao',
+    'aprovado',
+    'reprovado',
+    'cancelado',
+    'aguarda_recolha',
+    'procedimento_a_decorrer',
+    'procedimento_efetuado',
+    'emissao_relatorio',
+    'devolucao_equipamento',
+    'processo_finalizado'
+) NOT NULL;
+
+
+-- =========================================================
+-- 4. Adicionar decisão do administrador nas manutenções
+-- =========================================================
+
+ALTER TABLE manutencoes_equipamento
+ADD COLUMN decisao_admin ENUM('pendente', 'aprovado', 'reprovado') NOT NULL DEFAULT 'pendente' AFTER estado_processo,
+ADD COLUMN id_admin_decisao INT NULL AFTER decisao_admin,
+ADD COLUMN data_decisao DATETIME NULL AFTER id_admin_decisao,
+ADD COLUMN motivo_decisao VARCHAR(500) NULL AFTER data_decisao;
+
+ALTER TABLE manutencoes_equipamento
+ADD CONSTRAINT fk_manutencao_admin_decisao
+FOREIGN KEY (id_admin_decisao)
+REFERENCES utilizadores(id_utilizador);
+
+
+-- =========================================================
+-- 5. Adicionar decisão do administrador nas calibrações
+-- =========================================================
+
+ALTER TABLE calibracoes_equipamento
+ADD COLUMN decisao_admin ENUM('pendente', 'aprovado', 'reprovado') NOT NULL DEFAULT 'pendente' AFTER estado_processo,
+ADD COLUMN id_admin_decisao INT NULL AFTER decisao_admin,
+ADD COLUMN data_decisao DATETIME NULL AFTER id_admin_decisao,
+ADD COLUMN motivo_decisao VARCHAR(500) NULL AFTER data_decisao;
+
+ALTER TABLE calibracoes_equipamento
+ADD CONSTRAINT fk_calibracao_admin_decisao
+FOREIGN KEY (id_admin_decisao)
+REFERENCES utilizadores(id_utilizador);
+
+
+-- =========================================================
+-- 6. Atualizar documentos dos equipamentos
+-- =========================================================
+
+ALTER TABLE documentos_equipamentos
+MODIFY tipo_documento ENUM(
+    'manual_instrucoes',
+    'datasheet',
+    'contrato',
+    'garantia',
+    'contrato_aquisicao',
+    'contrato_garantia',
+    'contrato_manutencao',
+    'contrato_calibracao',
+    'certificado_calibracao',
+    'relatorio_calibracao',
+    'relatorio_manutencao',
+    'ficha_tecnica',
+    'declaracao_conformidade',
+    'fotografia',
+    'outro'
+) NOT NULL;
+
+
+-- =========================================================
+-- 7. Melhorar histórico dos equipamentos
+-- =========================================================
+
+ALTER TABLE historico_equipamentos
+ADD COLUMN id_localizacao_origem INT NULL AFTER id_localizacao,
+ADD COLUMN id_localizacao_destino INT NULL AFTER id_localizacao_origem;
+
+ALTER TABLE historico_equipamentos
+ADD CONSTRAINT fk_historico_localizacao_origem
+FOREIGN KEY (id_localizacao_origem)
+REFERENCES localizacoes(id_localizacao);
+
+ALTER TABLE historico_equipamentos
+ADD CONSTRAINT fk_historico_localizacao_destino
+FOREIGN KEY (id_localizacao_destino)
+REFERENCES localizacoes(id_localizacao);
+
+
+-- =========================================================
+-- 8. Converter processos abertos antigos para nova etapa inicial
+-- =========================================================
+
+UPDATE manutencoes_equipamento
+SET estado_processo = 'aguarda_decisao',
+    decisao_admin = 'pendente'
+WHERE estado_processo = 'aguarda_recolha'
+  AND data_recolha IS NULL
+  AND data_inicio_procedimento IS NULL
+  AND data_finalizacao IS NULL;
+
+UPDATE calibracoes_equipamento
+SET estado_processo = 'aguarda_decisao',
+    decisao_admin = 'pendente'
+WHERE estado_processo = 'aguarda_recolha'
+  AND data_recolha IS NULL
+  AND data_inicio_procedimento IS NULL
+  AND data_finalizacao IS NULL;
+
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+
+-- =========================================================
+-- 21/06/25
+-- =========================================================
+
+ALTER TABLE emprestimos_equipamentos
+MODIFY estado ENUM('pendente','ativo','rejeitado','terminado','atrasado')
+NOT NULL DEFAULT 'pendente';
+
+ALTER TABLE emprestimos_equipamentos
+ADD COLUMN id_utilizador_aprovacao INT NULL,
+ADD COLUMN data_aprovacao DATETIME NULL;
+
+ALTER TABLE historico_equipamentos
+MODIFY tipo_evento ENUM(
+    'criacao',
+    'alteracao_localizacao',
+    'transferencia_pendente',
+    'transferencia_aprovada',
+    'transferencia_rejeitada',
+    'emprestimo_pendente',
+    'emprestimo_iniciado',
+    'emprestimo_rejeitado',
+    'emprestimo_terminado',
+    'manutencao',
+    'calibracao',
+    'alteracao_dados'
+) NOT NULL;

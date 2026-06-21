@@ -88,12 +88,16 @@ function selected_option($valorAtual, $valorOpcao)
 function texto_estado_processo($estado)
 {
     $estados = [
+        'aguarda_decisao' => 'À espera da decisão',
+        'aprovado' => 'Aprovado',
+        'reprovado' => 'Reprovado',
+        'cancelado' => 'Cancelado',
         'aguarda_recolha' => 'Aguarda recolha',
         'procedimento_a_decorrer' => 'Procedimento a decorrer',
         'procedimento_efetuado' => 'Procedimento efetuado',
         'emissao_relatorio' => 'Emissão do relatório',
-        'processo_finalizado' => 'Processo finalizado',
-        'cancelado' => 'Cancelado'
+        'devolucao_equipamento' => 'Devolução do equipamento',
+        'processo_finalizado' => 'Processo finalizado'
     ];
 
     return $estados[$estado] ?? $estado;
@@ -102,15 +106,22 @@ function texto_estado_processo($estado)
 function classe_estado_processo($estado)
 {
     switch ($estado) {
+        case 'aguarda_decisao':
         case 'aguarda_recolha':
         case 'procedimento_a_decorrer':
         case 'emissao_relatorio':
+        case 'devolucao_equipamento':
             return 'estado-manutencao';
+
+        case 'aprovado':
         case 'procedimento_efetuado':
         case 'processo_finalizado':
             return 'estado-ativo';
+
+        case 'reprovado':
         case 'cancelado':
             return 'estado-inativo';
+
         default:
             return 'estado-inativo';
     }
@@ -119,15 +130,21 @@ function classe_estado_processo($estado)
 function etapas_visuais_processo($estadoAtual)
 {
     $etapas = [
+        'aguarda_decisao' => 'À espera da decisão',
         'aguarda_recolha' => 'Aguarda recolha',
         'procedimento_a_decorrer' => 'Procedimento a decorrer',
         'procedimento_efetuado' => 'Procedimento efetuado',
         'emissao_relatorio' => 'Emissão do relatório',
+        'devolucao_equipamento' => 'Devolução do equipamento',
         'processo_finalizado' => 'Processo finalizado'
     ];
 
     if ($estadoAtual === 'cancelado') {
         $etapas['cancelado'] = 'Cancelado';
+    }
+
+    if ($estadoAtual === 'reprovado') {
+        $etapas['reprovado'] = 'Reprovado';
     }
 
     return $etapas;
@@ -207,6 +224,47 @@ function normalizar_nome_ficheiro($nome)
     $nome = trim($nome, '_');
 
     return $nome !== '' ? strtolower($nome) : 'documento';
+}
+
+function registar_historico_equipamento_processo(PDO $pdo, array $processo, $tipo, $estadoNovo, $descricao, $utilizadorAtual)
+{
+    $tipoEvento = $tipo === 'manutencao' ? 'manutencao' : 'calibracao';
+
+    $stmt = $pdo->prepare("
+        INSERT INTO historico_equipamentos (
+            id_equipamento,
+            id_localizacao,
+            id_utilizador,
+            tipo_evento,
+            referencia_tabela,
+            referencia_id,
+            descricao,
+            data_evento,
+            isActive
+        ) VALUES (
+            :id_equipamento,
+            :id_localizacao,
+            :id_utilizador,
+            :tipo_evento,
+            :referencia_tabela,
+            :referencia_id,
+            :descricao,
+            NOW(),
+            1
+        )
+    ");
+
+    $stmt->execute([
+        ':id_equipamento' => $processo['id_equipamento'],
+        ':id_localizacao' => $processo['id_localizacao'] ?? null,
+        ':id_utilizador' => $_SESSION['id_utilizador'] ?? null,
+        ':tipo_evento' => $tipoEvento,
+        ':referencia_tabela' => $tipo === 'manutencao' ? 'manutencoes_equipamento' : 'calibracoes_equipamento',
+        ':referencia_id' => $tipo === 'manutencao'
+            ? $processo['id_manutencao']
+            : $processo['id_calibracao'],
+        ':descricao' => $descricao
+    ]);
 }
 
 function campo_data_estado($estado)
@@ -293,6 +351,7 @@ function obter_processo(PDO $pdo, $tipo, $id)
                 m.tipo_manutencao AS tipo_processo,
                 e.codigo_equipamento,
                 e.designacao AS equipamento_nome,
+                e.id_localizacao,
                 f.nome_empresa AS fornecedor_nome,
                 l.codigo AS codigo_localizacao,
                 l.departamento_nome,
@@ -322,6 +381,7 @@ function obter_processo(PDO $pdo, $tipo, $id)
             'calibracao' AS tipo_processo,
             e.codigo_equipamento,
             e.designacao AS equipamento_nome,
+            e.id_localizacao,
             f.nome_empresa AS fornecedor_nome,
             l.codigo AS codigo_localizacao,
             l.departamento_nome,
@@ -414,6 +474,7 @@ $processo = null;
 $historico = [];
 $documentos = [];
 $fornecedores = [];
+$ehAdministrador = false;
 
 try {
     $pdo = new PDO(
@@ -427,6 +488,8 @@ try {
     );
 
     $utilizadorAtual = $_SESSION['nome'] ?? $_SESSION['username'] ?? 'admin';
+    $tipoUtilizadorAtual = $_SESSION['tipo_utilizador'] ?? '';
+    $ehAdministrador = $tipoUtilizadorAtual === 'Administrador';
     $processo = obter_processo($pdo, $tipo, $id);
     $acessoriosProcesso = obter_acessorios_processo($pdo, $tipo, $id);
     $consumiveisProcesso = obter_consumiveis_processo($pdo, $tipo, $id);
@@ -435,13 +498,255 @@ try {
         throw new Exception('O processo indicado não foi encontrado.');
     }
 
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'decidir_processo') {
+        if (!$ehAdministrador) {
+            throw new Exception('Apenas o administrador pode aprovar ou reprovar processos.');
+        }
+
+        if (($processo['estado_processo'] ?? '') !== 'aguarda_decisao') {
+            throw new Exception('Este processo já não se encontra à espera de decisão.');
+        }
+
+        $decisao = $_POST['decisaoAdmin'] ?? '';
+        $motivoDecisao = valor_ou_null($_POST['motivoDecisao'] ?? null);
+        $cobertaPorGarantia = (int) ($_POST['cobertaPorGarantiaDecisao'] ?? ($processo['coberta_por_garantia'] ?? 0));
+        $custo = null;
+
+        if (!in_array($decisao, ['aprovado', 'reprovado'], true)) {
+            throw new Exception('Decisão inválida.');
+        }
+
+        if ($decisao === 'reprovado' && empty($motivoDecisao)) {
+            throw new Exception('Indique o motivo da reprovação.');
+        }
+
+        if ($decisao === 'aprovado' && $cobertaPorGarantia === 0) {
+            $custo = decimal_ou_null($_POST['custoDecisao'] ?? null);
+
+            if ($custo === null) {
+                throw new Exception('Indique o custo do processo quando não está coberto por garantia.');
+            }
+        }
+
+        $estadoAnterior = $processo['estado_processo'];
+        $estadoNovo = $decisao === 'aprovado' ? 'aguarda_recolha' : 'reprovado';
+
+        $pdo->beginTransaction();
+
+        if ($tipo === 'manutencao') {
+            $stmt = $pdo->prepare("
+                UPDATE manutencoes_equipamento
+                SET
+                    estado_processo = :estado_processo,
+                    decisao_admin = :decisao_admin,
+                    id_admin_decisao = :id_admin_decisao,
+                    data_decisao = NOW(),
+                    motivo_decisao = :motivo_decisao,
+                    coberta_por_garantia = :coberta_por_garantia,
+                    custo = :custo,
+                    atualizado_por = :atualizado_por
+                WHERE id_manutencao = :id
+            ");
+        } else {
+            $stmt = $pdo->prepare("
+                UPDATE calibracoes_equipamento
+                SET
+                    estado_processo = :estado_processo,
+                    decisao_admin = :decisao_admin,
+                    id_admin_decisao = :id_admin_decisao,
+                    data_decisao = NOW(),
+                    motivo_decisao = :motivo_decisao,
+                    coberta_por_garantia = :coberta_por_garantia,
+                    custo = :custo,
+                    atualizado_por = :atualizado_por
+                WHERE id_calibracao = :id
+            ");
+        }
+
+        $stmt->execute([
+            ':estado_processo' => $estadoNovo,
+            ':decisao_admin' => $decisao,
+            ':id_admin_decisao' => $_SESSION['id_utilizador'] ?? null,
+            ':motivo_decisao' => $motivoDecisao,
+            ':coberta_por_garantia' => $cobertaPorGarantia,
+            ':custo' => $custo,
+            ':atualizado_por' => $utilizadorAtual,
+            ':id' => $id
+        ]);
+
+        $stmtHistorico = $pdo->prepare("
+            INSERT INTO historico_etapas_processos (
+                tipo_processo,
+                id_manutencao,
+                id_calibracao,
+                estado_anterior,
+                estado_novo,
+                responsavel_etapa,
+                tipo_responsavel,
+                id_fornecedor_responsavel,
+                observacoes,
+                atualizado_por
+            ) VALUES (
+                :tipo_processo,
+                :id_manutencao,
+                :id_calibracao,
+                :estado_anterior,
+                :estado_novo,
+                :responsavel_etapa,
+                'interno',
+                NULL,
+                :observacoes,
+                :atualizado_por
+            )
+        ");
+
+        $stmtHistorico->execute([
+            ':tipo_processo' => $tipo,
+            ':id_manutencao' => $tipo === 'manutencao' ? $id : null,
+            ':id_calibracao' => $tipo === 'calibracao' ? $id : null,
+            ':estado_anterior' => $estadoAnterior,
+            ':estado_novo' => $estadoNovo,
+            ':responsavel_etapa' => $utilizadorAtual,
+            ':observacoes' => $decisao === 'aprovado'
+                ? 'Processo aprovado pelo administrador.'
+                : 'Processo reprovado pelo administrador. ' . $motivoDecisao,
+            ':atualizado_por' => $utilizadorAtual
+        ]);
+
+        $descricaoHistoricoEquipamento = $decisao === 'aprovado'
+            ? 'Processo aprovado pelo administrador e enviado para aguardar recolha.'
+            : 'Processo reprovado pelo administrador. ' . $motivoDecisao;
+
+        $processoHistorico = obter_processo($pdo, $tipo, $id);
+
+        registar_historico_equipamento_processo(
+            $pdo,
+            $processoHistorico,
+            $tipo,
+            $estadoNovo,
+            $descricaoHistoricoEquipamento,
+            $utilizadorAtual
+        );
+
+        if (
+            $decisao === 'aprovado'
+            && !empty($_FILES['ficheiroContratoDecisao']['name'])
+            && $_FILES['ficheiroContratoDecisao']['error'] === UPLOAD_ERR_OK
+        ) {
+            $processoAtualizado = obter_processo($pdo, $tipo, $id);
+
+            $codigoEquipamento = $processoAtualizado['codigo_equipamento'] ?? 'equipamento';
+            $codigoProcesso = $processoAtualizado['codigo_processo'] ?? 'processo';
+
+            $pastaFisica = __DIR__ . '/../../assets/documentos/equipamentos/' . $codigoEquipamento . '/processos/';
+
+            if (!is_dir($pastaFisica)) {
+                mkdir($pastaFisica, 0775, true);
+            }
+
+            $extensao = strtolower(pathinfo($_FILES['ficheiroContratoDecisao']['name'], PATHINFO_EXTENSION));
+            $extensoesPermitidas = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'];
+
+            if (!in_array($extensao, $extensoesPermitidas, true)) {
+                throw new Exception('Tipo de ficheiro não permitido para o contrato.');
+            }
+
+            $baseNome = normalizar_nome_ficheiro($_FILES['ficheiroContratoDecisao']['name']);
+            $nomeFinal = $codigoProcesso . '_contrato_' . $baseNome . '_' . time() . '.' . $extensao;
+            $destino = $pastaFisica . $nomeFinal;
+
+            if (!move_uploaded_file($_FILES['ficheiroContratoDecisao']['tmp_name'], $destino)) {
+                throw new Exception('Não foi possível guardar o contrato do processo.');
+            }
+
+            $tipoDocumento = $tipo === 'manutencao'
+                ? 'contrato_manutencao'
+                : 'contrato_calibracao';
+
+            $nomeDocumento = valor_ou_null($_POST['nomeContratoDecisao'] ?? null)
+                ?: ($tipo === 'manutencao' ? 'Contrato de manutenção' : 'Contrato de calibração');
+
+            $caminhoRelativo = 'equipamentos/' . $codigoEquipamento . '/processos/' . $nomeFinal;
+
+            $stmtDoc = $pdo->prepare("
+                INSERT INTO documentos_equipamentos (
+                    id_equipamento,
+                    id_manutencao,
+                    id_calibracao,
+                    id_equipamento_fornecedor,
+                    tipo_documento,
+                    nome_documento,
+                    caminho_ficheiro,
+                    data_documento,
+                    data_validade,
+                    observacoes,
+                    atualizado_por
+                ) VALUES (
+                    :id_equipamento,
+                    :id_manutencao,
+                    :id_calibracao,
+                    NULL,
+                    :tipo_documento,
+                    :nome_documento,
+                    :caminho_ficheiro,
+                    :data_documento,
+                    NULL,
+                    :observacoes,
+                    :atualizado_por
+                )
+            ");
+
+            $stmtDoc->execute([
+                ':id_equipamento' => $processoAtualizado['id_equipamento'],
+                ':id_manutencao' => $tipo === 'manutencao' ? $id : null,
+                ':id_calibracao' => $tipo === 'calibracao' ? $id : null,
+                ':tipo_documento' => $tipoDocumento,
+                ':nome_documento' => $nomeDocumento,
+                ':caminho_ficheiro' => $caminhoRelativo,
+                ':data_documento' => date('Y-m-d'),
+                ':observacoes' => 'Contrato associado à aprovação do processo ' . $codigoProcesso,
+                ':atualizado_por' => $utilizadorAtual
+            ]);
+        }
+
+        $pdo->commit();
+
+        $mensagem_sucesso = $decisao === 'aprovado'
+            ? 'Processo aprovado com sucesso.'
+            : 'Processo reprovado com sucesso.';
+
+        $processo = obter_processo($pdo, $tipo, $id);
+    }
+
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'guardar_processo') {
         $estadoNovo = $_POST['estadoProcesso'] ?? $processo['estado_processo'];
+        
+        $transicoesPermitidas = [
+            'aguarda_recolha' => ['aguarda_recolha', 'procedimento_a_decorrer', 'cancelado'],
+            'procedimento_a_decorrer' => ['procedimento_a_decorrer', 'procedimento_efetuado', 'cancelado'],
+            'procedimento_efetuado' => ['procedimento_efetuado', 'emissao_relatorio', 'cancelado'],
+            'emissao_relatorio' => ['emissao_relatorio', 'devolucao_equipamento', 'cancelado'],
+            'devolucao_equipamento' => ['devolucao_equipamento', 'processo_finalizado', 'cancelado'],
+            'processo_finalizado' => ['processo_finalizado'],
+            'cancelado' => ['cancelado'],
+            'reprovado' => ['reprovado']
+        ];
+
+        $estadoAtual = $processo['estado_processo'] ?? '';
+
+        if (
+            isset($transicoesPermitidas[$estadoAtual])
+            && !in_array($estadoNovo, $transicoesPermitidas[$estadoAtual], true)
+        ) {
+            throw new Exception('A alteração de etapa selecionada não é permitida.');
+        }
+
         $estadosValidos = [
             'aguarda_recolha',
             'procedimento_a_decorrer',
             'procedimento_efetuado',
             'emissao_relatorio',
+            'devolucao_equipamento',
             'processo_finalizado',
             'cancelado'
         ];
@@ -461,7 +766,7 @@ try {
         $dataFinalizacao = data_ou_null($_POST['dataFinalizacao'] ?? null);
         $proximaIntervencao = data_ou_null($_POST['proximaIntervencao'] ?? null);
         $cobertaPorGarantia = (int) ($_POST['cobertaPorGarantia'] ?? 0);
-        $custo = null;
+        $custo = $processo['custo'] ?? null;
         $observacoes = valor_ou_null($_POST['observacoesProcesso'] ?? null);
         $observacoesEtapa = valor_ou_null($_POST['observacoesEtapa'] ?? null);
         $responsavelEtapa = valor_ou_null($_POST['responsavelEtapa'] ?? null);
@@ -510,6 +815,9 @@ try {
             $dataManutencao = data_ou_null($_POST['dataIntervencao'] ?? null);
 
             if ($estadoNovo === 'processo_finalizado') {
+                if (($processo['estado_processo'] ?? '') !== 'devolucao_equipamento') {
+                    throw new Exception('O processo só pode ser finalizado depois da devolução do equipamento.');
+                }
                 if (empty($resultado)) {
                     throw new Exception('Para finalizar uma manutenção deve indicar o resultado.');
                 }
@@ -540,7 +848,6 @@ try {
                     descricao_procedimento = :descricao,
                     resultado = :resultado,
                     coberta_por_garantia = :coberta_por_garantia,
-                    custo = :custo,
                     observacoes = :observacoes,
                     atualizado_por = :atualizado_por
                 WHERE id_manutencao = :id
@@ -563,7 +870,6 @@ try {
                 ':descricao' => $descricao,
                 ':resultado' => $resultado,
                 ':coberta_por_garantia' => $cobertaPorGarantia,
-                ':custo' => $custo,
                 ':observacoes' => $observacoes,
                 ':atualizado_por' => $utilizadorAtual,
                 ':id' => $id
@@ -575,6 +881,9 @@ try {
             $dataCalibracao = data_ou_null($_POST['dataIntervencao'] ?? null);
 
             if ($estadoNovo === 'processo_finalizado') {
+                if (($processo['estado_processo'] ?? '') !== 'devolucao_equipamento') {
+                    throw new Exception('O processo só pode ser finalizado depois da devolução do equipamento.');
+                }
                 if (empty($resultado)) {
                     throw new Exception('Para finalizar uma calibração deve indicar o resultado.');
                 }
@@ -605,7 +914,6 @@ try {
                     procedimento = :procedimento,
                     resultado = :resultado,
                     coberta_por_garantia = :coberta_por_garantia,
-                    custo = :custo,
                     observacoes = :observacoes,
                     atualizado_por = :atualizado_por
                 WHERE id_calibracao = :id
@@ -628,7 +936,6 @@ try {
                 ':procedimento' => $procedimento,
                 ':resultado' => $resultado,
                 ':coberta_por_garantia' => $cobertaPorGarantia,
-                ':custo' => $custo,
                 ':observacoes' => $observacoes,
                 ':atualizado_por' => $utilizadorAtual,
                 ':id' => $id
@@ -674,6 +981,25 @@ try {
                 ':observacoes' => $observacoesEtapa,
                 ':atualizado_por' => $utilizadorAtual
             ]);
+        }
+
+        if ($estadoAnterior !== $estadoNovo) {
+            $processoHistorico = obter_processo($pdo, $tipo, $id);
+
+            $descricaoHistoricoEquipamento = 'Processo atualizado: '
+                . texto_estado_processo($estadoAnterior)
+                . ' → '
+                . texto_estado_processo($estadoNovo)
+                . '.';
+
+            registar_historico_equipamento_processo(
+                $pdo,
+                $processoHistorico,
+                $tipo,
+                $estadoNovo,
+                $descricaoHistoricoEquipamento,
+                $utilizadorAtual
+            );
         }
 
         /* Upload opcional de relatório/certificado */
@@ -853,6 +1179,89 @@ $descricaoProcedimento = $tipo === 'manutencao' ? ($processo['descricao_procedim
         </section>
     <?php endif; ?>
 
+    <?php
+    $processoAguardaDecisao = ($processo['estado_processo'] ?? '') === 'aguarda_decisao';
+    $mostrarFormularioTecnico = !$processoAguardaDecisao;
+    ?>
+
+    <?php if ($ehAdministrador && $processoAguardaDecisao): ?>
+        <div class="card-formulario mb-4">
+            <div class="secao-ficha-titulo">
+                <h4>Decisão do administrador</h4>
+                <p>Aprove ou reprove o pedido antes de avançar para a recolha do equipamento.</p>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" class="row g-3">
+                <input type="hidden" name="acao" value="decidir_processo">
+
+                <div class="col-md-4">
+                    <label for="cobertaPorGarantiaDecisao" class="form-label">Coberto por garantia?</label>
+                    <select class="form-select" id="cobertaPorGarantiaDecisao" name="cobertaPorGarantiaDecisao">
+                        <option value="0">Não</option>
+                        <option value="1">Sim</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="custoDecisao" class="form-label">Custo previsto</label>
+                    <input type="number"
+                        step="0.01"
+                        min="0"
+                        class="form-control"
+                        id="custoDecisao"
+                        name="custoDecisao"
+                        placeholder="Ex: 125.00">
+                </div>
+
+                <div class="col-md-4">
+                    <label for="motivoDecisao" class="form-label">Motivo / observação</label>
+                    <input type="text"
+                        class="form-control"
+                        id="motivoDecisao"
+                        name="motivoDecisao"
+                        placeholder="Obrigatório se reprovar">
+                </div>
+
+                <div class="col-md-6">
+                    <label for="nomeContratoDecisao" class="form-label">Nome do contrato</label>
+                    <input type="text"
+                        class="form-control"
+                        id="nomeContratoDecisao"
+                        name="nomeContratoDecisao"
+                        placeholder="Ex: Contrato de manutenção preventiva">
+                </div>
+
+                <div class="col-md-6">
+                    <label for="ficheiroContratoDecisao" class="form-label">Contrato / documento</label>
+                    <input type="file"
+                        class="form-control"
+                        id="ficheiroContratoDecisao"
+                        name="ficheiroContratoDecisao"
+                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                </div>
+
+                <div class="col-12 form-actions mt-3">
+                    <button type="submit"
+                            name="decisaoAdmin"
+                            value="reprovado"
+                            class="btn btn-cancelar">
+                        <i class="fa-solid fa-xmark me-2"></i>
+                        Reprovar
+                    </button>
+
+                    <button type="submit"
+                            name="decisaoAdmin"
+                            value="aprovado"
+                            class="btn btn-guardar">
+                        <i class="fa-solid fa-check me-2"></i>
+                        Aprovar Processo
+                    </button>
+                </div>
+            </form>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($mostrarFormularioTecnico): ?>
     <form method="post" enctype="multipart/form-data" class="form-ficha-equipamento">
         <input type="hidden" name="acao" value="guardar_processo">
         <input type="hidden" name="tipo" value="<?php echo h($tipo); ?>">
@@ -995,10 +1404,12 @@ $descricaoProcedimento = $tipo === 'manutencao' ? ($processo['descricao_procedim
                         <div class="col-md-4">
                             <label for="estadoProcesso" class="form-label">Etapa atual *</label>
                             <select class="form-select" id="estadoProcesso" name="estadoProcesso" required>
+                                <option value="aguarda_decisao" <?php echo selected_option($processo['estado_processo'], 'aguarda_decisao'); ?>>À espera da decisão</option>
                                 <option value="aguarda_recolha" <?php echo selected_option($processo['estado_processo'], 'aguarda_recolha'); ?>>Aguarda recolha</option>
                                 <option value="procedimento_a_decorrer" <?php echo selected_option($processo['estado_processo'], 'procedimento_a_decorrer'); ?>>Procedimento a decorrer</option>
                                 <option value="procedimento_efetuado" <?php echo selected_option($processo['estado_processo'], 'procedimento_efetuado'); ?>>Procedimento efetuado</option>
                                 <option value="emissao_relatorio" <?php echo selected_option($processo['estado_processo'], 'emissao_relatorio'); ?>>Emissão do relatório</option>
+                                <option value="devolucao_equipamento" <?php echo selected_option($processo['estado_processo'], 'devolucao_equipamento'); ?>>Devolução do equipamento</option>
                                 <option value="processo_finalizado" <?php echo selected_option($processo['estado_processo'], 'processo_finalizado'); ?>>Processo finalizado</option>
                                 <option value="cancelado" <?php echo selected_option($processo['estado_processo'], 'cancelado'); ?>>Cancelado</option>
                             </select>
@@ -1261,6 +1672,20 @@ $descricaoProcedimento = $tipo === 'manutencao' ? ($processo['descricao_procedim
             </button>
         </div>
     </form>
+
+    <?php else: ?>
+        <div class="card-formulario">
+            <div class="secao-ficha-titulo">
+                <h4>Processo à espera da decisão</h4>
+                <p>Este pedido ainda não foi aprovado pelo administrador. A edição técnica ficará disponível depois da aprovação.</p>
+            </div>
+
+            <div class="alerta-info-processo">
+                <i class="fa-solid fa-circle-info me-2"></i>
+                Aguarde a aprovação ou reprovação do administrador para avançar com a intervenção.
+            </div>
+        </div>
+    <?php endif; ?>
 </main>
 
 <style>

@@ -6,7 +6,9 @@ $pdo = medicore_pdo();
 $mensagemSucesso = '';
 $mensagemErro = '';
 $idUtilizador = $_SESSION['id_utilizador'] ?? null;
-
+$tipoUtilizador = $_SESSION['tipo_utilizador'] ?? '';
+$ehAdministrador = $tipoUtilizador === 'Administrador';
+$ehEngenheiro = $tipoUtilizador === 'Engenheiro';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
@@ -56,7 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     motivo,
                     data_inicio,
                     data_prevista_devolucao,
-                    observacoes
+                    observacoes,
+                    estado
                 ) VALUES (
                     :codigo,
                     :equipamento,
@@ -67,7 +70,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     :motivo,
                     :data_inicio,
                     :data_prevista,
-                    :observacoes
+                    :observacoes,
+                    'pendente'
                 )
             ");
 
@@ -86,58 +90,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $idEmprestimo = $pdo->lastInsertId();
 
-            $pdo->prepare("
-                UPDATE equipamentos
-                SET id_localizacao = :destino
-                WHERE id_equipamento = :equipamento
-            ")->execute([
-                ':destino' => $idLocalizacaoDestino,
-                ':equipamento' => $idEquipamento
-            ]);
-
-            $pdo->prepare("
-                UPDATE acessorios_equipamento
-                SET id_localizacao = :destino
-                WHERE id_equipamento = :equipamento
-                AND isActive = 1
-            ")->execute([
-                ':destino' => $idLocalizacaoDestino,
-                ':equipamento' => $idEquipamento
-            ]);
-
-            $pdo->prepare("
-                UPDATE consumiveis
-                SET id_localizacao = :destino
-                WHERE id_equipamento = :equipamento
-                AND isActive = 1
-            ")->execute([
-                ':destino' => $idLocalizacaoDestino,
-                ':equipamento' => $idEquipamento
-            ]);
-
-            $pdo->prepare("
+            $stmtHistorico = $pdo->prepare("
                 INSERT INTO historico_equipamentos (
                     id_equipamento,
                     id_localizacao,
+                    id_localizacao_origem,
+                    id_localizacao_destino,
                     id_utilizador,
                     tipo_evento,
                     referencia_tabela,
                     referencia_id,
-                    descricao
+                    descricao,
+                    data_evento,
+                    isActive
                 ) VALUES (
                     :equipamento,
                     :localizacao,
+                    :origem,
+                    :destino,
                     :utilizador,
-                    'emprestimo_iniciado',
+                    'emprestimo_pendente',
                     'emprestimos_equipamentos',
                     :referencia,
-                    'Empréstimo iniciado. Equipamento, acessórios e consumíveis associados deslocados temporariamente.'
+                    :descricao,
+                    NOW(),
+                    1
                 )
-            ")->execute([
+            ");
+
+            $stmtHistorico->execute([
                 ':equipamento' => $idEquipamento,
-                ':localizacao' => $idLocalizacaoDestino,
+                ':localizacao' => $idLocalizacaoOrigem,
+                ':origem' => $idLocalizacaoOrigem,
+                ':destino' => $idLocalizacaoDestino,
                 ':utilizador' => $idUtilizador,
-                ':referencia' => $idEmprestimo
+                ':referencia' => $idEmprestimo,
+                ':descricao' => 'Pedido de empréstimo registado e a aguardar aprovação do administrador.'
             ]);
 
             $pdo->commit();
@@ -145,7 +133,113 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mensagemSucesso = 'Empréstimo registado com sucesso.';
         }
 
+        if ($acao === 'aprovar' && $ehAdministrador) {
+            $idEmprestimo = (int) ($_POST['id_emprestimo'] ?? 0);
+
+            $pdo->beginTransaction();
+
+            $stmt = $pdo->prepare("
+                SELECT *
+                FROM emprestimos_equipamentos
+                WHERE id_emprestimo = :id
+                AND estado = 'pendente'
+                FOR UPDATE
+            ");
+            $stmt->execute([':id' => $idEmprestimo]);
+            $emprestimo = $stmt->fetch();
+
+            if (!$emprestimo) {
+                throw new Exception('Pedido de empréstimo não encontrado ou já tratado.');
+            }
+
+            $stmt = $pdo->prepare("
+                UPDATE emprestimos_equipamentos
+                SET estado = 'ativo',
+                    id_utilizador_aprovacao = :utilizador,
+                    data_aprovacao = NOW()
+                WHERE id_emprestimo = :id
+            ");
+            $stmt->execute([
+                ':utilizador' => $_SESSION['id_utilizador'],
+                ':id' => $idEmprestimo
+            ]);
+
+            $stmt = $pdo->prepare("
+                UPDATE equipamentos
+                SET id_localizacao = :destino
+                WHERE id_equipamento = :id_equipamento
+            ");
+            $stmt->execute([
+                ':destino' => $emprestimo['id_localizacao_destino'],
+                ':id_equipamento' => $emprestimo['id_equipamento']
+            ]);
+
+            $stmt = $pdo->prepare("
+                UPDATE acessorios_equipamento
+                SET id_localizacao = :destino
+                WHERE id_equipamento = :id_equipamento
+                AND isActive = 1
+            ");
+            $stmt->execute([
+                ':destino' => $emprestimo['id_localizacao_destino'],
+                ':id_equipamento' => $emprestimo['id_equipamento']
+            ]);
+
+            $stmtHistorico = $pdo->prepare("
+                INSERT INTO historico_equipamentos (
+                    id_equipamento,
+                    id_utilizador,
+                    tipo_evento,
+                    id_localizacao_origem,
+                    id_localizacao_destino,
+                    descricao
+                ) VALUES (
+                    :id_equipamento,
+                    :id_utilizador,
+                    'emprestimo_iniciado',
+                    :origem,
+                    :destino,
+                    :descricao
+                )
+            ");
+            $stmtHistorico->execute([
+                ':id_equipamento' => $emprestimo['id_equipamento'],
+                ':id_utilizador' => $_SESSION['id_utilizador'],
+                ':origem' => $emprestimo['id_localizacao_origem'],
+                ':destino' => $emprestimo['id_localizacao_destino'],
+                ':descricao' => 'Empréstimo aprovado pelo administrador.'
+            ]);
+
+            $pdo->commit();
+
+            header('Location: emprestimo.php?sucesso=aprovado');
+            exit;
+        }
+
+        if ($acao === 'rejeitar' && $ehAdministrador) {
+            $idEmprestimo = (int) ($_POST['id_emprestimo'] ?? 0);
+
+            $stmt = $pdo->prepare("
+                UPDATE emprestimos_equipamentos
+                SET estado = 'rejeitado',
+                    id_utilizador_aprovacao = :utilizador,
+                    data_aprovacao = NOW()
+                WHERE id_emprestimo = :id
+                AND estado = 'pendente'
+            ");
+            $stmt->execute([
+                ':utilizador' => $_SESSION['id_utilizador'],
+                ':id' => $idEmprestimo
+            ]);
+
+            header('Location: emprestimo.php?sucesso=rejeitado');
+            exit;
+        }
+
         if ($acao === 'terminar') {
+            if (!$ehEngenheiro) {
+                throw new Exception('Apenas o engenheiro pode finalizar empréstimos.');
+            }
             $idEmprestimo = (int) $_POST['id_emprestimo'];
 
             $stmt = $pdo->prepare("
@@ -172,57 +266,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
 
                 $pdo->prepare("
-                    UPDATE equipamentos
-                    SET id_localizacao = :origem
-                    WHERE id_equipamento = :equipamento
-                ")->execute([
-                    ':origem' => $emprestimo['id_localizacao_origem'],
-                    ':equipamento' => $emprestimo['id_equipamento']
-                ]);
-
-                $pdo->prepare("
-                    UPDATE acessorios_equipamento
-                    SET id_localizacao = :origem
-                    WHERE id_equipamento = :equipamento
-                    AND isActive = 1
-                ")->execute([
-                    ':origem' => $emprestimo['id_localizacao_origem'],
-                    ':equipamento' => $emprestimo['id_equipamento']
-                ]);
-
-                $pdo->prepare("
-                    UPDATE consumiveis
-                    SET id_localizacao = :origem
-                    WHERE id_equipamento = :equipamento
-                    AND isActive = 1
-                ")->execute([
-                    ':origem' => $emprestimo['id_localizacao_origem'],
-                    ':equipamento' => $emprestimo['id_equipamento']
-                ]);
-
-                $pdo->prepare("
                     INSERT INTO historico_equipamentos (
                         id_equipamento,
                         id_localizacao,
+                        id_localizacao_origem,
+                        id_localizacao_destino,
                         id_utilizador,
                         tipo_evento,
                         referencia_tabela,
                         referencia_id,
-                        descricao
+                        descricao,
+                        data_evento,
+                        isActive
                     ) VALUES (
                         :equipamento,
                         :localizacao,
+                        :origem,
+                        :destino,
                         :utilizador,
                         'emprestimo_terminado',
                         'emprestimos_equipamentos',
                         :referencia,
-                        'Empréstimo terminado. Equipamento, acessórios e consumíveis associados devolvidos à localização original.'
+                        :descricao,
+                        NOW(),
+                        1
                     )
                 ")->execute([
                     ':equipamento' => $emprestimo['id_equipamento'],
                     ':localizacao' => $emprestimo['id_localizacao_origem'],
+                    ':origem' => $emprestimo['id_localizacao_destino'],
+                    ':destino' => $emprestimo['id_localizacao_origem'],
                     ':utilizador' => $idUtilizador,
-                    ':referencia' => $idEmprestimo
+                    ':referencia' => $idEmprestimo,
+                    ':descricao' => 'Empréstimo terminado. Equipamento, acessórios e consumíveis associados devolvidos à localização original.'
                 ]);
 
                 $pdo->commit();
@@ -240,8 +316,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 $equipamentos = $pdo->query("
-    SELECT e.id_equipamento, e.codigo_equipamento, e.designacao, e.id_localizacao
+    SELECT
+        e.id_equipamento,
+        e.codigo_equipamento,
+        e.designacao,
+        e.id_localizacao,
+        CONCAT(l.codigo, ' - ', l.departamento_nome, ' - Piso ', l.piso, ' - Sala ', l.sala) AS localizacao_atual
     FROM equipamentos e
+    INNER JOIN localizacoes l
+        ON l.id_localizacao = e.id_localizacao
     WHERE e.isActive = 1
     ORDER BY e.codigo_equipamento
 ")->fetchAll();
@@ -306,6 +389,16 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 </tr>
             </thead>
             <tbody>
+                <?php
+                    $classeEstadoEmprestimo = [
+                        'pendente' => 'estado-manutencao',
+                        'ativo' => 'estado-ativo',
+                        'rejeitado' => 'estado-avariado',
+                        'terminado' => 'estado-inativo',
+                        'atrasado' => 'estado-avariado'
+                    ];
+                ?>
+
                 <?php foreach ($emprestimos as $emprestimo): ?>
                     <tr>
                         <td><?php echo htmlspecialchars($emprestimo['codigo_emprestimo']); ?></td>
@@ -313,19 +406,56 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <td><?php echo htmlspecialchars($emprestimo['destino_codigo']); ?></td>
                         <td><?php echo htmlspecialchars($emprestimo['responsavel_emprestimo']); ?></td>
                         <td><?php echo htmlspecialchars($emprestimo['data_prevista_devolucao']); ?></td>
-                        <td><?php echo htmlspecialchars($emprestimo['estado']); ?></td>
+                        <td>
+                            <span class="estado <?php echo $classeEstadoEmprestimo[$emprestimo['estado']] ?? 'estado-inativo'; ?>">
+                                <?php echo htmlspecialchars($emprestimo['estado']); ?>
+                            </span>
+                        </td>
                         <td class="text-center">
-                            <?php if ($emprestimo['estado'] === 'ativo'): ?>
-                                <form method="post" class="d-inline">
-                                    <input type="hidden" name="acao" value="terminar">
-                                    <input type="hidden" name="id_emprestimo" value="<?php echo $emprestimo['id_emprestimo']; ?>">
-                                    <button type="submit" class="btn btn-sm btn-ficha">
-                                        <i class="fa-solid fa-check"></i>
-                                    </button>
-                                </form>
-                            <?php else: ?>
-                                ---
-                            <?php endif; ?>
+                            <div class="acoes-operacao">
+
+                                <button type="button"
+                                        class="btn-acao-circular btn-acao-detalhe"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalDetalheEmprestimo<?php echo (int) $emprestimo['id_emprestimo']; ?>"
+                                        title="Ver detalhes">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+
+                                <?php if ($ehAdministrador && $emprestimo['estado'] === 'pendente'): ?>
+
+                                    <form method="post" class="d-inline">
+                                        <input type="hidden" name="acao" value="aprovar">
+                                        <input type="hidden" name="id_emprestimo" value="<?php echo (int) $emprestimo['id_emprestimo']; ?>">
+
+                                        <button type="submit" class="btn-acao-circular btn-acao-aprovar" title="Aprovar empréstimo">
+                                            <i class="fa-solid fa-check"></i>
+                                        </button>
+                                    </form>
+
+                                    <form method="post" class="d-inline">
+                                        <input type="hidden" name="acao" value="rejeitar">
+                                        <input type="hidden" name="id_emprestimo" value="<?php echo (int) $emprestimo['id_emprestimo']; ?>">
+
+                                        <button type="submit" class="btn-acao-circular btn-acao-rejeitar" title="Reprovar empréstimo">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </form>
+
+                                <?php elseif ($ehEngenheiro && $emprestimo['estado'] === 'ativo'): ?>
+
+                                    <form method="post" class="d-inline">
+                                        <input type="hidden" name="acao" value="terminar">
+                                        <input type="hidden" name="id_emprestimo" value="<?php echo (int) $emprestimo['id_emprestimo']; ?>">
+
+                                        <button type="submit" class="btn-acao-circular btn-acao-aprovar" title="Terminar empréstimo">
+                                            <i class="fa-solid fa-check"></i>
+                                        </button>
+                                    </form>
+
+                                <?php endif; ?>
+
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -333,6 +463,67 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         </table>
     </div>
 </main>
+
+
+        <?php foreach ($emprestimos as $emprestimo): ?>
+            <div class="modal fade" id="modalDetalheEmprestimo<?php echo (int) $emprestimo['id_emprestimo']; ?>" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content modal-acessorio">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="fa-solid fa-eye me-2"></i>
+                                Detalhes do Empréstimo
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="info-grid">
+                                <div>
+                                    <label>Código</label>
+                                    <p><?php echo htmlspecialchars($emprestimo['codigo_emprestimo']); ?></p>
+                                </div>
+
+                                <div>
+                                    <label>Equipamento</label>
+                                    <p><?php echo htmlspecialchars($emprestimo['codigo_equipamento'] . ' - ' . $emprestimo['designacao']); ?></p>
+                                </div>
+
+                                <div>
+                                    <label>Origem</label>
+                                    <p><?php echo htmlspecialchars($emprestimo['origem_codigo']); ?></p>
+                                </div>
+
+                                <div>
+                                    <label>Destino</label>
+                                    <p><?php echo htmlspecialchars($emprestimo['destino_codigo']); ?></p>
+                                </div>
+
+                                <div>
+                                    <label>Responsável</label>
+                                    <p><?php echo htmlspecialchars($emprestimo['responsavel_emprestimo']); ?></p>
+                                </div>
+
+                                <div>
+                                    <label>Data prevista de devolução</label>
+                                    <p><?php echo htmlspecialchars($emprestimo['data_prevista_devolucao']); ?></p>
+                                </div>
+
+                                <div>
+                                    <label>Estado</label>
+                                    <p><?php echo htmlspecialchars($emprestimo['estado']); ?></p>
+                                </div>
+
+                                <div>
+                                    <label>Motivo</label>
+                                    <p><?php echo htmlspecialchars($emprestimo['motivo'] ?? '---'); ?></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
 
 <div class="modal fade" id="modalNovoEmprestimo" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
@@ -359,6 +550,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     id="pesquisaEquipamentoEmprestimo"
                                     data-hidden-target="idEquipamentoEmprestimo"
                                     data-lista-target="listaEquipamentosEmprestimo"
+                                    data-localizacao-target="localizacaoAtualEmprestimo"
                                     placeholder="Pesquisar e selecionar equipamento"
                                     autocomplete="off"
                                     required>
@@ -373,13 +565,19 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                         <button type="button"
                                                 class="opcao-registo-custom"
                                                 data-id="<?php echo htmlspecialchars($equipamento['id_equipamento']); ?>"
-                                                data-texto="<?php echo htmlspecialchars($equipamento['codigo_equipamento'] . ' - ' . $equipamento['designacao']); ?>">
+                                                data-texto="<?php echo htmlspecialchars($equipamento['codigo_equipamento'] . ' - ' . $equipamento['designacao']); ?>"
+                                                data-localizacao-atual="<?php echo htmlspecialchars($equipamento['localizacao_atual']); ?>">
                                             <span>
                                                 <?php echo htmlspecialchars($equipamento['codigo_equipamento'] . ' - ' . $equipamento['designacao']); ?>
                                             </span>
                                         </button>
                                     <?php endforeach; ?>
                                 </div>
+                            </div>
+
+                            <div class="localizacao-atual-box mt-2 d-none" id="localizacaoAtualEmprestimo">
+                                <span>Localização atual</span>
+                                <strong></strong>
                             </div>
                         </div>
 

@@ -73,6 +73,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':observacoes' => trim($_POST['observacoes'] ?? '')
             ]);
 
+            $idTransferencia = (int) $pdo->lastInsertId();
+
+            $pdo->prepare("
+                INSERT INTO historico_equipamentos (
+                    id_equipamento,
+                    id_localizacao,
+                    id_localizacao_origem,
+                    id_localizacao_destino,
+                    id_utilizador,
+                    tipo_evento,
+                    referencia_tabela,
+                    referencia_id,
+                    descricao,
+                    data_evento,
+                    isActive
+                ) VALUES (
+                    :equipamento,
+                    :localizacao,
+                    :origem,
+                    :destino,
+                    :utilizador,
+                    'transferencia_pendente',
+                    'transferencias_equipamentos',
+                    :referencia,
+                    :descricao,
+                    NOW(),
+                    1
+                )
+            ")->execute([
+                ':equipamento' => $idEquipamento,
+                ':localizacao' => $idLocalizacaoOrigem,
+                ':origem' => $idLocalizacaoOrigem,
+                ':destino' => $idLocalizacaoDestino,
+                ':utilizador' => $idUtilizador,
+                ':referencia' => $idTransferencia,
+                ':descricao' => 'Pedido de transferência registado e a aguardar aprovação.'
+            ]);
+
             $mensagemSucesso = 'Pedido de transferência registado com sucesso.';
         }
 
@@ -123,38 +161,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
 
                 $pdo->prepare("
-                    UPDATE consumiveis
-                    SET id_localizacao = :destino
-                    WHERE id_equipamento = :equipamento
-                      AND isActive = 1
-                ")->execute([
-                    ':destino' => $transferencia['id_localizacao_destino'],
-                    ':equipamento' => $transferencia['id_equipamento']
-                ]);
-
-                $pdo->prepare("
                     INSERT INTO historico_equipamentos (
                         id_equipamento,
                         id_localizacao,
+                        id_localizacao_origem,
+                        id_localizacao_destino,
                         id_utilizador,
                         tipo_evento,
                         referencia_tabela,
                         referencia_id,
-                        descricao
+                        descricao,
+                        data_evento,
+                        isActive
                     ) VALUES (
                         :equipamento,
                         :localizacao,
+                        :origem,
+                        :destino,
                         :utilizador,
                         'transferencia_aprovada',
                         'transferencias_equipamentos',
                         :referencia,
-                        'Transferência aprovada. Equipamento, acessórios e consumíveis associados mudaram de localização.'
+                        :descricao,
+                        NOW(),
+                        1
                     )
                 ")->execute([
                     ':equipamento' => $transferencia['id_equipamento'],
                     ':localizacao' => $transferencia['id_localizacao_destino'],
+                    ':origem' => $transferencia['id_localizacao_origem'],
+                    ':destino' => $transferencia['id_localizacao_destino'],
                     ':utilizador' => $idUtilizador,
-                    ':referencia' => $idTransferencia
+                    ':referencia' => $idTransferencia,
+                    ':descricao' => 'Transferência aprovada. Equipamento, acessórios e consumíveis associados mudaram de localização.'
                 ]);
 
                 $pdo->commit();
@@ -163,6 +202,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($acao === 'rejeitar' && $isAdmin) {
+            $idTransferencia = (int) ($_POST['id_transferencia'] ?? 0);
+
+            $stmt = $pdo->prepare("
+                SELECT *
+                FROM transferencias_equipamentos
+                WHERE id_transferencia = :id
+                AND estado = 'pendente'
+                AND isActive = 1
+            ");
+            $stmt->execute([
+                ':id' => $idTransferencia
+            ]);
+            $transferencia = $stmt->fetch();
+
+            if (!$transferencia) {
+                throw new Exception('Pedido de transferência não encontrado ou já tratado.');
+            }
+
+            $pdo->beginTransaction();
+
             $pdo->prepare("
                 UPDATE transferencias_equipamentos
                 SET estado = 'rejeitado',
@@ -171,25 +230,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 WHERE id_transferencia = :id
             ")->execute([
                 ':utilizador' => $idUtilizador,
-                ':id' => $_POST['id_transferencia']
+                ':id' => $idTransferencia
             ]);
 
-            $mensagemSucesso = 'Transferência rejeitada.';
+            $pdo->prepare("
+                INSERT INTO historico_equipamentos (
+                    id_equipamento,
+                    id_localizacao,
+                    id_localizacao_origem,
+                    id_localizacao_destino,
+                    id_utilizador,
+                    tipo_evento,
+                    referencia_tabela,
+                    referencia_id,
+                    descricao,
+                    data_evento,
+                    isActive
+                ) VALUES (
+                    :equipamento,
+                    :localizacao,
+                    :origem,
+                    :destino,
+                    :utilizador,
+                    'transferencia_rejeitada',
+                    'transferencias_equipamentos',
+                    :referencia,
+                    :descricao,
+                    NOW(),
+                    1
+                )
+            ")->execute([
+                ':equipamento' => $transferencia['id_equipamento'],
+                ':localizacao' => $transferencia['id_localizacao_origem'],
+                ':origem' => $transferencia['id_localizacao_origem'],
+                ':destino' => $transferencia['id_localizacao_destino'],
+                ':utilizador' => $idUtilizador,
+                ':referencia' => $idTransferencia,
+                ':descricao' => 'Pedido de transferência rejeitado pelo administrador.'
+            ]);
+
+            $pdo->commit();
+
+                        $mensagemSucesso = 'Transferência rejeitada.';
         }
+
     } catch (PDOException $e) {
         if ($pdo->inTransaction()) {
             $pdo->rollBack();
         }
 
         $mensagemErro = 'Erro: ' . $e->getMessage();
+
+    } catch (Exception $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        $mensagemErro = $e->getMessage();
     }
 }
 
 $equipamentos = $pdo->query("
-    SELECT e.id_equipamento, e.codigo_equipamento, e.designacao, e.id_localizacao,
-           l.codigo AS codigo_localizacao
+    SELECT
+        e.id_equipamento,
+        e.codigo_equipamento,
+        e.designacao,
+        e.id_localizacao,
+        CONCAT(l.codigo, ' - ', l.departamento_nome, ' - Piso ', l.piso, ' - Sala ', l.sala) AS localizacao_atual
     FROM equipamentos e
-    INNER JOIN localizacoes l ON l.id_localizacao = e.id_localizacao
+    INNER JOIN localizacoes l
+        ON l.id_localizacao = e.id_localizacao
     WHERE e.isActive = 1
     ORDER BY e.codigo_equipamento
 ")->fetchAll();
@@ -256,6 +366,14 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 </tr>
             </thead>
             <tbody>
+                <?php
+                    $classeEstadoTransferencia = [
+                        'pendente' => 'estado-manutencao',
+                        'aprovado' => 'estado-ativo',
+                        'rejeitado' => 'estado-avariado'
+                    ];
+                ?>
+
                 <?php foreach ($transferencias as $transferencia): ?>
                     <tr>
                         <td><?php echo htmlspecialchars($transferencia['codigo_transferencia']); ?></td>
@@ -263,27 +381,45 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <td><?php echo htmlspecialchars($transferencia['origem_codigo']); ?></td>
                         <td><?php echo htmlspecialchars($transferencia['destino_codigo']); ?></td>
                         <td><?php echo htmlspecialchars($transferencia['utilizador_pedido']); ?></td>
-                        <td><span class="estado estado-manutencao"><?php echo htmlspecialchars($transferencia['estado']); ?></span></td>
+                        <td>
+                            <span class="estado <?php echo $classeEstadoTransferencia[$transferencia['estado']] ?? 'estado-inativo'; ?>">
+                                <?php echo htmlspecialchars($transferencia['estado']); ?>
+                            </span>
+                        </td>
                         <td class="text-center">
-                            <?php if ($isAdmin && $transferencia['estado'] === 'pendente'): ?>
-                                <form method="post" class="d-inline">
-                                    <input type="hidden" name="acao" value="aprovar">
-                                    <input type="hidden" name="id_transferencia" value="<?php echo $transferencia['id_transferencia']; ?>">
-                                    <button type="submit" class="btn btn-sm btn-ficha" title="Aprovar">
-                                        <i class="fa-solid fa-check"></i>
-                                    </button>
-                                </form>
+                                <div class="acoes-operacao">
 
-                                <form method="post" class="d-inline">
-                                    <input type="hidden" name="acao" value="rejeitar">
-                                    <input type="hidden" name="id_transferencia" value="<?php echo $transferencia['id_transferencia']; ?>">
-                                    <button type="submit" class="btn btn-sm btn-eliminar" title="Rejeitar">
-                                        <i class="fa-solid fa-xmark"></i>
+                                    <button type="button"
+                                            class="btn-acao-circular btn-acao-detalhe"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalDetalheTransferencia<?php echo (int) $transferencia['id_transferencia']; ?>"
+                                            title="Ver detalhes">
+                                        <i class="fa-solid fa-eye"></i>
                                     </button>
-                                </form>
-                            <?php else: ?>
-                                ---
-                            <?php endif; ?>
+
+                                    <?php if ($isAdmin && $transferencia['estado'] === 'pendente'): ?>
+
+                                        <form method="post" class="d-inline">
+                                            <input type="hidden" name="acao" value="aprovar">
+                                            <input type="hidden" name="id_transferencia" value="<?php echo (int) $transferencia['id_transferencia']; ?>">
+
+                                            <button type="submit" class="btn-acao-circular btn-acao-aprovar" title="Aprovar transferência">
+                                                <i class="fa-solid fa-check"></i>
+                                            </button>
+                                        </form>
+
+                                        <form method="post" class="d-inline">
+                                            <input type="hidden" name="acao" value="rejeitar">
+                                            <input type="hidden" name="id_transferencia" value="<?php echo (int) $transferencia['id_transferencia']; ?>">
+
+                                            <button type="submit" class="btn-acao-circular btn-acao-rejeitar" title="Rejeitar transferência">
+                                                <i class="fa-solid fa-xmark"></i>
+                                            </button>
+                                        </form>
+
+                                    <?php endif; ?>
+
+                                </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -291,6 +427,61 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         </table>
     </div>
 </main>
+
+<?php foreach ($transferencias as $transferencia): ?>
+            <div class="modal fade" id="modalDetalheTransferencia<?php echo (int) $transferencia['id_transferencia']; ?>" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content modal-acessorio">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="fa-solid fa-eye me-2"></i>
+                                Detalhes da Transferência
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="info-grid">
+                                <div>
+                                    <label>Código</label>
+                                    <p><?php echo htmlspecialchars($transferencia['codigo_transferencia']); ?></p>
+                                </div>
+
+                                <div>
+                                    <label>Equipamento</label>
+                                    <p><?php echo htmlspecialchars($transferencia['codigo_equipamento'] . ' - ' . $transferencia['designacao']); ?></p>
+                                </div>
+
+                                <div>
+                                    <label>Origem</label>
+                                    <p><?php echo htmlspecialchars($transferencia['origem_codigo']); ?></p>
+                                </div>
+
+                                <div>
+                                    <label>Destino</label>
+                                    <p><?php echo htmlspecialchars($transferencia['destino_codigo']); ?></p>
+                                </div>
+
+                                <div>
+                                    <label>Pedido por</label>
+                                    <p><?php echo htmlspecialchars($transferencia['utilizador_pedido']); ?></p>
+                                </div>
+
+                                <div>
+                                    <label>Estado</label>
+                                    <p><?php echo htmlspecialchars($transferencia['estado']); ?></p>
+                                </div>
+
+                                <div>
+                                    <label>Motivo</label>
+                                    <p><?php echo htmlspecialchars($transferencia['motivo'] ?? '---'); ?></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
 
 <div class="modal fade" id="modalNovaTransferencia" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
@@ -317,6 +508,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     id="pesquisaEquipamentoTransferencia"
                                     data-hidden-target="idEquipamentoTransferencia"
                                     data-lista-target="listaEquipamentosTransferencia"
+                                    data-localizacao-target="localizacaoAtualTransferencia"
                                     placeholder="Pesquisar e selecionar equipamento"
                                     autocomplete="off"
                                     required>
@@ -331,13 +523,18 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                         <button type="button"
                                                 class="opcao-registo-custom"
                                                 data-id="<?php echo htmlspecialchars($equipamento['id_equipamento']); ?>"
-                                                data-texto="<?php echo htmlspecialchars($equipamento['codigo_equipamento'] . ' - ' . $equipamento['designacao']); ?>">
+                                                data-texto="<?php echo htmlspecialchars($equipamento['codigo_equipamento'] . ' - ' . $equipamento['designacao']); ?>"
+                                                data-localizacao-atual="<?php echo htmlspecialchars($equipamento['localizacao_atual']); ?>">
                                             <span>
                                                 <?php echo htmlspecialchars($equipamento['codigo_equipamento'] . ' - ' . $equipamento['designacao']); ?>
                                             </span>
                                         </button>
                                     <?php endforeach; ?>
                                 </div>
+                            </div>
+                            <div class="localizacao-atual-box mt-2 d-none" id="localizacaoAtualEmprestimo">
+                                <span>Localização atual</span>
+                                <strong></strong>
                             </div>
                         </div>
 
