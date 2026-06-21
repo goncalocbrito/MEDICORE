@@ -10,6 +10,21 @@ redirect_if_not_logged();
    - historico_etapas_processos
    ========================================================= */
 
+$ehAdministrador = ($_SESSION['tipo_utilizador'] ?? '') === 'Administrador';
+
+if ($ehAdministrador) {
+    $_SESSION['erro_acesso'] = 'Não tem permissão para aceder aos processos técnicos em execução. Use a página de aprovação de pedidos.';
+
+    $paginaAnterior = $_SERVER['HTTP_REFERER'] ?? (BASE_URL . '/private/views/calibracao_manutencao/aprovacao_processos.php');
+
+    if (strpos($paginaAnterior, 'calibracao_manutencao.php') !== false) {
+        $paginaAnterior = BASE_URL . '/private/views/calibracao_manutencao/aprovacao_processos.php';
+    }
+
+    header('Location: ' . $paginaAnterior);
+    exit;
+}
+
 if (!function_exists('h')) {
     function h($valor)
     {
@@ -190,6 +205,7 @@ function definir_estado_alvos(PDO $pdo, $idEquipamento, array $idsAcessorios, $e
 
 function render_tabela_processos_abertos($processos, $tituloTabela, $idTabela)
 {
+    global $ehAdministrador;
     ?>
     <div class="secao-ficha-titulo">
         <h4><?php echo h($tituloTabela); ?></h4>
@@ -207,7 +223,9 @@ function render_tabela_processos_abertos($processos, $tituloTabela, $idTabela)
                     <th>Execução</th>
                     <th>Data prevista</th>
                     <th>Etapa atual</th>
-                    <th>Custo</th>
+                    <?php if ($ehAdministrador): ?>
+                        <th>Custo</th>
+                    <?php endif; ?>
                     <th class="text-center">Ações</th>
                 </tr>
             </thead>
@@ -251,7 +269,9 @@ function render_tabela_processos_abertos($processos, $tituloTabela, $idTabela)
                                     <?php echo h(texto_estado_processo($processo['estado_processo'])); ?>
                                 </span>
                             </td>
-                            <td><?php echo h(formatar_moeda($processo['custo'], $processo['coberta_por_garantia'])); ?></td>
+                            <?php if ($ehAdministrador): ?>
+                                <td><?php echo h(formatar_moeda($processo['custo'], $processo['coberta_por_garantia'])); ?></td>
+                            <?php endif; ?>
                             <td class="text-center">
                                 <a class="btn btn-sm btn-ficha" title="Abrir detalhe"
                                    href="detalhe_processo.php?ref=<?php echo processo_ref($processo['origem'], $processo['id_processo']); ?>">

@@ -39,30 +39,6 @@ function gerar_codigo_utilizador(PDO $pdo)
     return 'USR-' . str_pad((string) $stmt->fetchColumn(), 3, '0', STR_PAD_LEFT);
 }
 
-function icone_permissao($codigo)
-{
-    return [
-        'dashboard' => 'fa-chart-line',
-        'equipamentos' => 'fa-stethoscope',
-        'calibracoes' => 'fa-screwdriver-wrench',
-        'localizacoes' => 'fa-location-dot',
-        'fornecedores' => 'fa-truck-medical',
-        'utilizadores' => 'fa-user',
-        'acessorios' => 'fa-plug-circle-bolt',
-        'consumiveis' => 'fa-boxes-stacked',
-        'documentos' => 'fa-folder-open',
-        'backoffice' => 'fa-pen-to-square'
-    ][$codigo] ?? 'fa-lock';
-}
-
-function permissoes_padrao($tipo)
-{
-    return [
-        'Administrador' => ['dashboard', 'equipamentos', 'calibracoes', 'localizacoes', 'fornecedores', 'utilizadores', 'acessorios', 'consumiveis', 'documentos', 'backoffice'],
-        'Engenheiro' => ['dashboard', 'equipamentos', 'calibracoes', 'localizacoes', 'fornecedores', 'acessorios', 'consumiveis', 'documentos'],
-    ][$tipo] ?? [];
-}
-
 $chaveSessao = 'novo_utilizador';
 $ficheiroAtual = 'novo_utilizador.php';
 
@@ -106,14 +82,6 @@ $labelsCampos = [
     'funcaoUtilizador' => 'Função'
 ];
 
-$stmtPermissoes = $pdo->query("
-    SELECT id_permissao, codigo_permissao, nome_permissao, descricao
-    FROM permissoes_sistema
-    WHERE isActive = 1
-    ORDER BY id_permissao ASC
-");
-$permissoesSistema = $stmtPermissoes->fetchAll();
-
 if (isset($_GET['limpar'])) {
     unset($_SESSION[$chaveSessao]);
     header('Location: ' . $ficheiroAtual);
@@ -146,10 +114,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     guardar_etapa_temporaria($chaveSessao, $etapaSubmetida, $camposPorEtapa);
-
-    if ($etapaSubmetida === 'acesso') {
-        $_SESSION[$chaveSessao]['permissoesUtilizador'] = $_POST['permissoesUtilizador'] ?? [];
-    }
 
     if ($acaoEtapa === 'anterior') {
         header('Location: ' . $ficheiroAtual . '?etapa=' . urlencode(etapa_anterior($etapaSubmetida, $etapas)));
@@ -270,26 +234,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $idUtilizador = (int) $pdo->lastInsertId();
 
-            $permissoesSelecionadas = $dados['permissoesUtilizador'] ?? permissoes_padrao($dados['tipoUtilizador']);
-            $stmtPermissao = $pdo->prepare("SELECT id_permissao FROM permissoes_sistema WHERE codigo_permissao = :codigo AND isActive = 1 LIMIT 1");
-            $stmtInserirPermissao = $pdo->prepare("
-                INSERT INTO utilizadores_permissoes (id_utilizador, id_permissao, isActive, atualizado_por)
-                VALUES (:id_utilizador, :id_permissao, 1, :atualizado_por)
-            ");
-
-            foreach ($permissoesSelecionadas as $codigoPermissao) {
-                $stmtPermissao->execute([':codigo' => $codigoPermissao]);
-                $idPermissao = $stmtPermissao->fetchColumn();
-
-                if ($idPermissao) {
-                    $stmtInserirPermissao->execute([
-                        ':id_utilizador' => $idUtilizador,
-                        ':id_permissao' => $idPermissao,
-                        ':atualizado_por' => utilizador_sessao()
-                    ]);
-                }
-            }
-
             $stmtHistorico = $pdo->prepare("
                 INSERT INTO historico_utilizadores (
                     id_utilizador_alvo, codigo_utilizador, acao, observacoes, realizado_por
@@ -318,9 +262,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
-
-$permissoesAtivas = $_SESSION[$chaveSessao]['permissoesUtilizador']
-    ?? permissoes_padrao($_SESSION[$chaveSessao]['tipoUtilizador'] ?? '');
 
 require_once __DIR__ . '/../../includes/header.php';
 require_once __DIR__ . '/../../includes/nav.php';
@@ -487,7 +428,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 <div class="<?php echo classe_painel('acesso', $etapaAtual); ?>" id="acesso" role="tabpanel" tabindex="0">
                     <div class="secao-ficha-titulo">
                         <h4>Acesso ao Sistema</h4>
-                        <p>Defina credenciais e permissões de acesso aos menus.</p>
+                        <p>Defina as credenciais de acesso ao sistema.</p>
                     </div>
 
                     <div class="row g-4">
@@ -522,25 +463,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
                     </div>
 
-                    <div class="mt-4">
-                        <label class="form-label">Acessos aos menus do sistema</label>
-                        <div class="permissoes-utilizador-opcoes">
-                            <?php foreach ($permissoesSistema as $permissao): ?>
-                                <div class="form-check permissao-utilizador-item">
-                                    <input class="form-check-input permissao-utilizador"
-                                           type="checkbox"
-                                           id="permissao_<?php echo h($permissao['codigo_permissao']); ?>"
-                                           name="permissoesUtilizador[]"
-                                           value="<?php echo h($permissao['codigo_permissao']); ?>"
-                                           <?php echo in_array($permissao['codigo_permissao'], $permissoesAtivas, true) ? 'checked' : ''; ?>>
-                                    <label class="form-check-label" for="permissao_<?php echo h($permissao['codigo_permissao']); ?>">
-                                        <i class="fa-solid <?php echo h(icone_permissao($permissao['codigo_permissao'])); ?>"></i>
-                                        <?php echo h($permissao['nome_permissao']); ?>
-                                    </label>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="<?php echo classe_painel('servico', $etapaAtual); ?>" id="servico" role="tabpanel" tabindex="0">

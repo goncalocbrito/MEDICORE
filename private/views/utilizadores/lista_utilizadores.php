@@ -95,17 +95,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'desativ
 
 $stmt = $pdo->query("
     SELECT
-        u.*,
-        (
-            SELECT COUNT(*)
-            FROM utilizadores_permissoes up
-            WHERE up.id_utilizador = u.id_utilizador
-              AND up.isActive = 1
-        ) AS total_permissoes_ativas
-    FROM utilizadores u
-    WHERE u.isActive = 1
-    ORDER BY u.nome ASC
+        id_utilizador,
+        codigo_utilizador,
+        nome,
+        tipo_utilizador,
+        departamento,
+        email,
+        telefone,
+        cartao_cidadao,
+        estado
+    FROM utilizadores
+    WHERE isActive = 1
+    ORDER BY nome ASC
 ");
+
 $utilizadores = $stmt->fetchAll();
 
 require_once __DIR__ . '/../../includes/header.php';
@@ -141,7 +144,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <th>Tipo</th>
                     <th>Serviço</th>
                     <th>Email</th>
-                    <th>Acessos</th>
                     <th>Estado</th>
                     <th class="text-center">Ações</th>
                 </tr>
@@ -161,7 +163,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </td>
                         <td><?php echo h($utilizador['departamento'] ?: '---'); ?></td>
                         <td><?php echo h($utilizador['email']); ?></td>
-                        <td><?php echo h($utilizador['total_permissoes_ativas']); ?></td>
                         <td>
                             <span class="estado <?php echo h(classe_estado_utilizador($utilizador['estado'])); ?>">
                                 <?php echo h($utilizador['estado']); ?>

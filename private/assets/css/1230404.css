@@ -48,27 +48,6 @@ body {
     background-color: var(--cor-secundaria-escura);
 }
 
-/* Menu horizontal */
-.menu-horizontal {
-    background-color: #0f3440;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.menu-horizontal .nav-link {
-    color: #dff7f0;
-    font-weight: 600;
-    padding: 14px 18px;
-    border-bottom: 3px solid transparent;
-    transition: color 0.3s, border-color 0.3s, background-color 0.3s;
-}
-
-.menu-horizontal .nav-link:hover,
-.menu-horizontal .nav-link.active {
-    color: var(--cor-branco);
-    border-bottom-color: var(--cor-secundaria);
-    background-color: rgba(255, 255, 255, 0.04);
-}
-
 /* Conteúdo principal */
 .conteudo-private {
     padding: 40px;
@@ -1303,92 +1282,6 @@ body {
     margin-bottom: 16px;
 }
 
-/* Caixa de permissões do utilizador */
-.permissoes-utilizador-opcoes {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 12px;
-    background-color: #f8fbfb;
-    border: 1px solid #d6ece8;
-    border-radius: 16px;
-    padding: 16px;
-}
-
-.permissao-utilizador-item {
-    margin-bottom: 0;
-    padding-left: 0;
-    position: relative;
-}
-
-.permissao-utilizador-item .form-check-input {
-    position: absolute;
-    left: -9999px;
-    opacity: 0;
-    width: 0;
-    height: 0;
-    margin: 0;
-    appearance: none;
-    -webkit-appearance: none;
-    pointer-events: none;
-}
-
-.permissao-utilizador-item .form-check-label {
-    width: 100%;
-    min-height: 54px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-left: 0;
-    padding: 12px 16px;
-    color: #62706d;
-    font-weight: 700;
-    background-color: #eef2f1;
-    border: 1px solid #d7e2df;
-    border-radius: 14px;
-    cursor: pointer;
-    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
-}
-
-.permissao-utilizador-item .form-check-label i {
-    width: 20px;
-    text-align: center;
-    flex: 0 0 20px;
-}
-
-.permissao-utilizador-item .form-check-label::after {
-    content: "";
-    width: 12px;
-    height: 12px;
-    flex: 0 0 12px;
-    margin-left: auto;
-    border-radius: 50%;
-    background-color: #9ca3af;
-    box-shadow: 0 0 0 3px rgba(156, 163, 175, 0.16);
-}
-
-.permissao-utilizador-item .form-check-input:checked + .form-check-label {
-    color: #176b5b;
-    background-color: #dff7f0;
-    border-color: #38b894;
-    box-shadow: 0 8px 18px rgba(36, 121, 110, 0.12);
-}
-
-.permissao-utilizador-item .form-check-input:checked + .form-check-label::after {
-    background-color: #24796e;
-    box-shadow: 0 0 0 3px rgba(36, 121, 110, 0.18);
-}
-
-.permissao-utilizador-item .form-check-input:focus-visible + .form-check-label {
-    outline: 3px solid rgba(47, 174, 143, 0.3);
-    outline-offset: 2px;
-}
-
-.permissao-utilizador-item .form-check-input:disabled + .form-check-label {
-    cursor: not-allowed;
-    opacity: 0.78;
-}
-
-
 /* Formulários de fornecedores */
 
 .tipos-fornecedor-opcoes {
@@ -2116,32 +2009,6 @@ textarea[readonly] {
 }
 
 /* =========================================================
-   MENU HORIZONTAL PRINCIPAL
-   Distribui melhor os itens do menu pela largura da página
-   ========================================================= */
-
-.menu-horizontal .navbar-collapse {
-    width: 100%;
-}
-
-.menu-horizontal .navbar-nav {
-    width: auto;
-    max-width: none;
-    margin: 0 auto;
-    justify-content: center;
-    gap: 0;
-}
-
-.menu-horizontal .nav-item {
-    text-align: center;
-}
-
-.menu-horizontal .nav-link {
-    min-width: 170px;
-}
-
-
-/* =========================================================
    RESPONSIVIDADE
    Ajustes para tablets e telemóveis
    ========================================================= */
@@ -2161,21 +2028,6 @@ textarea[readonly] {
 
     .ficha-tabs .nav-link {
         border-bottom: 1px solid #d6ece8;
-    }
-}
-
-@media (max-width: 991px) {
-    .menu-horizontal .navbar-nav {
-        max-width: none;
-        width: 100%;
-    }
-
-    .menu-horizontal .nav-link {
-        min-width: 260px;
-        min-height: 56px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
     }
 }
 
@@ -3010,92 +2862,6 @@ textarea[readonly] {
     display: none;
 }
 
-/* =========================================================
-   SIDEBAR / MENU HORIZONTAL PRIVADO
-   Estilo único para menus com submenu
-   ========================================================= */
-
-.menu-dropdown-hover {
-    position: relative;
-    width: 260px;
-}
-
-.menu-dropdown-hover > .nav-link {
-    width: 100%;
-    min-width: 260px;
-    min-height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.submenu-private {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 260px;
-    min-width: 260px;
-    padding: 8px 0;
-    margin: 0;
-    list-style: none;
-    background-color: #123c46;
-    border-radius: 0 0 16px 16px;
-    box-shadow: 0 12px 28px rgba(18, 60, 70, 0.22);
-    z-index: 1200;
-    overflow: hidden;
-}
-
-.menu-dropdown-hover:hover .submenu-private,
-.menu-dropdown-hover.submenu-aberto .submenu-private {
-    display: block;
-}
-
-.submenu-private li a {
-    width: 100%;
-    min-height: 52px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 12px 16px;
-    color: #dff7f0;
-    text-decoration: none;
-    font-family: inherit;
-    font-size: 0.98rem;
-    font-weight: 600;
-    line-height: 1.2;
-    white-space: nowrap;
-    transition: color 0.3s, background-color 0.3s;
-}
-
-.submenu-private li a:hover,
-.submenu-private li a.submenu-active {
-    color: #ffffff;
-    background-color: rgba(255, 255, 255, 0.10);
-}
-
-.submenu-private li a.submenu-active {
-    border-left: 4px solid var(--cor-secundaria);
-}
-
-/* Reduz ligeiramente a altura do topo e do menu */
-.logo-private {
-    height: 40px;
-}
-
-.user-button {
-    padding: 7px 16px;
-}
-
-.menu-horizontal .nav-link {
-    padding: 10px 16px;
-}
-
-.menu-dropdown-hover > .nav-link {
-    min-height: 56px;
-}
-
 .campo-pesquisa-registo {
     position: relative;
     width: 100%;
@@ -3279,4 +3045,204 @@ textarea[readonly] {
 .btn-acao-rejeitar:hover {
     background: #d7263d;
     color: #ffffff;
+}
+
+.dashboard-alertas-emprestimos {
+    margin: 34px 0;
+}
+
+.alerta-emprestimo-card {
+    min-height: 150px;
+    border-radius: 8px;
+    border: 1px solid #d8eeee;
+    background: #ffffff;
+    padding: 28px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 18px 40px rgba(0, 55, 71, 0.08);
+}
+
+.alerta-emprestimo-card span {
+    display: block;
+    font-weight: 800;
+    color: #003747;
+    margin-bottom: 8px;
+}
+
+.alerta-emprestimo-card h3 {
+    margin: 0;
+    font-size: 2.3rem;
+    color: #003747;
+}
+
+.alerta-emprestimo-card p {
+    margin: 6px 0 0;
+    color: #5f7285;
+}
+
+.alerta-emprestimo-card > i {
+    font-size: 2rem;
+}
+
+.alerta-emprestimo-aviso > i {
+    color: #b7791f;
+}
+
+.alerta-emprestimo-atrasado {
+    border-color: #f5b8c1;
+}
+
+.alerta-emprestimo-atrasado > i {
+    color: #c53030;
+}
+
+a.alerta-emprestimo-card {
+    color: inherit;
+    cursor: pointer;
+}
+
+a.alerta-emprestimo-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 22px 46px rgba(0, 55, 71, 0.12);
+}
+
+/* =========================================================
+   SIDEBAR / MENU HORIZONTAL PRIVADO
+   ========================================================= */
+
+.menu-horizontal {
+    width: 100%;
+    min-height: 66px;
+    padding: 0 24px;
+    background-color: #0c3a44;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 1000;
+}
+
+.menu-horizontal .container-fluid {
+    padding: 0;
+}
+
+.menu-horizontal .navbar-collapse {
+    width: 100%;
+}
+
+.menu-horizontal .navbar-nav {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    justify-content: center;
+    gap: 0;
+}
+
+.menu-horizontal .nav-item,
+.menu-dropdown-hover {
+    position: relative;
+    width: 155px;
+    text-align: center;
+}
+
+.menu-horizontal .nav-link,
+.menu-dropdown-hover > .nav-link {
+    width: 100%;
+    min-width: 155px;
+    min-height: 54px;
+    padding: 8px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    border-bottom: 4px solid transparent;
+}
+
+.menu-horizontal .nav-link:hover,
+.menu-horizontal .nav-link.active,
+.menu-dropdown-hover:hover > .nav-link {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-bottom-color: var(--cor-secundaria);
+}
+
+.submenu-private {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 155px;
+    min-width: 155px;
+    padding: 6px 0;
+    margin: 0;
+    list-style: none;
+    background-color: #123c46;
+    border-radius: 0 0 14px 14px;
+    box-shadow: 0 12px 28px rgba(18, 60, 70, 0.22);
+    z-index: 1200;
+    overflow: hidden;
+}
+
+.menu-dropdown-hover:hover .submenu-private,
+.menu-dropdown-hover.submenu-aberto .submenu-private {
+    display: block;
+}
+
+.submenu-private li a {
+    width: 100%;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 10px;
+    color: #dff7f0;
+    text-decoration: none;
+    font-family: inherit;
+    font-size: 0.86rem;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: normal;
+}
+
+.submenu-private li a:hover,
+.submenu-private li a.submenu-active {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.10);
+}
+
+.submenu-private li a.submenu-active {
+    border-left: 4px solid var(--cor-secundaria);
+}
+
+@media (max-width: 991px) {
+    .menu-horizontal {
+        padding: 12px 24px;
+    }
+
+    .menu-horizontal .navbar-nav {
+        width: 100%;
+        max-width: none;
+        align-items: stretch;
+    }
+
+    .menu-horizontal .nav-item,
+    .menu-dropdown-hover,
+    .menu-horizontal .nav-link,
+    .menu-dropdown-hover > .nav-link,
+    .submenu-private {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .submenu-private {
+        position: static;
+        box-shadow: none;
+        border-radius: 0 0 12px 12px;
+    }
 }

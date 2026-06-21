@@ -45,6 +45,10 @@ $totalAvariados = 0;
 $totalManutencao = 0;
 $totalCalibracao = 0;
 $equipamentosAvariados = [];
+$totalEmprestimosAmanha = 0;
+$totalEmprestimosAtrasados = 0;
+$emprestimosAmanha = [];
+$emprestimosAtrasados = [];
 
 try {
     $pdo = medicore_pdo();
@@ -92,7 +96,51 @@ try {
         LIMIT 10
     ");
     $equipamentosAvariados = $stmtAvariados->fetchAll();
-} catch (Throwable $e) {
+    
+    $stmtEmprestimosAmanha = $pdo->query("
+        SELECT
+            emp.id_emprestimo,
+            emp.codigo_emprestimo,
+            emp.responsavel_emprestimo,
+            emp.data_prevista_devolucao,
+            e.codigo_equipamento,
+            e.designacao,
+            ld.codigo AS destino_codigo
+        FROM emprestimos_equipamentos emp
+        INNER JOIN equipamentos e
+            ON e.id_equipamento = emp.id_equipamento
+        INNER JOIN localizacoes ld
+            ON ld.id_localizacao = emp.id_localizacao_destino
+        WHERE emp.isActive = 1
+        AND emp.estado = 'ativo'
+        AND emp.data_prevista_devolucao = DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+        ORDER BY emp.data_prevista_devolucao ASC
+    ");
+    $emprestimosAmanha = $stmtEmprestimosAmanha->fetchAll();
+    $totalEmprestimosAmanha = count($emprestimosAmanha);
+
+    $stmtEmprestimosAtrasados = $pdo->query("
+        SELECT
+            emp.id_emprestimo,
+            emp.codigo_emprestimo,
+            emp.responsavel_emprestimo,
+            emp.data_prevista_devolucao,
+            e.codigo_equipamento,
+            e.designacao,
+            ld.codigo AS destino_codigo
+        FROM emprestimos_equipamentos emp
+        INNER JOIN equipamentos e
+            ON e.id_equipamento = emp.id_equipamento
+        INNER JOIN localizacoes ld
+            ON ld.id_localizacao = emp.id_localizacao_destino
+        WHERE emp.isActive = 1
+        AND emp.estado = 'ativo'
+        AND emp.data_prevista_devolucao < CURDATE()
+        ORDER BY emp.data_prevista_devolucao ASC
+    ");
+    $emprestimosAtrasados = $stmtEmprestimosAtrasados->fetchAll();
+    $totalEmprestimosAtrasados = count($emprestimosAtrasados);
+    } catch (Throwable $e) {
     $erro_bd = 'Erro ao carregar os indicadores do dashboard.';
 }
 
@@ -164,6 +212,76 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 <p>Registos ativos no inventário</p>
             </div>
         </div>
+    </section>
+
+    <section class="dashboard-alertas-emprestimos">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <a href="<?php echo BASE_URL; ?>/private/views/mobilidade/emprestimo.php" class="alerta-emprestimo-card alerta-emprestimo-aviso text-decoration-none">
+                    <div>
+                        <span>Empréstimos a terminar amanhã</span>
+                        <h3><?php echo h_dashboard_engenheiro($totalEmprestimosAmanha); ?></h3>
+                        <p>Equipamentos que devem ser devolvidos no próximo dia.</p>
+                    </div>
+                    <i class="fa-solid fa-calendar-day"></i>
+                </a>
+            </div>
+
+            <div class="col-md-6">
+                <a href="<?php echo BASE_URL; ?>/private/views/mobilidade/emprestimo.php" class="alerta-emprestimo-card alerta-emprestimo-atrasado text-decoration-none">
+                    <div>
+                        <span>Empréstimos em atraso</span>
+                        <h3><?php echo h_dashboard_engenheiro($totalEmprestimosAtrasados); ?></h3>
+                        <p>Equipamentos com devolução ultrapassada.</p>
+                    </div>
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </a>
+            </div>
+        </div>
+
+        <?php if (!empty($emprestimosAmanha) || !empty($emprestimosAtrasados)): ?>
+            <div class="table-responsive tabela-container mt-4">
+                <table class="table table-hover align-middle tabela-dashboard">
+                    <thead>
+                        <tr>
+                            <th>Alerta</th>
+                            <th>Empréstimo</th>
+                            <th>Equipamento</th>
+                            <th>Destino</th>
+                            <th>Responsável</th>
+                            <th>Data devolução</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($emprestimosAtrasados as $emprestimo): ?>
+                            <tr>
+                                <td>
+                                    <span class="estado estado-avariado">Atrasado</span>
+                                </td>
+                                <td><?php echo h_dashboard_engenheiro($emprestimo['codigo_emprestimo']); ?></td>
+                                <td><?php echo h_dashboard_engenheiro($emprestimo['codigo_equipamento'] . ' - ' . $emprestimo['designacao']); ?></td>
+                                <td><?php echo h_dashboard_engenheiro($emprestimo['destino_codigo']); ?></td>
+                                <td><?php echo h_dashboard_engenheiro($emprestimo['responsavel_emprestimo']); ?></td>
+                                <td><?php echo h_dashboard_engenheiro($emprestimo['data_prevista_devolucao']); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+
+                        <?php foreach ($emprestimosAmanha as $emprestimo): ?>
+                            <tr>
+                                <td>
+                                    <span class="estado estado-manutencao">Termina amanhã</span>
+                                </td>
+                                <td><?php echo h_dashboard_engenheiro($emprestimo['codigo_emprestimo']); ?></td>
+                                <td><?php echo h_dashboard_engenheiro($emprestimo['codigo_equipamento'] . ' - ' . $emprestimo['designacao']); ?></td>
+                                <td><?php echo h_dashboard_engenheiro($emprestimo['destino_codigo']); ?></td>
+                                <td><?php echo h_dashboard_engenheiro($emprestimo['responsavel_emprestimo']); ?></td>
+                                <td><?php echo h_dashboard_engenheiro($emprestimo['data_prevista_devolucao']); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
     </section>
 
     <section class="dashboard-alertas">

@@ -1392,3 +1392,35 @@ MODIFY tipo_evento ENUM(
     'calibracao',
     'alteracao_dados'
 ) NOT NULL;
+
+ALTER TABLE historico_utilizadores
+DROP FOREIGN KEY fk_historico_utilizadores_permissao;
+
+ALTER TABLE historico_utilizadores
+DROP COLUMN id_permissao,
+DROP COLUMN codigo_permissao;
+
+DROP TABLE IF EXISTS utilizadores_permissoes;
+
+DROP TABLE IF EXISTS permissoes_sistema;
+
+UPDATE historico_utilizadores
+SET acao = 'edicao_utilizador'
+WHERE acao IN (
+    'adicao_autorizacao',
+    'remocao_autorizacao',
+    'reativacao_autorizacao',
+    'edicao_autorizacao'
+);
+
+ALTER TABLE historico_utilizadores
+MODIFY acao ENUM(
+    'criacao_utilizador',
+    'edicao_utilizador',
+    'remocao_utilizador',
+    'reativacao_utilizador'
+) NOT NULL;
+
+---
+
+

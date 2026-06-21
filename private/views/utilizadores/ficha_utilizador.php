@@ -33,22 +33,6 @@ function selected_valor($atual, $valor)
     return (string) $atual === (string) $valor ? 'selected' : '';
 }
 
-function icone_permissao($codigo)
-{
-    return [
-        'dashboard' => 'fa-chart-line',
-        'equipamentos' => 'fa-stethoscope',
-        'calibracoes' => 'fa-screwdriver-wrench',
-        'localizacoes' => 'fa-location-dot',
-        'fornecedores' => 'fa-truck-medical',
-        'utilizadores' => 'fa-user',
-        'acessorios' => 'fa-plug-circle-bolt',
-        'consumiveis' => 'fa-boxes-stacked',
-        'documentos' => 'fa-folder-open',
-        'backoffice' => 'fa-pen-to-square'
-    ][$codigo] ?? 'fa-lock';
-}
-
 $idUtilizador = id_from_request();
 $mensagemSucesso = '';
 $mensagemErro = '';
@@ -138,54 +122,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':id_utilizador' => $idUtilizador
             ], $paramsPassword));
 
-            $permissoesSelecionadas = $_POST['permissoesUtilizador'] ?? [];
-
-            $stmtPermissoes = $pdo->query("SELECT id_permissao, codigo_permissao FROM permissoes_sistema WHERE isActive = 1");
-            $permissoesSistema = $stmtPermissoes->fetchAll();
-
-            $stmtPermissaoAtual = $pdo->prepare("
-                SELECT id_utilizador_permissao
-                FROM utilizadores_permissoes
-                WHERE id_utilizador = :id_utilizador
-                  AND id_permissao = :id_permissao
-                LIMIT 1
-            ");
-            $stmtInserirPermissao = $pdo->prepare("
-                INSERT INTO utilizadores_permissoes (id_utilizador, id_permissao, isActive, atualizado_por)
-                VALUES (:id_utilizador, :id_permissao, :isActive, :atualizado_por)
-            ");
-            $stmtAtualizarPermissao = $pdo->prepare("
-                UPDATE utilizadores_permissoes
-                SET isActive = :isActive,
-                    atualizado_por = :atualizado_por
-                WHERE id_utilizador_permissao = :id_utilizador_permissao
-            ");
-
-            foreach ($permissoesSistema as $permissao) {
-                $ativo = in_array($permissao['codigo_permissao'], $permissoesSelecionadas, true) ? 1 : 0;
-
-                $stmtPermissaoAtual->execute([
-                    ':id_utilizador' => $idUtilizador,
-                    ':id_permissao' => $permissao['id_permissao']
-                ]);
-                $idUtilizadorPermissao = $stmtPermissaoAtual->fetchColumn();
-
-                if ($idUtilizadorPermissao) {
-                    $stmtAtualizarPermissao->execute([
-                        ':isActive' => $ativo,
-                        ':atualizado_por' => utilizador_sessao(),
-                        ':id_utilizador_permissao' => $idUtilizadorPermissao
-                    ]);
-                } else {
-                    $stmtInserirPermissao->execute([
-                        ':id_utilizador' => $idUtilizador,
-                        ':id_permissao' => $permissao['id_permissao'],
-                        ':isActive' => $ativo,
-                        ':atualizado_por' => utilizador_sessao()
-                    ]);
-                }
-            }
-
             $stmt = $pdo->prepare("
                 INSERT INTO historico_utilizadores (
                     id_utilizador_alvo, codigo_utilizador, acao, observacoes, realizado_por
@@ -220,26 +156,6 @@ if (!$utilizador) {
     header('Location: lista_utilizadores.php');
     exit;
 }
-
-$stmt = $pdo->query("
-    SELECT id_permissao, codigo_permissao, nome_permissao, descricao
-    FROM permissoes_sistema
-    WHERE isActive = 1
-    ORDER BY id_permissao ASC
-");
-$permissoesSistema = $stmt->fetchAll();
-
-$stmt = $pdo->prepare("
-    SELECT ps.codigo_permissao
-    FROM utilizadores_permissoes up
-    INNER JOIN permissoes_sistema ps
-        ON ps.id_permissao = up.id_permissao
-    WHERE up.id_utilizador = :id
-      AND up.isActive = 1
-      AND ps.isActive = 1
-");
-$stmt->execute([':id' => $idUtilizador]);
-$permissoesAtivas = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
 require_once __DIR__ . '/../../includes/header.php';
 require_once __DIR__ . '/../../includes/nav.php';
@@ -373,7 +289,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 <div class="tab-pane fade" id="acesso" role="tabpanel" tabindex="0">
                     <div class="secao-ficha-titulo">
                         <h4>Acesso ao Sistema</h4>
-                        <p>Credenciais e menus disponíveis para o utilizador.</p>
+                        <p>Credenciais e validade do acesso ao sistema.</p>
                     </div>
 
                     <div class="row g-4">
@@ -408,24 +324,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
                     </div>
 
-                    <div class="mt-4">
-                        <label class="form-label">Acessos aos menus do sistema</label>
-                        <div class="permissoes-utilizador-opcoes">
-                            <?php foreach ($permissoesSistema as $permissao): ?>
-                                <div class="form-check permissao-utilizador-item">
-                                    <input class="form-check-input permissao-utilizador campo-ficha campo-editavel"
-                                           type="checkbox"
-                                           id="permissao_<?php echo h($permissao['codigo_permissao']); ?>"
-                                           name="permissoesUtilizador[]"
-                                           value="<?php echo h($permissao['codigo_permissao']); ?>"
-                                           <?php echo in_array($permissao['codigo_permissao'], $permissoesAtivas, true) ? 'checked' : ''; ?>>
-                                    <label class="form-check-label" for="permissao_<?php echo h($permissao['codigo_permissao']); ?>">
-                                        <i class="fa-solid <?php echo h(icone_permissao($permissao['codigo_permissao'])); ?>"></i>
-                                        <?php echo h($permissao['nome_permissao']); ?>
-                                    </label>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
+                    <div class="alert alert-info mt-4 mb-0 rounded-4">
+                        As opções de menu são atribuídas automaticamente pelo tipo de utilizador.
                     </div>
                 </div>
 

@@ -4,6 +4,7 @@ require_once __DIR__ . '/funcoes.php';
 $paginaAtual = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $tipoUtilizadorAtual = $_SESSION['tipo_utilizador'] ?? '';
 $tipoUtilizadorNormalizado = strtolower(trim($tipoUtilizadorAtual));
+$isAdministrador = strpos($tipoUtilizadorNormalizado, 'administrador') !== false;
 
 function menu_ativo($caminho)
 {
@@ -42,8 +43,7 @@ function pode_ver($permissao)
 }
 
 $podeVerEquipamentos = pode_ver('equipamentos') || pode_ver('acessorios') || pode_ver('consumiveis') || pode_ver('familias_equipamentos');
-$isEngenheiro = strpos($tipoUtilizadorNormalizado, 'engenheiro') !== false
-    || (pode_ver('equipamentos') && pode_ver('calibracoes') && pode_ver('fornecedores'));
+$isEngenheiro = strpos($tipoUtilizadorNormalizado, 'engenheiro') !== false;
 ?>
 
 <!-- Menu horizontal da area privada -->
@@ -139,19 +139,33 @@ $isEngenheiro = strpos($tipoUtilizadorNormalizado, 'engenheiro') !== false
 
                 <?php if (pode_ver('calibracoes')): ?>
                     <li class="nav-item menu-dropdown-hover">
-                        <a href="<?php echo BASE_URL; ?>/private/views/calibracao_manutencao/calibracao_manutencao.php"
-                           class="nav-link<?php echo menu_ativo(BASE_URL . '/private/views/calibracao_manutencao/'); ?>">
-                            <i class="fa-solid fa-screwdriver-wrench me-2"></i> Calibracoes/Manutencoes
+                        <a href="<?php echo $isAdministrador
+                            ? BASE_URL . '/private/views/calibracao_manutencao/aprovacao_processos.php'
+                            : BASE_URL . '/private/views/calibracao_manutencao/calibracao_manutencao.php'; ?>"
+                        class="nav-link<?php echo menu_ativo(BASE_URL . '/private/views/calibracao_manutencao/'); ?>">
+                            <i class="fa-solid fa-screwdriver-wrench me-2"></i> Calibrações/Manutenções
                             <i class="fa-solid fa-chevron-down ms-1 small"></i>
                         </a>
 
                         <ul class="submenu-private">
-                            <li>
-                                <a href="<?php echo BASE_URL; ?>/private/views/calibracao_manutencao/calibracao_manutencao.php"
-                                   class="<?php echo submenu_ativo(BASE_URL . '/private/views/calibracao_manutencao/calibracao_manutencao.php'); ?>">
-                                    <i class="fa-solid fa-list-check me-2"></i> Processos a Decorrer
-                                </a>
-                            </li>
+                            <?php if (!$isAdministrador): ?>
+                                <li>
+                                    <a href="<?php echo BASE_URL; ?>/private/views/calibracao_manutencao/calibracao_manutencao.php"
+                                    class="<?php echo submenu_ativo(BASE_URL . '/private/views/calibracao_manutencao/calibracao_manutencao.php'); ?>">
+                                        <i class="fa-solid fa-list-check me-2"></i> Processos a Decorrer
+                                    </a>
+                                </li>
+                            <?php endif; ?>
+
+                            <?php if ($isAdministrador): ?>
+                                <li>
+                                    <a href="<?php echo BASE_URL; ?>/private/views/calibracao_manutencao/aprovacao_processos.php"
+                                    class="<?php echo submenu_ativo(BASE_URL . '/private/views/calibracao_manutencao/aprovacao_processos.php'); ?>">
+                                        <i class="fa-solid fa-clipboard-check me-2"></i> Aprovação de Pedidos
+                                    </a>
+                                </li>
+                            <?php endif; ?>
+
                             <li>
                                 <a href="<?php echo BASE_URL; ?>/private/views/calibracao_manutencao/processos_finalizados.php"
                                    class="<?php echo submenu_ativo(BASE_URL . '/private/views/calibracao_manutencao/processos_finalizados.php'); ?>">

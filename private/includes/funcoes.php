@@ -173,10 +173,13 @@ function permissoes_por_tipo_utilizador($tipo)
     $permissoes = [
         'Administrador' => [
             'dashboard',
+            'equipamentos',
+            'familias_equipamentos',
             'localizacoes',
             'utilizadores',
             'backoffice',
-            'familias_equipamentos',
+            'fornecedores',
+            'calibracoes',
             'mobilidade'
         ],
         'Engenheiro' => [
@@ -197,8 +200,7 @@ function user_has_permission($permissao)
 {
     start_session();
 
-    $permissoes = $_SESSION['permissoes_utilizador']
-        ?? permissoes_por_tipo_utilizador($_SESSION['tipo_utilizador'] ?? '');
+    $permissoes = permissoes_por_tipo_utilizador($_SESSION['tipo_utilizador'] ?? '');
 
     return in_array($permissao, $permissoes, true);
 }

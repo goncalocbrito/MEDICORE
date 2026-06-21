@@ -7,6 +7,8 @@ redirect_if_not_logged();
    Junta manutenções e calibrações concluídas.
    ========================================================= */
 
+$ehAdministrador = ($_SESSION['tipo_utilizador'] ?? '') === 'Administrador';
+
 if (!function_exists('h')) {
     function h($valor)
     {
@@ -266,7 +268,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <th>Responsável</th>
                     <th>Conclusão</th>
                     <th>Resultado</th>
-                    <th>Custo</th>
+                    <?php if ($ehAdministrador): ?>
+                        <th>Custo</th>
+                    <?php endif; ?>
                     <th>Documento</th>
                     <th class="text-center">Ações</th>
                 </tr>
@@ -312,7 +316,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     <?php echo h(texto_resultado($processo['origem'], $processo['resultado'])); ?>
                                 </span>
                             </td>
+                            <?php if ($ehAdministrador): ?>
                             <td><?php echo h(formatar_moeda($processo['custo'], $processo['coberta_por_garantia'])); ?></td>
+                            <?php endif; ?>
                             <td>
                                 <?php if (!empty($processo['documento_caminho'])): ?>
                                     <a href="../../assets/documentos/<?php echo h($processo['documento_caminho']); ?>" target="_blank" class="btn btn-sm btn-documento-ver">

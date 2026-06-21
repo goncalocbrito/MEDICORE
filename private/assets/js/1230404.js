@@ -1,168 +1,5 @@
-﻿// JavaScript GonÃ§alo Brito 1230404
-// Funcionalidades da Ã¡rea privada MEDICORE
-
-// Dados temporÃ¡rios dos equipamentos.
-// Quando o backend estiver implementado, estes dados passam a vir da base de dados MySQL.
-const equipamentosMEDICORE = {
-    "EQ-001": {
-        codigo: "EQ-001",
-        nome: "Monitor MultiparamÃ©trico",
-        categoria: "MonitorizaÃ§Ã£o",
-        fabricante: "Philips",
-        modelo: "IntelliVue MX450",
-        serie: "SN-MX450-2024",
-        anoFabrico: "2023",
-        tipoEntrada: "Compra",
-        departamento: "Unidade de Cuidados Intensivos",
-        edificio: "EdifÃ­cio A",
-        piso: "2",
-        sala: "Sala 2",
-        localizacao: "UCI - Sala 2",
-        estado: "Ativo",
-        criticidade: "CrÃ­tica",
-        operacional: "Operacional",
-        fornecedor: "MedSupply Portugal",
-        dataFabrico: "2023-11-10",
-        dataAquisicao: "2024-01-15",
-        dataInstalacao: "2024-01-20",
-        valorAquisicao: "3500.00",
-        inicioGarantia: "2024-01-20",
-        fimGarantia: "2027-01-20",
-        contratoManutencao: "Sim",
-        tipoContrato: "ManutenÃ§Ã£o preventiva anual",
-        entidadeContrato: "MedSupply Portugal",
-        ultimaManutencao: "2026-03-12",
-        proximaManutencao: "2026-09-12",
-        ultimaCalibracao: "2026-03-12",
-        proximaCalibracao: "2026-09-12",
-        periodicidade: "Semestral",
-        responsavelTecnico: "Eng. GonÃ§alo Brito",
-        acessorios: [
-            {
-                codigo: "ACC-001",
-                nome: "Cabo ECG 5 derivaÃ§Ãµes",
-                tipo: "Cabo",
-                serie: "ECG-5D-2024",
-                estado: "Ativo",
-                intervencao: "não",
-                proximaIntervencao: "Por definir"
-            },
-            {
-                codigo: "ACC-002",
-                nome: "Sensor SpO2",
-                tipo: "Sensor",
-                serie: "SPO2-4482",
-                estado: "Ativo",
-                intervencao: "Sim",
-                proximaIntervencao: "2026-09-12"
-            },
-            {
-                codigo: "ACC-003",
-                nome: "BraÃ§adeira NIBP adulto",
-                tipo: "ConsumÃ­vel reutilizÃ¡vel",
-                serie: "NIBP-1120",
-                estado: "Ativo",
-                intervencao: "Sim",
-                proximaIntervencao: "2026-09-12"
-            }
-        ],
-        observacoes: "Equipamento essencial para monitorizaÃ§Ã£o contÃ­nua de parÃ¢metros vitais em contexto de cuidados intensivos."
-    },
-
-    "EQ-002": {
-        codigo: "EQ-002",
-        nome: "Ventilador Pulmonar",
-        categoria: "Suporte de Vida",
-        fabricante: "DrÃ¤ger",
-        modelo: "Evita V300",
-        serie: "SN-EV300-1198",
-        anoFabrico: "2022",
-        tipoEntrada: "Compra",
-        departamento: "UrgÃªncia",
-        edificio: "EdifÃ­cio B",
-        piso: "0",
-        sala: "Sala 1",
-        localizacao: "UrgÃªncia - Sala 1",
-        estado: "Em manutenÃ§Ã£o",
-        criticidade: "CrÃ­tica",
-        operacional: "não operacional",
-        fornecedor: "Biomedical Solutions",
-        dataFabrico: "2022-12-05",
-        dataAquisicao: "2023-06-10",
-        dataInstalacao: "2023-06-18",
-        valorAquisicao: "12500.00",
-        inicioGarantia: "2023-06-18",
-        fimGarantia: "2026-06-18",
-        contratoManutencao: "Sim",
-        tipoContrato: "ManutenÃ§Ã£o preventiva e corretiva",
-        entidadeContrato: "Biomedical Solutions",
-        ultimaManutencao: "2026-02-28",
-        proximaManutencao: "2026-08-28",
-        ultimaCalibracao: "2026-02-28",
-        proximaCalibracao: "2026-08-28",
-        periodicidade: "Semestral",
-        responsavelTecnico: "Eng. GonÃ§alo Brito",
-        acessorios: [
-            {
-                codigo: "ACC-004",
-                nome: "Circuito respiratÃ³rio reutilizÃ¡vel",
-                tipo: "MÃ³dulo",
-                serie: "CIR-2201",
-                estado: "Ativo",
-                intervencao: "Sim",
-                proximaIntervencao: "2026-08-28"
-            }
-        ],
-        observacoes: "Equipamento em manutenÃ§Ã£o preventiva. Deve ser validado antes de regressar ao serviÃ§o clÃ­nico."
-    },
-
-    "EQ-003": {
-        codigo: "EQ-003",
-        nome: "Desfibrilhador",
-        categoria: "EmergÃªncia",
-        fabricante: "Zoll",
-        modelo: "R Series",
-        serie: "SN-ZOLL-8821",
-        anoFabrico: "2021",
-        tipoEntrada: "Compra",
-        departamento: "Bloco OperatÃ³rio",
-        edificio: "EdifÃ­cio C",
-        piso: "1",
-        sala: "Bloco OperatÃ³rio",
-        localizacao: "Bloco OperatÃ³rio",
-        estado: "Avariado",
-        criticidade: "CrÃ­tica",
-        operacional: "não operacional",
-        fornecedor: "ClinicalTech Equipamentos",
-        dataFabrico: "2021-05-20",
-        dataAquisicao: "2022-09-02",
-        dataInstalacao: "2022-09-08",
-        valorAquisicao: "8900.00",
-        inicioGarantia: "2022-09-08",
-        fimGarantia: "2025-09-08",
-        contratoManutencao: "Em anÃ¡lise",
-        tipoContrato: "Por definir",
-        entidadeContrato: "ClinicalTech Equipamentos",
-        ultimaManutencao: "2026-01-05",
-        proximaManutencao: "",
-        ultimaCalibracao: "2026-01-05",
-        proximaCalibracao: "",
-        periodicidade: "Anual",
-        responsavelTecnico: "Eng. GonÃ§alo Brito",
-        acessorios: [
-            {
-                codigo: "ACC-005",
-                nome: "PÃ¡s adulto",
-                tipo: "MÃ³dulo",
-                serie: "PAS-8821",
-                estado: "Avariado",
-                intervencao: "Sim",
-                proximaIntervencao: "Por definir"
-            }
-        ],
-        observacoes: "Equipamento sinalizado como avariado. Deve permanecer indisponÃ­vel até avaliaÃ§Ã£o tÃ©cnica e reparaÃ§Ã£o."
-    }
-};
+﻿// JavaScript Gonçalo Brito 1230404
+// Funcionalidades da Área privada MEDICORE
 
 function $(id) {
     return document.getElementById(id);
@@ -301,7 +138,7 @@ function preencherCamposEquipamento(equipamento) {
 
 function criarLinhaAcessorioEquipamento(acessorio) {
     // Cria uma linha visual para a tabela de acessÃ³rios da ficha.
-    // O cÃ³digo do acessÃ³rio Ã© independente, mas a associaÃ§Ã£o fica no contexto do equipamento aberto.
+    // O código do acessório não independente, mas a associação fica no contexto do equipamento aberto.
     const linha = document.createElement("tr");
 
     linha.innerHTML = `
@@ -416,7 +253,7 @@ function inicializarDocumentosEquipamento() {
 
 /* =========================================================
    POP-UP VISUAL DE SUCESSO
-   Usado para confirmaÃ§Ãµes como guardar alteraÃ§Ãµes, registos, etc.
+   Usado para confirmações como guardar alterações, registos, etc.
    ========================================================= */
 
 function mostrarPopupSucesso(titulo, mensagem, paginaDestino) {
@@ -426,7 +263,7 @@ function mostrarPopupSucesso(titulo, mensagem, paginaDestino) {
     const textoListaDestino = paginaDestino.includes("fornecedores")
         ? "de fornecedores"
         : paginaDestino.includes("localizacoes")
-            ? "de localizaÃ§Ãµes"
+            ? "de localizacoes"
             : paginaDestino.includes("utilizadores")
                 ? "de utilizadores"
                 : "de equipamentos";
@@ -479,165 +316,6 @@ document.addEventListener("DOMContentLoaded", function () {
     inicializarDocumentosEquipamento();
 });
 
-// Dados temporÃ¡rios dos fornecedores
-
-const fornecedoresMEDICORE = {
-    "FOR-001": {
-        nome: "Philips Medical Systems",
-        tipos: ["Fabricante"],
-        nif: "509123456",
-        email: "suporte@philips-med.pt",
-        telefone: "+351 220 000 111",
-        website: "https://www.philips.pt",
-        contacto: "Carlos Almeida",
-        cargo: "Suporte TÃ©cnico",
-        emailContacto: "carlos.almeida@philips-med.pt",
-        morada: "Rua da Tecnologia MÃ©dica, 45",
-        codigoPostal: "4100-000",
-        localidade: "Porto",
-        pais: "Portugal",
-        estado: "Ativo",
-        estadoClasse: "estado-ativo",
-        contrato: "Sim",
-        inicioContrato: "2024-01-01",
-        fimContrato: "2027-01-01",
-        qtdEquipamentos: "12",
-        area: "Fabrico e suporte tÃ©cnico de equipamentos de monitorizaÃ§Ã£o clÃ­nica.",
-        equipamentos: "Monitores multiparamÃ©tricos Philips IntelliVue.",
-        observacoes: "Fornecedor associado a equipamentos de monitorizaÃ§Ã£o em unidades crÃ­ticas.",
-
-        equipamentosAssociados: [
-            {
-                codigo: "EQ-001",
-                nome: "Monitor MultiparamÃ©trico",
-                categoria: "MonitorizaÃ§Ã£o",
-                modelo: "IntelliVue MX450",
-                serie: "SN-MX450-2024",
-                relacao: "Fabricante",
-                estado: "Ativo",
-                estadoClasse: "estado-ativo"
-            },
-            {
-                codigo: "EQ-004",
-                nome: "Monitor de Sinais Vitais",
-                categoria: "MonitorizaÃ§Ã£o",
-                modelo: "SureSigns VS4",
-                serie: "SN-VS4-2025",
-                relacao: "Fabricante",
-                estado: "Ativo",
-                estadoClasse: "estado-ativo"
-            },
-            {
-                codigo: "EQ-005",
-                nome: "Bomba de InfusÃ£o",
-                categoria: "TerapÃªutica",
-                modelo: "InfusionCare P200",
-                serie: "SN-P200-2024",
-                relacao: "Fabricante",
-                estado: "Em manutenÃ§Ã£o",
-                estadoClasse: "estado-manutencao"
-            }
-        ]
-    },
-
-    "FOR-002": {
-        nome: "MedSupply Portugal",
-        tipos: ["Distribuidor"],
-        nif: "514987321",
-        email: "comercial@medsupply.pt",
-        telefone: "+351 221 234 567",
-        website: "https://www.medsupply.pt",
-        contacto: "Ana Martins",
-        cargo: "Gestora Comercial",
-        emailContacto: "ana.martins@medsupply.pt",
-        morada: "Avenida dos Dispositivos MÃ©dicos, 80",
-        codigoPostal: "1000-000",
-        localidade: "Lisboa",
-        pais: "Portugal",
-        estado: "Ativo",
-        estadoClasse: "estado-ativo",
-        contrato: "Sim",
-        inicioContrato: "2024-03-01",
-        fimContrato: "2026-03-01",
-        qtdEquipamentos: "8",
-        area: "Venda e distribuiÃ§Ã£o de dispositivos e equipamentos mÃ©dicos.",
-        equipamentos: "Bombas de infusÃ£o, monitores e acessÃ³rios clÃ­nicos.",
-        observacoes: "Fornecedor com boa resposta comercial e disponibilidade de stock.",
-
-        equipamentosAssociados: [
-            {
-                codigo: "EQ-001",
-                nome: "Monitor MultiparamÃ©trico",
-                categoria: "MonitorizaÃ§Ã£o",
-                modelo: "IntelliVue MX450",
-                relacao: "Distribuidor",
-                serie: "SN-XT42-2024",
-                estado: "Ativo",
-                estadoClasse: "estado-ativo"
-            },
-            {
-                codigo: "EQ-006",
-                nome: "OxÃ­metro de Pulso",
-                categoria: "MonitorizaÃ§Ã£o",
-                modelo: "OxiPro 300",
-                relacao: "Distribuidor",
-                serie: "SN-LOL9-2026",
-                estado: "Ativo",
-                estadoClasse: "estado-ativo"
-            }
-        ]
-    },
-
-    "FOR-003": {
-        nome: "Biomedical Solutions",
-        tipos: ["ManutenÃ§Ã£o"],
-        nif: "507654789",
-        email: "tecnica@biomedicalsolutions.pt",
-        telefone: "+351 222 456 789",
-        website: "https://www.biomedicalsolutions.pt",
-        contacto: "Rui Oliveira",
-        cargo: "ResponsÃ¡vel TÃ©cnico",
-        emailContacto: "rui.oliveira@biomedicalsolutions.pt",
-        morada: "Rua da Engenharia BiomÃ©dica, 12",
-        codigoPostal: "4470-000",
-        localidade: "Maia",
-        pais: "Portugal",
-        estado: "Ativo",
-        estadoClasse: "estado-ativo",
-        contrato: "Sim",
-        inicioContrato: "2025-01-01",
-        fimContrato: "2027-12-31",
-        qtdEquipamentos: "5",
-        area: "ManutenÃ§Ã£o preventiva e corretiva de equipamentos hospitalares.",
-        equipamentos: "Ventiladores, monitores e equipamentos de suporte clÃ­nico.",
-        observacoes: "Fornecedor responsÃ¡vel por manutenÃ§Ãµes tÃ©cnicas periÃ³dicas."
-    },
-
-    "FOR-004": {
-        nome: "CalibraMed",
-        tipos: ["CalibraÃ§Ã£o"],
-        nif: "515321987",
-        email: "calibracao@calibramed.pt",
-        telefone: "+351 223 987 654",
-        website: "https://www.calibramed.pt",
-        contacto: "Marta Costa",
-        cargo: "TÃ©cnica de CalibraÃ§Ã£o",
-        emailContacto: "marta.costa@calibramed.pt",
-        morada: "Parque Tecnológico de Braga",
-        codigoPostal: "4700-000",
-        localidade: "Braga",
-        pais: "Portugal",
-        estado: "Inativo",
-        estadoClasse: "estado-inativo",
-        contrato: "não",
-        inicioContrato: "2023-01-01",
-        fimContrato: "2024-12-31",
-        qtdEquipamentos: "3",
-        area: "Calibração e emissão de certificados técnicos.",
-        equipamentos: "Equipamentos de medições, monitores e dispositivos laboratoriais.",
-        observacoes: "Fornecedor inativo, mantendo apenas histórico de calibraÃ§Ãµes anteriores."
-    }
-};
 
 // Card visual de confirmaÃ§Ã£o de remoÃ§Ã£o
 
@@ -2057,7 +1735,10 @@ document.addEventListener("DOMContentLoaded", function () {
         { id: "tabela-utilizadores", entidade: "utilizadores", vazio: "não existem utilizadores registados." },
         { id: "tabela-manutencoes-abertas", entidade: "processos", vazio: "não existem processos de manutenção abertos." },
         { id: "tabela-calibracoes-abertas", entidade: "processos", vazio: "não existem processos de calibração abertos." },
+        { id: "tabela-aprovacao-processos", entidade: "processos", vazio: "não existem processos pendentes de aprovação." },
         { id: "tabela-processos-finalizados", entidade: "processos", vazio: "não existem processos finalizados." },
+        { id: "tabela-transferencias", entidade: "transferências", vazio: "não existem transferências registadas." },
+        { id: "tabela-emprestimos", entidade: "empréstimos", vazio: "não existem empréstimos registados." },
         { id: "tabelaAcessoriosBD", entidade: "acessórios", vazio: "não existem acessórios registados para este equipamento." }
     ];
 
