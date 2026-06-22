@@ -185,6 +185,7 @@ function permissoes_por_tipo_utilizador($tipo)
         'Engenheiro' => [
             'equipamentos',
             'acessorios',
+            'avarias',
             'consumiveis',
             'fornecedores',
             'calibracoes',
@@ -242,6 +243,10 @@ function permissao_por_caminho($caminho)
 
     if (strpos($caminho, '/private/views/backoffice/') !== false) {
         return 'backoffice';
+    }
+
+    if (strpos($caminho, '/private/views/avarias/') !== false) {
+        return 'avarias';
     }
 
     if (strpos($caminho, '/private/views/dashboard/dashboard_engenheiro.php') !== false) {

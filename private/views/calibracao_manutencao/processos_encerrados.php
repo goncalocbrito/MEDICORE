@@ -133,6 +133,8 @@ try {
                 m.id_equipamento,
                 e.codigo_equipamento,
                 e.designacao AS equipamento_nome,
+                m.decisao_admin,
+                m.motivo_decisao,
                 (
                     SELECT GROUP_CONCAT(CONCAT(e2.codigo_equipamento, '.', LPAD(a2.numero_sequencial, 3, '0'), ' - ', a2.designacao) SEPARATOR ' || ')
                     FROM manutencoes_acessorios ma2
@@ -188,6 +190,8 @@ try {
                 c.id_equipamento,
                 e.codigo_equipamento,
                 e.designacao AS equipamento_nome,
+                c.decisao_admin,
+                c.motivo_decisao,
                 (
                     SELECT GROUP_CONCAT(CONCAT(e2.codigo_equipamento, '.', LPAD(a2.numero_sequencial, 3, '0'), ' - ', a2.designacao) SEPARATOR ' || ')
                     FROM calibracoes_acessorios ca2
@@ -243,9 +247,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 <main class="conteudo-private">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
-            <h2 class="titulo-pagina">Processos Finalizados</h2>
+            <h2 class="titulo-pagina">Processos Encerrados</h2>
             <p class="subtitulo-pagina">
-                Histórico de manutenções e calibrações concluídas nos equipamentos e acessórios.
+                Histórico de processos finalizados, reprovados ou cancelados, com o respetivo motivo de encerramento.
             </p>
         </div>
 
@@ -257,7 +261,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         </div>
     <?php endif; ?>
 <div class="table-responsive tabela-container">
-        <table id="tabela-processos-finalizados" class="table table-hover align-middle tabela-equipamentos tabela-processos-finalizados tabela-calibracoes-manutencoes tabela-datatables-medicore">
+        <table id="tabela-processos-encerrados" class="table table-hover align-middle tabela-equipamentos tabela-processos-finalizados tabela-calibracoes-manutencoes tabela-datatables-medicore">
             <thead>
                 <tr>
                     <th>Código</th>
@@ -267,7 +271,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <th>Execução</th>
                     <th>Responsável</th>
                     <th>Conclusão</th>
-                    <th>Resultado</th>
+                    <th>Estado</th>
+                    <th>Descrição</th>
                     <?php if ($ehAdministrador): ?>
                         <th>Custo</th>
                     <?php endif; ?>
@@ -312,9 +317,17 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             <td><?php echo h($processo['fornecedor_nome'] ?? '---'); ?></td>
                             <td><?php echo h(formatar_data($processo['data_finalizacao'])); ?></td>
                             <td>
-                                <span class="estado <?php echo h(classe_resultado($processo['resultado'])); ?>">
-                                    <?php echo h(texto_resultado($processo['origem'], $processo['resultado'])); ?>
+                                <span class="estado <?php echo h(classe_estado_processo($processo['estado_processo'])); ?>">
+                                    <?php echo h(texto_estado_processo($processo['estado_processo'])); ?>
                                 </span>
+                            </td>
+                            <td>
+                                <?php
+                                    $descricaoEncerramento = $processo['motivo_decisao']
+                                        ?: ($processo['resultado'] ?: 'Sem descrição registada.');
+
+                                    echo h($descricaoEncerramento);
+                                ?>
                             </td>
                             <?php if ($ehAdministrador): ?>
                             <td><?php echo h(formatar_moeda($processo['custo'], $processo['coberta_por_garantia'])); ?></td>

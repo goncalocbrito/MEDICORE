@@ -137,6 +137,33 @@ $isEngenheiro = strpos($tipoUtilizadorNormalizado, 'engenheiro') !== false;
                     </li>
                 <?php endif; ?>
 
+                <?php if ($isEngenheiro): ?>
+                    <li class="nav-item menu-dropdown-hover">
+                        <a href="<?php echo BASE_URL; ?>/private/views/avarias/lista_avarias.php"
+                        class="nav-link <?php echo menu_ativo(BASE_URL . '/private/views/avarias'); ?>">
+                            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                            Reportar Avaria
+                            <i class="fa-solid fa-chevron-down ms-2"></i>
+                        </a>
+
+                        <ul class="submenu-private">
+                            <li>
+                                <a href="<?php echo BASE_URL; ?>/private/views/avarias/lista_avarias.php"
+                                class="<?php echo submenu_ativo(BASE_URL . '/private/views/avarias/lista_avarias.php'); ?>">
+                                    <i class="fa-solid fa-list-check me-2"></i> Avarias Reportadas
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="<?php echo BASE_URL; ?>/private/views/avarias/nova_avaria.php"
+                                class="<?php echo submenu_ativo(BASE_URL . '/private/views/avarias/nova_avaria.php'); ?>">
+                                    <i class="fa-solid fa-plus me-2"></i> Nova Avaria
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                <?php endif; ?>
+
                 <?php if (pode_ver('calibracoes')): ?>
                     <li class="nav-item menu-dropdown-hover">
                         <a href="<?php echo $isAdministrador
@@ -167,9 +194,9 @@ $isEngenheiro = strpos($tipoUtilizadorNormalizado, 'engenheiro') !== false;
                             <?php endif; ?>
 
                             <li>
-                                <a href="<?php echo BASE_URL; ?>/private/views/calibracao_manutencao/processos_finalizados.php"
-                                   class="<?php echo submenu_ativo(BASE_URL . '/private/views/calibracao_manutencao/processos_finalizados.php'); ?>">
-                                    <i class="fa-solid fa-circle-check me-2"></i> Processos Finalizados
+                                <a href="<?php echo BASE_URL; ?>/private/views/calibracao_manutencao/processos_encerrados.php"
+                                class="<?php echo submenu_ativo(BASE_URL . '/private/views/calibracao_manutencao/processos_encerrados.php'); ?>">
+                                    <i class="fa-solid fa-box-archive me-2"></i> Processos Encerrados
                                 </a>
                             </li>
                         </ul>

@@ -98,6 +98,7 @@ try {
     $_SESSION['nome_utilizador'] = $utilizador['nome'];
     $_SESSION['tipo_utilizador'] = $utilizador['tipo_utilizador'];
     $_SESSION['email_utilizador'] = $utilizador['email'];
+    $_SESSION['foto_perfil'] = $utilizador['foto_perfil'] ?? '';
     $_SESSION['permissoes_utilizador'] = permissoes_por_tipo_utilizador($utilizador['tipo_utilizador']);
 
     // Atualiza a data/hora do último login.

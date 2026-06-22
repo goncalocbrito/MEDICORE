@@ -296,6 +296,8 @@ $equipamentos = [];
 $acessorios = [];
 $consumiveis = [];
 $fornecedores = [];
+$avariaOrigem = null;
+$idAvariaOrigem = 0;
 
 try {
     $pdo = new PDO(
@@ -310,13 +312,51 @@ try {
 
     $utilizadorAtual = $_SESSION['nome'] ?? $_SESSION['username'] ?? 'admin';
 
+    if (!empty($_GET['avaria'])) {
+        $idAvariaDesencriptada = aes_decrypt($_GET['avaria']);
+        $idAvariaOrigem = is_numeric($idAvariaDesencriptada) ? (int) $idAvariaDesencriptada : 0;
+
+        if ($idAvariaOrigem > 0) {
+            $stmtAvaria = $pdo->prepare("
+                SELECT
+                    a.*,
+                    e.codigo_equipamento,
+                    e.designacao AS equipamento_nome,
+                    ac.designacao AS acessorio_nome,
+                    CONCAT(e.codigo_equipamento, '.', LPAD(ac.numero_sequencial, 3, '0')) AS codigo_acessorio
+                FROM avarias_reportadas a
+                INNER JOIN equipamentos e
+                    ON e.id_equipamento = a.id_equipamento
+                LEFT JOIN acessorios_equipamento ac
+                    ON ac.id_acessorio = a.id_acessorio
+                WHERE a.id_avaria = :id_avaria
+                AND a.isActive = 1
+                AND a.estado = 'reportada'
+                LIMIT 1
+            ");
+
+            $stmtAvaria->execute([
+                ':id_avaria' => $idAvariaOrigem
+            ]);
+
+            $avariaOrigem = $stmtAvaria->fetch();
+
+            if (!$avariaOrigem) {
+                $idAvariaOrigem = 0;
+            }
+        }
+    }
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $acao = $_POST['acao'] ?? '';
 
         if ($acao === 'criar_processo') {
             $tipoPedido = $_POST['tipoProcesso'] ?? '';
+           $idAvariaOrigemPost = (int) ($_POST['idAvariaOrigem'] ?? 0);
             $idEquipamento = (int) ($_POST['idEquipamento'] ?? 0);
             $idsAcessorios = $_POST['idsAcessorios'] ?? [];
+            if ($idAvariaOrigemPost > 0) {
+                $tipoPedido = 'manutencao_corretiva';
+            }
             $idsConsumiveis = $_POST['idsConsumiveis'] ?? [];
             $quantidadesConsumivel = $_POST['quantidadeConsumivel'] ?? [];
             $tipoExecucao = validar_tipo_execucao($_POST['tipoExecucao'] ?? 'externa');
@@ -461,6 +501,22 @@ try {
                     ':id' => $idProcesso
                 ]);
 
+                if ($idAvariaOrigemPost > 0) {
+                    $stmtAtualizarAvaria = $pdo->prepare("
+                        UPDATE avarias_reportadas
+                        SET
+                            estado = 'convertida_manutencao',
+                            id_manutencao = :id_manutencao
+                        WHERE id_avaria = :id_avaria
+                        AND isActive = 1
+                    ");
+
+                    $stmtAtualizarAvaria->execute([
+                        ':id_manutencao' => $idProcesso,
+                        ':id_avaria' => $idAvariaOrigemPost
+                    ]);
+                }
+
                 $stmtHistorico = $pdo->prepare("
                     INSERT INTO historico_etapas_processos (
                         tipo_processo,
@@ -602,6 +658,22 @@ try {
                     ':codigo' => $codigoProcesso,
                     ':id' => $idProcesso
                 ]);
+
+                if ($idAvariaOrigemPost > 0) {
+                    $stmtAtualizarAvaria = $pdo->prepare("
+                        UPDATE avarias_reportadas
+                        SET
+                            estado = 'convertida_manutencao',
+                            id_manutencao = :id_manutencao
+                        WHERE id_avaria = :id_avaria
+                        AND isActive = 1
+                    ");
+
+                    $stmtAtualizarAvaria->execute([
+                        ':id_manutencao' => $idProcesso,
+                        ':id_avaria' => $idAvariaOrigemPost
+                    ]);
+                }
 
                 $stmtHistorico = $pdo->prepare("
                     INSERT INTO historico_etapas_processos (
@@ -848,13 +920,24 @@ require_once __DIR__ . '/../../includes/sidebar.php';
     </div>
 </main>
 
+<?php if ($avariaOrigem): ?>
+    <div class="alert alert-warning">
+        <strong>Avaria selecionada:</strong>
+        <?php echo h($avariaOrigem['codigo_avaria']); ?> -
+        <?php echo h($avariaOrigem['descricao_avaria']); ?>
+    </div>
+<?php endif; ?>
+
 <!-- Modal novo processo -->
 <div class="modal fade" id="modalNovoProcesso" tabindex="-1" aria-labelledby="modalNovoProcessoLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-acessorio-dialog">
         <div class="modal-content modal-acessorio">
             <form method="post" action="calibracao_manutencao.php" id="formNovoProcesso">
                 <input type="hidden" name="acao" value="criar_processo">
-
+                <input type="hidden"
+                    name="idAvariaOrigem"
+                    value="<?php echo h($idAvariaOrigem); ?>">
+                
                 <div class="modal-header">
                     <div>
                         <h5 class="modal-title" id="modalNovoProcessoLabel">
@@ -872,7 +955,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             <select class="form-select" id="tipoProcesso" name="tipoProcesso" required>
                                 <option value="">Selecionar</option>
                                 <option value="manutencao_preventiva">Manutenção preventiva</option>
-                                <option value="manutencao_corretiva">Manutenção corretiva</option>
+                                <option value="manutencao_corretiva" <?php echo $avariaOrigem ? 'selected' : ''; ?>>
+                                    Manutenção corretiva
+                                </option>
                                 <option value="calibracao">Calibração</option>
                             </select>
                         </div>
@@ -889,9 +974,13 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     data-filtra-campo="equipamento"
                                     placeholder="Pesquisar e selecionar equipamento"
                                     autocomplete="off"
+                                    value="<?php echo $avariaOrigem ? h($avariaOrigem['codigo_equipamento'] . ' - ' . $avariaOrigem['equipamento_nome']) : ''; ?>"
                                     required>
 
-                                <input type="hidden" id="idEquipamento" name="idEquipamento">
+                                <input type="hidden"
+                                    id="idEquipamento"
+                                    name="idEquipamento"
+                                    value="<?php echo $avariaOrigem ? h($avariaOrigem['id_equipamento']) : ''; ?>">
 
                                 <div class="lista-registos-custom" id="listaEquipamentosProcesso">
                                     <?php foreach ($equipamentos as $equipamento): ?>
@@ -924,7 +1013,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                             <label>
                                                 <input type="checkbox"
                                                     name="idsAcessorios[]"
-                                                    value="<?php echo h($acessorio['id_acessorio']); ?>">
+                                                    value="<?php echo h($acessorio['id_acessorio']); ?>"
+                                                    <?php echo ($avariaOrigem && (int) $avariaOrigem['id_acessorio'] === (int) $acessorio['id_acessorio']) ? 'checked' : ''; ?>>
                                                 <span>
                                                     <?php echo h($acessorio['codigo_acessorio'] . ' - ' . $acessorio['designacao']); ?>
                                                 </span>
@@ -1008,7 +1098,15 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                         <div class="col-12">
                             <label for="observacoesProcesso" class="form-label">Observações iniciais</label>
-                            <textarea class="form-control" id="observacoesProcesso" name="observacoesProcesso" rows="3" placeholder="Notas sobre a abertura do processo"></textarea>
+                            <textarea class="form-control"
+                                    id="observacoesProcesso"
+                                    name="observacoesProcesso"
+                                    rows="3"
+                                    placeholder="Notas sobre a abertura do processo"><?php
+                                echo $avariaOrigem
+                                    ? h('Avaria reportada: ' . $avariaOrigem['descricao_avaria'])
+                                    : '';
+                            ?></textarea>
                         </div>
                     </div>
                 </div>
@@ -1047,6 +1145,15 @@ document.addEventListener('DOMContentLoaded', function () {
     tipoExecucao?.addEventListener('change', atualizarTipoExecucao);
 
     atualizarTipoExecucao();
+
+    <?php if ($avariaOrigem): ?>
+    const modalNovoProcesso = document.getElementById("modalNovoProcesso");
+
+    if (modalNovoProcesso && window.bootstrap) {
+        const modal = new bootstrap.Modal(modalNovoProcesso);
+        modal.show();
+    }
+    <?php endif; ?>
 });
 </script>
 

@@ -1423,4 +1423,23 @@ MODIFY acao ENUM(
 
 ---
 
+CREATE TABLE avarias_reportadas (
+    id_avaria INT AUTO_INCREMENT PRIMARY KEY,
+    codigo_avaria VARCHAR(30) NOT NULL UNIQUE,
+    id_equipamento INT NOT NULL,
+    id_acessorio INT NULL,
+    id_utilizador_reportou INT NOT NULL,
+    descricao_avaria VARCHAR(500) NOT NULL,
+    estado ENUM('reportada', 'em_analise', 'convertida_manutencao', 'cancelada') NOT NULL DEFAULT 'reportada',
+    id_manutencao INT NULL,
+    data_reporte DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    isActive TINYINT(1) NOT NULL DEFAULT 1,
 
+    FOREIGN KEY (id_equipamento) REFERENCES equipamentos(id_equipamento),
+    FOREIGN KEY (id_acessorio) REFERENCES acessorios_equipamento(id_acessorio),
+    FOREIGN KEY (id_utilizador_reportou) REFERENCES utilizadores(id_utilizador),
+    FOREIGN KEY (id_manutencao) REFERENCES manutencoes_equipamento(id_manutencao)
+);
+
+ALTER TABLE utilizadores
+ADD COLUMN foto_perfil VARCHAR(255) NULL AFTER password_hash;

@@ -1736,9 +1736,10 @@ document.addEventListener("DOMContentLoaded", function () {
         { id: "tabela-manutencoes-abertas", entidade: "processos", vazio: "não existem processos de manutenção abertos." },
         { id: "tabela-calibracoes-abertas", entidade: "processos", vazio: "não existem processos de calibração abertos." },
         { id: "tabela-aprovacao-processos", entidade: "processos", vazio: "não existem processos pendentes de aprovação." },
-        { id: "tabela-processos-finalizados", entidade: "processos", vazio: "não existem processos finalizados." },
+        { id: "tabela-processos-encerrados", entidade: "processos", vazio: "não existem processos encerrados." },
         { id: "tabela-transferencias", entidade: "transferências", vazio: "não existem transferências registadas." },
         { id: "tabela-emprestimos", entidade: "empréstimos", vazio: "não existem empréstimos registados." },
+        { id: "tabela-avarias", entidade: "avarias", vazio: "não existem avarias reportadas." },
         { id: "tabelaAcessoriosBD", entidade: "acessórios", vazio: "não existem acessórios registados para este equipamento." }
     ];
 

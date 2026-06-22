@@ -22,6 +22,9 @@ body {
     background-color: var(--cor-principal);
     color: var(--cor-branco);
     box-shadow: 0 2px 12px rgba(18, 60, 70, 0.18);
+    position: relative;
+    z-index: 3000;
+    overflow: visible;
 }
 
 .logo-private {
@@ -46,6 +49,15 @@ body {
 
 .user-button:hover {
     background-color: var(--cor-secundaria-escura);
+}
+
+.top-header .dropdown {
+    position: relative;
+    z-index: 4000;
+}
+
+.top-header .dropdown-menu {
+    z-index: 5000;
 }
 
 /* Conteúdo principal */
@@ -3142,7 +3154,7 @@ a.alerta-emprestimo-card:hover {
 .menu-horizontal .nav-item,
 .menu-dropdown-hover {
     position: relative;
-    width: 155px;
+    min-width: 155px;
     text-align: center;
 }
 
@@ -3151,7 +3163,7 @@ a.alerta-emprestimo-card:hover {
     width: 100%;
     min-width: 155px;
     min-height: 54px;
-    padding: 8px 8px;
+    padding: 8px 14px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3245,4 +3257,76 @@ a.alerta-emprestimo-card:hover {
         box-shadow: none;
         border-radius: 0 0 12px 12px;
     }
+}
+
+/* =========================================================
+   PERFIL DO UTILIZADOR
+   ========================================================= */
+
+.user-avatar-button {
+    width: 54px;
+    height: 54px;
+    padding: 0;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.28);
+    background-color: var(--cor-secundaria);
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.user-avatar-button:hover {
+    background-color: var(--cor-secundaria-escura);
+    color: #ffffff;
+}
+
+.user-avatar-button::after {
+    display: none;
+}
+
+.user-avatar-button img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.user-avatar-button i {
+    font-size: 1.35rem;
+}
+
+.perfil-dropdown-menu {
+    min-width: 210px;
+    border-radius: 12px;
+    padding: 8px 0;
+    z-index: 6000;
+}
+
+.perfil-dropdown-menu .dropdown-item {
+    font-weight: 700;
+    color: var(--cor-texto);
+    padding: 12px 18px;
+}
+
+.perfil-dropdown-menu .dropdown-item:hover {
+    background-color: var(--cor-fundo-suave);
+    color: var(--cor-principal);
+}
+
+.perfil-preview {
+    width: 170px;
+    height: 170px;
+    margin: 0 auto;
+    border-radius: 50%;
+    border: 4px solid var(--cor-secundaria);
+    background-color: var(--cor-fundo-suave);
+    overflow: hidden;
+    box-shadow: 0 10px 24px rgba(18, 60, 70, 0.12);
+}
+
+.perfil-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
