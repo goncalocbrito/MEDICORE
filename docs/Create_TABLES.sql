@@ -133,7 +133,7 @@ CREATE TABLE localizacoes (
     data_aquisicao DATE NULL,
     data_instalacao DATE NULL,
 
-    responsavel_equipamento VARCHAR(150) NULL,
+    id_responsavel INT NULL,
 
     observacoes TEXT,
 
@@ -150,6 +150,11 @@ CREATE TABLE localizacoes (
     CONSTRAINT fk_equipamento_localizacao
         FOREIGN KEY (id_localizacao)
         REFERENCES localizacoes(id_localizacao),
+
+    CONSTRAINT fk_equipamentos_responsavel
+        FOREIGN KEY (id_responsavel)
+        REFERENCES utilizadores(id_utilizador)
+        ON UPDATE CASCADE ON DELETE SET NULL,
 
     CONSTRAINT uk_familia_numero
         UNIQUE (id_familia_equipamento, numero_sequencial)
@@ -1443,3 +1448,153 @@ CREATE TABLE avarias_reportadas (
 
 ALTER TABLE utilizadores
 ADD COLUMN foto_perfil VARCHAR(255) NULL AFTER password_hash;
+
+
+--- 22/06/2026 - Campo marca nos equipamentos ---
+
+ALTER TABLE equipamentos
+ADD COLUMN marca VARCHAR(120) NULL AFTER modelo;
+
+---
+
+-- =========================================================
+-- TABELAS DO BACKOFFICE DA PÁGINA PÚBLICA
+-- Adicionar ao Create_TABLES.sql e executar na BD
+-- =========================================================
+
+
+-- ---------------------------------------------------------
+-- 1. Textos e configurações gerais da página pública
+--    (navbar, secção "Sobre", contacto, rodapé)
+-- ---------------------------------------------------------
+CREATE TABLE pagina_publica_config (
+    id_config INT AUTO_INCREMENT PRIMARY KEY,
+
+    -- Navbar
+    navbar_logo            VARCHAR(255)  NOT NULL DEFAULT 'assets/img/MEDICORE_logotipo_branco.png',
+    navbar_link_sobre      VARCHAR(80)   NOT NULL DEFAULT 'Sobre',
+    navbar_link_equipa     VARCHAR(80)   NOT NULL DEFAULT 'Nossa Equipa',
+    navbar_link_funcional  VARCHAR(80)   NOT NULL DEFAULT 'Funcionalidades',
+    navbar_link_hospitais  VARCHAR(80)   NOT NULL DEFAULT 'Hospitais e Clínicas',
+    navbar_link_contacto   VARCHAR(80)   NOT NULL DEFAULT 'Contacto',
+    navbar_btn_restrita    VARCHAR(80)   NOT NULL DEFAULT 'Área Restrita',
+
+    -- Secção "Sobre"
+    sobre_titulo           VARCHAR(255)  NOT NULL DEFAULT 'Gestão Inteligente do Inventário Hospitalar',
+    sobre_texto            TEXT          NOT NULL,
+
+    -- Secção "Contacto"
+    contacto_texto         TEXT          NOT NULL,
+
+    -- Rodapé
+    rodape_localizacao     TEXT          NOT NULL,
+    rodape_horario_semana  VARCHAR(100)  NOT NULL DEFAULT '2ª a 6ª Feira: 9h — 18h',
+    rodape_email           VARCHAR(150)  NOT NULL DEFAULT 'geral@medicore.pt',
+    rodape_telefone        VARCHAR(30)   NOT NULL DEFAULT '+351 919 323 121',
+
+    atualizado_em          DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    atualizado_por         VARCHAR(150)  NULL
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Registo inicial (apenas existe sempre 1 linha)
+INSERT INTO pagina_publica_config (
+    sobre_texto,
+    contacto_texto,
+    rodape_localizacao
+) VALUES (
+    'O MEDICORE é uma aplicação web para registo, organização e acompanhamento de equipamentos médicos em contexto hospitalar.',
+    'Entre em contacto com a equipa responsável pela gestão do inventário hospitalar.',
+    'Instituto Superior de Engenharia do Porto\nRua Dr. António Bernardino de Almeida\nPorto, Portugal'
+);
+
+
+-- ---------------------------------------------------------
+-- 2. Slides do carrossel da secção "Sobre"
+-- ---------------------------------------------------------
+CREATE TABLE pagina_publica_slides (
+    id_slide       INT AUTO_INCREMENT PRIMARY KEY,
+    ordem          INT           NOT NULL DEFAULT 0,
+    imagem         VARCHAR(255)  NOT NULL,
+    titulo         VARCHAR(255)  NOT NULL,
+    descricao      TEXT          NOT NULL,
+    isActive       TINYINT(1)    NOT NULL DEFAULT 1,
+    atualizado_em  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO pagina_publica_slides (ordem, imagem, titulo, descricao) VALUES
+(1, 'assets/img/MEDICORE_Official_Logo.png',  'Inventário Hospitalar Centralizado',  'Organize equipamentos médicos, fornecedores, localizações e estados numa única plataforma.'),
+(2, 'assets/img/equipamentos_medicos.png',    'Equipamentos Sempre Monitorizados',   'Acompanhe o ciclo de vida dos equipamentos médicos de forma simples e eficiente.'),
+(3, 'assets/img/backoffice_hospitalar.png',   'Backoffice Administrativo',            'Atualize conteúdos públicos e faça a gestão interna através de uma área reservada.');
+
+
+-- ---------------------------------------------------------
+-- 3. Hospitais e Clínicas (cards dinâmicos)
+-- ---------------------------------------------------------
+CREATE TABLE pagina_publica_hospitais (
+    id_hospital    INT AUTO_INCREMENT PRIMARY KEY,
+    ordem          INT           NOT NULL DEFAULT 0,
+    nome           VARCHAR(255)  NOT NULL,
+    descricao      TEXT          NOT NULL,
+    imagem         VARCHAR(255)  NOT NULL,   -- nome do ficheiro sem extensão (ex: hospital_central)
+    isActive       TINYINT(1)    NOT NULL DEFAULT 1,
+    atualizado_em  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO pagina_publica_hospitais (ordem, nome, descricao, imagem) VALUES
+(1, 'Hospital Central de Santa Cruz',  'Unidade hospitalar de referência com mais de 400 equipamentos médicos monitorizados.', 'hospital_central'),
+(2, 'Clínica do Bom Sucesso',          'Clínica privada de ambulatório, com gestão centralizada de manutenções e calibrações.', 'clinica_bom_sucesso'),
+(3, 'Clínica Pediátrica Arco-Íris',   'Cuidados pediátricos especializados, com equipamentos adaptados a utentes mais jovens.', 'clinica_pediatrica'),
+(4, 'Hospital Especializado da Foz',   'Centro de excelência em cuidados intensivos e cirurgia, com elevado nível de criticidade.', 'hospital_especializado');
+
+ALTER TABLE equipamentos
+ADD COLUMN marca VARCHAR(30) NULL AFTER modelo;
+
+--- 22/06/2026 - Responsável do equipamento ligado ao utilizador ---
+ALTER TABLE equipamentos
+    DROP COLUMN responsavel_equipamento,
+    ADD COLUMN id_responsavel INT NULL AFTER periodicidade_calibracao,
+    ADD CONSTRAINT fk_equipamentos_responsavel
+        FOREIGN KEY (id_responsavel) REFERENCES utilizadores(id_utilizador)
+        ON UPDATE CASCADE ON DELETE SET NULL;
+        
+        
+--- 22/06/2026 - Resultado manutenção alinhado com calibração ---
+-- 1. Expandir o ENUM para aceitar valores antigos E novos ao mesmo tempo
+ALTER TABLE manutencoes_equipamento
+MODIFY resultado ENUM(
+    'realizada',
+    'realizada_com_observacoes',
+    'nao_realizada',
+    'aprovado',
+    'aprovado_com_restricoes',
+    'reprovado'
+) NULL DEFAULT NULL;
+
+-- 2. Converter os valores antigos para os novos
+UPDATE manutencoes_equipamento
+SET resultado = CASE resultado
+    WHEN 'realizada'                 THEN 'aprovado'
+    WHEN 'realizada_com_observacoes' THEN 'aprovado_com_restricoes'
+    WHEN 'nao_realizada'             THEN 'reprovado'
+    ELSE resultado
+END
+WHERE resultado IN ('realizada', 'realizada_com_observacoes', 'nao_realizada');
+
+-- 3. Remover os valores antigos e ficar só com os novos
+ALTER TABLE manutencoes_equipamento
+MODIFY resultado ENUM('aprovado', 'aprovado_com_restricoes', 'reprovado') NULL DEFAULT NULL;
+
+
+ALTER TABLE fornecedores
+  CHANGE COLUMN website email_fornecedor VARCHAR(255) NULL,
+  CHANGE COLUMN pessoa_contacto pessoa_responsavel VARCHAR(150) NULL;
+  
+ALTER TABLE fornecedores DROP COLUMN email;
+
+
+-----------------
+
+ALTER TABLE acessorios_equipamento ADD COLUMN data_aquisicao DATE NULL AFTER numero_serie;

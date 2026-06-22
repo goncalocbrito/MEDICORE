@@ -102,6 +102,41 @@ function classe_resultado($resultado)
     return 'estado-inativo';
 }
 
+function texto_estado_processo($estado)
+{
+    $estados = [
+        'aguarda_decisao'         => 'À espera da decisão',
+        'aprovado'                => 'Aprovado',
+        'reprovado'               => 'Reprovado',
+        'cancelado'               => 'Cancelado',
+        'aguarda_recolha'         => 'Aguarda recolha',
+        'procedimento_a_decorrer' => 'Procedimento a decorrer',
+        'emissao_relatorio'       => 'Emissão do relatório',
+        'devolucao_equipamento'   => 'Devolução do equipamento',
+        'processo_finalizado'     => 'Processo finalizado',
+    ];
+    return $estados[$estado] ?? $estado;
+}
+
+function classe_estado_processo($estado)
+{
+    switch ($estado) {
+        case 'aguarda_decisao':
+        case 'aguarda_recolha':
+        case 'procedimento_a_decorrer':
+        case 'emissao_relatorio':
+        case 'devolucao_equipamento':
+            return 'estado-manutencao';
+        case 'processo_finalizado':
+            return 'estado-ativo';
+        case 'reprovado':
+        case 'cancelado':
+            return 'estado-inativo';
+        default:
+            return 'estado-inativo';
+    }
+}
+
 $pdo = null;
 $erro_bd = '';
 $processosFinalizados = [];
@@ -272,11 +307,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <th>Responsável</th>
                     <th>Conclusão</th>
                     <th>Estado</th>
-                    <th>Descrição</th>
                     <?php if ($ehAdministrador): ?>
                         <th>Custo</th>
                     <?php endif; ?>
-                    <th>Documento</th>
                     <th class="text-center">Ações</th>
                 </tr>
             </thead>
@@ -321,30 +354,12 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     <?php echo h(texto_estado_processo($processo['estado_processo'])); ?>
                                 </span>
                             </td>
-                            <td>
-                                <?php
-                                    $descricaoEncerramento = $processo['motivo_decisao']
-                                        ?: ($processo['resultado'] ?: 'Sem descrição registada.');
-
-                                    echo h($descricaoEncerramento);
-                                ?>
-                            </td>
                             <?php if ($ehAdministrador): ?>
                             <td><?php echo h(formatar_moeda($processo['custo'], $processo['coberta_por_garantia'])); ?></td>
                             <?php endif; ?>
-                            <td>
-                                <?php if (!empty($processo['documento_caminho'])): ?>
-                                    <a href="../../assets/documentos/<?php echo h($processo['documento_caminho']); ?>" target="_blank" class="btn btn-sm btn-documento-ver">
-                                        <i class="fa-solid fa-file-lines me-1"></i>
-                                        <?php echo h($processo['documento_nome'] ?: 'Documento'); ?>
-                                    </a>
-                                <?php else: ?>
-                                    ---
-                                <?php endif; ?>
-                            </td>
                             <td class="text-center">
                                 <a class="btn btn-sm btn-ficha" title="Abrir detalhe"
-                                   href="detalhe_processo.php?ref=<?php echo processo_ref($processo['origem'], $processo['id_processo']); ?>">
+                                   href="detalhe_processo.php?ref=<?php echo processo_ref($processo['origem'], $processo['id_processo']); ?>&from=encerrados">
                                     <i class="fa-solid fa-file-lines"></i>
                                 </a>
                             </td>

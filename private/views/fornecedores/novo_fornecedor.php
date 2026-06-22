@@ -27,15 +27,13 @@ $pdo = new PDO(
 $etapasFornecedor = [
     'identificacao',
     'contactos',
-    'morada',
-    'observacoes'
+    'morada'
 ];
 
 $camposPorEtapaFornecedor = [
     'identificacao' => ['nomeFornecedor', 'nifFornecedor', 'tipoFornecedor', 'estadoFornecedor'],
-    'contactos' => ['emailFornecedor', 'telefoneFornecedor', 'websiteFornecedor', 'contactoResponsavel', 'telefoneContacto', 'emailContacto'],
+    'contactos' => ['emailFornecedor', 'telefoneFornecedor', 'emailEmpresaFornecedor', 'contactoResponsavel', 'telefoneContacto', 'emailContacto'],
     'morada' => ['moradaFornecedor', 'codigoPostalFornecedor', 'localidadeFornecedor', 'paisFornecedor'],
-    'observacoes' => ['observacoesFornecedor']
 ];
 
 $camposObrigatoriosFornecedor = [
@@ -47,11 +45,8 @@ $camposObrigatoriosFornecedor = [
     ],
 
     'contactos' => [
-        'emailFornecedor',
         'telefoneFornecedor',
-        'websiteFornecedor',
         'contactoResponsavel',
-        'telefoneContacto',
         'emailContacto'
     ],
 
@@ -61,40 +56,79 @@ $camposObrigatoriosFornecedor = [
         'localidadeFornecedor',
         'paisFornecedor'
     ],
-
-    'observacoes' => []
 ];
 
 $labelsCamposFornecedor = [
-    'nomeFornecedor' => 'Nome do Fornecedor',
-    'nifFornecedor' => 'NIF',
-    'tipoFornecedor' => 'Tipo de Fornecedor',
-    'estadoFornecedor' => 'Estado',
+    'nomeFornecedor'          => 'Nome do Fornecedor',
+    'nifFornecedor'           => 'NIF',
+    'tipoFornecedor'          => 'Tipo de Fornecedor',
+    'estadoFornecedor'        => 'Estado',
 
-    'emailFornecedor' => 'Email Geral',
-    'telefoneFornecedor' => 'Telefone',
-    'websiteFornecedor' => 'Website',
-    'contactoResponsavel' => 'Pessoa de Contacto',
-    'telefoneContacto' => 'Telefone do Contacto',
-    'emailContacto' => 'Email do Contacto',
+    'telefoneFornecedor'      => 'Telefone',
+    'emailEmpresaFornecedor'  => 'Email do Fornecedor',
+    'contactoResponsavel'     => 'Pessoa Responsável',
+    'telefoneContacto'        => 'Telefone do Contacto',
+    'emailContacto'           => 'Email do Contacto',
 
-    'moradaFornecedor' => 'Morada',
-    'codigoPostalFornecedor' => 'Código Postal',
-    'localidadeFornecedor' => 'Localidade',
-    'paisFornecedor' => 'País',
-
+    'moradaFornecedor'        => 'Morada',
+    'codigoPostalFornecedor'  => 'Código Postal',
+    'localidadeFornecedor'    => 'Localidade',
+    'paisFornecedor'          => 'País',
 ];
 
 $nomesEtapasFornecedor = [
     'identificacao' => 'Identificação',
-    'contactos' => 'Contactos',
-    'morada' => 'Morada',
-    'observacoes' => 'Observações',
-    'documentos' => 'Documentos'
+    'contactos'     => 'Contactos',
+    'morada'        => 'Morada',
 ];
 
 $chaveSessao = 'novo_fornecedor';
 $ficheiroAtual = 'novo_fornecedor.php';
+
+function validar_formato_identificacao_fornecedor($chaveSessao)
+{
+    $dados = $_SESSION[$chaveSessao] ?? [];
+    $erros = [];
+
+    $nif = $dados['nifFornecedor'] ?? '';
+    if (!preg_match('/^\d{9}$/', $nif)) {
+        $erros[] = 'O NIF deve ter exatamente 9 dígitos numéricos.';
+    }
+
+    return $erros;
+}
+
+function validar_formato_contactos_fornecedor($chaveSessao)
+{
+    $dados = $_SESSION[$chaveSessao] ?? [];
+    $erros = [];
+
+    $tel = preg_replace('/\D/', '', $dados['telefoneFornecedor'] ?? '');
+    if (strlen($tel) !== 9) {
+        $erros[] = 'O Telefone deve ter exatamente 9 dígitos.';
+    }
+
+    $telContacto = $dados['telefoneContacto'] ?? '';
+    if ($telContacto !== '') {
+        if (strlen(preg_replace('/\D/', '', $telContacto)) !== 9) {
+            $erros[] = 'O Telefone do Contacto deve ter exatamente 9 dígitos.';
+        }
+    }
+
+    foreach (['emailContacto' => 'Email do Contacto'] as $campo => $label) {
+        $val = $dados[$campo] ?? '';
+        if ($val !== '' && !str_contains($val, '@')) {
+            $erros[] = 'O campo "' . $label . '" deve conter o carácter @.';
+        }
+    }
+
+    $emailEmpresa = $dados['emailEmpresaFornecedor'] ?? '';
+    if ($emailEmpresa !== '' && !str_contains($emailEmpresa, '@')) {
+        $erros[] = 'O campo "Email do Fornecedor" deve conter o carácter @.';
+    }
+
+    return $erros;
+}
 
 $etapas = $etapasFornecedor;
 $camposPorEtapa = $camposPorEtapaFornecedor;
@@ -164,6 +198,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $labelsCampos
             );
 
+            if (empty($errosEtapa) && $etapaValidar === 'identificacao') {
+                $errosEtapa = validar_formato_identificacao_fornecedor($chaveSessao);
+            }
+
+            if (empty($errosEtapa) && $etapaValidar === 'contactos') {
+                $errosEtapa = validar_formato_contactos_fornecedor($chaveSessao);
+            }
+
             if (!empty($errosEtapa)) {
                 $errosFornecedor = $errosEtapa;
                 $etapaAtual = $etapaValidar;
@@ -185,6 +227,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $labelsCampos
         );
 
+        if (empty($errosFornecedor) && $etapaSubmetida === 'identificacao') {
+            $errosFornecedor = validar_formato_identificacao_fornecedor($chaveSessao);
+        }
+
+        if (empty($errosFornecedor) && $etapaSubmetida === 'contactos') {
+            $errosFornecedor = validar_formato_contactos_fornecedor($chaveSessao);
+        }
+
         if (!empty($errosFornecedor)) {
             $etapaAtual = $etapaSubmetida;
         } else {
@@ -198,13 +248,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errosFornecedor)) {
-        foreach ($camposObrigatorios as $etapa => $campos) {
+        foreach ($etapas as $etapa) {
             $errosEtapa = validar_etapa_temporaria(
                 $chaveSessao,
                 $etapa,
                 $camposObrigatorios,
                 $labelsCampos
             );
+
+            if (empty($errosEtapa) && $etapa === 'identificacao') {
+                $errosEtapa = validar_formato_identificacao_fornecedor($chaveSessao);
+            }
+
+            if (empty($errosEtapa) && $etapa === 'contactos') {
+                $errosEtapa = validar_formato_contactos_fornecedor($chaveSessao);
+            }
 
             if (!empty($errosEtapa)) {
                 $errosFornecedor = $errosEtapa;
@@ -222,52 +280,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 nome_empresa,
                 tipo_fornecedor,
                 nif,
-                email,
                 telefone,
-                website,
-                pessoa_contacto,
+                email_fornecedor,
+                pessoa_responsavel,
                 telefone_contacto,
                 email_contacto,
                 morada,
                 codigo_postal,
                 localidade,
                 pais,
-                observacoes,
                 isActive
             ) VALUES (
                 :nome_empresa,
                 :tipo_fornecedor,
                 :nif,
-                :email,
                 :telefone,
-                :website,
-                :pessoa_contacto,
+                :email_fornecedor,
+                :pessoa_responsavel,
                 :telefone_contacto,
                 :email_contacto,
                 :morada,
                 :codigo_postal,
                 :localidade,
                 :pais,
-                :observacoes,
                 1
             )
         ");
 
         $stmt->execute([
-            ':nome_empresa' => $dadosFornecedor['nomeFornecedor'] ?? '',
-            ':tipo_fornecedor' => $dadosFornecedor['tipoFornecedor'] ?? '',
-            ':nif' => $dadosFornecedor['nifFornecedor'] ?? '',
-            ':email' => $dadosFornecedor['emailFornecedor'] ?? '',
-            ':telefone' => $dadosFornecedor['telefoneFornecedor'] ?? '',
-            ':website' => $dadosFornecedor['websiteFornecedor'] ?? '',
-            ':pessoa_contacto' => $dadosFornecedor['contactoResponsavel'] ?? '',
+            ':nome_empresa'      => $dadosFornecedor['nomeFornecedor'] ?? '',
+            ':tipo_fornecedor'   => $dadosFornecedor['tipoFornecedor'] ?? '',
+            ':nif'               => $dadosFornecedor['nifFornecedor'] ?? '',
+            ':telefone'          => $dadosFornecedor['telefoneFornecedor'] ?? '',
+            ':email_fornecedor'  => $dadosFornecedor['emailEmpresaFornecedor'] ?? '',
+            ':pessoa_responsavel' => $dadosFornecedor['contactoResponsavel'] ?? '',
             ':telefone_contacto' => $dadosFornecedor['telefoneContacto'] ?? '',
-            ':email_contacto' => $dadosFornecedor['emailContacto'] ?? '',
-            ':morada' => $dadosFornecedor['moradaFornecedor'] ?? '',
-            ':codigo_postal' => $dadosFornecedor['codigoPostalFornecedor'] ?? '',
-            ':localidade' => $dadosFornecedor['localidadeFornecedor'] ?? '',
-            ':pais' => $dadosFornecedor['paisFornecedor'] ?? 'Portugal',
-            ':observacoes' => $dadosFornecedor['observacoesFornecedor'] ?? ''
+            ':email_contacto'    => $dadosFornecedor['emailContacto'] ?? '',
+            ':morada'            => $dadosFornecedor['moradaFornecedor'] ?? '',
+            ':codigo_postal'     => $dadosFornecedor['codigoPostalFornecedor'] ?? '',
+            ':localidade'        => $dadosFornecedor['localidadeFornecedor'] ?? '',
+            ':pais'              => $dadosFornecedor['paisFornecedor'] ?? 'Portugal',
         ]);
 
         $id_fornecedor = $pdo->lastInsertId();
@@ -324,11 +376,11 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             <button type="submit"
                     class="btn btn-guardar"
                     name="acao_etapa"
-                    value="<?php echo $etapaAtual === 'observacoes' ? 'finalizar' : 'continuar'; ?>"
+                    value="<?php echo $etapaAtual === 'morada' ? 'finalizar' : 'continuar'; ?>"
                     form="formNovoFornecedor"
                     formnovalidate>
-                <i class="fa-solid <?php echo $etapaAtual === 'observacoes' ? 'fa-floppy-disk' : 'fa-arrow-right'; ?> me-2"></i>
-                <?php echo $etapaAtual === 'observacoes' ? 'Guardar Fornecedor' : 'Guardar e Continuar'; ?>
+                <i class="fa-solid <?php echo $etapaAtual === 'morada' ? 'fa-floppy-disk' : 'fa-arrow-right'; ?> me-2"></i>
+                <?php echo $etapaAtual === 'morada' ? 'Guardar Fornecedor' : 'Guardar e Continuar'; ?>
             </button>
         </div>
 
@@ -486,7 +538,11 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        name="nifFornecedor"
                                        value="<?php echo valor_temporario($chaveSessao, 'nifFornecedor'); ?>"
                                        placeholder="Ex: 514987321"
+                                       maxlength="9"
+                                       pattern="\d{9}"
+                                       inputmode="numeric"
                                        required>
+                                <small class="texto-ajuda-form contador-caracteres" data-target="nifFornecedor" data-max="9">0 / 9 caracteres</small>
                             </div>
 
                             <div class="col-md-8">
@@ -547,45 +603,43 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                         <div class="row g-4">
                             <div class="col-md-4">
-                                <label for="emailFornecedor" class="form-label">Email Geral *</label>
-                                <input type="email"
-                                       class="form-control"
-                                       id="emailFornecedor"
-                                       name="emailFornecedor"
-                                       value="<?php echo valor_temporario($chaveSessao, 'emailFornecedor'); ?>"
-                                       placeholder="Ex: comercial@fornecedor.pt"
-                                       required>
-                            </div>
-
-                            <div class="col-md-4">
                                 <label for="telefoneFornecedor" class="form-label">Telefone *</label>
                                 <input type="text"
                                        class="form-control"
                                        id="telefoneFornecedor"
                                        name="telefoneFornecedor"
                                        value="<?php echo valor_temporario($chaveSessao, 'telefoneFornecedor'); ?>"
-                                       placeholder="Ex: +351 221 234 567"
+                                       placeholder="Ex: 221234567"
+                                       maxlength="9"
+                                       pattern="\d{9}"
+                                       inputmode="numeric"
                                        required>
+                                <small class="texto-ajuda-form contador-caracteres" data-target="telefoneFornecedor" data-max="9">0 / 9 caracteres</small>
                             </div>
 
                             <div class="col-md-4">
-                                <label for="websiteFornecedor" class="form-label">Website </label>
-                                <input type="url"
+                                <label for="emailEmpresaFornecedor" class="form-label">Email do Fornecedor</label>
+                                <input type="email"
                                        class="form-control"
-                                       id="websiteFornecedor"
-                                       name="websiteFornecedor"
-                                       value="<?php echo valor_temporario($chaveSessao, 'websiteFornecedor'); ?>"
-                                       placeholder="Ex: https://www.fornecedor.pt">
+                                       id="emailEmpresaFornecedor"
+                                       name="emailEmpresaFornecedor"
+                                       value="<?php echo valor_temporario($chaveSessao, 'emailEmpresaFornecedor'); ?>"
+                                       placeholder="Ex: geral@fornecedor.pt"
+                                       maxlength="255">
+                                <small class="texto-ajuda-form contador-caracteres" data-target="emailEmpresaFornecedor" data-max="255">0 / 255 caracteres</small>
                             </div>
 
                             <div class="col-md-4">
-                                <label for="contactoResponsavel" class="form-label">Pessoa de Contacto</label>
+                                <label for="contactoResponsavel" class="form-label">Pessoa Responsável *</label>
                                 <input type="text"
                                        class="form-control"
                                        id="contactoResponsavel"
                                        name="contactoResponsavel"
                                        value="<?php echo valor_temporario($chaveSessao, 'contactoResponsavel'); ?>"
-                                       placeholder="Ex: Ana Martins">
+                                       placeholder="Ex: Ana Martins"
+                                       maxlength="150"
+                                       required>
+                                <small class="texto-ajuda-form contador-caracteres" data-target="contactoResponsavel" data-max="150">0 / 150 caracteres</small>
                             </div>
 
                             <div class="col-md-4">
@@ -595,17 +649,24 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        id="telefoneContacto"
                                        name="telefoneContacto"
                                        value="<?php echo valor_temporario($chaveSessao, 'telefoneContacto'); ?>"
-                                       placeholder="Ex: 912 345 678">
+                                       placeholder="Ex: 912345678"
+                                       maxlength="9"
+                                       pattern="\d{9}"
+                                       inputmode="numeric">
+                                <small class="texto-ajuda-form contador-caracteres" data-target="telefoneContacto" data-max="9">0 / 9 caracteres</small>
                             </div>
 
                             <div class="col-md-4">
-                                <label for="emailContacto" class="form-label">Email do Contacto</label>
+                                <label for="emailContacto" class="form-label">Email do Contacto *</label>
                                 <input type="email"
                                        class="form-control"
                                        id="emailContacto"
                                        name="emailContacto"
                                        value="<?php echo valor_temporario($chaveSessao, 'emailContacto'); ?>"
-                                       placeholder="Ex: tecnico@fornecedor.pt">
+                                       placeholder="Ex: tecnico@fornecedor.pt"
+                                       maxlength="255"
+                                       required>
+                                <small class="texto-ajuda-form contador-caracteres" data-target="emailContacto" data-max="255">0 / 255 caracteres</small>
                             </div>
                         </div>
                     </div>
@@ -627,23 +688,29 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                         <div class="row g-4">
                             <div class="col-md-6">
-                                <label for="moradaFornecedor" class="form-label">Morada</label>
+                                <label for="moradaFornecedor" class="form-label">Morada *</label>
                                 <input type="text"
                                        class="form-control"
                                        id="moradaFornecedor"
                                        name="moradaFornecedor"
                                        value="<?php echo valor_temporario($chaveSessao, 'moradaFornecedor'); ?>"
-                                       placeholder="Ex: Rua da Tecnologia, nº 120">
+                                       placeholder="Ex: Rua da Tecnologia, nº 120"
+                                       maxlength="255"
+                                       required>
+                                <small class="texto-ajuda-form contador-caracteres" data-target="moradaFornecedor" data-max="255">0 / 255 caracteres</small>
                             </div>
 
                             <div class="col-md-2">
-                                <label for="codigoPostalFornecedor" class="form-label">Código Postal</label>
+                                <label for="codigoPostalFornecedor" class="form-label">Código Postal *</label>
                                 <input type="text"
                                        class="form-control"
                                        id="codigoPostalFornecedor"
                                        name="codigoPostalFornecedor"
                                        value="<?php echo valor_temporario($chaveSessao, 'codigoPostalFornecedor'); ?>"
-                                       placeholder="Ex: 4000-000">
+                                       placeholder="Ex: 4000-000"
+                                       maxlength="20"
+                                       required>
+                                <small class="texto-ajuda-form contador-caracteres" data-target="codigoPostalFornecedor" data-max="20">0 / 20 caracteres</small>
                             </div>
 
                             <div class="col-md-2">
@@ -654,41 +721,25 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        name="localidadeFornecedor"
                                        value="<?php echo valor_temporario($chaveSessao, 'localidadeFornecedor'); ?>"
                                        placeholder="Ex: Porto"
+                                       maxlength="100"
                                        required>
+                                <small class="texto-ajuda-form contador-caracteres" data-target="localidadeFornecedor" data-max="100">0 / 100 caracteres</small>
                             </div>
 
                             <div class="col-md-2">
-                                <label for="paisFornecedor" class="form-label">País</label>
+                                <label for="paisFornecedor" class="form-label">País *</label>
                                 <input type="text"
                                        class="form-control"
                                        id="paisFornecedor"
                                        name="paisFornecedor"
-                                       value="<?php echo valor_temporario($chaveSessao, 'paisFornecedor', 'Portugal'); ?>">
+                                       value="<?php echo valor_temporario($chaveSessao, 'paisFornecedor', 'Portugal'); ?>"
+                                       maxlength="100"
+                                       required>
+                                <small class="texto-ajuda-form contador-caracteres" data-target="paisFornecedor" data-max="100">0 / 100 caracteres</small>
                             </div>
                         </div>
                     </div>
 
-                    <!-- =========================================
-                         SEPARADOR 6: OBSERVAÇÕES
-                         Notas livres sobre o fornecedor.
-                         ========================================= -->
-                    <div class="<?php echo classe_painel('observacoes', $etapaAtual); ?>"
-                         id="observacoes-tab-pane"
-                         role="tabpanel"
-                         aria-labelledby="observacoes-tab"
-                         tabindex="0">
-
-                        <div class="secao-ficha-titulo">
-                            <h4>Observações</h4>
-                            <p>Registe notas relevantes sobre qualidade do serviço, tempos de resposta ou histórico técnico.</p>
-                        </div>
-
-                        <textarea class="form-control"
-                                  id="observacoesFornecedor"
-                                  name="observacoesFornecedor"
-                                  rows="7"
-                                  placeholder="Indique informações relevantes sobre o fornecedor, qualidade do serviço, tempos de resposta ou notas técnicas."><?php echo valor_temporario($chaveSessao, 'observacoesFornecedor'); ?></textarea>
-                    </div>
                 </div>
             </div>
         </form>

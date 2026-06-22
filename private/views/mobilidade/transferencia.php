@@ -18,8 +18,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $idEquipamento = (int) ($_POST['id_equipamento'] ?? 0);
             $idLocalizacaoDestino = (int) ($_POST['id_localizacao_destino'] ?? 0);
 
+            $motivo = trim($_POST['motivo'] ?? '');
+
             if ($idEquipamento <= 0 || $idLocalizacaoDestino <= 0) {
                 throw new Exception('Selecione o equipamento e a localização de destino.');
+            }
+
+            if ($motivo === '') {
+                throw new Exception('O campo Motivo é obrigatório.');
             }
             
             $stmtLocalizacaoAtual = $pdo->prepare("
@@ -69,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':origem' => $idLocalizacaoOrigem,
                 ':destino' => $idLocalizacaoDestino,
                 ':utilizador' => $idUtilizador,
-                ':motivo' => trim($_POST['motivo'] ?? ''),
+                ':motivo' => $motivo,
                 ':observacoes' => trim($_POST['observacoes'] ?? '')
             ]);
 
@@ -296,7 +302,7 @@ $equipamentos = $pdo->query("
         e.codigo_equipamento,
         e.designacao,
         e.id_localizacao,
-        CONCAT(l.codigo, ' - ', l.departamento_nome, ' - Piso ', l.piso, ' - Sala ', l.sala) AS localizacao_atual
+        CONCAT(l.departamento_nome, ' - Sala ', l.sala) AS localizacao_atual
     FROM equipamentos e
     INNER JOIN localizacoes l
         ON l.id_localizacao = e.id_localizacao
@@ -314,7 +320,9 @@ $localizacoes = $pdo->query("
 $transferencias = $pdo->query("
     SELECT t.*, e.codigo_equipamento, e.designacao,
            lo.codigo AS origem_codigo,
+           CONCAT(lo.departamento_nome, ' - Sala ', lo.sala) AS origem_localizacao,
            ld.codigo AS destino_codigo,
+           CONCAT(ld.departamento_nome, ' - Sala ', ld.sala) AS destino_localizacao,
            u.nome AS utilizador_pedido
     FROM transferencias_equipamentos t
     INNER JOIN equipamentos e ON e.id_equipamento = t.id_equipamento
@@ -378,8 +386,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <tr>
                         <td><?php echo htmlspecialchars($transferencia['codigo_transferencia']); ?></td>
                         <td><?php echo htmlspecialchars($transferencia['codigo_equipamento'] . ' - ' . $transferencia['designacao']); ?></td>
-                        <td><?php echo htmlspecialchars($transferencia['origem_codigo']); ?></td>
-                        <td><?php echo htmlspecialchars($transferencia['destino_codigo']); ?></td>
+                        <td><?php echo htmlspecialchars($transferencia['origem_localizacao']); ?></td>
+                        <td><?php echo htmlspecialchars($transferencia['destino_localizacao']); ?></td>
                         <td><?php echo htmlspecialchars($transferencia['utilizador_pedido']); ?></td>
                         <td>
                             <span class="estado <?php echo $classeEstadoTransferencia[$transferencia['estado']] ?? 'estado-inativo'; ?>">
@@ -454,12 +462,12 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                                 <div>
                                     <label>Origem</label>
-                                    <p><?php echo htmlspecialchars($transferencia['origem_codigo']); ?></p>
+                                    <p><?php echo htmlspecialchars($transferencia['origem_localizacao']); ?></p>
                                 </div>
 
                                 <div>
                                     <label>Destino</label>
-                                    <p><?php echo htmlspecialchars($transferencia['destino_codigo']); ?></p>
+                                    <p><?php echo htmlspecialchars($transferencia['destino_localizacao']); ?></p>
                                 </div>
 
                                 <div>
@@ -486,7 +494,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 <div class="modal fade" id="modalNovaTransferencia" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
         <div class="modal-content modal-acessorio">
-            <form method="post">
+            <form method="post" id="formNovaTransferencia" novalidate>
                 <input type="hidden" name="acao" value="criar">
 
                 <div class="modal-header">
@@ -498,6 +506,14 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 </div>
 
                 <div class="modal-body">
+                    <div id="erroNovaTransferencia" class="alert alert-danger d-none" role="alert">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            <strong>Erro no formulário</strong>
+                        </div>
+                        <ul class="mb-0 ps-3" id="listaErrosTransferencia"></ul>
+                    </div>
+
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label for="pesquisaEquipamentoTransferencia" class="form-label">Equipamento *</label>
@@ -558,13 +574,12 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                                 <div class="lista-registos-custom" id="listaLocalizacoesTransferencia">
                                     <?php foreach ($localizacoes as $localizacao): ?>
+                                        <?php $textoLoc = htmlspecialchars($localizacao['departamento_nome'] . ' - Sala ' . $localizacao['sala']); ?>
                                         <button type="button"
                                                 class="opcao-registo-custom"
                                                 data-id="<?php echo htmlspecialchars($localizacao['id_localizacao']); ?>"
-                                                data-texto="<?php echo htmlspecialchars($localizacao['codigo'] . ' - ' . $localizacao['departamento_nome'] . ' - Piso ' . $localizacao['piso'] . ' - Sala ' . $localizacao['sala']); ?>">
-                                            <span>
-                                                <?php echo htmlspecialchars($localizacao['codigo'] . ' - ' . $localizacao['departamento_nome'] . ' - Piso ' . $localizacao['piso'] . ' - Sala ' . $localizacao['sala']); ?>
-                                            </span>
+                                                data-texto="<?php echo $textoLoc; ?>">
+                                            <span><?php echo $textoLoc; ?></span>
                                         </button>
                                     <?php endforeach; ?>
                                 </div>
@@ -572,13 +587,25 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label">Motivo</label>
-                            <input type="text" name="motivo" class="form-control">
+                            <label for="motivoTransferencia" class="form-label">Motivo *</label>
+                            <input type="text"
+                                   id="motivoTransferencia"
+                                   name="motivo"
+                                   class="form-control"
+                                   maxlength="255"
+                                   placeholder="Indique o motivo da transferência">
+                            <small class="texto-ajuda-form contador-caracteres" data-target="motivoTransferencia" data-max="255">0 / 255 caracteres</small>
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label">Observações</label>
-                            <textarea name="observacoes" class="form-control" rows="3"></textarea>
+                            <label for="observacoesTransferencia" class="form-label">Observações</label>
+                            <textarea id="observacoesTransferencia"
+                                      name="observacoes"
+                                      class="form-control"
+                                      rows="3"
+                                      maxlength="500"
+                                      placeholder="Informações adicionais (opcional)"></textarea>
+                            <small class="texto-ajuda-form contador-caracteres" data-target="observacoesTransferencia" data-max="500">0 / 500 caracteres</small>
                         </div>
                     </div>
                 </div>

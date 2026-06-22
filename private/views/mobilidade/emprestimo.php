@@ -17,12 +17,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($acao === 'criar') {
             $pdo->beginTransaction();
 
-            $idEquipamento = (int) ($_POST['id_equipamento'] ?? 0);
+            $idEquipamento       = (int) ($_POST['id_equipamento'] ?? 0);
             $idLocalizacaoDestino = (int) ($_POST['id_localizacao_destino'] ?? 0);
+            $idResponsavel       = (int) ($_POST['id_responsavel_emprestimo'] ?? 0);
+            $motivo              = trim($_POST['motivo'] ?? '');
+            $dataInicio          = $_POST['data_inicio'] ?? '';
+            $dataDevolucao       = $_POST['data_prevista_devolucao'] ?? '';
 
             if ($idEquipamento <= 0 || $idLocalizacaoDestino <= 0) {
                 throw new Exception('Selecione o equipamento e a localização temporária.');
             }
+
+            if ($idResponsavel <= 0) {
+                throw new Exception('Selecione o responsável pelo empréstimo.');
+            }
+
+            if ($motivo === '') {
+                throw new Exception('O campo Motivo é obrigatório.');
+            }
+
+            /* Buscar data_aquisicao do equipamento para validação */
+            $stmtAq = $pdo->prepare("SELECT data_aquisicao FROM equipamentos WHERE id_equipamento = :id AND isActive = 1");
+            $stmtAq->execute([':id' => $idEquipamento]);
+            $rowAq = $stmtAq->fetch();
+            $dataAquisicao = $rowAq['data_aquisicao'] ?? null;
+
+            if ($dataAquisicao && $dataInicio < $dataAquisicao) {
+                throw new Exception('A data de início não pode ser anterior à data de aquisição do equipamento (' . date('d/m/Y', strtotime($dataAquisicao)) . ').');
+            }
+
+            if ($dataDevolucao && $dataInicio && $dataDevolucao < $dataInicio) {
+                throw new Exception('A data prevista de devolução não pode ser anterior à data de início.');
+            }
+
+            /* Buscar nome do responsável */
+            $stmtResp = $pdo->prepare("SELECT nome FROM utilizadores WHERE id_utilizador = :id AND tipo_utilizador = 'Engenheiro' AND isActive = 1");
+            $stmtResp->execute([':id' => $idResponsavel]);
+            $rowResp = $stmtResp->fetch();
+            if (!$rowResp) {
+                throw new Exception('Responsável não encontrado.');
+            }
+            $nomeResponsavel = $rowResp['nome'];
 
             $stmtLocalizacaoAtual = $pdo->prepare("
                 SELECT id_localizacao
@@ -81,10 +116,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':origem' => $idLocalizacaoOrigem,
                 ':destino' => $idLocalizacaoDestino,
                 ':utilizador' => $idUtilizador,
-                ':responsavel' => trim($_POST['responsavel_emprestimo'] ?? ''),
-                ':motivo' => trim($_POST['motivo'] ?? ''),
-                ':data_inicio' => $_POST['data_inicio'],
-                ':data_prevista' => $_POST['data_prevista_devolucao'],
+                ':responsavel' => $nomeResponsavel,
+                ':motivo' => $motivo,
+                ':data_inicio' => $dataInicio,
+                ':data_prevista' => $dataDevolucao,
                 ':observacoes' => trim($_POST['observacoes'] ?? '')
             ]);
 
@@ -321,7 +356,8 @@ $equipamentos = $pdo->query("
         e.codigo_equipamento,
         e.designacao,
         e.id_localizacao,
-        CONCAT(l.codigo, ' - ', l.departamento_nome, ' - Piso ', l.piso, ' - Sala ', l.sala) AS localizacao_atual
+        e.data_aquisicao,
+        CONCAT(l.departamento_nome, ' - Sala ', l.sala) AS localizacao_atual
     FROM equipamentos e
     INNER JOIN localizacoes l
         ON l.id_localizacao = e.id_localizacao
@@ -330,16 +366,24 @@ $equipamentos = $pdo->query("
 ")->fetchAll();
 
 $localizacoes = $pdo->query("
-    SELECT id_localizacao, codigo, departamento_nome, piso, sala
+    SELECT id_localizacao, departamento_nome, sala
     FROM localizacoes
     WHERE isActive = 1
-    ORDER BY codigo
+    ORDER BY departamento_nome, sala
+")->fetchAll();
+
+$engenheiros = $pdo->query("
+    SELECT id_utilizador, nome, email
+    FROM utilizadores
+    WHERE isActive = 1
+      AND tipo_utilizador = 'Engenheiro'
+    ORDER BY nome
 ")->fetchAll();
 
 $emprestimos = $pdo->query("
     SELECT emp.*, e.codigo_equipamento, e.designacao,
-           lo.codigo AS origem_codigo,
-           ld.codigo AS destino_codigo
+           CONCAT(lo.departamento_nome, ' - Sala ', lo.sala) AS origem_localizacao,
+           CONCAT(ld.departamento_nome, ' - Sala ', ld.sala) AS destino_localizacao
     FROM emprestimos_equipamentos emp
     INNER JOIN equipamentos e ON e.id_equipamento = emp.id_equipamento
     INNER JOIN localizacoes lo ON lo.id_localizacao = emp.id_localizacao_origem
@@ -403,7 +447,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <tr>
                         <td><?php echo htmlspecialchars($emprestimo['codigo_emprestimo']); ?></td>
                         <td><?php echo htmlspecialchars($emprestimo['codigo_equipamento'] . ' - ' . $emprestimo['designacao']); ?></td>
-                        <td><?php echo htmlspecialchars($emprestimo['destino_codigo']); ?></td>
+                        <td><?php echo htmlspecialchars($emprestimo['destino_localizacao']); ?></td>
                         <td><?php echo htmlspecialchars($emprestimo['responsavel_emprestimo']); ?></td>
                         <td><?php echo htmlspecialchars($emprestimo['data_prevista_devolucao']); ?></td>
                         <td>
@@ -491,12 +535,12 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                                 <div>
                                     <label>Origem</label>
-                                    <p><?php echo htmlspecialchars($emprestimo['origem_codigo']); ?></p>
+                                    <p><?php echo htmlspecialchars($emprestimo['origem_localizacao']); ?></p>
                                 </div>
 
                                 <div>
                                     <label>Destino</label>
-                                    <p><?php echo htmlspecialchars($emprestimo['destino_codigo']); ?></p>
+                                    <p><?php echo htmlspecialchars($emprestimo['destino_localizacao']); ?></p>
                                 </div>
 
                                 <div>
@@ -528,7 +572,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 <div class="modal fade" id="modalNovoEmprestimo" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
         <div class="modal-content modal-acessorio">
-            <form method="post">
+            <form method="post" id="formNovoEmprestimo" novalidate>
                 <input type="hidden" name="acao" value="criar">
 
                 <div class="modal-header">
@@ -540,6 +584,11 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 </div>
 
                 <div class="modal-body">
+                    <div id="erroNovoEmprestimo" class="alert alert-danger d-none">
+                        <strong><i class="fa-solid fa-triangle-exclamation me-2"></i>Erro</strong>
+                        <ul id="listaErrosEmprestimo" class="mb-0 mt-1"></ul>
+                    </div>
+
                     <div class="row g-4">
                         <div class="col-md-6">
                             <label for="pesquisaEquipamentoEmprestimo" class="form-label">Equipamento *</label>
@@ -552,21 +601,20 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     data-lista-target="listaEquipamentosEmprestimo"
                                     data-localizacao-target="localizacaoAtualEmprestimo"
                                     placeholder="Pesquisar e selecionar equipamento"
-                                    autocomplete="off"
-                                    required>
+                                    autocomplete="off">
 
                                 <input type="hidden"
                                     id="idEquipamentoEmprestimo"
-                                    name="id_equipamento"
-                                    required>
+                                    name="id_equipamento">
 
                                 <div class="lista-registos-custom" id="listaEquipamentosEmprestimo">
                                     <?php foreach ($equipamentos as $equipamento): ?>
                                         <button type="button"
                                                 class="opcao-registo-custom"
-                                                data-id="<?php echo htmlspecialchars($equipamento['id_equipamento']); ?>"
+                                                data-id="<?php echo (int) $equipamento['id_equipamento']; ?>"
                                                 data-texto="<?php echo htmlspecialchars($equipamento['codigo_equipamento'] . ' - ' . $equipamento['designacao']); ?>"
-                                                data-localizacao-atual="<?php echo htmlspecialchars($equipamento['localizacao_atual']); ?>">
+                                                data-localizacao-atual="<?php echo htmlspecialchars($equipamento['localizacao_atual']); ?>"
+                                                data-aquisicao="<?php echo htmlspecialchars($equipamento['data_aquisicao'] ?? ''); ?>">
                                             <span>
                                                 <?php echo htmlspecialchars($equipamento['codigo_equipamento'] . ' - ' . $equipamento['designacao']); ?>
                                             </span>
@@ -591,22 +639,20 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     data-hidden-target="idLocalizacaoEmprestimo"
                                     data-lista-target="listaLocalizacoesEmprestimo"
                                     placeholder="Pesquisar e selecionar localização"
-                                    autocomplete="off"
-                                    required>
+                                    autocomplete="off">
 
                                 <input type="hidden"
                                     id="idLocalizacaoEmprestimo"
-                                    name="id_localizacao_destino"
-                                    required>
+                                    name="id_localizacao_destino">
 
                                 <div class="lista-registos-custom" id="listaLocalizacoesEmprestimo">
                                     <?php foreach ($localizacoes as $localizacao): ?>
                                         <button type="button"
                                                 class="opcao-registo-custom"
-                                                data-id="<?php echo htmlspecialchars($localizacao['id_localizacao']); ?>"
-                                                data-texto="<?php echo htmlspecialchars($localizacao['codigo'] . ' - ' . $localizacao['departamento_nome'] . ' - Piso ' . $localizacao['piso'] . ' - Sala ' . $localizacao['sala']); ?>">
+                                                data-id="<?php echo (int) $localizacao['id_localizacao']; ?>"
+                                                data-texto="<?php echo htmlspecialchars($localizacao['departamento_nome'] . ' - Sala ' . $localizacao['sala']); ?>">
                                             <span>
-                                                <?php echo htmlspecialchars($localizacao['codigo'] . ' - ' . $localizacao['departamento_nome'] . ' - Piso ' . $localizacao['piso'] . ' - Sala ' . $localizacao['sala']); ?>
+                                                <?php echo htmlspecialchars($localizacao['departamento_nome'] . ' - Sala ' . $localizacao['sala']); ?>
                                             </span>
                                         </button>
                                     <?php endforeach; ?>
@@ -614,29 +660,56 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </div>
                         </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label">Responsável pelo empréstimo *</label>
-                            <input type="text" name="responsavel_emprestimo" class="form-control" required>
+                        <div class="col-12">
+                            <label for="pesquisaResponsavelEmprestimo" class="form-label">Responsável pelo empréstimo *</label>
+
+                            <div class="campo-pesquisa-registo">
+                                <input type="text"
+                                    class="form-control pesquisa-registo-custom"
+                                    id="pesquisaResponsavelEmprestimo"
+                                    data-hidden-target="idResponsavelEmprestimo"
+                                    data-lista-target="listaResponsaveisEmprestimo"
+                                    placeholder="Pesquisar engenheiro responsável"
+                                    autocomplete="off">
+
+                                <input type="hidden"
+                                    id="idResponsavelEmprestimo"
+                                    name="id_responsavel_emprestimo">
+
+                                <div class="lista-registos-custom" id="listaResponsaveisEmprestimo">
+                                    <?php foreach ($engenheiros as $eng): ?>
+                                        <button type="button"
+                                                class="opcao-registo-custom"
+                                                data-id="<?php echo (int) $eng['id_utilizador']; ?>"
+                                                data-texto="<?php echo htmlspecialchars($eng['nome']); ?>">
+                                            <span><?php echo htmlspecialchars($eng['nome']); ?></span>
+                                            <small class="text-muted"><?php echo htmlspecialchars($eng['email']); ?></small>
+                                        </button>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label class="form-label">Data início *</label>
-                            <input type="date" name="data_inicio" class="form-control" required>
+                            <input type="date" id="dataInicioEmprestimo" name="data_inicio" class="form-control">
                         </div>
 
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label class="form-label">Data prevista de devolução *</label>
-                            <input type="date" name="data_prevista_devolucao" class="form-control" required>
+                            <input type="date" id="dataDevolucaoEmprestimo" name="data_prevista_devolucao" class="form-control">
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label">Motivo</label>
-                            <input type="text" name="motivo" class="form-control">
+                            <label for="motivoEmprestimo" class="form-label">Motivo *</label>
+                            <input type="text" id="motivoEmprestimo" name="motivo" class="form-control" maxlength="255" placeholder="Indique o motivo do empréstimo">
+                            <small class="texto-ajuda-form contador-caracteres" data-target="motivoEmprestimo" data-max="255">0 / 255 caracteres</small>
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label">Observações</label>
-                            <textarea name="observacoes" class="form-control" rows="3"></textarea>
+                            <label for="observacoesEmprestimo" class="form-label">Observações</label>
+                            <textarea id="observacoesEmprestimo" name="observacoes" class="form-control" rows="3" maxlength="500" placeholder="Informações adicionais (opcional)"></textarea>
+                            <small class="texto-ajuda-form contador-caracteres" data-target="observacoesEmprestimo" data-max="500">0 / 500 caracteres</small>
                         </div>
                     </div>
                 </div>

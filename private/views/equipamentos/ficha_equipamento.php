@@ -334,16 +334,25 @@ $familiasEquipamento = $pdo->query("
 ")->fetchAll();
 
 $localizacoes = $pdo->query("
-    SELECT id_localizacao, codigo, departamento_nome, edificio, piso, sala
+    SELECT id_localizacao, codigo, departamento_nome, departamento_sigla, edificio, piso, sala
     FROM localizacoes
     WHERE isActive = 1
     ORDER BY codigo ASC
+")->fetchAll();
+
+$utilizadoresEngenheiros = $pdo->query("
+    SELECT id_utilizador, nome
+    FROM utilizadores
+    WHERE isActive = 1
+      AND tipo_utilizador = 'Engenheiro'
+    ORDER BY nome ASC
 ")->fetchAll();
 
 $fornecedoresGarantia = $pdo->query("
     SELECT id_fornecedor, nome_empresa, tipo_fornecedor
     FROM fornecedores
     WHERE isActive = 1
+      AND tipo_fornecedor IN ('Fabricante', 'Comercial')
     ORDER BY nome_empresa ASC
 ")->fetchAll();
 
@@ -352,18 +361,49 @@ $fornecedoresGarantia = $pdo->query("
    ========================================================= */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualizar') {
     $camposObrigatorios = [
-        'idFamiliaEquipamento' => 'Família do equipamento',
-        'nomeEquipamento' => 'Designação do equipamento',
-        'modelo' => 'Modelo',
-        'numeroSerie' => 'Número de série',
-        'idLocalizacao' => 'Localização',
-        'estado' => 'Estado',
-        'criticidade' => 'Criticidade'
+        'idFamiliaEquipamento'    => 'Família do equipamento',
+        'nomeEquipamento'         => 'Designação do equipamento',
+        'modelo'                  => 'Modelo',
+        'marca'                   => 'Marca',
+        'numeroSerie'             => 'Número de série',
+        'tipoEntrada'             => 'Tipo de entrada',
+        'idLocalizacao'           => 'Localização',
+        'estado'                  => 'Estado',
+        'criticidade'             => 'Criticidade',
+        'periodicidadeManutencao' => 'Periodicidade de manutenção',
+        'periodicidadeCalibracao' => 'Periodicidade de calibração',
+        'idResponsavel'           => 'Responsável pelo equipamento',
+        'dataAquisicao'           => 'Data de aquisição',
+        'dataInstalacao'          => 'Data de instalação',
+        'idFornecedorGarantia'    => 'Fornecedor',
+        'dataInicioGarantia'      => 'Início da garantia',
+        'dataFimGarantia'         => 'Fim da garantia',
     ];
 
     foreach ($camposObrigatorios as $campo => $label) {
         if (trim($_POST[$campo] ?? '') === '') {
             $errosEquipamento[] = 'O campo "' . $label . '" é obrigatório.';
+        }
+    }
+
+    if (empty($errosEquipamento)) {
+        $dataFabrico        = trim($_POST['dataFabrico'] ?? '');
+        $dataAquisicao      = trim($_POST['dataAquisicao'] ?? '');
+        $dataInstalacao     = trim($_POST['dataInstalacao'] ?? '');
+        $dataInicioGarantia = trim($_POST['dataInicioGarantia'] ?? '');
+        $dataFimGarantia    = trim($_POST['dataFimGarantia'] ?? '');
+
+        if ($dataFabrico !== '' && $dataAquisicao !== '' && $dataAquisicao < $dataFabrico) {
+            $errosEquipamento[] = 'A data de aquisição não pode ser anterior à data de fabrico.';
+        }
+        if ($dataAquisicao !== '' && $dataInstalacao !== '' && $dataInstalacao < $dataAquisicao) {
+            $errosEquipamento[] = 'A data de instalação não pode ser anterior à data de aquisição.';
+        }
+        if ($dataFabrico !== '' && $dataInicioGarantia !== '' && $dataInicioGarantia < $dataFabrico) {
+            $errosEquipamento[] = 'O início da garantia não pode ser anterior à data de fabrico.';
+        }
+        if ($dataInicioGarantia !== '' && $dataFimGarantia !== '' && $dataFimGarantia < $dataInicioGarantia) {
+            $errosEquipamento[] = 'O fim da garantia não pode ser anterior ao início da garantia.';
         }
     }
 
@@ -418,6 +458,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualiz
                     codigo_equipamento = :codigo_equipamento,
                     designacao = :designacao,
                     modelo = :modelo,
+                    marca = :marca,
                     numero_serie = :numero_serie,
                     tipo_entrada = :tipo_entrada,
                     valor_aquisicao = :valor_aquisicao,
@@ -429,7 +470,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualiz
                     data_fabrico = :data_fabrico,
                     data_aquisicao = :data_aquisicao,
                     data_instalacao = :data_instalacao,
-                    responsavel_equipamento = :responsavel_equipamento,
+                    id_responsavel = :id_responsavel,
                     observacoes = :observacoes,
                     atualizado_por = :atualizado_por
                 WHERE id_equipamento = :id_equipamento
@@ -442,6 +483,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualiz
                 ':codigo_equipamento' => $codigoGuardar,
                 ':designacao' => trim($_POST['nomeEquipamento']),
                 ':modelo' => trim($_POST['modelo']),
+                ':marca' => trim($_POST['marca'] ?? '') ?: null,
                 ':numero_serie' => trim($_POST['numeroSerie']),
                 ':tipo_entrada' => trim($_POST['tipoEntrada'] ?? '') ?: null,
                 ':valor_aquisicao' => $isEngenheiro
@@ -455,7 +497,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualiz
                 ':data_fabrico' => data_post_equipamento('dataFabrico'),
                 ':data_aquisicao' => data_post_equipamento('dataAquisicao'),
                 ':data_instalacao' => data_post_equipamento('dataInstalacao'),
-                ':responsavel_equipamento' => trim($_POST['responsavelEquipamento'] ?? '') ?: null,
+                ':id_responsavel' => !empty($_POST['idResponsavel']) ? (int) $_POST['idResponsavel'] : null,
                 ':observacoes' => trim($_POST['observacoes'] ?? '') ?: null,
                 ':atualizado_por' => $_SESSION['nome'] ?? $_SESSION['username'] ?? 'sistema',
                 ':id_equipamento' => $idEquipamento
@@ -566,7 +608,8 @@ $stmtEquipamento = $pdo->prepare("
         ef.data_inicio_garantia,
         ef.data_fim_garantia,
         ef.observacoes AS observacoes_fornecedor,
-        garantia.nome_empresa AS garantia_nome
+        garantia.nome_empresa AS garantia_nome,
+        u.nome AS responsavel_nome
     FROM equipamentos e
     INNER JOIN familias_equipamento fe
         ON fe.id_familia_equipamento = e.id_familia_equipamento
@@ -577,6 +620,8 @@ $stmtEquipamento = $pdo->prepare("
        AND ef.isActive = 1
     LEFT JOIN fornecedores garantia
         ON garantia.id_fornecedor = ef.id_fornecedor_garantia
+    LEFT JOIN utilizadores u
+        ON u.id_utilizador = e.id_responsavel
     WHERE e.id_equipamento = :id_equipamento
       AND e.isActive = 1
     LIMIT 1
@@ -765,7 +810,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
           id="formFichaEquipamento"
           action="ficha_equipamento.php?ref=<?php echo url_ref($idEquipamento); ?>"
           method="post"
-          enctype="multipart/form-data">
+          enctype="multipart/form-data"
+          novalidate>
 
         <input type="hidden" id="idEquipamento" name="idEquipamento" value="<?php echo h_equipamento($equipamento['id_equipamento']); ?>">
         <input type="hidden" name="acao" value="atualizar">
@@ -850,22 +896,31 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                         <div class="col-md-4">
                             <label for="nomeEquipamento" class="form-label">Designação *</label>
-                            <input type="text" class="form-control campo-ficha campo-editavel" id="nomeEquipamento" name="nomeEquipamento" value="<?php echo h_equipamento($equipamento['designacao']); ?>" required>
+                            <input type="text" class="form-control campo-ficha campo-editavel" id="nomeEquipamento" name="nomeEquipamento" value="<?php echo h_equipamento($equipamento['designacao']); ?>" required maxlength="150">
+                            <small class="texto-ajuda-form contador-caracteres" data-target="nomeEquipamento" data-max="150">0 / 150 caracteres</small>
                         </div>
 
                         <div class="col-md-4">
                             <label for="modelo" class="form-label">Modelo *</label>
-                            <input type="text" class="form-control campo-ficha campo-editavel" id="modelo" name="modelo" value="<?php echo h_equipamento($equipamento['modelo']); ?>" required>
+                            <input type="text" class="form-control campo-ficha campo-editavel" id="modelo" name="modelo" value="<?php echo h_equipamento($equipamento['modelo']); ?>" required maxlength="120">
+                            <small class="texto-ajuda-form contador-caracteres" data-target="modelo" data-max="120">0 / 120 caracteres</small>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="marca" class="form-label">Marca *</label>
+                            <input type="text" class="form-control campo-ficha campo-editavel" id="marca" name="marca" value="<?php echo h_equipamento($equipamento['marca'] ?? ''); ?>" required maxlength="30">
+                            <small class="texto-ajuda-form contador-caracteres" data-target="marca" data-max="30">0 / 30 caracteres</small>
                         </div>
 
                         <div class="col-md-4">
                             <label for="numeroSerie" class="form-label">Número de Série *</label>
-                            <input type="text" class="form-control campo-ficha campo-editavel" id="numeroSerie" name="numeroSerie" value="<?php echo h_equipamento($equipamento['numero_serie']); ?>" required>
+                            <input type="text" class="form-control campo-ficha campo-editavel" id="numeroSerie" name="numeroSerie" value="<?php echo h_equipamento($equipamento['numero_serie']); ?>" required maxlength="120">
+                            <small class="texto-ajuda-form contador-caracteres" data-target="numeroSerie" data-max="120">0 / 120 caracteres</small>
                         </div>
 
                         <div class="col-md-4">
-                            <label for="tipoEntrada" class="form-label">Tipo de Entrada</label>
-                            <select class="form-select campo-ficha campo-editavel" id="tipoEntrada" name="tipoEntrada">
+                            <label for="tipoEntrada" class="form-label">Tipo de Entrada *</label>
+                            <select class="form-select campo-ficha campo-editavel" id="tipoEntrada" name="tipoEntrada" required>
                                 <option value="">Selecionar tipo</option>
                                 <option value="compra" <?php echo selected_equipamento($equipamento['tipo_entrada'], 'compra'); ?>>Compra</option>
                                 <option value="doacao" <?php echo selected_equipamento($equipamento['tipo_entrada'], 'doacao'); ?>>Doação</option>
@@ -886,16 +941,38 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                     <div class="row g-4">
 
+                        <?php
+                        $localizacaoFichaTexto = ($equipamento['departamento_sigla'] ?? '') . ' - Sala ' . ($equipamento['sala'] ?? '');
+                        ?>
                         <div class="col-md-8">
-                            <label for="idLocalizacao" class="form-label">Localização *</label>
-                            <select class="form-select campo-ficha campo-editavel" id="idLocalizacao" name="idLocalizacao" required>
-                                <option value="">Selecionar localização</option>
-                                <?php foreach ($localizacoes as $localizacao): ?>
-                                    <option value="<?php echo h_equipamento($localizacao['id_localizacao']); ?>" <?php echo selected_equipamento($equipamento['id_localizacao'], $localizacao['id_localizacao']); ?>>
-                                        <?php echo h_equipamento($localizacao['codigo'] . ' | ' . $localizacao['departamento_nome'] . ' - ' . $localizacao['edificio'] . ' - Piso ' . $localizacao['piso'] . ' - Sala ' . $localizacao['sala']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                            <label for="localizacaoPesquisa" class="form-label">Localização *</label>
+                            <div class="campo-pesquisa-registo">
+                                <input type="text"
+                                    class="form-control campo-ficha campo-editavel pesquisa-registo-custom"
+                                    id="localizacaoPesquisa"
+                                    data-hidden-target="idLocalizacao"
+                                    data-lista-target="listaLocalizacoesFicha"
+                                    value="<?php echo h_equipamento($localizacaoFichaTexto); ?>"
+                                    placeholder="Pesquisar localização"
+                                    autocomplete="off">
+
+                                <input type="hidden"
+                                    id="idLocalizacao"
+                                    name="idLocalizacao"
+                                    value="<?php echo h_equipamento($equipamento['id_localizacao'] ?? ''); ?>">
+
+                                <div class="lista-registos-custom" id="listaLocalizacoesFicha">
+                                    <?php foreach ($localizacoes as $loc): ?>
+                                        <button type="button"
+                                                class="opcao-registo-custom"
+                                                data-id="<?php echo h_equipamento($loc['id_localizacao']); ?>"
+                                                data-texto="<?php echo h_equipamento($loc['departamento_sigla'] . ' - Sala ' . $loc['sala']); ?>">
+                                            <span><?php echo h_equipamento($loc['departamento_sigla'] . ' - Sala ' . $loc['sala']); ?></span>
+                                            <small><?php echo h_equipamento($loc['departamento_nome']); ?></small>
+                                        </button>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="col-md-4">
@@ -935,8 +1012,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="col-md-4">
-                            <label for="periodicidadeManutencao" class="form-label">Periodicidade de Manutenção</label>
-                            <select class="form-select campo-ficha campo-editavel" id="periodicidadeManutencao" name="periodicidadeManutencao">
+                            <label for="periodicidadeManutencao" class="form-label">Periodicidade de Manutenção *</label>
+                            <select class="form-select campo-ficha campo-editavel" id="periodicidadeManutencao" name="periodicidadeManutencao" required>
                                 <option value="">Selecionar periodicidade</option>
                                 <option value="semestral" <?php echo selected_equipamento($equipamento['periodicidade_manutencao'], 'semestral'); ?>>Semestral</option>
                                 <option value="anual" <?php echo selected_equipamento($equipamento['periodicidade_manutencao'], 'anual'); ?>>Anual</option>
@@ -946,8 +1023,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="col-md-4">
-                            <label for="periodicidadeCalibracao" class="form-label">Periodicidade de Calibração</label>
-                            <select class="form-select campo-ficha campo-editavel" id="periodicidadeCalibracao" name="periodicidadeCalibracao">
+                            <label for="periodicidadeCalibracao" class="form-label">Periodicidade de Calibração *</label>
+                            <select class="form-select campo-ficha campo-editavel" id="periodicidadeCalibracao" name="periodicidadeCalibracao" required>
                                 <option value="">Selecionar periodicidade</option>
                                 <option value="semestral" <?php echo selected_equipamento($equipamento['periodicidade_calibracao'], 'semestral'); ?>>Semestral</option>
                                 <option value="anual" <?php echo selected_equipamento($equipamento['periodicidade_calibracao'], 'anual'); ?>>Anual</option>
@@ -956,9 +1033,39 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </select>
                         </div>
 
+                        <?php
+                        $idResponsavelFicha = $equipamento['id_responsavel'] ?? '';
+                        $responsavelNomeFicha = $equipamento['responsavel_nome'] ?? '';
+                        ?>
                         <div class="col-md-4">
-                            <label for="responsavelEquipamento" class="form-label">Responsável pelo Equipamento</label>
-                            <input type="text" class="form-control campo-ficha campo-editavel" id="responsavelEquipamento" name="responsavelEquipamento" value="<?php echo h_equipamento($equipamento['responsavel_equipamento']); ?>">
+                            <label for="responsavelPesquisa" class="form-label">Responsável pelo Equipamento *</label>
+                            <div class="campo-pesquisa-registo">
+                                <input type="text"
+                                    class="form-control campo-ficha campo-editavel pesquisa-registo-custom"
+                                    id="responsavelPesquisa"
+                                    data-hidden-target="idResponsavel"
+                                    data-lista-target="listaResponsaveisFicha"
+                                    value="<?php echo h_equipamento($responsavelNomeFicha); ?>"
+                                    placeholder="Pesquisar engenheiro responsável"
+                                    autocomplete="off">
+
+                                <input type="hidden"
+                                    id="idResponsavel"
+                                    name="idResponsavel"
+                                    value="<?php echo h_equipamento($idResponsavelFicha); ?>">
+
+                                <div class="lista-registos-custom" id="listaResponsaveisFicha">
+                                    <?php foreach ($utilizadoresEngenheiros as $eng): ?>
+                                        <button type="button"
+                                                class="opcao-registo-custom"
+                                                data-id="<?php echo h_equipamento($eng['id_utilizador']); ?>"
+                                                data-texto="<?php echo h_equipamento($eng['nome']); ?>">
+                                            <span><?php echo h_equipamento($eng['nome']); ?></span>
+                                            <small>Engenheiro</small>
+                                        </button>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
                         </div>
 
                     </div>
@@ -996,13 +1103,13 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="col-md-3">
-                            <label for="dataAquisicao" class="form-label">Data de Aquisição</label>
-                            <input type="date" class="form-control campo-ficha campo-editavel" id="dataAquisicao" name="dataAquisicao" value="<?php echo valor_data_equipamento($equipamento['data_aquisicao']); ?>">
+                            <label for="dataAquisicao" class="form-label">Data de Aquisição *</label>
+                            <input type="date" class="form-control campo-ficha campo-editavel" id="dataAquisicao" name="dataAquisicao" value="<?php echo valor_data_equipamento($equipamento['data_aquisicao']); ?>" required autocomplete="off">
                         </div>
 
                         <div class="col-md-3">
-                            <label for="dataInstalacao" class="form-label">Data de Instalação</label>
-                            <input type="date" class="form-control campo-ficha campo-editavel" id="dataInstalacao" name="dataInstalacao" value="<?php echo valor_data_equipamento($equipamento['data_instalacao']); ?>">
+                            <label for="dataInstalacao" class="form-label">Data de Instalação *</label>
+                            <input type="date" class="form-control campo-ficha campo-editavel" id="dataInstalacao" name="dataInstalacao" value="<?php echo valor_data_equipamento($equipamento['data_instalacao']); ?>" required autocomplete="off">
                         </div>
 
                     </div>
@@ -1031,7 +1138,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                         <div class="col-md-6">
                             <label for="fornecedorGarantiaPesquisaFicha" class="form-label">
-                                Fornecedor responsável pela garantia
+                                Fornecedor *
                             </label>
 
                             <div class="campo-pesquisa-registo">
@@ -1064,18 +1171,13 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>  
                         
                         <div class="col-md-3">
-                            <label for="dataInicioGarantia" class="form-label">Início da Garantia</label>
-                            <input type="date" class="form-control campo-ficha campo-editavel" id="dataInicioGarantia" name="dataInicioGarantia" value="<?php echo valor_data_equipamento($equipamento['data_inicio_garantia']); ?>">
+                            <label for="dataInicioGarantia" class="form-label">Início da Garantia *</label>
+                            <input type="date" class="form-control campo-ficha campo-editavel" id="dataInicioGarantia" name="dataInicioGarantia" value="<?php echo valor_data_equipamento($equipamento['data_inicio_garantia']); ?>" required autocomplete="off">
                         </div>
 
                         <div class="col-md-3">
-                            <label for="dataFimGarantia" class="form-label">Fim da Garantia</label>
-                            <input type="date" class="form-control campo-ficha campo-editavel" id="dataFimGarantia" name="dataFimGarantia" value="<?php echo valor_data_equipamento($equipamento['data_fim_garantia']); ?>">
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="observacoesFornecedor" class="form-label">Observações da Garantia/Fornecedores</label>
-                            <input type="text" class="form-control campo-ficha campo-editavel" id="observacoesFornecedor" name="observacoesFornecedor" value="<?php echo h_equipamento($equipamento['observacoes_fornecedor']); ?>">
+                            <label for="dataFimGarantia" class="form-label">Fim da Garantia *</label>
+                            <input type="date" class="form-control campo-ficha campo-editavel" id="dataFimGarantia" name="dataFimGarantia" value="<?php echo valor_data_equipamento($equipamento['data_fim_garantia']); ?>" required autocomplete="off">
                         </div>
 
                     </div>

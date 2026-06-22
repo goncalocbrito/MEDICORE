@@ -126,7 +126,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <th>Reportado por</th>
                     <th>Data</th>
                     <th>Estado</th>
-                    <th>Descrição</th>
                     <th class="text-center">Ações</th>
                 </tr>
             </thead>
@@ -161,8 +160,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 <?php echo h(texto_estado_avaria($avaria['estado'])); ?>
                             </span>
                         </td>
-
-                        <td><?php echo h($avaria['descricao_avaria']); ?></td>
 
                         <td class="text-center">
                             <div class="acoes-operacao">

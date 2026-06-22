@@ -123,6 +123,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':descricao_avaria' => $descricaoAvaria
             ]);
 
+            if ($idAcessorio !== null) {
+                $stmtEstado = $pdo->prepare("UPDATE acessorios_equipamento SET estado = 'avariado' WHERE id_acessorio = :id");
+                $stmtEstado->execute([':id' => $idAcessorio]);
+            } else {
+                $stmtEstado = $pdo->prepare("UPDATE equipamentos SET estado = 'avariado' WHERE id_equipamento = :id");
+                $stmtEstado->execute([':id' => $idEquipamento]);
+            }
+
             header('Location: lista_avarias.php?criada=1');
             exit;
         } catch (Throwable $e) {
@@ -137,7 +145,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
 
 <main class="conteudo-private">
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
         <div>
             <h2 class="titulo-pagina">Reportar Avaria</h2>
             <p class="subtitulo-pagina">
@@ -145,7 +153,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             </p>
         </div>
 
-        <div class="ficha-toolbar mb-0">
+        <div class="d-flex gap-2 flex-shrink-0">
             <a href="lista_avarias.php" class="btn btn-voltar">
                 <i class="fa-solid fa-arrow-left me-2"></i>
                 Voltar à Lista
@@ -160,20 +168,19 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
     <?php if ($mensagemErro): ?>
         <div class="alert alert-danger">
-            <strong>Erro:</strong> <?php echo h($mensagemErro); ?>
+            <strong><i class="fa-solid fa-triangle-exclamation me-2"></i>Erro</strong>
+            <ul class="mb-0 mt-1"><li><?php echo h($mensagemErro); ?></li></ul>
         </div>
     <?php endif; ?>
 
-    <form method="post" action="nova_avaria.php" class="formulario-ficha" id="formNovaAvaria">
+    <form method="post" action="nova_avaria.php" class="formulario-ficha" id="formNovaAvaria" novalidate>
         <div class="tabela-container">
             <div class="ficha-card-conteudo">
                 <section>
-                    <h3 class="titulo-seccao">Dados da Avaria</h3>
-                    <p class="texto-ajuda">
-                        Selecione o equipamento, indique se a avaria pertence a um acessório e descreva o problema identificado.
-                    </p>
-
-                    <hr>
+                    <div class="secao-ficha-titulo">
+                        <h4>Dados da Avaria</h4>
+                        <p>Selecione o equipamento, indique se a avaria pertence a um acessório e descreva o problema identificado.</p>
+                    </div>
 
                     <div class="row g-4">
                         <div class="col-md-6">
@@ -261,6 +268,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                       maxlength="500"
                                       placeholder="Descreva o problema observado, sintomas, mensagens de erro ou contexto da avaria."
                                       required><?php echo h($_POST['descricao_avaria'] ?? ''); ?></textarea>
+                            <small class="texto-ajuda-form contador-caracteres" data-target="descricaoAvaria" data-max="500">0 / 500 caracteres</small>
                         </div>
                     </div>
                 </section>

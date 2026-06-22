@@ -1,44 +1,74 @@
 <?php
 require_once __DIR__ . '/../../includes/funcoes.php';
 redirect_if_not_logged();
+require_once __DIR__ . '/../../../config/config.php';
+
+// ---------------------------------------------------------
+// Ligação à base de dados
+// ---------------------------------------------------------
+$pdo = new PDO(
+    'mysql:host=' . MYSQL_HOST . ';port=' . MYSQL_PORT . ';dbname=' . MYSQL_DATABASE . ';charset=utf8mb4',
+    MYSQL_USERNAME,
+    MYSQL_PASSWORD,
+    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+);
+
+// ---------------------------------------------------------
+// Carregar configuração geral
+// ---------------------------------------------------------
+$config = $pdo->query('SELECT * FROM pagina_publica_config LIMIT 1')->fetch(PDO::FETCH_ASSOC);
+
+// ---------------------------------------------------------
+// Carregar slides
+// ---------------------------------------------------------
+$slides = $pdo->query('SELECT * FROM pagina_publica_slides ORDER BY ordem ASC')->fetchAll(PDO::FETCH_ASSOC);
+
+// ---------------------------------------------------------
+// Carregar hospitais (todos, incluindo inativos, para gestão)
+// ---------------------------------------------------------
+$hospitais = $pdo->query('SELECT * FROM pagina_publica_hospitais ORDER BY ordem ASC')->fetchAll(PDO::FETCH_ASSOC);
+
 require_once __DIR__ . '/../../includes/header.php';
 require_once __DIR__ . '/../../includes/nav.php';
 require_once __DIR__ . '/../../includes/sidebar.php';
 ?>
 
-
-    <!-- =========================================================
-         CONTEÚDO PRINCIPAL DO BACKOFFICE
-         Formulário organizado por separadores para gerir o index.php.
-         ========================================================= -->
     <main class="conteudo-private ficha-equipamento-page backoffice-publico-page">
 
-        <!-- =====================================================
-             CABEÇALHO E AÇÕES PRINCIPAIS
-             Pré-visualizar abre a página pública; guardar simula persistência.
-             ===================================================== -->
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
             <div>
                 <h2 class="titulo-pagina">Backoffice da Página Pública</h2>
                 <p class="subtitulo-pagina">
-                    Edite textos, imagens, cartões e contactos apresentados no ficheiro público <strong>index.php</strong>.
+                    Edite textos, imagens e cartões apresentados na página pública <strong>index.php</strong>.
                 </p>
             </div>
 
             <div class="form-actions backoffice-actions">
-                <button type="button" class="btn btn-limpar" id="btnPreVisualizarIndex">
+                <button type="button" class="btn btn-limpar" data-bs-toggle="modal" data-bs-target="#modalPreview">
                     <i class="fa-solid fa-eye me-2"></i> Pré-visualizar
                 </button>
-
                 <button type="submit" class="btn btn-guardar" form="formBackofficePublico">
                     <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Conteúdos
                 </button>
             </div>
         </div>
 
+        <?php if (!empty($_GET['sucesso'])): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fa-solid fa-circle-check me-2"></i> Conteúdos atualizados com sucesso.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+
+        <?php if (!empty($_GET['erro'])): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i> Ocorreu um erro ao guardar. Tente novamente.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+
         <!-- =====================================================
              FORMULÁRIO PRINCIPAL
-             A ação PHP fica preparada para ligação futura a backend.
              ===================================================== -->
         <form class="form-equipamento form-ficha-equipamento"
               id="formBackofficePublico"
@@ -49,44 +79,25 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             <input type="hidden" name="acao" value="atualizar_pagina_publica">
 
             <div class="ficha-area">
-                <!-- =============================================
-                     SEPARADORES DO BACKOFFICE
-                     Cada separador corresponde a uma secção do index.php.
-                     ============================================= -->
                 <ul class="nav nav-tabs ficha-tabs" id="tabsBackofficePublico" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="navbar-tab" data-bs-toggle="tab" data-bs-target="#navbar" type="button" role="tab" aria-controls="navbar" aria-selected="true">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#navbar" type="button" role="tab">
                             <i class="fa-solid fa-bars me-2"></i> Navbar
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="sobre-tab" data-bs-toggle="tab" data-bs-target="#sobre-publico" type="button" role="tab" aria-controls="sobre-publico" aria-selected="false">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#sobre-publico" type="button" role="tab">
                             <i class="fa-solid fa-image me-2"></i> Sobre e Slides
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="equipa-tab" data-bs-toggle="tab" data-bs-target="#equipa-publica" type="button" role="tab" aria-controls="equipa-publica" aria-selected="false">
-                            <i class="fa-solid fa-users me-2"></i> Equipa
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#hospitais-publicos" type="button" role="tab">
+                            <i class="fa-solid fa-hospital me-2"></i> Hospitais e Clínicas
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="funcionalidades-tab" data-bs-toggle="tab" data-bs-target="#funcionalidades-publicas" type="button" role="tab" aria-controls="funcionalidades-publicas" aria-selected="false">
-                            <i class="fa-solid fa-grid-2 me-2"></i> Funcionalidades
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="equipamentos-publicos-tab" data-bs-toggle="tab" data-bs-target="#equipamentos-publicos" type="button" role="tab" aria-controls="equipamentos-publicos" aria-selected="false">
-                            <i class="fa-solid fa-stethoscope me-2"></i> Equipamentos
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="gestao-tab" data-bs-toggle="tab" data-bs-target="#gestao-publica" type="button" role="tab" aria-controls="gestao-publica" aria-selected="false">
-                            <i class="fa-solid fa-chart-line me-2"></i> Gestão
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="contactos-tab" data-bs-toggle="tab" data-bs-target="#contactos-publicos" type="button" role="tab" aria-controls="contactos-publicos" aria-selected="false">
-                            <i class="fa-solid fa-address-book me-2"></i> Contactos
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#contactos-publicos" type="button" role="tab">
+                            <i class="fa-solid fa-address-book me-2"></i> Contactos e Rodapé
                         </button>
                     </li>
                 </ul>
@@ -95,299 +106,303 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                     <!-- =========================================
                          NAVBAR
-                         Permite alterar texto dos links e botão principal.
                          ========================================= -->
-                    <div class="tab-pane fade show active" id="navbar" role="tabpanel" aria-labelledby="navbar-tab">
+                    <div class="tab-pane fade show active" id="navbar" role="tabpanel">
                         <h3 class="secao-ficha-titulo">Navegação pública</h3>
 
                         <div class="row g-4">
-                            <div class="col-md-4">
-                                <label for="navbarLogo" class="form-label">Logótipo da navbar</label>
-                                <input type="file" class="form-control" id="navbarLogo" name="navbarLogo" accept=".png,.jpg,.jpeg,.webp,.svg">
+                            <div class="col-md-6">
+                                <label class="form-label">Logótipo atual</label>
+                                <input type="text" class="form-control" name="navbar_logo"
+                                       value="<?= htmlspecialchars($config['navbar_logo']) ?>">
+                                <div class="form-text">Caminho relativo a partir de <code>public/</code></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Substituir logótipo (ficheiro)</label>
+                                <input type="file" class="form-control" name="navbar_logo_ficheiro" accept=".png,.jpg,.jpeg,.webp,.svg">
                             </div>
 
                             <div class="col-md-4">
-                                <label for="navbarLogoAtual" class="form-label">Imagem atual</label>
-                                <input type="text" class="form-control" id="navbarLogoAtual" name="navbarLogoAtual" value="assets/img/MEDICORE_logotipo_branco.png">
-                            </div>
-
-                            <div class="col-md-4">
-                                <label for="textoAreaRestrita" class="form-label">Botão área restrita</label>
-                                <input type="text" class="form-control campo-preview-publico" id="textoAreaRestrita" name="textoAreaRestrita" value="Área Restrita">
-                            </div>
-
-                            <div class="col-md-2">
-                                <label for="navSobre" class="form-label">Link 1</label>
-                                <input type="text" class="form-control" id="navSobre" name="navSobre" value="Sobre">
+                                <label class="form-label">Botão "Área Restrita"</label>
+                                <input type="text" class="form-control campo-preview-publico" name="navbar_btn_restrita"
+                                       value="<?= htmlspecialchars($config['navbar_btn_restrita']) ?>">
                             </div>
                             <div class="col-md-2">
-                                <label for="navEquipa" class="form-label">Link 2</label>
-                                <input type="text" class="form-control" id="navEquipa" name="navEquipa" value="Nossa Equipa">
+                                <label class="form-label">Link 1</label>
+                                <input type="text" class="form-control" name="navbar_link_sobre"
+                                       value="<?= htmlspecialchars($config['navbar_link_sobre']) ?>">
                             </div>
                             <div class="col-md-2">
-                                <label for="navFuncionalidades" class="form-label">Link 3</label>
-                                <input type="text" class="form-control" id="navFuncionalidades" name="navFuncionalidades" value="Funcionalidades">
+                                <label class="form-label">Link 2</label>
+                                <input type="text" class="form-control" name="navbar_link_equipa"
+                                       value="<?= htmlspecialchars($config['navbar_link_equipa']) ?>">
                             </div>
                             <div class="col-md-2">
-                                <label for="navEquipamentos" class="form-label">Link 4</label>
-                                <input type="text" class="form-control" id="navEquipamentos" name="navEquipamentos" value="Equipamentos">
+                                <label class="form-label">Link 3</label>
+                                <input type="text" class="form-control" name="navbar_link_funcional"
+                                       value="<?= htmlspecialchars($config['navbar_link_funcional']) ?>">
                             </div>
                             <div class="col-md-2">
-                                <label for="navGestao" class="form-label">Link 5</label>
-                                <input type="text" class="form-control" id="navGestao" name="navGestao" value="Gestão Hospitalar">
+                                <label class="form-label">Link 4</label>
+                                <input type="text" class="form-control" name="navbar_link_hospitais"
+                                       value="<?= htmlspecialchars($config['navbar_link_hospitais']) ?>">
                             </div>
                             <div class="col-md-2">
-                                <label for="navContacto" class="form-label">Link 6</label>
-                                <input type="text" class="form-control" id="navContacto" name="navContacto" value="Contacto">
+                                <label class="form-label">Link 5</label>
+                                <input type="text" class="form-control" name="navbar_link_contacto"
+                                       value="<?= htmlspecialchars($config['navbar_link_contacto']) ?>">
                             </div>
                         </div>
                     </div>
 
                     <!-- =========================================
-                         SOBRE E CARROSSEL
-                         Edita título, introdução e os três slides.
+                         SOBRE E SLIDES
                          ========================================= -->
-                    <div class="tab-pane fade" id="sobre-publico" role="tabpanel" aria-labelledby="sobre-tab">
+                    <div class="tab-pane fade" id="sobre-publico" role="tabpanel">
                         <h3 class="secao-ficha-titulo">Sobre e carrossel principal</h3>
 
-                        <div class="row g-4">
+                        <div class="row g-4 mb-4">
                             <div class="col-md-5">
-                                <label for="tituloHeroPublico" class="form-label">Título principal</label>
-                                <input type="text" class="form-control campo-preview-publico" id="tituloHeroPublico" name="tituloHeroPublico" value="Gestão Inteligente do Inventário Hospitalar">
+                                <label class="form-label">Título principal</label>
+                                <input type="text" class="form-control campo-preview-publico" name="sobre_titulo"
+                                       value="<?= htmlspecialchars($config['sobre_titulo']) ?>">
                             </div>
-
                             <div class="col-md-7">
-                                <label for="textoHeroPublico" class="form-label">Texto introdutório</label>
-                                <textarea class="form-control campo-preview-publico" id="textoHeroPublico" name="textoHeroPublico" rows="3">O MEDICORE é uma aplicação web para registo, organização e acompanhamento de equipamentos médicos em contexto hospitalar.</textarea>
+                                <label class="form-label">Texto introdutório</label>
+                                <textarea class="form-control campo-preview-publico" name="sobre_texto" rows="3"><?= htmlspecialchars($config['sobre_texto']) ?></textarea>
                             </div>
+                        </div>
 
-                            <div class="col-12">
-                                <div class="backoffice-grid-cards">
-                                    <div class="backoffice-editor-card">
-                                        <h4>Slide 1</h4>
-                                        <label for="slide1Imagem" class="form-label">Imagem</label>
-                                        <input type="text" class="form-control mb-3" id="slide1Imagem" name="slide1Imagem" value="assets/img/MEDICORE_Official_Logo.png">
-                                        <label for="slide1Titulo" class="form-label">Título</label>
-                                        <input type="text" class="form-control mb-3" id="slide1Titulo" name="slide1Titulo" value="Inventário Hospitalar Centralizado">
-                                        <label for="slide1Texto" class="form-label">Descrição</label>
-                                        <textarea class="form-control" id="slide1Texto" name="slide1Texto" rows="3">Organize equipamentos médicos, fornecedores, localizações e estados numa única plataforma.</textarea>
+                        <h4 class="secao-ficha-titulo mt-2">Slides do carrossel</h4>
+                        <div class="backoffice-grid-cards">
+                            <?php foreach ($slides as $i => $slide): ?>
+                            <div class="backoffice-editor-card">
+                                <h4>Slide <?= $i + 1 ?></h4>
+                                <input type="hidden" name="slide_id[]" value="<?= $slide['id_slide'] ?>">
+
+                                <label class="form-label">Caminho da imagem</label>
+                                <input type="text" class="form-control mb-2" name="slide_imagem[]"
+                                       value="<?= htmlspecialchars($slide['imagem']) ?>">
+
+                                <label class="form-label">Substituir imagem (ficheiro)</label>
+                                <input type="file" class="form-control mb-2" name="slide_ficheiro_<?= $slide['id_slide'] ?>" accept=".png,.jpg,.jpeg,.webp">
+
+                                <label class="form-label">Título</label>
+                                <input type="text" class="form-control mb-2" name="slide_titulo[]"
+                                       value="<?= htmlspecialchars($slide['titulo']) ?>">
+
+                                <label class="form-label">Descrição</label>
+                                <textarea class="form-control" name="slide_descricao[]" rows="2"><?= htmlspecialchars($slide['descricao']) ?></textarea>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+
+                    <!-- =========================================
+                         HOSPITAIS E CLÍNICAS (dinâmico)
+                         ========================================= -->
+                    <div class="tab-pane fade" id="hospitais-publicos" role="tabpanel">
+                        <h3 class="secao-ficha-titulo">Hospitais e Clínicas</h3>
+                        <p class="text-muted mb-4">
+                            Adicione, edite ou remova os cartões apresentados na secção "Hospitais e Clínicas" da página pública.
+                            A ordem é definida pelo campo <strong>Ordem</strong>.
+                        </p>
+
+                        <div id="hospitais-lista">
+                            <?php foreach ($hospitais as $h): ?>
+                            <div class="backoffice-editor-card hospital-card-editor mb-3" id="hospital-row-<?= $h['id_hospital'] ?>">
+                                <input type="hidden" name="hospital_id[]"     value="<?= $h['id_hospital'] ?>">
+                                <input type="hidden" name="hospital_ativo[]"  value="<?= $h['isActive'] ?>">
+
+                                <div class="row g-3 align-items-start">
+                                    <div class="col-md-1">
+                                        <label class="form-label">Ordem</label>
+                                        <input type="number" class="form-control" name="hospital_ordem[]"
+                                               value="<?= (int)$h['ordem'] ?>" min="1">
                                     </div>
-
-                                    <div class="backoffice-editor-card">
-                                        <h4>Slide 2</h4>
-                                        <label for="slide2Imagem" class="form-label">Imagem</label>
-                                        <input type="text" class="form-control mb-3" id="slide2Imagem" name="slide2Imagem" value="assets/img/equipamentos_medicos.png">
-                                        <label for="slide2Titulo" class="form-label">Título</label>
-                                        <input type="text" class="form-control mb-3" id="slide2Titulo" name="slide2Titulo" value="Equipamentos Sempre Monitorizados">
-                                        <label for="slide2Texto" class="form-label">Descrição</label>
-                                        <textarea class="form-control" id="slide2Texto" name="slide2Texto" rows="3">Acompanhe o ciclo de vida dos equipamentos médicos de forma simples e eficiente.</textarea>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Nome</label>
+                                        <input type="text" class="form-control" name="hospital_nome[]"
+                                               value="<?= htmlspecialchars($h['nome']) ?>" required>
                                     </div>
-
-                                    <div class="backoffice-editor-card">
-                                        <h4>Slide 3</h4>
-                                        <label for="slide3Imagem" class="form-label">Imagem</label>
-                                        <input type="text" class="form-control mb-3" id="slide3Imagem" name="slide3Imagem" value="assets/img/backoffice_hospitalar.png">
-                                        <label for="slide3Titulo" class="form-label">Título</label>
-                                        <input type="text" class="form-control mb-3" id="slide3Titulo" name="slide3Titulo" value="Backoffice Administrativo">
-                                        <label for="slide3Texto" class="form-label">Descrição</label>
-                                        <textarea class="form-control" id="slide3Texto" name="slide3Texto" rows="3">Atualize conteúdos públicos e faça a gestão interna através de uma área reservada.</textarea>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Descrição</label>
+                                        <textarea class="form-control" name="hospital_descricao[]" rows="2"><?= htmlspecialchars($h['descricao']) ?></textarea>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Imagem (nome s/ extensão)</label>
+                                        <input type="text" class="form-control mb-1" name="hospital_imagem[]"
+                                               value="<?= htmlspecialchars($h['imagem']) ?>"
+                                               placeholder="ex: hospital_central">
+                                        <input type="file" class="form-control" name="hospital_ficheiro_<?= $h['id_hospital'] ?>" accept=".png,.jpg,.jpeg,.webp">
+                                    </div>
+                                    <div class="col-md-1 d-flex flex-column gap-2 pt-4">
+                                        <div class="form-check form-switch mt-1">
+                                            <input class="form-check-input" type="checkbox" name="hospital_visivel_<?= $h['id_hospital'] ?>"
+                                                   id="visivel_<?= $h['id_hospital'] ?>" <?= $h['isActive'] ? 'checked' : '' ?>>
+                                            <label class="form-check-label" for="visivel_<?= $h['id_hospital'] ?>">Visível</label>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-danger btn-remover-hospital"
+                                                data-id="<?= $h['id_hospital'] ?>"
+                                                title="Remover permanentemente">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
+                            <?php endforeach; ?>
                         </div>
-                    </div>
 
-                    <!-- =========================================
-                         EQUIPA
-                         Edita os cartões da secção "A Nossa Equipa".
-                         ========================================= -->
-                    <div class="tab-pane fade" id="equipa-publica" role="tabpanel" aria-labelledby="equipa-tab">
-                        <h3 class="secao-ficha-titulo">A Nossa Equipa</h3>
+                        <!-- Novos hospitais adicionados dinamicamente -->
+                        <div id="hospitais-novos"></div>
 
-                        <div class="backoffice-grid-cards">
-                            <div class="backoffice-editor-card">
-                                <h4>Cartão 1</h4>
-                                <input type="text" class="form-control mb-3" name="equipa1Icone" value="fa-solid fa-user-shield">
-                                <input type="text" class="form-control mb-3" name="equipa1Titulo" value="Administrador">
-                                <textarea class="form-control" name="equipa1Texto" rows="3">Responsável pela gestão dos conteúdos públicos e pelo acesso à área reservada.</textarea>
-                            </div>
-
-                            <div class="backoffice-editor-card">
-                                <h4>Cartão 2</h4>
-                                <input type="text" class="form-control mb-3" name="equipa2Icone" value="fa-solid fa-user-gear">
-                                <input type="text" class="form-control mb-3" name="equipa2Titulo" value="Técnico Biomédico">
-                                <textarea class="form-control" name="equipa2Texto" rows="3">Acompanha o estado, localização e funcionamento dos equipamentos médicos.</textarea>
-                            </div>
-
-                            <div class="backoffice-editor-card">
-                                <h4>Cartão 3</h4>
-                                <input type="text" class="form-control mb-3" name="equipa3Icone" value="fa-solid fa-hospital-user">
-                                <input type="text" class="form-control mb-3" name="equipa3Titulo" value="Gestor Hospitalar">
-                                <textarea class="form-control" name="equipa3Texto" rows="3">Consulta indicadores do inventário e apoia a tomada de decisão na unidade hospitalar.</textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- =========================================
-                         FUNCIONALIDADES
-                         Edita os cartões da secção "Funcionalidades".
-                         ========================================= -->
-                    <div class="tab-pane fade" id="funcionalidades-publicas" role="tabpanel" aria-labelledby="funcionalidades-tab">
-                        <h3 class="secao-ficha-titulo">Funcionalidades</h3>
-
-                        <div class="backoffice-lista-editavel">
-                            <div class="backoffice-linha-card">
-                                <input type="text" class="form-control" name="func1Icone" value="fa-solid fa-boxes-stacked">
-                                <input type="text" class="form-control" name="func1Titulo" value="Gestão de Equipamentos">
-                                <textarea class="form-control" name="func1Texto" rows="2">Registo, edição, consulta e organização dos equipamentos médicos existentes.</textarea>
-                            </div>
-                            <div class="backoffice-linha-card">
-                                <input type="text" class="form-control" name="func2Icone" value="fa-solid fa-truck-medical">
-                                <input type="text" class="form-control" name="func2Titulo" value="Gestão de Fornecedores">
-                                <textarea class="form-control" name="func2Texto" rows="2">Armazenamento de dados dos fornecedores associados aos equipamentos hospitalares.</textarea>
-                            </div>
-                            <div class="backoffice-linha-card">
-                                <input type="text" class="form-control" name="func3Icone" value="fa-solid fa-location-dot">
-                                <input type="text" class="form-control" name="func3Titulo" value="Localizações Hospitalares">
-                                <textarea class="form-control" name="func3Texto" rows="2">Associação dos equipamentos a departamentos, pisos, salas e unidades clínicas.</textarea>
-                            </div>
-                            <div class="backoffice-linha-card">
-                                <input type="text" class="form-control" name="func4Icone" value="fa-solid fa-screwdriver-wrench">
-                                <input type="text" class="form-control" name="func4Titulo" value="Estados dos Equipamentos">
-                                <textarea class="form-control" name="func4Texto" rows="2">Controlo de equipamentos ativos, inativos, avariados ou em manutenção.</textarea>
-                            </div>
-                            <div class="backoffice-linha-card">
-                                <input type="text" class="form-control" name="func5Icone" value="fa-solid fa-chart-line">
-                                <input type="text" class="form-control" name="func5Titulo" value="Dashboard">
-                                <textarea class="form-control" name="func5Texto" rows="2">Visualização de indicadores estatísticos sobre o inventário hospitalar.</textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- =========================================
-                         EQUIPAMENTOS
-                         Edita categorias públicas de equipamentos.
-                         ========================================= -->
-                    <div class="tab-pane fade" id="equipamentos-publicos" role="tabpanel" aria-labelledby="equipamentos-publicos-tab">
-                        <h3 class="secao-ficha-titulo">Categorias de Equipamentos Médicos</h3>
-
-                        <div class="backoffice-lista-editavel">
-                            <div class="backoffice-linha-card">
-                                <input type="text" class="form-control" name="cat1Icone" value="fa-solid fa-heart-pulse">
-                                <input type="text" class="form-control" name="cat1Titulo" value="Monitorização">
-                                <textarea class="form-control" name="cat1Texto" rows="2">Equipamentos como monitores multiparamétricos, oxímetros e sensores clínicos.</textarea>
-                            </div>
-                            <div class="backoffice-linha-card">
-                                <input type="text" class="form-control" name="cat2Icone" value="fa-solid fa-x-ray">
-                                <input type="text" class="form-control" name="cat2Titulo" value="Imagiologia">
-                                <textarea class="form-control" name="cat2Texto" rows="2">Equipamentos associados ao diagnóstico por imagem e apoio clínico.</textarea>
-                            </div>
-                            <div class="backoffice-linha-card">
-                                <input type="text" class="form-control" name="cat3Icone" value="fa-solid fa-lungs">
-                                <input type="text" class="form-control" name="cat3Titulo" value="Suporte de Vida">
-                                <textarea class="form-control" name="cat3Texto" rows="2">Ventiladores, desfibrilhadores e outros equipamentos críticos hospitalares.</textarea>
-                            </div>
-                            <div class="backoffice-linha-card">
-                                <input type="text" class="form-control" name="cat4Icone" value="fa-solid fa-vial-circle-check">
-                                <input type="text" class="form-control" name="cat4Titulo" value="Laboratório">
-                                <textarea class="form-control" name="cat4Texto" rows="2">Equipamentos utilizados em análises clínicas, testes e exames laboratoriais.</textarea>
-                            </div>
-                            <div class="backoffice-linha-card">
-                                <input type="text" class="form-control" name="cat5Icone" value="fa-solid fa-bed-pulse">
-                                <input type="text" class="form-control" name="cat5Titulo" value="Cuidados Clínicos">
-                                <textarea class="form-control" name="cat5Texto" rows="2">Dispositivos de apoio ao acompanhamento e tratamento dos utentes.</textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- =========================================
-                         GESTÃO HOSPITALAR
-                         Edita os três cartões de gestão da página pública.
-                         ========================================= -->
-                    <div class="tab-pane fade" id="gestao-publica" role="tabpanel" aria-labelledby="gestao-tab">
-                        <h3 class="secao-ficha-titulo">Gestão Hospitalar</h3>
-
-                        <div class="backoffice-grid-cards">
-                            <div class="backoffice-editor-card">
-                                <h4>Bloco 1</h4>
-                                <input type="text" class="form-control mb-3" name="gestao1Titulo" value="Inventário Organizado">
-                                <input type="text" class="form-control mb-3" name="gestao1Etiqueta" value="Controlo">
-                                <textarea class="form-control" name="gestao1Lista" rows="4">Registo de equipamentos médicos&#10;Associação a categorias e fornecedores</textarea>
-                            </div>
-                            <div class="backoffice-editor-card">
-                                <h4>Bloco 2</h4>
-                                <input type="text" class="form-control mb-3" name="gestao2Titulo" value="Localização e Estado">
-                                <input type="text" class="form-control mb-3" name="gestao2Etiqueta" value="Rastreio">
-                                <textarea class="form-control" name="gestao2Lista" rows="4">Identificação da localização hospitalar&#10;Consulta do estado operacional&#10;Apoio à gestão de manutenção</textarea>
-                            </div>
-                            <div class="backoffice-editor-card">
-                                <h4>Bloco 3</h4>
-                                <input type="text" class="form-control mb-3" name="gestao3Titulo" value="Indicadores de Gestão">
-                                <input type="text" class="form-control mb-3" name="gestao3Etiqueta" value="Dashboard">
-                                <textarea class="form-control" name="gestao3Lista" rows="4">Total de equipamentos registados&#10;Equipamentos por categoria&#10;Equipamentos por localização&#10;Equipamentos ativos e inativos</textarea>
-                            </div>
-                        </div>
+                        <button type="button" class="btn btn-limpar mt-3" id="btn-adicionar-hospital">
+                            <i class="fa-solid fa-plus me-2"></i> Adicionar Hospital / Clínica
+                        </button>
                     </div>
 
                     <!-- =========================================
                          CONTACTOS E RODAPÉ
-                         Edita contacto, localização, horário e dados finais.
                          ========================================= -->
-                    <div class="tab-pane fade" id="contactos-publicos" role="tabpanel" aria-labelledby="contactos-tab">
+                    <div class="tab-pane fade" id="contactos-publicos" role="tabpanel">
                         <h3 class="secao-ficha-titulo">Contacto e rodapé</h3>
 
                         <div class="row g-4">
                             <div class="col-md-6">
-                                <label for="textoContactoPublico" class="form-label">Texto da secção contacto</label>
-                                <textarea class="form-control campo-preview-publico" id="textoContactoPublico" name="textoContactoPublico" rows="3">Entre em contacto com a equipa responsável pela gestão do inventário hospitalar.</textarea>
+                                <label class="form-label">Texto da secção contacto</label>
+                                <textarea class="form-control campo-preview-publico" name="contacto_texto" rows="3"><?= htmlspecialchars($config['contacto_texto']) ?></textarea>
                             </div>
-
                             <div class="col-md-6">
-                                <label for="localizacaoRodape" class="form-label">Localização</label>
-                                <textarea class="form-control" id="localizacaoRodape" name="localizacaoRodape" rows="3">Instituto Superior de Engenharia do Porto&#10;Rua Dr. António Bernardino de Almeida&#10;Porto, Portugal</textarea>
+                                <label class="form-label">Localização (rodapé)</label>
+                                <textarea class="form-control" name="rodape_localizacao" rows="3"><?= htmlspecialchars($config['rodape_localizacao']) ?></textarea>
                             </div>
-
                             <div class="col-md-4">
-                                <label for="horarioSemana" class="form-label">Horário semanal</label>
-                                <input type="text" class="form-control" id="horarioSemana" name="horarioSemana" value="2ª a 6ª Feira: 9h — 18h">
+                                <label class="form-label">Horário semanal</label>
+                                <input type="text" class="form-control" name="rodape_horario_semana"
+                                       value="<?= htmlspecialchars($config['rodape_horario_semana']) ?>">
                             </div>
-
                             <div class="col-md-4">
-                                <label for="emailRodape" class="form-label">Email</label>
-                                <input type="email" class="form-control campo-preview-publico" id="emailRodape" name="emailRodape" value="geral@medicore.pt">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control campo-preview-publico" name="rodape_email"
+                                       value="<?= htmlspecialchars($config['rodape_email']) ?>">
                             </div>
-
                             <div class="col-md-4">
-                                <label for="telefoneRodape" class="form-label">Telefone</label>
-                                <input type="text" class="form-control campo-preview-publico" id="telefoneRodape" name="telefoneRodape" value="+351 9xx xxx xxx">
+                                <label class="form-label">Telefone</label>
+                                <input type="text" class="form-control campo-preview-publico" name="rodape_telefone"
+                                       value="<?= htmlspecialchars($config['rodape_telefone']) ?>">
                             </div>
                         </div>
                     </div>
 
-                </div>
-            </div>
+                </div><!-- /.tab-content -->
+            </div><!-- /.ficha-area -->
+
+            <!-- IDs de hospitais a remover (preenchido por JS) -->
+            <input type="hidden" name="hospitais_remover" id="hospitais_remover" value="">
+
         </form>
 
-        <!-- =====================================================
-             PRÉ-VISUALIZAÇÃO RÁPIDA
-             Mostra alguns textos chave sem sair do backoffice.
-             ===================================================== -->
-        <section class="backoffice-preview-publico" aria-label="Pré-visualização dos conteúdos públicos">
-            <div>
-                <span class="preview-etiqueta">Pré-visualização rápida</span>
-                <h3 id="previewTituloHero">Gestão Inteligente do Inventário Hospitalar</h3>
-                <p id="previewTextoHero">
-                    O MEDICORE é uma aplicação web para registo, organização e acompanhamento de equipamentos médicos em contexto hospitalar.
-                </p>
-            </div>
-
-            <div class="preview-contactos">
-                <span><i class="fa-solid fa-envelope me-2"></i><strong id="previewEmailRodape">geral@medicore.pt</strong></span>
-                <span><i class="fa-solid fa-phone me-2"></i><strong id="previewTelefoneRodape">+351 9xx xxx xxx</strong></span>
-            </div>
-        </section>
-
     </main>
+
+    <!-- Modal de Pré-visualização -->
+    <div class="modal fade" id="modalPreview" tabindex="-1" aria-labelledby="modalPreviewLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalPreviewLabel"><i class="fa-solid fa-eye me-2"></i> Pré-visualização da Página Pública</h5>
+                    <div class="ms-auto d-flex gap-2">
+                        <a href="<?= BASE_URL ?>/public/index.php" target="_blank" class="btn btn-sm btn-limpar">
+                            <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Abrir em nova aba
+                        </a>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                </div>
+                <div class="modal-body p-0">
+                    <iframe id="iframePreview" src="" style="width:100%;height:100%;border:none;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// ---------------------------------------------------------
+// Modal de pré-visualização — carrega o iframe ao abrir
+// ---------------------------------------------------------
+document.getElementById('modalPreview').addEventListener('show.bs.modal', function () {
+    const iframe = document.getElementById('iframePreview');
+    if (!iframe.src || iframe.src === window.location.href) {
+        iframe.src = '<?= BASE_URL ?>/public/index.php';
+    }
+});
+
+// ---------------------------------------------------------
+// Adicionar novo hospital dinamicamente
+// ---------------------------------------------------------
+let novoIdx = 0;
+document.getElementById('btn-adicionar-hospital').addEventListener('click', function () {
+    novoIdx++;
+    const container = document.getElementById('hospitais-novos');
+    const div = document.createElement('div');
+    div.className = 'backoffice-editor-card hospital-card-editor mb-3';
+    div.id = 'hospital-novo-' + novoIdx;
+    div.innerHTML = `
+        <input type="hidden" name="hospital_id[]"    value="0">
+        <input type="hidden" name="hospital_ativo[]" value="1">
+        <div class="row g-3 align-items-start">
+            <div class="col-md-1">
+                <label class="form-label">Ordem</label>
+                <input type="number" class="form-control" name="hospital_ordem[]" value="${novoIdx + 10}" min="1">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Nome</label>
+                <input type="text" class="form-control" name="hospital_nome[]" required placeholder="Nome do hospital / clínica">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Descrição</label>
+                <textarea class="form-control" name="hospital_descricao[]" rows="2" placeholder="Breve descrição..."></textarea>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Imagem (nome s/ extensão)</label>
+                <input type="text" class="form-control mb-1" name="hospital_imagem[]" placeholder="ex: hospital_novo">
+                <input type="file" class="form-control" name="hospital_ficheiro_novo_${novoIdx}" accept=".png,.jpg,.jpeg,.webp">
+            </div>
+            <div class="col-md-1 d-flex flex-column gap-2 pt-4">
+                <div class="form-check form-switch mt-1">
+                    <input class="form-check-input" type="checkbox" name="hospital_visivel_novo_${novoIdx}" id="visivel_novo_${novoIdx}" checked>
+                    <label class="form-check-label" for="visivel_novo_${novoIdx}">Visível</label>
+                </div>
+                <button type="button" class="btn btn-sm btn-danger btn-cancelar-novo" data-alvo="hospital-novo-${novoIdx}" title="Cancelar">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>`;
+    container.appendChild(div);
+
+    // Remover novo (cancelar)
+    div.querySelector('.btn-cancelar-novo').addEventListener('click', function () {
+        document.getElementById(this.dataset.alvo).remove();
+    });
+});
+
+// ---------------------------------------------------------
+// Remover hospital existente (marca para remoção via hidden input)
+// ---------------------------------------------------------
+const removidos = new Set();
+
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.btn-remover-hospital');
+    if (!btn) return;
+
+    if (!confirm('Tem a certeza que pretende remover este hospital / clínica?')) return;
+
+    const id  = btn.dataset.id;
+    const row = document.getElementById('hospital-row-' + id);
+    if (row) row.remove();
+
+    removidos.add(id);
+    document.getElementById('hospitais_remover').value = [...removidos].join(',');
+});
+</script>
 
 <?php
 require_once __DIR__ . '/../../includes/footer.php';

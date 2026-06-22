@@ -212,13 +212,12 @@ function render_tabela_processos_abertos($processos, $tituloTabela, $idTabela)
         <p>Processos em análise, aprovados ou em execução técnica.</p>
     </div>
 
-    <div class="table-responsive tabela-container p-0">
+    <div class="table-responsive tabela-container p-0 mt-3">
         <table id="<?php echo h($idTabela); ?>" class="table table-hover align-middle tabela-equipamentos tabela-processos-abertos tabela-calibracoes-manutencoes tabela-datatables-medicore">
             <thead>
                 <tr>
                     <th>Código</th>
                     <th>Alvo</th>
-                    <th>Associado a</th>
                     <th>Procedimento</th>
                     <th>Execução</th>
                     <th>Data prevista</th>
@@ -247,15 +246,6 @@ function render_tabela_processos_abertos($processos, $tituloTabela, $idTabela)
                             <td>
                                 <strong><?php echo h($alvoCodigo); ?></strong><br>
                                 <small class="text-muted"><?php echo h($alvoNome); ?></small>
-                            </td>
-                            <td>
-                                <?php if (!empty($acessoriosAssociados)): ?>
-                                    <?php foreach ($acessoriosAssociados as $acessorioAssociado): ?>
-                                        <div><?php echo h($acessorioAssociado); ?></div>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <?php echo h($associadoA); ?>
-                                <?php endif; ?>
                             </td>
                             <td>
                                 <span class="tipo-fornecedor <?php echo h(classe_tipo_processo($processo['origem'], $processo['tipo_processo'])); ?>">
@@ -289,6 +279,7 @@ function render_tabela_processos_abertos($processos, $tituloTabela, $idTabela)
 
 $pdo = null;
 $erro_bd = '';
+$erros_formulario = [];
 $mensagem_sucesso = '';
 $processosManutencao = [];
 $processosCalibracao = [];
@@ -296,6 +287,7 @@ $equipamentos = [];
 $acessorios = [];
 $consumiveis = [];
 $fornecedores = [];
+$idsEquipamentosComProcessoAtivo = [];
 $avariaOrigem = null;
 $idAvariaOrigem = 0;
 
@@ -377,6 +369,34 @@ try {
                 $erros[] = 'Tipo de processo inválido.';
             }
 
+            if ($idEquipamento > 0) {
+                $stmtProcessoAtivo = $pdo->prepare("
+                    SELECT COUNT(*) FROM (
+                        SELECT id_equipamento FROM manutencoes_equipamento
+                        WHERE id_equipamento = :id AND isActive = 1
+                        AND estado_processo NOT IN ('processo_finalizado', 'cancelado', 'reprovado')
+                        UNION ALL
+                        SELECT id_equipamento FROM calibracoes_equipamento
+                        WHERE id_equipamento = :id2 AND isActive = 1
+                        AND estado_processo NOT IN ('processo_finalizado', 'cancelado', 'reprovado')
+                    ) t
+                ");
+                $stmtProcessoAtivo->execute([':id' => $idEquipamento, ':id2' => $idEquipamento]);
+                if ((int) $stmtProcessoAtivo->fetchColumn() > 0) {
+                    $erros[] = 'Este equipamento já tem um processo ativo em curso. Não é possível abrir um novo processo.';
+                }
+            }
+
+            if ($tipoExecucao === 'interna') {
+                $cobertaPorGarantia = 0;
+            }
+
+            if (empty($dataPrevista)) {
+                $erros[] = 'A data prevista é obrigatória.';
+            } elseif ($dataPrevista < date('Y-m-d')) {
+                $erros[] = 'A data prevista não pode ser anterior ao dia de hoje.';
+            }
+
             if ($tipoExecucao === 'externa' && empty($idFornecedor)) {
                 $erros[] = 'Nos processos externos deve indicar o fornecedor responsável.';
             }
@@ -386,9 +406,10 @@ try {
             }
 
             if (!empty($erros)) {
-                throw new Exception(implode(' ', $erros));
+                $erros_formulario = $erros;
             }
 
+            if (empty($erros_formulario)) {
             $pdo->beginTransaction();
 
             $estadoInicial = 'aguarda_decisao';
@@ -552,6 +573,8 @@ try {
                     ':atualizado_por' => $utilizadorAtual
                 ]);
 
+                definir_estado_alvos($pdo, $idEquipamento, (array) $idsAcessorios, 'em_calibracao');
+
                 $mensagem_sucesso = 'Pedido de calibração criado e enviado para decisão do administrador.';
             } else {
                 $tipoManutencao = $tipoPedido === 'manutencao_corretiva' ? 'corretiva' : 'preventiva';
@@ -710,10 +733,13 @@ try {
                     ':atualizado_por' => $utilizadorAtual
                 ]);
 
+                definir_estado_alvos($pdo, $idEquipamento, (array) $idsAcessorios, 'em_manutencao');
+
                 $mensagem_sucesso = 'Pedido de manutenção criado e enviado para decisão do administrador.';
             }
 
             $pdo->commit();
+            } // fim if (empty($erros_formulario))
         }
     }
 
@@ -747,6 +773,15 @@ try {
     ");
     $consumiveis = $stmtConsumiveis->fetchAll();
 
+    $stmtBloqueados = $pdo->query("
+        SELECT DISTINCT id_equipamento FROM manutencoes_equipamento
+        WHERE isActive = 1 AND estado_processo NOT IN ('processo_finalizado', 'cancelado', 'reprovado')
+        UNION
+        SELECT DISTINCT id_equipamento FROM calibracoes_equipamento
+        WHERE isActive = 1 AND estado_processo NOT IN ('processo_finalizado', 'cancelado', 'reprovado')
+    ");
+    $idsEquipamentosComProcessoAtivo = array_column($stmtBloqueados->fetchAll(), 'id_equipamento');
+
     $stmtFornecedores = $pdo->query("
         SELECT id_fornecedor, nome_empresa, tipo_fornecedor
         FROM fornecedores
@@ -754,6 +789,15 @@ try {
         ORDER BY nome_empresa ASC
     ");
     $fornecedores = $stmtFornecedores->fetchAll();
+
+    $stmtEngenheiros = $pdo->query("
+        SELECT id_utilizador, nome
+        FROM utilizadores
+        WHERE isActive = 1
+        AND tipo_utilizador = 'Engenheiro'
+        ORDER BY nome ASC
+    ");
+    $engenheiros = $stmtEngenheiros->fetchAll();
 
     $sqlManutencoes = "
         SELECT
@@ -848,6 +892,12 @@ try {
         ORDER BY c.data_prevista ASC, c.criado_em DESC
     ";
     $processosCalibracao = $pdo->query($sqlCalibracoes)->fetchAll();
+} catch (PDOException $e) {
+    if ($pdo instanceof PDO && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+
+    $erro_bd = 'Erro na base de dados: ' . $e->getMessage();
 } catch (Throwable $e) {
     if ($pdo instanceof PDO && $pdo->inTransaction()) {
         $pdo->rollBack();
@@ -879,9 +929,24 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         </button>
     </div>
 
+    <?php if (!empty($erros_formulario)): ?>
+        <div class="alert alert-danger" role="alert">
+            <strong>
+                <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                Não foi possível abrir o processo.
+            </strong>
+            <p class="mb-2 mt-2">Corrija os seguintes erros antes de continuar.</p>
+            <ul class="mb-0">
+                <?php foreach ($erros_formulario as $erro): ?>
+                    <li><?php echo h($erro); ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php endif; ?>
+
     <?php if ($erro_bd): ?>
         <div class="alert alert-danger">
-            <strong>Erro:</strong> <?php echo h($erro_bd); ?>
+            <strong><i class="fa-solid fa-triangle-exclamation me-2"></i>Erro:</strong> <?php echo h($erro_bd); ?>
         </div>
     <?php endif; ?>
 
@@ -929,15 +994,14 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 <?php endif; ?>
 
 <!-- Modal novo processo -->
-<div class="modal fade" id="modalNovoProcesso" tabindex="-1" aria-labelledby="modalNovoProcessoLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-acessorio-dialog">
+<div class="modal fade" id="modalNovoProcesso" tabindex="-1" aria-labelledby="modalNovoProcessoLabel" aria-hidden="true"
+     data-autoshow="<?php echo $avariaOrigem ? '1' : '0'; ?>">
+    <div class="modal-dialog modal-dialog-scrollable modal-acessorio-dialog">
         <div class="modal-content modal-acessorio">
-            <form method="post" action="calibracao_manutencao.php" id="formNovoProcesso">
+            <form method="post" action="calibracao_manutencao.php" id="formNovoProcesso" novalidate>
                 <input type="hidden" name="acao" value="criar_processo">
-                <input type="hidden"
-                    name="idAvariaOrigem"
-                    value="<?php echo h($idAvariaOrigem); ?>">
-                
+                <input type="hidden" name="idAvariaOrigem" value="<?php echo h($idAvariaOrigem); ?>">
+
                 <div class="modal-header">
                     <div>
                         <h5 class="modal-title" id="modalNovoProcessoLabel">
@@ -949,6 +1013,11 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 </div>
 
                 <div class="modal-body">
+                    <div id="erroNovoProcesso" class="alert alert-danger d-none">
+                        <strong><i class="fa-solid fa-triangle-exclamation me-2"></i>Erro</strong>
+                        <ul id="listaErrosNovoProcesso" class="mb-0 mt-1"></ul>
+                    </div>
+
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label for="tipoProcesso" class="form-label">Tipo de processo *</label>
@@ -963,7 +1032,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="col-md-4">
-                            <label for="idEquipamento" class="form-label">Equipamento *</label>
+                            <label class="form-label">Equipamento *</label>
                             <div class="campo-pesquisa-registo">
                                 <input type="text"
                                     class="form-control pesquisa-registo-custom"
@@ -976,13 +1045,16 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     autocomplete="off"
                                     value="<?php echo $avariaOrigem ? h($avariaOrigem['codigo_equipamento'] . ' - ' . $avariaOrigem['equipamento_nome']) : ''; ?>"
                                     required>
-
                                 <input type="hidden"
                                     id="idEquipamento"
                                     name="idEquipamento"
                                     value="<?php echo $avariaOrigem ? h($avariaOrigem['id_equipamento']) : ''; ?>">
-
-                                <div class="lista-registos-custom" id="listaEquipamentosProcesso">
+                                <div id="avisoEquipamentoBloqueado" class="text-danger small mt-1" style="display:none">
+                                    <i class="fa-solid fa-circle-exclamation me-1"></i>
+                                    Este equipamento já tem um processo ativo em curso.
+                                </div>
+                                <div class="lista-registos-custom" id="listaEquipamentosProcesso"
+                                     data-bloqueados="<?php echo h(json_encode(array_map('intval', $idsEquipamentosComProcessoAtivo))); ?>">
                                     <?php foreach ($equipamentos as $equipamento): ?>
                                         <button type="button"
                                                 class="opcao-registo-custom"
@@ -995,45 +1067,41 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </div>
                         </div>
 
-                            <div class="col-12">
-                                <label for="pesquisaAcessoriosProcesso" class="form-label">Acessórios associados</label>
-
-                                <input type="text"
-                                    class="form-control pesquisa-checkbox-custom"
-                                    id="pesquisaAcessoriosProcesso"
-                                    data-lista-target="listaAcessoriosProcesso"
-                                    placeholder="Pesquisar acessórios do equipamento"
-                                    autocomplete="off">
-
-                                <div class="lista-checkbox-custom mt-2" id="listaAcessoriosProcesso">
-                                    <?php foreach ($acessorios as $acessorio): ?>
-                                        <div class="opcao-checkbox-custom"
-                                            data-equipamento="<?php echo h($acessorio['id_equipamento']); ?>"
-                                            data-texto="<?php echo h($acessorio['codigo_acessorio'] . ' ' . $acessorio['designacao']); ?>">
-                                            <label>
-                                                <input type="checkbox"
-                                                    name="idsAcessorios[]"
-                                                    value="<?php echo h($acessorio['id_acessorio']); ?>"
-                                                    <?php echo ($avariaOrigem && (int) $avariaOrigem['id_acessorio'] === (int) $acessorio['id_acessorio']) ? 'checked' : ''; ?>>
-                                                <span>
-                                                    <?php echo h($acessorio['codigo_acessorio'] . ' - ' . $acessorio['designacao']); ?>
-                                                </span>
-                                            </label>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
+                        <div class="col-12">
+                            <label for="pesquisaAcessoriosProcesso" class="form-label">Acessórios associados</label>
+                            <input type="text"
+                                class="form-control pesquisa-checkbox-custom"
+                                id="pesquisaAcessoriosProcesso"
+                                data-lista-target="listaAcessoriosProcesso"
+                                placeholder="Pesquisar acessórios do equipamento"
+                                autocomplete="off">
+                            <div class="lista-checkbox-custom mt-2" id="listaAcessoriosProcesso">
+                                <?php foreach ($acessorios as $acessorio): ?>
+                                    <div class="opcao-checkbox-custom"
+                                        data-equipamento="<?php echo h($acessorio['id_equipamento']); ?>"
+                                        data-texto="<?php echo h($acessorio['codigo_acessorio'] . ' ' . $acessorio['designacao']); ?>">
+                                        <label>
+                                            <input type="checkbox"
+                                                name="idsAcessorios[]"
+                                                value="<?php echo h($acessorio['id_acessorio']); ?>"
+                                                <?php echo ($avariaOrigem && (int) $avariaOrigem['id_acessorio'] === (int) $acessorio['id_acessorio']) ? 'checked' : ''; ?>>
+                                            <span>
+                                                <?php echo h($acessorio['codigo_acessorio'] . ' - ' . $acessorio['designacao']); ?>
+                                            </span>
+                                        </label>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
                         </div>
 
                         <div class="col-12">
                             <label for="pesquisaConsumiveisProcesso" class="form-label">Consumíveis utilizados</label>
-
                             <input type="text"
                                 class="form-control pesquisa-checkbox-custom"
                                 id="pesquisaConsumiveisProcesso"
                                 data-lista-target="listaConsumiveisProcesso"
                                 placeholder="Pesquisar consumíveis"
                                 autocomplete="off">
-
                             <div class="lista-checkbox-custom mt-2" id="listaConsumiveisProcesso">
                                 <?php foreach ($consumiveis as $consumivel): ?>
                                     <div class="opcao-checkbox-custom"
@@ -1046,7 +1114,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                                 <?php echo h($consumivel['codigo_consumivel'] . ' - ' . $consumivel['nome']); ?>
                                             </span>
                                         </label>
-
                                         <input type="number"
                                             name="quantidadeConsumivel[<?php echo h($consumivel['id_consumivel']); ?>]"
                                             class="form-control form-control-sm"
@@ -1066,29 +1133,60 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </select>
                         </div>
 
-                        <div class="col-md-4">
-                            <label for="idFornecedorResponsavel" class="form-label">Fornecedor responsável</label>
-                            <select class="form-select" id="idFornecedorResponsavel" name="idFornecedorResponsavel">
-                                <option value="">Não aplicável</option>
-                                <?php foreach ($fornecedores as $fornecedor): ?>
-                                    <option value="<?php echo h($fornecedor['id_fornecedor']); ?>">
-                                        <?php echo h($fornecedor['nome_empresa'] . ' (' . $fornecedor['tipo_fornecedor'] . ')'); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                        <div class="col-md-4" id="campoFornecedorProcesso">
+                            <label class="form-label">Fornecedor responsável *</label>
+                            <div class="campo-pesquisa-registo">
+                                <input type="text"
+                                    class="form-control pesquisa-registo-custom"
+                                    id="pesquisaFornecedorProcesso"
+                                    data-hidden-target="idFornecedorResponsavel"
+                                    data-lista-target="listaFornecedoresProcesso"
+                                    placeholder="Pesquisar fornecedor"
+                                    autocomplete="off">
+                                <input type="hidden" id="idFornecedorResponsavel" name="idFornecedorResponsavel">
+                                <div class="lista-registos-custom" id="listaFornecedoresProcesso">
+                                    <?php foreach ($fornecedores as $fornecedor): ?>
+                                        <button type="button"
+                                                class="opcao-registo-custom"
+                                                data-id="<?php echo h($fornecedor['id_fornecedor']); ?>"
+                                                data-texto="<?php echo h($fornecedor['nome_empresa'] . ' (' . $fornecedor['tipo_fornecedor'] . ')'); ?>">
+                                            <span><?php echo h($fornecedor['nome_empresa'] . ' (' . $fornecedor['tipo_fornecedor'] . ')'); ?></span>
+                                        </button>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4" id="campoTecnicoInternoProcesso" style="display:none">
+                            <label class="form-label">Técnico interno *</label>
+                            <div class="campo-pesquisa-registo">
+                                <input type="text"
+                                    class="form-control pesquisa-registo-custom"
+                                    id="pesquisaTecnicoInternoProcesso"
+                                    data-hidden-target="tecnicoInterno"
+                                    data-lista-target="listaTecnicosInternosProcesso"
+                                    placeholder="Pesquisar engenheiro"
+                                    autocomplete="off">
+                                <input type="hidden" id="tecnicoInterno" name="tecnicoInterno">
+                                <div class="lista-registos-custom" id="listaTecnicosInternosProcesso">
+                                    <?php foreach ($engenheiros as $eng): ?>
+                                        <button type="button"
+                                                class="opcao-registo-custom"
+                                                data-id="<?php echo h($eng['nome']); ?>"
+                                                data-texto="<?php echo h($eng['nome']); ?>">
+                                            <span><?php echo h($eng['nome']); ?></span>
+                                        </button>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="col-md-4">
-                            <label for="tecnicoInterno" class="form-label">Técnico interno</label>
-                            <input type="text" class="form-control" id="tecnicoInterno" name="tecnicoInterno" placeholder="Ex: Eng. Gonçalo">
+                            <label for="dataPrevista" class="form-label">Data prevista *</label>
+                            <input type="date" class="form-control" id="dataPrevista" name="dataPrevista" required>
                         </div>
 
-                        <div class="col-md-4">
-                            <label for="dataPrevista" class="form-label">Data prevista</label>
-                            <input type="date" class="form-control" id="dataPrevista" name="dataPrevista">
-                        </div>
-
-                        <div class="col-md-4">
+                        <div class="col-md-4" id="campoCobertaGarantiaProcesso">
                             <label for="cobertaPorGarantia" class="form-label">Coberta por garantia?</label>
                             <select class="form-select" id="cobertaPorGarantia" name="cobertaPorGarantia">
                                 <option value="0">Não</option>
@@ -1102,11 +1200,13 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     id="observacoesProcesso"
                                     name="observacoesProcesso"
                                     rows="3"
+                                    maxlength="1000"
                                     placeholder="Notas sobre a abertura do processo"><?php
                                 echo $avariaOrigem
                                     ? h('Avaria reportada: ' . $avariaOrigem['descricao_avaria'])
                                     : '';
                             ?></textarea>
+                            <small class="texto-ajuda-form contador-caracteres" data-target="observacoesProcesso" data-max="1000">0 / 1000 caracteres</small>
                         </div>
                     </div>
                 </div>
@@ -1125,37 +1225,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         </div>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const garantiaSelect = document.getElementById('cobertaPorGarantia');
-    const tipoExecucao = document.getElementById('tipoExecucao');
-    const fornecedorSelect = document.getElementById('idFornecedorResponsavel');
-    const tecnicoInput = document.getElementById('tecnicoInterno');
-
-    function atualizarTipoExecucao() {
-        if (!tipoExecucao || !fornecedorSelect || !tecnicoInput) return;
-
-        const tipo = tipoExecucao.value;
-
-        fornecedorSelect.required = tipo === 'externa';
-        tecnicoInput.required = tipo === 'interna';
-    }
-
-    tipoExecucao?.addEventListener('change', atualizarTipoExecucao);
-
-    atualizarTipoExecucao();
-
-    <?php if ($avariaOrigem): ?>
-    const modalNovoProcesso = document.getElementById("modalNovoProcesso");
-
-    if (modalNovoProcesso && window.bootstrap) {
-        const modal = new bootstrap.Modal(modalNovoProcesso);
-        modal.show();
-    }
-    <?php endif; ?>
-});
-</script>
 
 <?php
 require_once __DIR__ . '/../../includes/footer.php';

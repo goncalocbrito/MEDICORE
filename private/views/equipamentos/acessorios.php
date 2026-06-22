@@ -189,10 +189,26 @@ try {
             $idFornecedorGarantia = (int) ($_POST['idFornecedorGarantia'] ?? 0);
             $idFornecedorGarantia = $idFornecedorGarantia > 0 ? $idFornecedorGarantia : null;
 
-            $idLocalizacaoAcessorio = (int) ($_POST['idLocalizacaoAcessorio'] ?? 0);
+            $dataAquisicaoAcessorio = valor_ou_null($_POST['dataAquisicaoAcessorio'] ?? null);
+            $dataInicioGarantia    = valor_ou_null($_POST['dataInicioGarantia'] ?? null);
+            $dataFimGarantia       = valor_ou_null($_POST['dataFimGarantia'] ?? null);
 
-            if ($idLocalizacaoAcessorio <= 0) {
-                throw new RuntimeException('Selecione a localização do acessório.');
+            if (empty($dataAquisicaoAcessorio)) {
+                throw new RuntimeException('A data de aquisição do acessório é obrigatória.');
+            }
+
+            $stmtDataEqp = $pdo->prepare("SELECT data_aquisicao FROM equipamentos WHERE id_equipamento = :id");
+            $stmtDataEqp->execute([':id' => $idEquipamentoPost]);
+            $dataAquisicaoEquipamento = $stmtDataEqp->fetchColumn();
+
+            if ($dataAquisicaoEquipamento && $dataAquisicaoAcessorio < $dataAquisicaoEquipamento) {
+                throw new RuntimeException('A data de aquisição do acessório não pode ser anterior à data de aquisição do equipamento (' . date('d/m/Y', strtotime($dataAquisicaoEquipamento)) . ').');
+            }
+            if ($dataInicioGarantia && $dataInicioGarantia < $dataAquisicaoAcessorio) {
+                throw new RuntimeException('A data de início da garantia não pode ser anterior à data de aquisição do acessório.');
+            }
+            if ($dataFimGarantia && $dataInicioGarantia && $dataFimGarantia < $dataInicioGarantia) {
+                throw new RuntimeException('A data de fim da garantia não pode ser anterior à data de início da garantia.');
             }
 
             $stmtProximoNumero = $pdo->prepare(" 
@@ -210,13 +226,13 @@ try {
             $stmtInserir = $pdo->prepare("
                 INSERT INTO acessorios_equipamento (
                     id_equipamento,
-                    id_localizacao,
                     numero_sequencial,
                     designacao,
                     tipo,
                     fabricante,
                     modelo,
                     numero_serie,
+                    data_aquisicao,
                     estado,
                     requer_manutencao,
                     periodicidade_manutencao,
@@ -229,13 +245,13 @@ try {
                     atualizado_por
                 ) VALUES (
                     :id_equipamento,
-                    :id_localizacao,
                     :numero_sequencial,
                     :designacao,
                     :tipo,
                     :fabricante,
                     :modelo,
                     :numero_serie,
+                    :data_aquisicao,
                     :estado,
                     :requer_manutencao,
                     :periodicidade_manutencao,
@@ -250,24 +266,24 @@ try {
             ");
 
             $stmtInserir->execute([
-                ':id_equipamento' => $idEquipamentoPost,
-                ':id_localizacao' => $idLocalizacaoAcessorio,
-                ':numero_sequencial' => $proximoNumero,
-                ':designacao' => $designacao,
-                ':tipo' => $tipo,
-                ':fabricante' => valor_ou_null($_POST['fabricanteAcessorio'] ?? null),
-                ':modelo' => valor_ou_null($_POST['modeloAcessorio'] ?? null),
-                ':numero_serie' => valor_ou_null($_POST['numeroSerieAcessorio'] ?? null),
-                ':estado' => $estado,
-                ':requer_manutencao' => $requerManutencao,
-                ':periodicidade_manutencao' => $periodicidadeManutencao,
-                ':requer_calibracao' => $requerCalibracao,
-                ':periodicidade_calibracao' => $periodicidadeCalibracao,
-                ':id_fornecedor_garantia' => $idFornecedorGarantia,
-                ':data_inicio_garantia' => valor_ou_null($_POST['dataInicioGarantia'] ?? null),
-                ':data_fim_garantia' => valor_ou_null($_POST['dataFimGarantia'] ?? null),
-                ':observacoes' => valor_ou_null($_POST['observacoesAcessorio'] ?? null),
-                ':atualizado_por' => $utilizadorAtual
+                ':id_equipamento'          => $idEquipamentoPost,
+                ':numero_sequencial'       => $proximoNumero,
+                ':designacao'              => $designacao,
+                ':tipo'                    => $tipo,
+                ':fabricante'              => valor_ou_null($_POST['fabricanteAcessorio'] ?? null),
+                ':modelo'                  => valor_ou_null($_POST['modeloAcessorio'] ?? null),
+                ':numero_serie'            => valor_ou_null($_POST['numeroSerieAcessorio'] ?? null),
+                ':data_aquisicao'          => $dataAquisicaoAcessorio,
+                ':estado'                  => $estado,
+                ':requer_manutencao'       => $requerManutencao,
+                ':periodicidade_manutencao'=> $periodicidadeManutencao,
+                ':requer_calibracao'       => $requerCalibracao,
+                ':periodicidade_calibracao'=> $periodicidadeCalibracao,
+                ':id_fornecedor_garantia'  => $idFornecedorGarantia,
+                ':data_inicio_garantia'    => $dataInicioGarantia,
+                ':data_fim_garantia'       => $dataFimGarantia,
+                ':observacoes'             => valor_ou_null($_POST['observacoesAcessorio'] ?? null),
+                ':atualizado_por'          => $utilizadorAtual
             ]);
 
             header('Location: acessorios.php?ref_equipamento=' . url_ref($idEquipamentoPost) . '&criado=1');
@@ -303,21 +319,37 @@ try {
             $idFornecedorGarantia = (int) ($_POST['idFornecedorGarantia'] ?? 0);
             $idFornecedorGarantia = $idFornecedorGarantia > 0 ? $idFornecedorGarantia : null;
 
-            $idLocalizacaoAcessorio = (int) ($_POST['idLocalizacaoAcessorio'] ?? 0);
+            $dataAquisicaoAcessorio = valor_ou_null($_POST['dataAquisicaoAcessorio'] ?? null);
+            $dataInicioGarantia    = valor_ou_null($_POST['dataInicioGarantia'] ?? null);
+            $dataFimGarantia       = valor_ou_null($_POST['dataFimGarantia'] ?? null);
 
-            if ($idLocalizacaoAcessorio <= 0) {
-                throw new RuntimeException('Selecione a localização do acessório.');
+            if (empty($dataAquisicaoAcessorio)) {
+                throw new RuntimeException('A data de aquisição do acessório é obrigatória.');
+            }
+
+            $stmtDataEqp = $pdo->prepare("SELECT data_aquisicao FROM equipamentos WHERE id_equipamento = :id");
+            $stmtDataEqp->execute([':id' => $idEquipamentoPost ?: id_from_request('id_equipamento', 'ref_equipamento')]);
+            $dataAquisicaoEquipamento = $stmtDataEqp->fetchColumn();
+
+            if ($dataAquisicaoEquipamento && $dataAquisicaoAcessorio < $dataAquisicaoEquipamento) {
+                throw new RuntimeException('A data de aquisição do acessório não pode ser anterior à data de aquisição do equipamento (' . date('d/m/Y', strtotime($dataAquisicaoEquipamento)) . ').');
+            }
+            if ($dataInicioGarantia && $dataInicioGarantia < $dataAquisicaoAcessorio) {
+                throw new RuntimeException('A data de início da garantia não pode ser anterior à data de aquisição do acessório.');
+            }
+            if ($dataFimGarantia && $dataInicioGarantia && $dataFimGarantia < $dataInicioGarantia) {
+                throw new RuntimeException('A data de fim da garantia não pode ser anterior à data de início da garantia.');
             }
 
             $stmtAtualizar = $pdo->prepare("
                 UPDATE acessorios_equipamento
                 SET
-                    id_localizacao = :id_localizacao,
                     designacao = :designacao,
                     tipo = :tipo,
                     fabricante = :fabricante,
                     modelo = :modelo,
                     numero_serie = :numero_serie,
+                    data_aquisicao = :data_aquisicao,
                     estado = :estado,
                     requer_manutencao = :requer_manutencao,
                     periodicidade_manutencao = :periodicidade_manutencao,
@@ -333,23 +365,23 @@ try {
             ");
 
             $stmtAtualizar->execute([
-                ':id_acessorio' => $idAcessorio,
-                ':id_localizacao' => $idLocalizacaoAcessorio,
-                ':designacao' => $designacao,
-                ':tipo' => $tipo,
-                ':fabricante' => valor_ou_null($_POST['fabricanteAcessorio'] ?? null),
-                ':modelo' => valor_ou_null($_POST['modeloAcessorio'] ?? null),
-                ':numero_serie' => valor_ou_null($_POST['numeroSerieAcessorio'] ?? null),
-                ':estado' => $estado,
-                ':requer_manutencao' => $requerManutencao,
-                ':periodicidade_manutencao' => $periodicidadeManutencao,
-                ':requer_calibracao' => $requerCalibracao,
-                ':periodicidade_calibracao' => $periodicidadeCalibracao,
-                ':id_fornecedor_garantia' => $idFornecedorGarantia,
-                ':data_inicio_garantia' => valor_ou_null($_POST['dataInicioGarantia'] ?? null),
-                ':data_fim_garantia' => valor_ou_null($_POST['dataFimGarantia'] ?? null),
-                ':observacoes' => valor_ou_null($_POST['observacoesAcessorio'] ?? null),
-                ':atualizado_por' => $utilizadorAtual
+                ':id_acessorio'            => $idAcessorio,
+                ':designacao'              => $designacao,
+                ':tipo'                    => $tipo,
+                ':fabricante'              => valor_ou_null($_POST['fabricanteAcessorio'] ?? null),
+                ':modelo'                  => valor_ou_null($_POST['modeloAcessorio'] ?? null),
+                ':numero_serie'            => valor_ou_null($_POST['numeroSerieAcessorio'] ?? null),
+                ':data_aquisicao'          => $dataAquisicaoAcessorio,
+                ':estado'                  => $estado,
+                ':requer_manutencao'       => $requerManutencao,
+                ':periodicidade_manutencao'=> $periodicidadeManutencao,
+                ':requer_calibracao'       => $requerCalibracao,
+                ':periodicidade_calibracao'=> $periodicidadeCalibracao,
+                ':id_fornecedor_garantia'  => $idFornecedorGarantia,
+                ':data_inicio_garantia'    => $dataInicioGarantia,
+                ':data_fim_garantia'       => $dataFimGarantia,
+                ':observacoes'             => valor_ou_null($_POST['observacoesAcessorio'] ?? null),
+                ':atualizado_por'          => $utilizadorAtual
             ]);
 
             $idEquipamentoRedirecionar = $idEquipamentoPost > 0 ? $idEquipamentoPost : id_from_request('id_equipamento', 'ref_equipamento');
@@ -386,7 +418,7 @@ try {
        CARREGAMENTO DE DADOS
        ========================================================= */
     $stmtEquipamentos = $pdo->query("
-        SELECT id_equipamento, codigo_equipamento, designacao, id_localizacao
+        SELECT id_equipamento, codigo_equipamento, designacao, data_aquisicao
         FROM equipamentos
         WHERE isActive = 1
         ORDER BY codigo_equipamento ASC
@@ -611,7 +643,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             <option
                                 value="<?php echo h($equipamento['id_equipamento']); ?>"
                                 data-ref="<?php echo url_ref($equipamento['id_equipamento']); ?>"
-                                data-id-localizacao="<?php echo h($equipamento['id_localizacao']); ?>"
+                                data-data-aquisicao="<?php echo h($equipamento['data_aquisicao'] ?? ''); ?>"
                                 <?php echo selected_option($idEquipamentoSelecionado, $equipamento['id_equipamento']); ?>>
                                 <?php echo h($equipamento['codigo_equipamento'] . ' - ' . $equipamento['designacao']); ?>
                             </option>
@@ -657,12 +689,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <th>Código</th>
                         <th>Acessório</th>
                         <th>Tipo</th>
-                        <th>N.º Série</th>
-                        <th>Localização</th>
                         <th>Estado</th>
                         <th>Manutenção</th>
                         <th>Calibração</th>
-                        <th>Próxima intervenção</th>
                         <th class="text-center">Ações</th>
                     </tr>
                 </thead>
@@ -682,15 +711,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 <td><?php echo h($codigoAcessorio); ?></td>
                                 <td><?php echo h($acessorio['designacao']); ?></td>
                                 <td><?php echo h(texto_tipo_acessorio($acessorio['tipo'])); ?></td>
-                                <td><?php echo h($acessorio['numero_serie'] ?: '---'); ?></td>
-                                <td>
-                                    <?php
-                                        $textoLocalizacao = !empty($acessorio['codigo_localizacao'])
-                                            ? $acessorio['codigo_localizacao'] . ' - Sala ' . $acessorio['sala']
-                                            : '---';
-                                    ?>
-                                    <?php echo h($textoLocalizacao); ?>
-                                </td>
                                 <td>
                                     <span class="estado <?php echo h(classe_estado_acessorio($acessorio['estado'])); ?>">
                                         <?php echo h(texto_estado_acessorio($acessorio['estado'])); ?>
@@ -712,7 +732,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                         Não
                                     <?php endif; ?>
                                 </td>
-                                <td><?php echo h($proximaIntervencao); ?></td>
                                 <td class="text-center">
                                     <button
                                         type="button"
@@ -727,7 +746,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                         data-fabricante="<?php echo h($acessorio['fabricante']); ?>"
                                         data-modelo="<?php echo h($acessorio['modelo']); ?>"
                                         data-numero-serie="<?php echo h($acessorio['numero_serie']); ?>"
-                                        data-id-localizacao="<?php echo h($acessorio['id_localizacao']); ?>"
+                                        data-data-aquisicao="<?php echo h($acessorio['data_aquisicao'] ?? ''); ?>"
                                         data-estado="<?php echo h($acessorio['estado']); ?>"
                                         data-requer-manutencao="<?php echo h($acessorio['requer_manutencao']); ?>"
                                         data-periodicidade-manutencao="<?php echo h($acessorio['periodicidade_manutencao']); ?>"
@@ -773,7 +792,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
     <div class="modal-dialog modal-xl modal-dialog-centered modal-acessorio-dialog">
         <div class="modal-content modal-acessorio">
 
-            <form action="acessorios.php?ref_equipamento=<?php echo url_ref($idEquipamentoSelecionado); ?>" method="post" id="formAcessorioBD">
+            <form action="acessorios.php?ref_equipamento=<?php echo url_ref($idEquipamentoSelecionado); ?>" method="post" id="formAcessorioBD" novalidate>
                 <input type="hidden" name="acao" id="acaoAcessorioBD" value="criar">
                 <input type="hidden" name="id_acessorio" id="idAcessorioBD" value="">
                 <input type="hidden" name="id_equipamento" value="<?php echo h($idEquipamentoSelecionado); ?>">
@@ -790,6 +809,12 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 </div>
 
                 <div class="modal-body">
+
+                    <div id="erroModalAcessorio" class="alert alert-danger d-none mb-3">
+                        <strong><i class="fa-solid fa-triangle-exclamation me-2"></i>Erro</strong>
+                        <ul id="listaErrosModalAcessorio" class="mb-0 mt-1"></ul>
+                    </div>
+
                     <div class="row g-3">
 
                         <div class="col-md-12">
@@ -820,19 +845,13 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 id="designacaoAcessorioBD"
                                 name="designacaoAcessorio"
                                 placeholder="Ex: Sensor SpO2 adulto"
-                                required>
+                                maxlength="255">
+                            <small class="texto-ajuda-form contador-caracteres" data-target="designacaoAcessorioBD" data-max="255">0 / 255 caracteres</small>
                         </div>
 
                         <div class="col-md-6">
-                            <label for="idLocalizacaoAcessorioBD" class="form-label">Localização do acessório *</label>
-                            <select class="form-select" id="idLocalizacaoAcessorioBD" name="idLocalizacaoAcessorio" required>
-                                <option value="">Selecionar localização</option>
-                                <?php foreach ($localizacoes as $localizacao): ?>
-                                    <option value="<?php echo h($localizacao['id_localizacao']); ?>">
-                                        <?php echo h($localizacao['codigo'] . ' | ' . $localizacao['departamento_nome'] . ' - ' . $localizacao['edificio'] . ' - Piso ' . $localizacao['piso'] . ' - Sala ' . $localizacao['sala']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                            <label for="dataAquisicaoAcessorioBD" class="form-label">Data de Aquisição *</label>
+                            <input type="date" class="form-control" id="dataAquisicaoAcessorioBD" name="dataAquisicaoAcessorio">
                         </div>
 
                         <div class="col-md-4">
@@ -850,33 +869,39 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="col-md-4">
-                            <label for="fabricanteAcessorioBD" class="form-label">Fabricante</label>
+                            <label for="fabricanteAcessorioBD" class="form-label">Fabricante *</label>
                             <input
                                 type="text"
                                 class="form-control"
                                 id="fabricanteAcessorioBD"
                                 name="fabricanteAcessorio"
-                                placeholder="Ex: Philips">
+                                placeholder="Ex: Philips"
+                                maxlength="150">
+                            <small class="texto-ajuda-form contador-caracteres" data-target="fabricanteAcessorioBD" data-max="150">0 / 150 caracteres</small>
                         </div>
 
                         <div class="col-md-4">
-                            <label for="modeloAcessorioBD" class="form-label">Modelo</label>
+                            <label for="modeloAcessorioBD" class="form-label">Modelo *</label>
                             <input
                                 type="text"
                                 class="form-control"
                                 id="modeloAcessorioBD"
                                 name="modeloAcessorio"
-                                placeholder="Modelo do acessório">
+                                placeholder="Modelo do acessório"
+                                maxlength="150">
+                            <small class="texto-ajuda-form contador-caracteres" data-target="modeloAcessorioBD" data-max="150">0 / 150 caracteres</small>
                         </div>
 
                         <div class="col-md-4">
-                            <label for="numeroSerieAcessorioBD" class="form-label">N.º Série</label>
+                            <label for="numeroSerieAcessorioBD" class="form-label">N.º Série *</label>
                             <input
                                 type="text"
                                 class="form-control"
                                 id="numeroSerieAcessorioBD"
                                 name="numeroSerieAcessorio"
-                                placeholder="SN-ACC-0001">
+                                placeholder="SN-ACC-0001"
+                                maxlength="100">
+                            <small class="texto-ajuda-form contador-caracteres" data-target="numeroSerieAcessorioBD" data-max="100">0 / 100 caracteres</small>
                         </div>
 
                         <div class="col-md-4">
@@ -892,9 +917,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="col-md-4">
-                            <label for="idFornecedorGarantiaBD" class="form-label">Fornecedor da garantia</label>
+                            <label for="idFornecedorGarantiaBD" class="form-label">Fornecedor da garantia *</label>
                             <select class="form-select" id="idFornecedorGarantiaBD" name="idFornecedorGarantia">
-                                <option value="">Sem fornecedor de garantia</option>
+                                <option value="">Selecionar fornecedor</option>
 
                                 <?php foreach ($fornecedoresGarantia as $fornecedor): ?>
                                     <option value="<?php echo h($fornecedor['id_fornecedor']); ?>">
@@ -905,7 +930,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="col-md-6">
-                            <label for="dataInicioGarantiaBD" class="form-label">Início da garantia</label>
+                            <label for="dataInicioGarantiaBD" class="form-label">Início da garantia *</label>
                             <input
                                 type="date"
                                 class="form-control"
@@ -914,7 +939,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="col-md-6">
-                            <label for="dataFimGarantiaBD" class="form-label">Fim da garantia</label>
+                            <label for="dataFimGarantiaBD" class="form-label">Fim da garantia *</label>
                             <input
                                 type="date"
                                 class="form-control"
@@ -1013,7 +1038,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 id="observacoesAcessorioBD"
                                 name="observacoesAcessorio"
                                 rows="3"
+                                maxlength="1000"
                                 placeholder="Notas relevantes sobre o acessório"></textarea>
+                            <small class="texto-ajuda-form contador-caracteres" data-target="observacoesAcessorioBD" data-max="1000">0 / 1000 caracteres</small>
                         </div>
 
                     </div>
@@ -1187,12 +1214,12 @@ document.addEventListener('DOMContentLoaded', function () {
     function prepararModalCriacao(botao) {
         if (form) form.reset();
 
+        const erroEl = document.getElementById('erroModalAcessorio');
+        if (erroEl) erroEl.classList.add('d-none');
+
         setValue('acaoAcessorioBD', 'criar');
         setValue('idAcessorioBD', '');
         setValue('codigoAcessorioBD', botao?.dataset.codigoPreview || 'Gerado automaticamente');
-
-        const opcaoEquipamento = seletorEquipamento?.selectedOptions?.[0];
-        setValue('idLocalizacaoAcessorioBD', opcaoEquipamento?.dataset.idLocalizacao || '');
 
         if (tituloModal) {
             tituloModal.innerHTML = '<i class="fa-solid fa-plug-circle-bolt me-2"></i>Adicionar Acessório';
@@ -1209,6 +1236,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (form) form.reset();
         if (!botao) return;
 
+        const erroEl = document.getElementById('erroModalAcessorio');
+        if (erroEl) erroEl.classList.add('d-none');
+
         setValue('acaoAcessorioBD', 'editar');
         setValue('idAcessorioBD', botao.dataset.idAcessorio || '');
         setValue('codigoAcessorioBD', botao.dataset.codigo || '---');
@@ -1217,7 +1247,7 @@ document.addEventListener('DOMContentLoaded', function () {
         setValue('fabricanteAcessorioBD', botao.dataset.fabricante || '');
         setValue('modeloAcessorioBD', botao.dataset.modelo || '');
         setValue('numeroSerieAcessorioBD', botao.dataset.numeroSerie || '');
-        setValue('idLocalizacaoAcessorioBD', botao.dataset.idLocalizacao || '');
+        setValue('dataAquisicaoAcessorioBD', botao.dataset.dataAquisicao || '');
         setValue('estadoAcessorioBD', botao.dataset.estado || 'ativo');
         setValue('idFornecedorGarantiaBD', botao.dataset.idFornecedorGarantia || '');
         setValue('dataInicioGarantiaBD', botao.dataset.dataInicioGarantia || '');

@@ -222,11 +222,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 <tr>
                     <th>Código</th>
                     <th>Equipamento</th>
-                    <th>Família</th>
                     <th>Modelo</th>
                     <th>Localização</th>
                     <th>Estado</th>
-                    <th>Criticidade</th>
                     <th class="text-center">Ações</th>
                 </tr>
             </thead>
@@ -237,14 +235,12 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <?php foreach ($equipamentos as $equipamento): ?>
 
                         <?php
-                            $localizacaoCompleta = 
-                                ($equipamento['codigo_localizacao'] ?? '') . ' | ' .
+                            $localizacaoCompleta =
                                 ($equipamento['departamento_sigla'] ?? '') . ' - Sala ' .
                                 ($equipamento['sala'] ?? '');
 
                             $fabricante = $equipamento['fornecedor_garantia'] ?: '---';
                             $estadoTexto = textoEstadoEquipamento($equipamento['estado']);
-                            $criticidadeTexto = textoCriticidadeEquipamento($equipamento['criticidade']);
                         ?>
 
                         <tr>
@@ -254,10 +250,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                             <td>
                                 <?php echo h($equipamento['designacao']); ?>
-                            </td>
-
-                            <td>
-                                <?php echo h($equipamento['familia']); ?>
                             </td>
 
                             <td>
@@ -272,10 +264,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 <span class="estado <?php echo h(classeEstadoEquipamento($equipamento['estado'])); ?>">
                                     <?php echo h($estadoTexto); ?>
                                 </span>
-                            </td>
-
-                            <td>
-                                <?php echo h($criticidadeTexto); ?>
                             </td>
 
                             <td class="text-center">
@@ -430,6 +418,19 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Aguarda o DataTables inicializar antes de ajustar o placeholder
+    setTimeout(function () {
+        const input = document.querySelector('#tabela-equipamentos_filter input[type="search"]');
+        if (input) {
+            input.placeholder = 'Código, equipamento, modelo, localização, estado…';
+            input.style.minWidth = '380px';
+        }
+    }, 100);
+});
+</script>
 
 <?php
 require_once __DIR__ . '/../../includes/footer.php';

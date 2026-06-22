@@ -27,7 +27,7 @@ html {
 }
 
 body {
-    background-color: var(--cor-fundo); /* Fundo geral mais claro e suave */
+    background-color: var(--cor-fundo-suave); /* Fundo geral uniforme, tom azul claro */
     color: var(--cor-texto); /* Cor base do texto */
 }
 
@@ -40,7 +40,7 @@ body {
     padding: 12px 30px; /* Alteração feita por mim: barra um pouco maior e estável */
     position: sticky; /* Fixa a barra no topo ao fazer scroll */
     top: 0; /* A barra fica colada ao topo */
-    z-index: 1000; /* Garante que a navbar fica por cima do conteúdo */
+    z-index: 100; /* Abaixo dos modais Bootstrap (1050+) */
     box-shadow: 0 3px 14px rgba(18, 60, 70, 0.18); /* Sombra suave */
     min-height: 86px; /* Alteração feita por mim: impede variações de altura */
 }
@@ -327,7 +327,7 @@ section h2::after {
 
 /* Seção Equipa */
 #nossa-equipa {
-    background-color: var(--cor-branco);
+    background-color: var(--cor-fundo-suave);
 }
 
 /* Define o estilo dos títulos h2 da secção "nossa-equipa" e "funcionalidades" */
@@ -460,85 +460,102 @@ section h2::after {
 
 /* Secção Equipamentos */
 #equipamentos {
-    background-color: var(--cor-branco);
+    background-color: var(--cor-fundo-suave);
 }
 
-/* Estilos para a secção Gestão Hospitalar */
-#gestao-hospitalar {
-    background: linear-gradient(180deg, #eaf6f6 0%, #f8fbfb 100%);
+.subtitulo-secao {
+    text-align: center;
+    color: var(--cor-texto);
+    max-width: 640px;
+    margin: -10px auto 30px;
+    line-height: 1.6;
 }
 
-.pacotes-container {
-    display: flex; /* Organiza os pacotes lado a lado */
-    flex-wrap: wrap; /* Permite quebra de linha em ecrãs pequenos */
-    justify-content: center; /* Centraliza os pacotes horizontalmente */
-    align-items: stretch; /* Alteração feita por mim: força os cards a terem a mesma altura */
-    max-width: 1100px;
+.hospitais-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 28px;
+    max-width: 1200px;
     margin: 0 auto;
 }
 
-.pacote {
-    width: 300px; /* Largura de cada cartão */
-    min-height: 390px; /* Alteração feita por mim: altura mínima igual entre cards */
-    margin: 20px; /* Espaço entre os cartões */
-    padding: 34px 24px 30px 24px; /* Espaço interno dentro de cada cartão */
-    background-color: var(--cor-branco); /* Fundo branco */
-    border-radius: 20px; /* Bordas arredondadas */
-    text-align: center; /* Centraliza o conteúdo */
+.hospital-card {
+    position: relative;
+    background-color: var(--cor-branco);
+    border-radius: 18px;
+    overflow: hidden;
     box-shadow: var(--sombra-suave);
-    border: 1px solid #e1eeee;
-    transition: transform 0.3s, box-shadow 0.3s;
-
-    display: flex; /* Alteração feita por mim */
-    flex-direction: column; /* Alteração feita por mim */
-    justify-content: flex-start; /* Alteração feita por mim */
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+    display: flex;
+    flex-direction: column;
 }
 
-.pacote:hover {
-    transform: translateY(-6px);
+.hospital-card:hover {
+    transform: translateY(-8px);
     box-shadow: var(--sombra-media);
 }
 
-.pacote h3 {
+.hospital-card .hospital-img-wrap {
+    position: relative;
+    width: 100%;
+    height: 190px;
+    overflow: hidden;
+}
+
+.hospital-card .hospital-img-wrap::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(18,60,70,0) 55%, rgba(18,60,70,0.65) 100%);
+}
+
+.hospital-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+}
+
+.hospital-card:hover img {
+    transform: scale(1.08);
+}
+
+.hospital-card-info {
+    padding: 22px 20px 26px;
+    text-align: center;
+    border-top: 3px solid var(--cor-secundaria);
+}
+
+.hospital-card-info h3 {
     color: var(--cor-titulo);
     font-weight: 700;
-    margin-bottom: 10px;
-    min-height: 76px; /* Alteração feita por mim: títulos com espaço semelhante */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.pacote .preco {
-    font-size: 1.4em;
-    font-weight: bold;
-    margin-bottom: 14px;
-    color: var(--cor-secundaria);
-    min-height: 34px; /* Alteração feita por mim */
-}
-
-.pacote ul {
-    list-style: none;
-    padding: 0;
-    margin-bottom: 24px;
-    flex-grow: 1; /* Alteração feita por mim: empurra o botão para baixo */
-}
-
-.pacote ul li {
+    font-size: 1.05rem;
     margin-bottom: 8px;
-    color: var(--cor-texto);
 }
 
-/* Alteração feita por mim: botões dos cards alinhados */
-.pacote .button {
-    margin-top: auto;
-    align-self: center;
-    min-width: 130px;
+.hospital-card-info p {
+    color: var(--cor-texto);
+    font-size: 0.92rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+@media (max-width: 1100px) {
+    .hospitais-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .hospitais-container {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Secção Contacto */
 #contacto {
-    background-color: var(--cor-branco);
+    background-color: var(--cor-fundo-suave);
 }
 
 #contacto p {
@@ -552,10 +569,11 @@ section h2::after {
     flex-direction: column; /* Organiza os elementos na vertical */
     max-width: 520px; /* Limita a largura do formulário */
     margin: 0 auto; /* Centraliza horizontalmente */
-    background-color: var(--cor-fundo-suave);
+    background-color: var(--cor-branco);
     padding: 30px;
     border-radius: 20px;
     box-shadow: var(--sombra-suave);
+    border: 1px solid #dcecec;
     text-align: left;
 }
 
@@ -564,6 +582,13 @@ section h2::after {
     margin-bottom: 6px;
     color: var(--cor-titulo);
     font-weight: 600;
+}
+
+.contacto-divisor {
+    width: 100%;
+    border: none;
+    border-top: 1px solid #e1eeee;
+    margin: 10px 0 6px;
 }
 
 #contacto input,
@@ -592,6 +617,9 @@ section h2::after {
     border-radius: 24px; /* Bordas arredondadas */
     cursor: pointer; /* Cursor tipo "mão" ao passar por cima */
     font-weight: 700;
+    margin-top: 18px; /* Espaço acima do botão, depois da linha separadora */
+    align-self: center;
+    min-width: 200px;
     transition: background-color 0.3s, transform 0.3s;
 }
 
@@ -801,22 +829,12 @@ section h2::after {
 
     .pessoa,
     .servico,
-    .pacote {
+    .hospital-card {
         width: 100%;
         max-width: 340px;
-    }
-
-    .pacote {
-        min-height: auto;
-    }
-
-    .pacote h3 {
-        min-height: auto;
     }
 
     #contacto form {
         padding: 22px;
     }
 }
-
-

@@ -121,7 +121,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                         data-nome="<?php echo htmlspecialchars($fornecedor['nome_empresa']); ?>"
                                         data-tipo="<?php echo htmlspecialchars($fornecedor['tipo_fornecedor']); ?>"
                                         data-nif="<?php echo htmlspecialchars($fornecedor['nif']); ?>"
-                                        data-email="<?php echo htmlspecialchars($fornecedor['email']); ?>"
+                                        data-email="<?php echo htmlspecialchars($fornecedor['email_fornecedor'] ?? ''); ?>"
                                         data-telefone="<?php echo htmlspecialchars($fornecedor['telefone']); ?>"
                                         data-localidade="<?php echo htmlspecialchars($fornecedor['localidade']); ?>"
                                         data-estado="Ativo">

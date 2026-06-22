@@ -376,14 +376,8 @@ function validar_etapa_temporaria($chaveSessao, $etapa, $camposObrigatorios, $la
         return [];
     }
 
-    $totalObrigatorios = count($camposObrigatorios[$etapa] ?? []);
-
-    if (count($camposEmFalta) === $totalObrigatorios) {
-        $erros[] = 'Preencha todos os campos obrigatórios desta etapa para poder avançar.';
-    } else {
-        foreach ($camposEmFalta as $campo) {
-            $erros[] = 'O campo "' . $campo . '" é obrigatório.';
-        }
+    foreach ($camposEmFalta as $campo) {
+        $erros[] = 'O campo "' . $campo . '" é obrigatório.';
     }
 
     return $erros;

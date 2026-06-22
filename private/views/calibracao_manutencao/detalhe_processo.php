@@ -133,7 +133,6 @@ function etapas_visuais_processo($estadoAtual)
         'aguarda_decisao' => 'À espera da decisão',
         'aguarda_recolha' => 'Aguarda recolha',
         'procedimento_a_decorrer' => 'Procedimento a decorrer',
-        'procedimento_efetuado' => 'Procedimento efetuado',
         'emissao_relatorio' => 'Emissão do relatório',
         'devolucao_equipamento' => 'Devolução do equipamento',
         'processo_finalizado' => 'Processo finalizado'
@@ -271,13 +270,24 @@ function campo_data_estado($estado)
 {
     $mapa = [
         'procedimento_a_decorrer' => 'data_inicio_procedimento',
-        'procedimento_efetuado' => 'data_fim_procedimento',
-        'emissao_relatorio' => 'data_emissao_relatorio',
-        'processo_finalizado' => 'data_finalizacao',
-        'cancelado' => 'data_finalizacao'
+        'emissao_relatorio'       => 'data_emissao_relatorio',
+        'processo_finalizado'     => 'data_finalizacao',
+        'cancelado'               => 'data_finalizacao'
     ];
 
     return $mapa[$estado] ?? null;
+}
+
+function proxima_etapa_processo($estadoAtual)
+{
+    $fluxo = [
+        'aguarda_recolha'          => 'procedimento_a_decorrer',
+        'procedimento_a_decorrer'  => 'emissao_relatorio',
+        'emissao_relatorio'        => 'devolucao_equipamento',
+        'devolucao_equipamento'    => 'processo_finalizado',
+    ];
+
+    return $fluxo[$estadoAtual] ?? null;
 }
 
 function validar_tipo_execucao($tipo)
@@ -299,11 +309,7 @@ function definir_estado_alvo_final(PDO $pdo, $processo, $origem, $resultado, arr
 {
     $estadoFinal = 'ativo';
 
-    if ($origem === 'calibracao' && $resultado === 'reprovado') {
-        $estadoFinal = 'avariado';
-    }
-
-    if ($origem === 'manutencao' && $resultado === 'nao_realizada') {
+    if ($resultado === 'reprovado') {
         $estadoFinal = 'avariado';
     }
 
@@ -497,6 +503,8 @@ try {
     if (!$processo) {
         throw new Exception('O processo indicado não foi encontrado.');
     }
+
+    $ehEncerrado = in_array($processo['estado_processo'] ?? '', ['processo_finalizado', 'cancelado', 'reprovado'], true);
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'decidir_processo') {
         if (!$ehAdministrador) {
@@ -718,295 +726,78 @@ try {
         $processo = obter_processo($pdo, $tipo, $id);
     }
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'guardar_processo') {
-        $estadoNovo = $_POST['estadoProcesso'] ?? $processo['estado_processo'];
-        
-        $transicoesPermitidas = [
-            'aguarda_recolha' => ['aguarda_recolha', 'procedimento_a_decorrer', 'cancelado'],
-            'procedimento_a_decorrer' => ['procedimento_a_decorrer', 'procedimento_efetuado', 'cancelado'],
-            'procedimento_efetuado' => ['procedimento_efetuado', 'emissao_relatorio', 'cancelado'],
-            'emissao_relatorio' => ['emissao_relatorio', 'devolucao_equipamento', 'cancelado'],
-            'devolucao_equipamento' => ['devolucao_equipamento', 'processo_finalizado', 'cancelado'],
-            'processo_finalizado' => ['processo_finalizado'],
-            'cancelado' => ['cancelado'],
-            'reprovado' => ['reprovado']
-        ];
-
-        $estadoAtual = $processo['estado_processo'] ?? '';
-
-        if (
-            isset($transicoesPermitidas[$estadoAtual])
-            && !in_array($estadoNovo, $transicoesPermitidas[$estadoAtual], true)
-        ) {
-            throw new Exception('A alteração de etapa selecionada não é permitida.');
-        }
-
-        $estadosValidos = [
-            'aguarda_recolha',
-            'procedimento_a_decorrer',
-            'procedimento_efetuado',
-            'emissao_relatorio',
-            'devolucao_equipamento',
-            'processo_finalizado',
-            'cancelado'
-        ];
-
-        if (!in_array($estadoNovo, $estadosValidos, true)) {
-            throw new Exception('Estado do processo inválido.');
-        }
-
-        $tipoExecucao = validar_tipo_execucao($_POST['tipoExecucao'] ?? $processo['tipo_execucao']);
-        $idFornecedor = !empty($_POST['idFornecedorResponsavel']) ? (int) $_POST['idFornecedorResponsavel'] : null;
-        $tecnicoInterno = valor_ou_null($_POST['tecnicoInterno'] ?? null);
-        $dataPrevista = data_ou_null($_POST['dataPrevista'] ?? null);
-        $dataRecolha = data_ou_null($_POST['dataRecolha'] ?? null);
-        $dataInicioProcedimento = data_ou_null($_POST['dataInicioProcedimento'] ?? null);
-        $dataFimProcedimento = data_ou_null($_POST['dataFimProcedimento'] ?? null);
-        $dataEmissaoRelatorio = data_ou_null($_POST['dataEmissaoRelatorio'] ?? null);
-        $dataFinalizacao = data_ou_null($_POST['dataFinalizacao'] ?? null);
-        $proximaIntervencao = data_ou_null($_POST['proximaIntervencao'] ?? null);
-        $cobertaPorGarantia = (int) ($_POST['cobertaPorGarantia'] ?? 0);
-        $custo = $processo['custo'] ?? null;
+    /* ---- Guardar dados finais (resultado, descrição, observações, data fecho) ---- */
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'guardar_dados_finais') {
+        $descricao   = valor_ou_null($_POST['descricaoProcedimento'] ?? null);
         $observacoes = valor_ou_null($_POST['observacoesProcesso'] ?? null);
-        $observacoesEtapa = valor_ou_null($_POST['observacoesEtapa'] ?? null);
-        $responsavelEtapa = valor_ou_null($_POST['responsavelEtapa'] ?? null);
-        $tipoResponsavel = valor_ou_null($_POST['tipoResponsavel'] ?? null);
-        $idFornecedorResponsavelEtapa = !empty($_POST['idFornecedorResponsavelEtapa']) ? (int) $_POST['idFornecedorResponsavelEtapa'] : null;
-
-        if (!in_array($tipoResponsavel, ['interno', 'fornecedor', null], true)) {
-            $tipoResponsavel = null;
-        }
-
-        if ($tipoExecucao === 'externa' && empty($idFornecedor)) {
-            throw new Exception('Nos processos externos deve indicar o fornecedor responsável.');
-        }
-
-        if ($tipoExecucao === 'interna' && empty($tecnicoInterno)) {
-            throw new Exception('Nos processos internos deve indicar o técnico interno responsável.');
-        }
-
-        $campoDataAutomatica = campo_data_estado($estadoNovo);
-        $hoje = date('Y-m-d');
-
-        if ($estadoNovo === 'procedimento_a_decorrer' && empty($dataInicioProcedimento)) {
-            $dataInicioProcedimento = $hoje;
-        }
-
-        if ($estadoNovo === 'procedimento_efetuado' && empty($dataFimProcedimento)) {
-            $dataFimProcedimento = $hoje;
-        }
-
-        if ($estadoNovo === 'emissao_relatorio' && empty($dataEmissaoRelatorio)) {
-            $dataEmissaoRelatorio = $hoje;
-        }
-
-        if (in_array($estadoNovo, ['processo_finalizado', 'cancelado'], true) && empty($dataFinalizacao)) {
-            $dataFinalizacao = $hoje;
-        }
 
         $pdo->beginTransaction();
 
-        $estadoAnterior = $processo['estado_processo'];
-
-        if ($tipo === 'manutencao') {
-            $resultado = valor_ou_null($_POST['resultadoManutencao'] ?? null);
-            $descricao = valor_ou_null($_POST['descricaoProcedimento'] ?? null);
-            $numeroRelatorio = valor_ou_null($_POST['numeroRelatorio'] ?? null);
-            $dataManutencao = data_ou_null($_POST['dataIntervencao'] ?? null);
-
-            if ($estadoNovo === 'processo_finalizado') {
-                if (($processo['estado_processo'] ?? '') !== 'devolucao_equipamento') {
-                    throw new Exception('O processo só pode ser finalizado depois da devolução do equipamento.');
-                }
-                if (empty($resultado)) {
-                    throw new Exception('Para finalizar uma manutenção deve indicar o resultado.');
-                }
-                if (empty($descricao)) {
-                    throw new Exception('Para finalizar uma manutenção deve preencher a descrição do procedimento.');
-                }
-                if (empty($dataManutencao)) {
-                    $dataManutencao = $dataFinalizacao ?: $hoje;
-                }
+        if ($ehEncerrado) {
+            /* Processo encerrado: só permite alterar descrição e observações */
+            if ($tipo === 'manutencao') {
+                $stmt = $pdo->prepare("
+                    UPDATE manutencoes_equipamento
+                    SET descricao_procedimento = :descricao,
+                        observacoes = :observacoes,
+                        atualizado_por = :atualizado_por
+                    WHERE id_manutencao = :id
+                ");
+            } else {
+                $stmt = $pdo->prepare("
+                    UPDATE calibracoes_equipamento
+                    SET procedimento = :descricao,
+                        observacoes = :observacoes,
+                        atualizado_por = :atualizado_por
+                    WHERE id_calibracao = :id
+                ");
             }
-
-            $stmt = $pdo->prepare("
-                UPDATE manutencoes_equipamento
-                SET
-                    tipo_execucao = :tipo_execucao,
-                    estado_processo = :estado_processo,
-                    data_prevista = :data_prevista,
-                    data_recolha = :data_recolha,
-                    data_inicio_procedimento = :data_inicio_procedimento,
-                    data_fim_procedimento = :data_fim_procedimento,
-                    data_emissao_relatorio = :data_emissao_relatorio,
-                    data_finalizacao = :data_finalizacao,
-                    id_fornecedor_responsavel = :id_fornecedor_responsavel,
-                    tecnico_interno = :tecnico_interno,
-                    data_manutencao = :data_manutencao,
-                    proxima_manutencao = :proxima_intervencao,
-                    numero_relatorio = :numero_relatorio,
-                    descricao_procedimento = :descricao,
-                    resultado = :resultado,
-                    coberta_por_garantia = :coberta_por_garantia,
-                    observacoes = :observacoes,
-                    atualizado_por = :atualizado_por
-                WHERE id_manutencao = :id
-            ");
-
             $stmt->execute([
-                ':tipo_execucao' => $tipoExecucao,
-                ':estado_processo' => $estadoNovo,
-                ':data_prevista' => $dataPrevista,
-                ':data_recolha' => $dataRecolha,
-                ':data_inicio_procedimento' => $dataInicioProcedimento,
-                ':data_fim_procedimento' => $dataFimProcedimento,
-                ':data_emissao_relatorio' => $dataEmissaoRelatorio,
-                ':data_finalizacao' => $dataFinalizacao,
-                ':id_fornecedor_responsavel' => $idFornecedor,
-                ':tecnico_interno' => $tecnicoInterno,
-                ':data_manutencao' => $dataManutencao,
-                ':proxima_intervencao' => $proximaIntervencao,
-                ':numero_relatorio' => $numeroRelatorio,
-                ':descricao' => $descricao,
-                ':resultado' => $resultado,
-                ':coberta_por_garantia' => $cobertaPorGarantia,
-                ':observacoes' => $observacoes,
+                ':descricao'    => $descricao,
+                ':observacoes'  => $observacoes,
                 ':atualizado_por' => $utilizadorAtual,
-                ':id' => $id
+                ':id'           => $id
             ]);
         } else {
-            $resultado = valor_ou_null($_POST['resultadoCalibracao'] ?? null);
-            $procedimento = valor_ou_null($_POST['descricaoProcedimento'] ?? null);
-            $numeroCertificado = valor_ou_null($_POST['numeroCertificado'] ?? null);
-            $dataCalibracao = data_ou_null($_POST['dataIntervencao'] ?? null);
+            $resultado       = valor_ou_null($_POST['resultadoProcesso'] ?? null);
+            $dataFinalizacao = data_ou_null($_POST['dataFinalizacao'] ?? null);
 
-            if ($estadoNovo === 'processo_finalizado') {
-                if (($processo['estado_processo'] ?? '') !== 'devolucao_equipamento') {
-                    throw new Exception('O processo só pode ser finalizado depois da devolução do equipamento.');
-                }
-                if (empty($resultado)) {
-                    throw new Exception('Para finalizar uma calibração deve indicar o resultado.');
-                }
-                if (empty($procedimento)) {
-                    throw new Exception('Para finalizar uma calibração deve preencher o procedimento.');
-                }
-                if (empty($dataCalibracao)) {
-                    $dataCalibracao = $dataFinalizacao ?: $hoje;
-                }
+            if ($tipo === 'manutencao') {
+                $stmt = $pdo->prepare("
+                    UPDATE manutencoes_equipamento
+                    SET resultado = :resultado,
+                        descricao_procedimento = :descricao,
+                        observacoes = :observacoes,
+                        data_finalizacao = :data_finalizacao,
+                        atualizado_por = :atualizado_por
+                    WHERE id_manutencao = :id
+                ");
+            } else {
+                $stmt = $pdo->prepare("
+                    UPDATE calibracoes_equipamento
+                    SET resultado = :resultado,
+                        procedimento = :descricao,
+                        observacoes = :observacoes,
+                        data_finalizacao = :data_finalizacao,
+                        atualizado_por = :atualizado_por
+                    WHERE id_calibracao = :id
+                ");
             }
-
-            $stmt = $pdo->prepare("
-                UPDATE calibracoes_equipamento
-                SET
-                    tipo_execucao = :tipo_execucao,
-                    estado_processo = :estado_processo,
-                    data_prevista = :data_prevista,
-                    data_recolha = :data_recolha,
-                    data_inicio_procedimento = :data_inicio_procedimento,
-                    data_fim_procedimento = :data_fim_procedimento,
-                    data_emissao_relatorio = :data_emissao_relatorio,
-                    data_finalizacao = :data_finalizacao,
-                    id_fornecedor_responsavel = :id_fornecedor_responsavel,
-                    tecnico_interno = :tecnico_interno,
-                    data_calibracao = :data_calibracao,
-                    proxima_calibracao = :proxima_intervencao,
-                    numero_certificado = :numero_certificado,
-                    procedimento = :procedimento,
-                    resultado = :resultado,
-                    coberta_por_garantia = :coberta_por_garantia,
-                    observacoes = :observacoes,
-                    atualizado_por = :atualizado_por
-                WHERE id_calibracao = :id
-            ");
-
             $stmt->execute([
-                ':tipo_execucao' => $tipoExecucao,
-                ':estado_processo' => $estadoNovo,
-                ':data_prevista' => $dataPrevista,
-                ':data_recolha' => $dataRecolha,
-                ':data_inicio_procedimento' => $dataInicioProcedimento,
-                ':data_fim_procedimento' => $dataFimProcedimento,
-                ':data_emissao_relatorio' => $dataEmissaoRelatorio,
+                ':resultado'        => $resultado,
+                ':descricao'        => $descricao,
+                ':observacoes'      => $observacoes,
                 ':data_finalizacao' => $dataFinalizacao,
-                ':id_fornecedor_responsavel' => $idFornecedor,
-                ':tecnico_interno' => $tecnicoInterno,
-                ':data_calibracao' => $dataCalibracao,
-                ':proxima_intervencao' => $proximaIntervencao,
-                ':numero_certificado' => $numeroCertificado,
-                ':procedimento' => $procedimento,
-                ':resultado' => $resultado,
-                ':coberta_por_garantia' => $cobertaPorGarantia,
-                ':observacoes' => $observacoes,
-                ':atualizado_por' => $utilizadorAtual,
-                ':id' => $id
+                ':atualizado_por'   => $utilizadorAtual,
+                ':id'               => $id
             ]);
         }
 
-        if ($estadoAnterior !== $estadoNovo || $observacoesEtapa || $responsavelEtapa || $tipoResponsavel || $idFornecedorResponsavelEtapa) {
-            $stmtHistorico = $pdo->prepare("
-                INSERT INTO historico_etapas_processos (
-                    tipo_processo,
-                    id_manutencao,
-                    id_calibracao,
-                    estado_anterior,
-                    estado_novo,
-                    responsavel_etapa,
-                    tipo_responsavel,
-                    id_fornecedor_responsavel,
-                    observacoes,
-                    atualizado_por
-                ) VALUES (
-                    :tipo_processo,
-                    :id_manutencao,
-                    :id_calibracao,
-                    :estado_anterior,
-                    :estado_novo,
-                    :responsavel_etapa,
-                    :tipo_responsavel,
-                    :id_fornecedor_responsavel,
-                    :observacoes,
-                    :atualizado_por
-                )
-            ");
-
-            $stmtHistorico->execute([
-                ':tipo_processo' => $tipo,
-                ':id_manutencao' => $tipo === 'manutencao' ? $id : null,
-                ':id_calibracao' => $tipo === 'calibracao' ? $id : null,
-                ':estado_anterior' => $estadoAnterior,
-                ':estado_novo' => $estadoNovo,
-                ':responsavel_etapa' => $responsavelEtapa,
-                ':tipo_responsavel' => $tipoResponsavel,
-                ':id_fornecedor_responsavel' => $idFornecedorResponsavelEtapa,
-                ':observacoes' => $observacoesEtapa,
-                ':atualizado_por' => $utilizadorAtual
-            ]);
-        }
-
-        if ($estadoAnterior !== $estadoNovo) {
-            $processoHistorico = obter_processo($pdo, $tipo, $id);
-
-            $descricaoHistoricoEquipamento = 'Processo atualizado: '
-                . texto_estado_processo($estadoAnterior)
-                . ' → '
-                . texto_estado_processo($estadoNovo)
-                . '.';
-
-            registar_historico_equipamento_processo(
-                $pdo,
-                $processoHistorico,
-                $tipo,
-                $estadoNovo,
-                $descricaoHistoricoEquipamento,
-                $utilizadorAtual
-            );
-        }
-
-        /* Upload opcional de relatório/certificado */
+        /* Upload de relatório/certificado */
         if (!empty($_FILES['ficheiroRelatorio']['name']) && $_FILES['ficheiroRelatorio']['error'] === UPLOAD_ERR_OK) {
             $processoAtualizado = obter_processo($pdo, $tipo, $id);
-            $codigoEquipamento = $processoAtualizado['codigo_equipamento'] ?? 'equipamento';
-            $codigoProcesso = $processoAtualizado['codigo_processo'] ?? 'processo';
+            $codigoEquipamento  = $processoAtualizado['codigo_equipamento'] ?? 'equipamento';
+            $codigoProcesso     = $processoAtualizado['codigo_processo'] ?? 'processo';
 
             $pastaFisica = __DIR__ . '/../../assets/documentos/equipamentos/' . $codigoEquipamento . '/processos/';
             if (!is_dir($pastaFisica)) {
@@ -1020,69 +811,186 @@ try {
                 throw new Exception('Tipo de ficheiro não permitido para o relatório/certificado.');
             }
 
-            $baseNome = normalizar_nome_ficheiro($_FILES['ficheiroRelatorio']['name']);
+            $baseNome  = normalizar_nome_ficheiro($_FILES['ficheiroRelatorio']['name']);
             $nomeFinal = $codigoProcesso . '_' . $baseNome . '_' . time() . '.' . $extensao;
-            $destino = $pastaFisica . $nomeFinal;
+            $destino   = $pastaFisica . $nomeFinal;
 
             if (!move_uploaded_file($_FILES['ficheiroRelatorio']['tmp_name'], $destino)) {
                 throw new Exception('Não foi possível guardar o ficheiro do relatório/certificado.');
             }
 
-            $tipoDocumento = $tipo === 'manutencao' ? 'relatorio_manutencao' : 'certificado_calibracao';
-            $nomeDocumento = valor_ou_null($_POST['nomeDocumento'] ?? null) ?: ($tipo === 'manutencao' ? 'Relatório de manutenção' : 'Certificado de calibração');
+            $tipoDocumento  = $tipo === 'manutencao' ? 'relatorio_manutencao' : 'certificado_calibracao';
+            $nomeDocumento  = valor_ou_null($_POST['nomeDocumento'] ?? null) ?: ($tipo === 'manutencao' ? 'Relatório de manutenção' : 'Certificado de calibração');
             $caminhoRelativo = 'equipamentos/' . $codigoEquipamento . '/processos/' . $nomeFinal;
 
             $stmtDoc = $pdo->prepare("
                 INSERT INTO documentos_equipamentos (
-                    id_equipamento,
-                    id_acessorio,
-                    id_manutencao,
-                    id_calibracao,
-                    id_equipamento_fornecedor,
-                    tipo_documento,
-                    nome_documento,
-                    caminho_ficheiro,
-                    data_documento,
-                    data_validade,
-                    observacoes,
-                    atualizado_por
+                    id_equipamento, id_acessorio, id_manutencao, id_calibracao,
+                    id_equipamento_fornecedor, tipo_documento, nome_documento,
+                    caminho_ficheiro, data_documento, data_validade, observacoes, atualizado_por
                 ) VALUES (
-                    :id_equipamento,
-                    :id_acessorio,
-                    :id_manutencao,
-                    :id_calibracao,
-                    NULL,
-                    :tipo_documento,
-                    :nome_documento,
-                    :caminho_ficheiro,
-                    :data_documento,
-                    NULL,
-                    :observacoes,
-                    :atualizado_por
+                    :id_equipamento, :id_acessorio, :id_manutencao, :id_calibracao,
+                    NULL, :tipo_documento, :nome_documento,
+                    :caminho_ficheiro, :data_documento, NULL, :observacoes, :atualizado_por
                 )
             ");
             $stmtDoc->execute([
-                ':id_equipamento' => $processoAtualizado['id_equipamento'],
-                ':id_acessorio' => null,
-                ':id_manutencao' => $tipo === 'manutencao' ? $id : null,
-                ':id_calibracao' => $tipo === 'calibracao' ? $id : null,
-                ':tipo_documento' => $tipoDocumento,
-                ':nome_documento' => $nomeDocumento,
-                ':caminho_ficheiro' => $caminhoRelativo,
-                ':data_documento' => date('Y-m-d'),
-                ':observacoes' => 'Documento associado ao processo ' . $codigoProcesso,
-                ':atualizado_por' => $utilizadorAtual
+                ':id_equipamento'  => $processoAtualizado['id_equipamento'],
+                ':id_acessorio'    => null,
+                ':id_manutencao'   => $tipo === 'manutencao' ? $id : null,
+                ':id_calibracao'   => $tipo === 'calibracao' ? $id : null,
+                ':tipo_documento'  => $tipoDocumento,
+                ':nome_documento'  => $nomeDocumento,
+                ':caminho_ficheiro'=> $caminhoRelativo,
+                ':data_documento'  => date('Y-m-d'),
+                ':observacoes'     => 'Documento associado ao processo ' . $codigoProcesso,
+                ':atualizado_por'  => $utilizadorAtual
             ]);
+        } elseif (!$ehEncerrado && ($processo['tipo_execucao'] ?? 'externa') === 'externa' && empty($documentos)) {
+            throw new Exception('Para processos externos é obrigatório carregar o relatório/certificado.');
         }
 
-        $processoDepois = obter_processo($pdo, $tipo, $id);
-        if (in_array($estadoNovo, ['processo_finalizado', 'cancelado'], true)) {
-            $acessoriosProcessoDepois = obter_acessorios_processo($pdo, $tipo, $id);
-            definir_estado_alvo_final($pdo, $processoDepois, $tipo, $resultado ?? null, $acessoriosProcessoDepois);
+        /* Registo no histórico */
+        $stmtH = $pdo->prepare("
+            INSERT INTO historico_etapas_processos (
+                tipo_processo, id_manutencao, id_calibracao,
+                estado_anterior, estado_novo, responsavel_etapa,
+                tipo_responsavel, id_fornecedor_responsavel, observacoes, atualizado_por
+            ) VALUES (
+                :tipo_processo, :id_manutencao, :id_calibracao,
+                :estado_anterior, :estado_novo, :responsavel_etapa,
+                'interno', NULL, :observacoes, :atualizado_por
+            )
+        ");
+        $stmtH->execute([
+            ':tipo_processo'     => $tipo,
+            ':id_manutencao'     => $tipo === 'manutencao' ? $id : null,
+            ':id_calibracao'     => $tipo === 'calibracao'  ? $id : null,
+            ':estado_anterior'   => $processo['estado_processo'],
+            ':estado_novo'       => $processo['estado_processo'],
+            ':responsavel_etapa' => $utilizadorAtual,
+            ':observacoes'       => 'Dados finais atualizados por ' . $utilizadorAtual . '.',
+            ':atualizado_por'    => $utilizadorAtual
+        ]);
+
+        $pdo->commit();
+        $mensagem_sucesso = 'Dados do processo guardados com sucesso.';
+        $processo = obter_processo($pdo, $tipo, $id);
+    }
+
+    /* ---- Avançar etapa ---- */
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'avancar_etapa') {
+        $estadoAtual  = $processo['estado_processo'] ?? '';
+        $estadoNovo   = proxima_etapa_processo($estadoAtual);
+        $hoje         = date('Y-m-d');
+        $dataEtapa    = data_ou_null($_POST['dataEtapa'] ?? null) ?: $hoje;
+        $obsEtapa     = valor_ou_null($_POST['observacoesEtapa'] ?? null);
+
+        if (!$estadoNovo) {
+            throw new Exception('Não é possível avançar a partir desta etapa.');
+        }
+
+        /* Validação de dados finais antes de finalizar */
+        if ($estadoNovo === 'processo_finalizado') {
+            $processoAtual = obter_processo($pdo, $tipo, $id);
+            if (empty($processoAtual['resultado'])) {
+                throw new Exception('Preencha o resultado nos Dados Finais antes de finalizar o processo.');
+            }
+            if ($tipo === 'manutencao' && empty($processoAtual['descricao_procedimento'])) {
+                throw new Exception('Preencha a descrição do procedimento nos Dados Finais antes de finalizar.');
+            }
+            if ($tipo === 'calibracao' && empty($processoAtual['procedimento'])) {
+                throw new Exception('Preencha o procedimento nos Dados Finais antes de finalizar.');
+            }
+        }
+
+        /* Validação da sequência de datas entre etapas */
+        $dataAnteriorRef = null;
+        $labelAnterior   = null;
+
+        if ($estadoNovo === 'procedimento_a_decorrer') {
+            /* Data de início não pode ser anterior à data de abertura */
+            if (!empty($processo['data_abertura']) && $dataEtapa < $processo['data_abertura']) {
+                throw new Exception('A data de início do procedimento não pode ser anterior à data de abertura do processo (' . formatar_data($processo['data_abertura']) . ').');
+            }
+        } elseif ($estadoNovo === 'emissao_relatorio') {
+            $dataAnteriorRef = $processo['data_inicio_procedimento'] ?? null;
+            $labelAnterior   = 'início do procedimento';
+        } elseif ($estadoNovo === 'devolucao_equipamento') {
+            $dataAnteriorRef = $processo['data_emissao_relatorio'] ?? null;
+            $labelAnterior   = 'emissão do relatório';
+        } elseif ($estadoNovo === 'processo_finalizado') {
+            $dataAnteriorRef = $processo['data_devolucao'] ?? null;
+            $labelAnterior   = 'devolução do equipamento';
+            /* Data de finalização não pode ser anterior à data de devolução */
+            if ($dataAnteriorRef && $dataEtapa < $dataAnteriorRef) {
+                throw new Exception('A data de finalização (' . formatar_data($dataEtapa) . ') não pode ser anterior à data de devolução do equipamento (' . formatar_data($dataAnteriorRef) . ').');
+            }
+        }
+
+        if ($dataAnteriorRef && $dataEtapa < $dataAnteriorRef) {
+            throw new Exception('A data introduzida (' . formatar_data($dataEtapa) . ') não pode ser anterior à data de ' . $labelAnterior . ' (' . formatar_data($dataAnteriorRef) . ').');
+        }
+
+        $pdo->beginTransaction();
+
+        /* Campos de data automática por etapa */
+        $camposData = [
+            'procedimento_a_decorrer' => ['data_inicio_procedimento' => $dataEtapa],
+            'emissao_relatorio'        => ['data_emissao_relatorio'   => $dataEtapa],
+            'devolucao_equipamento'    => ['data_devolucao'           => $dataEtapa],
+            'processo_finalizado'      => ['data_finalizacao'         => $dataEtapa],
+        ];
+
+        $setCols = 'estado_processo = :estado_processo, atualizado_por = :atualizado_por';
+        $params  = [':estado_processo' => $estadoNovo, ':atualizado_por' => $utilizadorAtual, ':id' => $id];
+
+        foreach ($camposData[$estadoNovo] ?? [] as $col => $val) {
+            $setCols .= ", $col = :$col";
+            $params[":$col"] = $val;
+        }
+
+        $tabela = $tipo === 'manutencao' ? 'manutencoes_equipamento' : 'calibracoes_equipamento';
+        $pk     = $tipo === 'manutencao' ? 'id_manutencao'           : 'id_calibracao';
+        $pdo->prepare("UPDATE $tabela SET $setCols WHERE $pk = :id")->execute($params);
+
+        $stmtHistorico = $pdo->prepare("
+            INSERT INTO historico_etapas_processos (
+                tipo_processo, id_manutencao, id_calibracao,
+                estado_anterior, estado_novo, responsavel_etapa,
+                tipo_responsavel, id_fornecedor_responsavel, observacoes, atualizado_por
+            ) VALUES (
+                :tipo_processo, :id_manutencao, :id_calibracao,
+                :estado_anterior, :estado_novo, :responsavel_etapa,
+                'interno', NULL, :observacoes, :atualizado_por
+            )
+        ");
+        $stmtHistorico->execute([
+            ':tipo_processo'    => $tipo,
+            ':id_manutencao'    => $tipo === 'manutencao' ? $id : null,
+            ':id_calibracao'    => $tipo === 'calibracao'  ? $id : null,
+            ':estado_anterior'  => $estadoAtual,
+            ':estado_novo'      => $estadoNovo,
+            ':responsavel_etapa'=> $utilizadorAtual,
+            ':observacoes'      => $obsEtapa,
+            ':atualizado_por'   => $utilizadorAtual
+        ]);
+
+        $processoHistorico = obter_processo($pdo, $tipo, $id);
+        registar_historico_equipamento_processo(
+            $pdo, $processoHistorico, $tipo, $estadoNovo,
+            'Etapa avançada: ' . texto_estado_processo($estadoAtual) . ' → ' . texto_estado_processo($estadoNovo),
+            $utilizadorAtual
+        );
+
+        if ($estadoNovo === 'processo_finalizado') {
+            $processoFinal = obter_processo($pdo, $tipo, $id);
+            $acessoriosProcessoFinal = obter_acessorios_processo($pdo, $tipo, $id);
+            definir_estado_alvo_final($pdo, $processoFinal, $tipo, $processoFinal['resultado'] ?? null, $acessoriosProcessoFinal);
         }
 
         $pdo->commit();
-        $mensagem_sucesso = 'Processo atualizado com sucesso.';
+        $mensagem_sucesso = 'Etapa avançada para: ' . texto_estado_processo($estadoNovo);
         $processo = obter_processo($pdo, $tipo, $id);
     }
 
@@ -1144,6 +1052,7 @@ $alvoNome = $processo['equipamento_nome'] ?? 'Equipamento';
 $proximaIntervencao = $tipo === 'manutencao' ? ($processo['proxima_manutencao'] ?? null) : ($processo['proxima_calibracao'] ?? null);
 $dataIntervencao = $tipo === 'manutencao' ? ($processo['data_manutencao'] ?? null) : ($processo['data_calibracao'] ?? null);
 $descricaoProcedimento = $tipo === 'manutencao' ? ($processo['descricao_procedimento'] ?? null) : ($processo['procedimento'] ?? null);
+$urlVoltar = ($_GET['from'] ?? '') === 'encerrados' ? 'processos_encerrados.php' : 'calibracao_manutencao.php';
 ?>
 
 <main class="conteudo-private ficha-equipamento-page">
@@ -1155,10 +1064,19 @@ $descricaoProcedimento = $tipo === 'manutencao' ? ($processo['descricao_procedim
             </p>
         </div>
 
-        <a href="calibracao_manutencao.php" class="btn btn-voltar">
-            <i class="fa-solid fa-arrow-left me-2"></i>
-            Voltar à Lista
-        </a>
+        <div class="ficha-toolbar mb-0">
+            <a href="<?php echo h($urlVoltar); ?>" class="btn btn-voltar">
+                <i class="fa-solid fa-arrow-left me-2"></i>
+                Voltar à Lista
+            </a>
+
+            <?php if (!empty($processo) && ($processo['estado_processo'] ?? '') !== 'aguarda_decisao'): ?>
+                <button type="submit" form="formDadosFinais" id="btnGuardarTopo" class="btn btn-guardar">
+                    <i class="fa-solid fa-floppy-disk me-2"></i>
+                    Guardar Processo
+                </button>
+            <?php endif; ?>
+        </div>
     </div>
 
     <?php if ($erro_bd): ?>
@@ -1262,10 +1180,31 @@ $descricaoProcedimento = $tipo === 'manutencao' ? ($processo['descricao_procedim
     <?php endif; ?>
 
     <?php if ($mostrarFormularioTecnico): ?>
-    <form method="post" enctype="multipart/form-data" class="form-ficha-equipamento">
-        <input type="hidden" name="acao" value="guardar_processo">
-        <input type="hidden" name="tipo" value="<?php echo h($tipo); ?>">
-        <input type="hidden" name="id" value="<?php echo h($id); ?>">
+    <div class="form-ficha-equipamento">
+
+        <?php if (($processo['estado_processo'] ?? '') === 'devolucao_equipamento'): ?>
+        <div class="card-formulario mb-4" style="border: 2px solid var(--cor-secundaria);">
+            <div class="secao-ficha-titulo mb-2">
+                <h4><i class="fa-solid fa-flag-checkered me-2"></i>Processo pronto a finalizar</h4>
+                <p class="mb-0">O equipamento foi devolvido. Confirma os dados finais no separador <strong>Dados finais</strong> e clica em Finalizar Processo.</p>
+            </div>
+            <div class="d-flex gap-3 mt-3">
+                <a href="<?php echo h($urlVoltar); ?>" class="btn btn-voltar">
+                    <i class="fa-solid fa-arrow-left me-2"></i>Voltar à Lista
+                </a>
+                <form id="formFinalizar" method="post" style="display:inline;">
+                    <input type="hidden" name="acao" value="avancar_etapa">
+                    <input type="hidden" name="tipo" value="<?php echo h($tipo); ?>">
+                    <input type="hidden" name="id" value="<?php echo h($id); ?>">
+                    <input type="hidden" name="dataEtapa" value="<?php echo date('Y-m-d'); ?>">
+                    <input type="hidden" name="observacoesEtapa" value="">
+                    <button type="submit" class="btn btn-guardar">
+                        <i class="fa-solid fa-flag-checkered me-2"></i>Finalizar Processo
+                    </button>
+                </form>
+            </div>
+        </div>
+        <?php endif; ?>
 
         <div class="ficha-area">
             <ul class="nav nav-tabs ficha-tabs" id="tabsDetalheProcesso" role="tablist">
@@ -1274,11 +1213,13 @@ $descricaoProcedimento = $tipo === 'manutencao' ? ($processo['descricao_procedim
                         <i class="fa-solid fa-circle-info me-2"></i>Resumo
                     </button>
                 </li>
+                <?php if (!$ehEncerrado): ?>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="tab-etapa" data-bs-toggle="tab" data-bs-target="#conteudo-etapa" type="button" role="tab">
                         <i class="fa-solid fa-pen-to-square me-2"></i>Etapa
                     </button>
                 </li>
+                <?php endif; ?>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="tab-dados" data-bs-toggle="tab" data-bs-target="#conteudo-dados" type="button" role="tab">
                         <i class="fa-solid fa-clipboard-list me-2"></i>Dados finais
@@ -1348,13 +1289,6 @@ $descricaoProcedimento = $tipo === 'manutencao' ? ($processo['descricao_procedim
                             </div>
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label">Localização</label>
-                            <div class="campo-visualizacao">
-                                <?php echo h(($processo['codigo_localizacao'] ?? '---') . ' · ' . ($processo['departamento_nome'] ?? '---') . ' · Piso ' . ($processo['piso'] ?? '---') . ' · Sala ' . ($processo['sala'] ?? '---')); ?>
-                            </div>
-                        </div>
-
                         <div class="col-md-4">
                             <label class="form-label">Tipo de execução</label>
                             <div class="campo-visualizacao"><?php echo h(texto_tipo_execucao($processo['tipo_execucao'] ?? 'externa')); ?></div>
@@ -1365,11 +1299,6 @@ $descricaoProcedimento = $tipo === 'manutencao' ? ($processo['descricao_procedim
                             <div class="campo-visualizacao">
                                 <?php echo h(($processo['tipo_execucao'] ?? '') === 'interna' ? ($processo['tecnico_interno'] ?? '---') : ($processo['fornecedor_nome'] ?? '---')); ?>
                             </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label">Custo</label>
-                            <div class="campo-visualizacao"><?php echo h(formatar_moeda($processo['custo'] ?? null, $processo['coberta_por_garantia'] ?? 0)); ?></div>
                         </div>
 
                         <div class="col-md-3">
@@ -1396,178 +1325,111 @@ $descricaoProcedimento = $tipo === 'manutencao' ? ($processo['descricao_procedim
 
                 <div class="tab-pane fade" id="conteudo-etapa" role="tabpanel">
                     <div class="secao-ficha-titulo">
-                        <h4>Atualização da etapa</h4>
-                        <p>Altera a etapa atual e regista o responsável por essa etapa no histórico.</p>
+                        <h4>Etapa do processo</h4>
+                        <p>Avança para a próxima etapa e regista a data e observações da mudança.</p>
                     </div>
 
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label for="estadoProcesso" class="form-label">Etapa atual *</label>
-                            <select class="form-select" id="estadoProcesso" name="estadoProcesso" required>
-                                <option value="aguarda_decisao" <?php echo selected_option($processo['estado_processo'], 'aguarda_decisao'); ?>>À espera da decisão</option>
-                                <option value="aguarda_recolha" <?php echo selected_option($processo['estado_processo'], 'aguarda_recolha'); ?>>Aguarda recolha</option>
-                                <option value="procedimento_a_decorrer" <?php echo selected_option($processo['estado_processo'], 'procedimento_a_decorrer'); ?>>Procedimento a decorrer</option>
-                                <option value="procedimento_efetuado" <?php echo selected_option($processo['estado_processo'], 'procedimento_efetuado'); ?>>Procedimento efetuado</option>
-                                <option value="emissao_relatorio" <?php echo selected_option($processo['estado_processo'], 'emissao_relatorio'); ?>>Emissão do relatório</option>
-                                <option value="devolucao_equipamento" <?php echo selected_option($processo['estado_processo'], 'devolucao_equipamento'); ?>>Devolução do equipamento</option>
-                                <option value="processo_finalizado" <?php echo selected_option($processo['estado_processo'], 'processo_finalizado'); ?>>Processo finalizado</option>
-                                <option value="cancelado" <?php echo selected_option($processo['estado_processo'], 'cancelado'); ?>>Cancelado</option>
-                            </select>
-                        </div>
+                    <?php $proximaEtapa = proxima_etapa_processo($processo['estado_processo'] ?? ''); ?>
 
-                        <div class="col-md-4">
-                            <label for="responsavelEtapa" class="form-label">Responsável pela etapa</label>
-                            <input type="text" class="form-control" id="responsavelEtapa" name="responsavelEtapa" placeholder="Ex: CalibraMed / Eng. Gonçalo">
-                        </div>
+                    <form id="formAvancarEtapa" method="post">
+                        <input type="hidden" name="acao" value="avancar_etapa">
+                        <input type="hidden" name="tipo" value="<?php echo h($tipo); ?>">
+                        <input type="hidden" name="id" value="<?php echo h($id); ?>">
 
-                        <div class="col-md-4">
-                            <label for="tipoResponsavel" class="form-label">Tipo de responsável</label>
-                            <select class="form-select" id="tipoResponsavel" name="tipoResponsavel">
-                                <option value="">Selecionar</option>
-                                <option value="interno">Interno</option>
-                                <option value="fornecedor">Fornecedor</option>
-                            </select>
-                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Etapa atual</label>
+                                <div class="campo-visualizacao"><?php echo h(texto_estado_processo($processo['estado_processo'] ?? '')); ?></div>
+                            </div>
 
-                        <div class="col-md-4">
-                            <label for="idFornecedorResponsavelEtapa" class="form-label">Fornecedor associado à etapa</label>
-                            <select class="form-select" id="idFornecedorResponsavelEtapa" name="idFornecedorResponsavelEtapa">
-                                <option value="">Não aplicável</option>
-                                <?php foreach ($fornecedores as $fornecedor): ?>
-                                    <option value="<?php echo h($fornecedor['id_fornecedor']); ?>">
-                                        <?php echo h($fornecedor['nome_empresa'] . ' (' . $fornecedor['tipo_fornecedor'] . ')'); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Próxima etapa</label>
+                                <div class="campo-visualizacao">
+                                    <?php echo $proximaEtapa ? h(texto_estado_processo($proximaEtapa)) : '<span class="text-muted">Sem próxima etapa</span>'; ?>
+                                </div>
+                            </div>
 
-                        <div class="col-md-8">
-                            <label for="observacoesEtapa" class="form-label">Observações da etapa</label>
-                            <input type="text" class="form-control" id="observacoesEtapa" name="observacoesEtapa" placeholder="Ex: Equipamento recolhido pelo fornecedor.">
-                        </div>
+                            <?php if ($proximaEtapa): ?>
+                                <div class="col-md-4">
+                                    <label for="dataEtapa" class="form-label">Data da mudança de etapa</label>
+                                    <input type="date" class="form-control" id="dataEtapa" name="dataEtapa" value="<?php echo date('Y-m-d'); ?>">
+                                </div>
 
-                        <div class="col-md-3">
-                            <label for="dataRecolha" class="form-label">Data de recolha</label>
-                            <input type="date" class="form-control" id="dataRecolha" name="dataRecolha" value="<?php echo valor_data($processo['data_recolha'] ?? null); ?>">
-                        </div>
+                                <div class="col-12">
+                                    <label for="observacoesEtapa" class="form-label">Observações</label>
+                                    <textarea class="form-control" id="observacoesEtapa" name="observacoesEtapa" rows="3" maxlength="500" placeholder="Ex: Equipamento recolhido pelo fornecedor."></textarea>
+                                    <small class="texto-ajuda-form contador-caracteres" data-target="observacoesEtapa" data-max="500">0 / 500 caracteres</small>
+                                </div>
 
-                        <div class="col-md-3">
-                            <label for="dataInicioProcedimento" class="form-label">Início do procedimento</label>
-                            <input type="date" class="form-control" id="dataInicioProcedimento" name="dataInicioProcedimento" value="<?php echo valor_data($processo['data_inicio_procedimento'] ?? null); ?>">
+                                <div class="col-12">
+                                    <button type="submit" form="formAvancarEtapa" class="btn btn-guardar" id="btnAvancarEtapaInterno" data-finalizar="<?php echo $proximaEtapa === 'processo_finalizado' ? '1' : '0'; ?>">
+                                        <?php if ($proximaEtapa === 'processo_finalizado'): ?>
+                                            <i class="fa-solid fa-flag-checkered me-2"></i>Finalizar Processo
+                                        <?php else: ?>
+                                            <i class="fa-solid fa-arrow-right me-2"></i>Avançar Etapa
+                                        <?php endif; ?>
+                                    </button>
+                                </div>
+                            <?php endif; ?>
                         </div>
-
-                        <div class="col-md-3">
-                            <label for="dataFimProcedimento" class="form-label">Fim do procedimento</label>
-                            <input type="date" class="form-control" id="dataFimProcedimento" name="dataFimProcedimento" value="<?php echo valor_data($processo['data_fim_procedimento'] ?? null); ?>">
-                        </div>
-
-                        <div class="col-md-3">
-                            <label for="dataEmissaoRelatorio" class="form-label">Emissão do relatório</label>
-                            <input type="date" class="form-control" id="dataEmissaoRelatorio" name="dataEmissaoRelatorio" value="<?php echo valor_data($processo['data_emissao_relatorio'] ?? null); ?>">
-                        </div>
-                    </div>
+                    </form>
                 </div>
 
                 <div class="tab-pane fade" id="conteudo-dados" role="tabpanel">
                     <div class="secao-ficha-titulo">
-                        <h4>Dados gerais e resultado</h4>
-                        <p>Define execução interna/externa, custo, resultado e próxima intervenção.</p>
+                        <h4>Dados finais</h4>
+                        <p>
+                            <?php if ($ehEncerrado): ?>
+                                Podes editar a descrição do procedimento e as observações. Os restantes campos são apenas de leitura.
+                            <?php else: ?>
+                                Resultado, descrição do procedimento e data de fecho do processo.
+                            <?php endif; ?>
+                        </p>
                     </div>
 
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label for="tipoExecucao" class="form-label">Tipo de execução *</label>
-                            <select class="form-select" id="tipoExecucao" name="tipoExecucao" required>
-                                <option value="externa" <?php echo selected_option($processo['tipo_execucao'], 'externa'); ?>>Externa</option>
-                                <option value="interna" <?php echo selected_option($processo['tipo_execucao'], 'interna'); ?>>Interna</option>
-                            </select>
+                            <label class="form-label">Data de finalização</label>
+                            <?php if ($ehEncerrado): ?>
+                                <div class="campo-visualizacao"><?php echo h(formatar_data($processo['data_finalizacao'] ?? null)); ?></div>
+                            <?php else: ?>
+                                <input type="date" class="form-control" id="dataFinalizacao" name="dataFinalizacao" form="formDadosFinais" value="<?php echo valor_data($processo['data_finalizacao'] ?? null); ?>">
+                            <?php endif; ?>
                         </div>
 
                         <div class="col-md-4">
-                            <label for="idFornecedorResponsavel" class="form-label">Fornecedor responsável</label>
-                            <select class="form-select" id="idFornecedorResponsavel" name="idFornecedorResponsavel">
-                                <option value="">Não aplicável</option>
-                                <?php foreach ($fornecedores as $fornecedor): ?>
-                                    <option value="<?php echo h($fornecedor['id_fornecedor']); ?>" <?php echo selected_option($processo['id_fornecedor_responsavel'], $fornecedor['id_fornecedor']); ?>>
-                                        <?php echo h($fornecedor['nome_empresa'] . ' (' . $fornecedor['tipo_fornecedor'] . ')'); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label for="tecnicoInterno" class="form-label">Técnico interno</label>
-                            <input type="text" class="form-control" id="tecnicoInterno" name="tecnicoInterno" value="<?php echo h($processo['tecnico_interno'] ?? ''); ?>">
-                        </div>
-
-                        <div class="col-md-3">
-                            <label for="dataPrevista" class="form-label">Data prevista</label>
-                            <input type="date" class="form-control" id="dataPrevista" name="dataPrevista" value="<?php echo valor_data($processo['data_prevista'] ?? null); ?>">
-                        </div>
-
-                        <div class="col-md-3">
-                            <label for="dataIntervencao" class="form-label">Data da intervenção</label>
-                            <input type="date" class="form-control" id="dataIntervencao" name="dataIntervencao" value="<?php echo valor_data($dataIntervencao); ?>">
-                        </div>
-
-                        <div class="col-md-3">
-                            <label for="proximaIntervencao" class="form-label">Próxima intervenção</label>
-                            <input type="date" class="form-control" id="proximaIntervencao" name="proximaIntervencao" value="<?php echo valor_data($proximaIntervencao); ?>">
-                        </div>
-
-                        <div class="col-md-3">
-                            <label for="dataFinalizacao" class="form-label">Data de finalização</label>
-                            <input type="date" class="form-control" id="dataFinalizacao" name="dataFinalizacao" value="<?php echo valor_data($processo['data_finalizacao'] ?? null); ?>">
-                        </div>
-
-                        <?php if ($tipo === 'manutencao'): ?>
-                            <div class="col-md-4">
-                                <label for="resultadoManutencao" class="form-label">Resultado da manutenção</label>
-                                <select class="form-select" id="resultadoManutencao" name="resultadoManutencao">
-                                    <option value="">Selecionar</option>
-                                    <option value="realizada" <?php echo selected_option($processo['resultado'], 'realizada'); ?>>Realizada</option>
-                                    <option value="realizada_com_observacoes" <?php echo selected_option($processo['resultado'], 'realizada_com_observacoes'); ?>>Realizada com observações</option>
-                                    <option value="nao_realizada" <?php echo selected_option($processo['resultado'], 'nao_realizada'); ?>>Não realizada</option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-4">
-                                <label for="numeroRelatorio" class="form-label">Número do relatório</label>
-                                <input type="text" class="form-control" id="numeroRelatorio" name="numeroRelatorio" value="<?php echo h($processo['numero_relatorio'] ?? ''); ?>">
-                            </div>
-                        <?php else: ?>
-                            <div class="col-md-4">
-                                <label for="resultadoCalibracao" class="form-label">Resultado da calibração</label>
-                                <select class="form-select" id="resultadoCalibracao" name="resultadoCalibracao">
+                            <label class="form-label">Resultado <?php echo $tipo === 'manutencao' ? 'da manutenção' : 'da calibração'; ?></label>
+                            <?php if ($ehEncerrado): ?>
+                                <div class="campo-visualizacao">
+                                    <?php
+                                        $textoResultados = [
+                                            'aprovado'              => 'Aprovado',
+                                            'aprovado_com_restricoes' => 'Aprovado com restrições',
+                                            'reprovado'             => 'Reprovado',
+                                        ];
+                                        echo h($textoResultados[$processo['resultado'] ?? ''] ?? '---');
+                                    ?>
+                                </div>
+                            <?php else: ?>
+                                <select class="form-select" id="resultadoProcesso" name="resultadoProcesso" form="formDadosFinais">
                                     <option value="">Selecionar</option>
                                     <option value="aprovado" <?php echo selected_option($processo['resultado'], 'aprovado'); ?>>Aprovado</option>
                                     <option value="aprovado_com_restricoes" <?php echo selected_option($processo['resultado'], 'aprovado_com_restricoes'); ?>>Aprovado com restrições</option>
                                     <option value="reprovado" <?php echo selected_option($processo['resultado'], 'reprovado'); ?>>Reprovado</option>
                                 </select>
-                            </div>
-
-                            <div class="col-md-4">
-                                <label for="numeroCertificado" class="form-label">Número do certificado</label>
-                                <input type="text" class="form-control" id="numeroCertificado" name="numeroCertificado" value="<?php echo h($processo['numero_certificado'] ?? ''); ?>">
-                            </div>
-                        <?php endif; ?>
-
-                        <div class="col-md-2">
-                            <label for="cobertaPorGarantia" class="form-label">Garantia?</label>
-                            <select class="form-select" id="cobertaPorGarantia" name="cobertaPorGarantia">
-                                <option value="0" <?php echo selected_option($processo['coberta_por_garantia'], 0); ?>>Não</option>
-                                <option value="1" <?php echo selected_option($processo['coberta_por_garantia'], 1); ?>>Sim</option>
-                            </select>
+                            <?php endif; ?>
                         </div>
 
                         <div class="col-12">
-                            <label for="descricaoProcedimento" class="form-label"><?php echo $tipo === 'manutencao' ? 'Descrição do procedimento' : 'Procedimento de calibração'; ?></label>
-                            <textarea class="form-control" id="descricaoProcedimento" name="descricaoProcedimento" rows="4"><?php echo h($descricaoProcedimento); ?></textarea>
+                            <label for="descricaoProcedimento" class="form-label">Descrição do procedimento</label>
+                            <textarea class="form-control" id="descricaoProcedimento" name="descricaoProcedimento" rows="4" maxlength="2000" form="formDadosFinais"><?php echo h($descricaoProcedimento); ?></textarea>
+                            <small class="texto-ajuda-form contador-caracteres" data-target="descricaoProcedimento" data-max="2000">0 / 2000 caracteres</small>
                         </div>
 
                         <div class="col-12">
-                            <label for="observacoesProcesso" class="form-label">Observações gerais</label>
-                            <textarea class="form-control" id="observacoesProcesso" name="observacoesProcesso" rows="3"><?php echo h($processo['observacoes'] ?? ''); ?></textarea>
+                            <label for="observacoesProcesso" class="form-label">Observações</label>
+                            <textarea class="form-control" id="observacoesProcesso" name="observacoesProcesso" rows="3" maxlength="1000" form="formDadosFinais"><?php echo h($processo['observacoes'] ?? ''); ?></textarea>
+                            <small class="texto-ajuda-form contador-caracteres" data-target="observacoesProcesso" data-max="1000">0 / 1000 caracteres</small>
                         </div>
                     </div>
                 </div>
@@ -1575,17 +1437,28 @@ $descricaoProcedimento = $tipo === 'manutencao' ? ($processo['descricao_procedim
                 <div class="tab-pane fade" id="conteudo-documentos" role="tabpanel">
                     <div class="secao-ficha-titulo">
                         <h4>Relatório ou certificado</h4>
-                        <p>Podes anexar o relatório da manutenção ou o certificado de calibração.</p>
+                        <p>
+                            Podes anexar o relatório da manutenção ou o certificado de calibração.
+                            <?php if (($processo['tipo_execucao'] ?? 'externa') === 'externa'): ?>
+                                <strong class="text-danger">Obrigatório para processos externos.</strong>
+                            <?php endif; ?>
+                        </p>
                     </div>
 
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <label for="nomeDocumento" class="form-label">Nome do documento</label>
-                            <input type="text" class="form-control" id="nomeDocumento" name="nomeDocumento" placeholder="Ex: Relatório de Manutenção Preventiva">
+                            <input type="text" class="form-control" id="nomeDocumento" name="nomeDocumento" form="formDadosFinais" maxlength="255" placeholder="Ex: Relatório de Manutenção Preventiva">
+                            <small class="texto-ajuda-form contador-caracteres" data-target="nomeDocumento" data-max="255">0 / 255 caracteres</small>
                         </div>
                         <div class="col-md-6">
-                            <label for="ficheiroRelatorio" class="form-label">Ficheiro</label>
-                            <input type="file" class="form-control" id="ficheiroRelatorio" name="ficheiroRelatorio" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                            <label for="ficheiroRelatorio" class="form-label">
+                                Ficheiro
+                                <?php if (($processo['tipo_execucao'] ?? 'externa') === 'externa' && empty($documentos)): ?>
+                                    <span class="text-danger">*</span>
+                                <?php endif; ?>
+                            </label>
+                            <input type="file" class="form-control" id="ficheiroRelatorio" name="ficheiroRelatorio" form="formDadosFinais" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
                         </div>
                     </div>
 
@@ -1660,17 +1533,12 @@ $descricaoProcedimento = $tipo === 'manutencao' ? ($processo['descricao_procedim
             </div>
         </div>
 
-        <div class="form-actions mt-4">
-            <a href="calibracao_manutencao.php" class="btn btn-voltar">
-                <i class="fa-solid fa-xmark me-2"></i>
-                Voltar
-            </a>
+    </div>
 
-            <button type="submit" class="btn btn-guardar">
-                <i class="fa-solid fa-floppy-disk me-2"></i>
-                Guardar Processo
-            </button>
-        </div>
+    <form id="formDadosFinais" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="acao" value="guardar_dados_finais">
+        <input type="hidden" name="tipo" value="<?php echo h($tipo); ?>">
+        <input type="hidden" name="id" value="<?php echo h($id); ?>">
     </form>
 
     <?php else: ?>
@@ -1687,70 +1555,6 @@ $descricaoProcedimento = $tipo === 'manutencao' ? ($processo['descricao_procedim
         </div>
     <?php endif; ?>
 </main>
-
-<style>
-.processo-timeline {
-    position: relative;
-    display: grid;
-    gap: 18px;
-    margin-left: 10px;
-}
-.processo-timeline-item {
-    position: relative;
-    padding-left: 34px;
-}
-.processo-timeline-item::before {
-    content: "";
-    position: absolute;
-    left: 9px;
-    top: 18px;
-    bottom: -22px;
-    width: 2px;
-    background: #d6ece8;
-}
-.processo-timeline-item:last-child::before {
-    display: none;
-}
-.processo-timeline-ponto {
-    position: absolute;
-    left: 0;
-    top: 8px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--cor-secundaria);
-    box-shadow: 0 0 0 5px rgba(79, 179, 164, 0.16);
-}
-.processo-timeline-conteudo {
-    background: #f8fbfb;
-    border: 1px solid #d6ece8;
-    border-radius: 16px;
-    padding: 16px 18px;
-}
-.processo-timeline-conteudo h5 {
-    color: var(--cor-principal);
-    font-weight: 900;
-    margin-bottom: 6px;
-}
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const garantia = document.getElementById('cobertaPorGarantia');
-    const tipoExecucao = document.getElementById('tipoExecucao');
-    const fornecedor = document.getElementById('idFornecedorResponsavel');
-    const tecnico = document.getElementById('tecnicoInterno');
-
-    function atualizarExecucao() {
-        if (!tipoExecucao || !fornecedor || !tecnico) return;
-        fornecedor.required = tipoExecucao.value === 'externa';
-        tecnico.required = tipoExecucao.value === 'interna';
-    }
-
-    tipoExecucao?.addEventListener('change', atualizarExecucao);
-    atualizarExecucao();
-});
-</script>
 
 <?php
 require_once __DIR__ . '/../../includes/footer.php';

@@ -175,8 +175,24 @@ function guardar_documentos_equipamento($pdo, $idEquipamento, $codigoEquipamento
         $dataDocumento = obter_valor_array_post('dataDocumento', $indice);
         $dataValidade = obter_valor_array_post('dataValidadeDocumento', $indice);
 
+        $tiposEngenheiro = ['manual_instrucoes', 'ficha_tecnica', 'certificado_calibracao', 'declaracao_conformidade'];
+        $tiposProibidos  = ['fotografia'];
+
+        if (in_array($tipoDocumento, $tiposProibidos, true)) {
+            continue;
+        }
+
+        $tipoUtilizadorDoc = $_SESSION['tipo_utilizador'] ?? '';
+        if ($tipoUtilizadorDoc === 'Engenheiro' && $tipoDocumento !== '' && !in_array($tipoDocumento, $tiposEngenheiro, true)) {
+            continue;
+        }
+
         if ($tipoDocumento === '') {
             $tipoDocumento = 'outro';
+        }
+
+        if ($dataDocumento === '') {
+            throw new RuntimeException('A data do documento é obrigatória em todos os documentos submetidos.');
         }
 
         if ($nomeDocumento === '') {
@@ -222,7 +238,7 @@ $familiasEquipamento = $pdo->query("
 ")->fetchAll();
 
 $localizacoes = $pdo->query("
-    SELECT id_localizacao, codigo, departamento_nome, edificio, piso, sala
+    SELECT id_localizacao, codigo, departamento_nome, departamento_sigla, edificio, piso, sala
     FROM localizacoes
     WHERE isActive = 1
     ORDER BY codigo ASC
@@ -234,6 +250,22 @@ $fornecedoresGarantia = $pdo->query("
     WHERE isActive = 1
       AND tipo_fornecedor IN ('Fabricante', 'Comercial', 'Manutenção')
     ORDER BY nome_empresa ASC
+")->fetchAll();
+
+$fornecedores = $pdo->query("
+    SELECT id_fornecedor, nome_empresa, tipo_fornecedor
+    FROM fornecedores
+    WHERE isActive = 1
+      AND tipo_fornecedor IN ('Fabricante', 'Comercial')
+    ORDER BY nome_empresa ASC
+")->fetchAll();
+
+$utilizadoresEngenheiros = $pdo->query("
+    SELECT id_utilizador, nome
+    FROM utilizadores
+    WHERE isActive = 1
+      AND tipo_utilizador = 'Engenheiro'
+    ORDER BY nome ASC
 ")->fetchAll();
 
 
@@ -268,6 +300,7 @@ $camposPorEtapa = [
         'idFamiliaEquipamento',
         'nomeEquipamento',
         'modelo',
+        'marca',
         'numeroSerie',
         'tipoEntrada'
     ],
@@ -277,7 +310,7 @@ $camposPorEtapa = [
         'criticidade',
         'periodicidadeManutencao',
         'periodicidadeCalibracao',
-        'responsavelEquipamento'
+        'idResponsavel'
     ],
     'aquisicao' => [
         'valorAquisicao',
@@ -286,9 +319,9 @@ $camposPorEtapa = [
         'dataInstalacao'
     ],
     'fornecedores' => [
+        'idFornecedorGarantia',
         'dataInicioGarantia',
-        'dataFimGarantia',
-        'observacoesFornecedor'
+        'dataFimGarantia'
     ],
     'observacoes' => [
         'observacoes'
@@ -301,14 +334,22 @@ $camposObrigatorios = [
         'idFamiliaEquipamento',
         'nomeEquipamento',
         'modelo',
-        'numeroSerie'
+        'marca',
+        'numeroSerie',
+        'tipoEntrada'
     ],
     'estado_localizacao' => [
         'idLocalizacao',
         'estado',
-        'criticidade'
+        'criticidade',
+        'periodicidadeManutencao',
+        'periodicidadeCalibracao',
+        'idResponsavel'
     ],
-    'aquisicao' => [],
+    'aquisicao' => [
+        'dataAquisicao',
+        'dataInstalacao'
+    ],
     'observacoes' => [],
     'documentos' => []
 ];
@@ -318,10 +359,60 @@ $labelsCampos = [
     'nomeEquipamento' => 'Designação do equipamento',
     'modelo' => 'Modelo',
     'numeroSerie' => 'Número de série',
+    'marca' => 'Marca',
+    'tipoEntrada' => 'Tipo de entrada',
     'idLocalizacao' => 'Localização',
     'estado' => 'Estado',
     'criticidade' => 'Criticidade',
+    'periodicidadeManutencao' => 'Periodicidade de manutenção',
+    'periodicidadeCalibracao' => 'Periodicidade de calibração',
+    'idResponsavel' => 'Responsável pelo equipamento',
+    'dataAquisicao' => 'Data de aquisição',
+    'dataInstalacao' => 'Data de instalação',
+    'idFornecedorGarantia' => 'Fornecedor',
+    'dataInicioGarantia' => 'Início da garantia',
+    'dataFimGarantia' => 'Fim da garantia',
 ];
+
+function validar_ordem_datas_garantia($chaveSessao)
+{
+    $erros = [];
+    $dados = $_SESSION[$chaveSessao] ?? [];
+
+    $dataFabrico      = $dados['dataFabrico'] ?? '';
+    $dataInicioGarantia = $dados['dataInicioGarantia'] ?? '';
+    $dataFimGarantia  = $dados['dataFimGarantia'] ?? '';
+
+    if ($dataFabrico !== '' && $dataInicioGarantia !== '' && $dataInicioGarantia < $dataFabrico) {
+        $erros[] = 'O início da garantia não pode ser anterior à data de fabrico.';
+    }
+
+    if ($dataInicioGarantia !== '' && $dataFimGarantia !== '' && $dataFimGarantia < $dataInicioGarantia) {
+        $erros[] = 'O fim da garantia não pode ser anterior ao início da garantia.';
+    }
+
+    return $erros;
+}
+
+function validar_ordem_datas_aquisicao($chaveSessao)
+{
+    $erros = [];
+    $dados = $_SESSION[$chaveSessao] ?? [];
+
+    $dataFabrico   = $dados['dataFabrico'] ?? '';
+    $dataAquisicao = $dados['dataAquisicao'] ?? '';
+    $dataInstalacao = $dados['dataInstalacao'] ?? '';
+
+    if ($dataFabrico !== '' && $dataAquisicao !== '' && $dataAquisicao < $dataFabrico) {
+        $erros[] = 'A data de aquisição não pode ser anterior à data de fabrico.';
+    }
+
+    if ($dataAquisicao !== '' && $dataInstalacao !== '' && $dataInstalacao < $dataAquisicao) {
+        $erros[] = 'A data de instalação não pode ser anterior à data de aquisição.';
+    }
+
+    return $erros;
+}
 
 $errosEquipamento = [];
 
@@ -402,6 +493,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errosEquipamento)) {
         $errosEquipamento = validar_etapa_temporaria($chaveSessao, $etapaSubmetida, $camposObrigatorios, $labelsCampos);
 
+        if (empty($errosEquipamento) && $etapaSubmetida === 'aquisicao') {
+            $errosEquipamento = validar_ordem_datas_aquisicao($chaveSessao);
+        }
+
+        if (empty($errosEquipamento) && $etapaSubmetida === 'fornecedores') {
+            $errosEquipamento = validar_ordem_datas_garantia($chaveSessao);
+        }
+
         if (!empty($errosEquipamento)) {
             $etapaAtual = $etapaSubmetida;
         } else {
@@ -422,6 +521,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $errosEquipamento = $errosEtapa;
                 $etapaAtual = $etapa;
                 break;
+            }
+        }
+
+        if (empty($errosEquipamento)) {
+            $errosEquipamento = validar_ordem_datas_aquisicao($chaveSessao);
+            if (!empty($errosEquipamento)) {
+                $etapaAtual = 'aquisicao';
+            }
+        }
+
+        if (empty($errosEquipamento)) {
+            $errosEquipamento = validar_ordem_datas_garantia($chaveSessao);
+            if (!empty($errosEquipamento)) {
+                $etapaAtual = 'fornecedores';
             }
         }
     }
@@ -450,6 +563,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     codigo_equipamento,
                     designacao,
                     modelo,
+                    marca,
                     numero_serie,
                     tipo_entrada,
                     valor_aquisicao,
@@ -461,7 +575,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     data_fabrico,
                     data_aquisicao,
                     data_instalacao,
-                    responsavel_equipamento,
+                    id_responsavel,
                     observacoes,
                     isActive,
                     atualizado_por
@@ -471,6 +585,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     :codigo_equipamento,
                     :designacao,
                     :modelo,
+                    :marca,
                     :numero_serie,
                     :tipo_entrada,
                     :valor_aquisicao,
@@ -482,7 +597,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     :data_fabrico,
                     :data_aquisicao,
                     :data_instalacao,
-                    :responsavel_equipamento,
+                    :id_responsavel,
                     :observacoes,
                     1,
                     :atualizado_por
@@ -495,6 +610,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':codigo_equipamento' => $codigoEquipamento['codigo_equipamento'],
                 ':designacao' => trim($dadosEquipamento['nomeEquipamento'] ?? ''),
                 ':modelo' => trim($dadosEquipamento['modelo'] ?? ''),
+                ':marca' => trim($dadosEquipamento['marca'] ?? '') ?: null,
                 ':numero_serie' => trim($dadosEquipamento['numeroSerie'] ?? ''),
                 ':tipo_entrada' => trim($dadosEquipamento['tipoEntrada'] ?? '') ?: null,
                 ':valor_aquisicao' => $isEngenheiro ? null : decimal_novo_equipamento('valorAquisicao'),
@@ -506,7 +622,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':data_fabrico' => data_novo_equipamento('dataFabrico'),
                 ':data_aquisicao' => data_novo_equipamento('dataAquisicao'),
                 ':data_instalacao' => data_novo_equipamento('dataInstalacao'),
-                ':responsavel_equipamento' => trim($dadosEquipamento['responsavelEquipamento'] ?? '') ?: null,
+                ':id_responsavel' => !empty($dadosEquipamento['idResponsavel']) ? (int) $dadosEquipamento['idResponsavel'] : null,
                 ':observacoes' => trim($dadosEquipamento['observacoes'] ?? '') ?: null,
                 ':atualizado_por' => $_SESSION['nome'] ?? $_SESSION['username'] ?? 'sistema'
             ]);
@@ -755,22 +871,31 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                         <div class="col-md-4">
                             <label for="nomeEquipamento" class="form-label">Designação *</label>
-                            <input type="text" class="form-control" id="nomeEquipamento" name="nomeEquipamento" value="<?php echo valor_novo_equipamento('nomeEquipamento'); ?>" required placeholder="Ex: Bomba Infusora Volumétrica">
+                            <input type="text" class="form-control" id="nomeEquipamento" name="nomeEquipamento" value="<?php echo valor_novo_equipamento('nomeEquipamento'); ?>" required placeholder="Ex: Bomba Infusora Volumétrica" maxlength="150">
+                            <small class="texto-ajuda-form contador-caracteres" data-target="nomeEquipamento" data-max="150">0 / 150 caracteres</small>
                         </div>
 
                         <div class="col-md-4">
                             <label for="modelo" class="form-label">Modelo *</label>
-                            <input type="text" class="form-control" id="modelo" name="modelo" value="<?php echo valor_novo_equipamento('modelo'); ?>" required placeholder="Ex: Infusomat Space">
+                            <input type="text" class="form-control" id="modelo" name="modelo" value="<?php echo valor_novo_equipamento('modelo'); ?>" required placeholder="Ex: Infusomat Space" maxlength="120">
+                            <small class="texto-ajuda-form contador-caracteres" data-target="modelo" data-max="120">0 / 120 caracteres</small>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="marca" class="form-label">Marca *</label>
+                            <input type="text" class="form-control" id="marca" name="marca" value="<?php echo valor_novo_equipamento('marca'); ?>" required placeholder="Ex: Philips" maxlength="30">
+                            <small class="texto-ajuda-form contador-caracteres" data-target="marca" data-max="30">0 / 30 caracteres</small>
                         </div>
 
                         <div class="col-md-4">
                             <label for="numeroSerie" class="form-label">Número de Série *</label>
-                            <input type="text" class="form-control" id="numeroSerie" name="numeroSerie" value="<?php echo valor_novo_equipamento('numeroSerie'); ?>" required placeholder="Ex: SN-INF-001">
+                            <input type="text" class="form-control" id="numeroSerie" name="numeroSerie" value="<?php echo valor_novo_equipamento('numeroSerie'); ?>" required placeholder="Ex: SN-INF-001" maxlength="120">
+                            <small class="texto-ajuda-form contador-caracteres" data-target="numeroSerie" data-max="120">0 / 120 caracteres</small>
                         </div>
 
                         <div class="col-md-4">
-                            <label for="tipoEntrada" class="form-label">Tipo de Entrada</label>
-                            <select class="form-select" id="tipoEntrada" name="tipoEntrada">
+                            <label for="tipoEntrada" class="form-label">Tipo de Entrada *</label>
+                            <select class="form-select" id="tipoEntrada" name="tipoEntrada" required>
                                 <option value="">Selecionar tipo</option>
                                 <option value="compra" <?php echo selected_novo_equipamento('tipoEntrada', 'compra'); ?>>Compra</option>
                                 <option value="doacao" <?php echo selected_novo_equipamento('tipoEntrada', 'doacao'); ?>>Doação</option>
@@ -791,17 +916,45 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                     <div class="row g-4">
 
+                        <?php
+                        $localizacaoTexto = '';
+                        $idLocalizacaoAtual = valor_novo_equipamento('idLocalizacao');
+                        foreach ($localizacoes as $loc) {
+                            if ((string) $idLocalizacaoAtual === (string) $loc['id_localizacao']) {
+                                $localizacaoTexto = $loc['departamento_nome'] . ' - Sala ' . $loc['sala'];
+                                break;
+                            }
+                        }
+                        ?>
                         <div class="col-md-8">
-                            <label for="idLocalizacao" class="form-label">Localização *</label>
-                            <select class="form-select" id="idLocalizacao" name="idLocalizacao" required>
-                                <option value="">Selecionar localização</option>
+                            <label for="localizacaoPesquisa" class="form-label">Localização *</label>
+                            <div class="campo-pesquisa-registo">
+                                <input type="text"
+                                    class="form-control pesquisa-registo-custom"
+                                    id="localizacaoPesquisa"
+                                    data-hidden-target="idLocalizacao"
+                                    data-lista-target="listaLocalizacoes"
+                                    value="<?php echo h_novo_equipamento($localizacaoTexto); ?>"
+                                    placeholder="Pesquisar localização"
+                                    autocomplete="off">
 
-                                <?php foreach ($localizacoes as $localizacao): ?>
-                                    <option value="<?php echo h_novo_equipamento($localizacao['id_localizacao']); ?>" <?php echo selected_novo_equipamento('idLocalizacao', $localizacao['id_localizacao']); ?>>
-                                        <?php echo h_novo_equipamento($localizacao['codigo'] . ' | ' . $localizacao['departamento_nome'] . ' - ' . $localizacao['edificio'] . ' - Piso ' . $localizacao['piso'] . ' - Sala ' . $localizacao['sala']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                                <input type="hidden"
+                                    id="idLocalizacao"
+                                    name="idLocalizacao"
+                                    value="<?php echo h_novo_equipamento($idLocalizacaoAtual); ?>">
+
+                                <div class="lista-registos-custom" id="listaLocalizacoes">
+                                    <?php foreach ($localizacoes as $loc): ?>
+                                        <button type="button"
+                                                class="opcao-registo-custom"
+                                                data-id="<?php echo h_novo_equipamento($loc['id_localizacao']); ?>"
+                                                data-texto="<?php echo h_novo_equipamento($loc['departamento_nome'] . ' - Sala ' . $loc['sala']); ?>">
+                                            <span><?php echo h_novo_equipamento($loc['departamento_nome'] . ' - Sala ' . $loc['sala']); ?></span>
+                                            <small><?php echo h_novo_equipamento($loc['departamento_sigla']); ?></small>
+                                        </button>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="col-md-4">
@@ -841,8 +994,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="col-md-4">
-                            <label for="periodicidadeManutencao" class="form-label">Periodicidade de Manutenção</label>
-                            <select class="form-select" id="periodicidadeManutencao" name="periodicidadeManutencao">
+                            <label for="periodicidadeManutencao" class="form-label">Periodicidade de Manutenção *</label>
+                            <select class="form-select" id="periodicidadeManutencao" name="periodicidadeManutencao" required>
                                 <option value="">Selecionar periodicidade</option>
                                 <option value="semestral" <?php echo selected_novo_equipamento('periodicidadeManutencao', 'semestral'); ?>>Semestral</option>
                                 <option value="anual" <?php echo selected_novo_equipamento('periodicidadeManutencao', 'anual'); ?>>Anual</option>
@@ -852,8 +1005,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="col-md-4">
-                            <label for="periodicidadeCalibracao" class="form-label">Periodicidade de Calibração</label>
-                            <select class="form-select" id="periodicidadeCalibracao" name="periodicidadeCalibracao">
+                            <label for="periodicidadeCalibracao" class="form-label">Periodicidade de Calibração *</label>
+                            <select class="form-select" id="periodicidadeCalibracao" name="periodicidadeCalibracao" required>
                                 <option value="">Selecionar periodicidade</option>
                                 <option value="semestral" <?php echo selected_novo_equipamento('periodicidadeCalibracao', 'semestral'); ?>>Semestral</option>
                                 <option value="anual" <?php echo selected_novo_equipamento('periodicidadeCalibracao', 'anual'); ?>>Anual</option>
@@ -862,9 +1015,45 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </select>
                         </div>
 
+                        <?php
+                        $idResponsavelAtual = valor_novo_equipamento('idResponsavel');
+                        $responsavelTexto = '';
+                        foreach ($utilizadoresEngenheiros as $eng) {
+                            if ((string) $idResponsavelAtual === (string) $eng['id_utilizador']) {
+                                $responsavelTexto = $eng['nome'];
+                                break;
+                            }
+                        }
+                        ?>
                         <div class="col-md-4">
-                            <label for="responsavelEquipamento" class="form-label">Responsável pelo Equipamento</label>
-                            <input type="text" class="form-control" id="responsavelEquipamento" name="responsavelEquipamento" value="<?php echo valor_novo_equipamento('responsavelEquipamento'); ?>" placeholder="Ex: Eng. Gonçalo">
+                            <label for="responsavelPesquisa" class="form-label">Responsável pelo Equipamento *</label>
+                            <div class="campo-pesquisa-registo">
+                                <input type="text"
+                                    class="form-control pesquisa-registo-custom"
+                                    id="responsavelPesquisa"
+                                    data-hidden-target="idResponsavel"
+                                    data-lista-target="listaResponsaveis"
+                                    value="<?php echo h_novo_equipamento($responsavelTexto); ?>"
+                                    placeholder="Pesquisar engenheiro responsável"
+                                    autocomplete="off">
+
+                                <input type="hidden"
+                                    id="idResponsavel"
+                                    name="idResponsavel"
+                                    value="<?php echo h_novo_equipamento($idResponsavelAtual); ?>">
+
+                                <div class="lista-registos-custom" id="listaResponsaveis">
+                                    <?php foreach ($utilizadoresEngenheiros as $eng): ?>
+                                        <button type="button"
+                                                class="opcao-registo-custom"
+                                                data-id="<?php echo h_novo_equipamento($eng['id_utilizador']); ?>"
+                                                data-texto="<?php echo h_novo_equipamento($eng['nome']); ?>">
+                                            <span><?php echo h_novo_equipamento($eng['nome']); ?></span>
+                                            <small>Engenheiro</small>
+                                        </button>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
                         </div>
 
                     </div>
@@ -898,17 +1087,17 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                         <div class="col-md-3">
                             <label for="dataFabrico" class="form-label">Data de Fabrico</label>
-                            <input type="date" class="form-control" id="dataFabrico" name="dataFabrico" value="<?php echo valor_novo_equipamento('dataFabrico'); ?>">
+                            <input type="date" class="form-control" id="dataFabrico" name="dataFabrico" value="<?php echo valor_novo_equipamento('dataFabrico'); ?>" autocomplete="off">
                         </div>
 
                         <div class="col-md-3">
-                            <label for="dataAquisicao" class="form-label">Data de Aquisição</label>
-                            <input type="date" class="form-control" id="dataAquisicao" name="dataAquisicao" value="<?php echo valor_novo_equipamento('dataAquisicao'); ?>">
+                            <label for="dataAquisicao" class="form-label">Data de Aquisição *</label>
+                            <input type="date" class="form-control" id="dataAquisicao" name="dataAquisicao" value="<?php echo valor_novo_equipamento('dataAquisicao'); ?>" required autocomplete="off">
                         </div>
 
                         <div class="col-md-3">
-                            <label for="dataInstalacao" class="form-label">Data de Instalação</label>
-                            <input type="date" class="form-control" id="dataInstalacao" name="dataInstalacao" value="<?php echo valor_novo_equipamento('dataInstalacao'); ?>">
+                            <label for="dataInstalacao" class="form-label">Data de Instalação *</label>
+                            <input type="date" class="form-control" id="dataInstalacao" name="dataInstalacao" value="<?php echo valor_novo_equipamento('dataInstalacao'); ?>" required autocomplete="off">
                         </div>
 
                     </div>
@@ -925,29 +1114,34 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <div class="row g-4">
 
                         <?php
-                        $fornecedorGarantiaTexto = '';
-
-                        foreach ($fornecedoresGarantia as $fornecedor) {
-                            if ((string) valor_novo_equipamento('idFornecedorGarantia') === (string) $fornecedor['id_fornecedor']) {
-                                $fornecedorGarantiaTexto = $fornecedor['nome_empresa'] . ' (' . $fornecedor['tipo_fornecedor'] . ')';
+                        $fornecedorTexto = '';
+                        foreach ($fornecedores as $forn) {
+                            if ((string) valor_novo_equipamento('idFornecedorGarantia') === (string) $forn['id_fornecedor']) {
+                                $fornecedorTexto = $forn['nome_empresa'] . ' (' . $forn['tipo_fornecedor'] . ')';
                                 break;
                             }
                         }
                         ?>
 
                         <div class="col-md-6">
-                            <label for="fornecedorGarantiaPesquisa" class="form-label">
-                                Fornecedor responsável pela garantia
-                            </label>
-
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label for="fornecedorPesquisa" class="form-label mb-0">Fornecedor *</label>
+                                <button type="button"
+                                        class="btn btn-sm btn-adicionar py-0 px-2"
+                                        title="Adicionar novo fornecedor"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalNovoFornecedor">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
                             <div class="campo-pesquisa-registo">
                                 <input type="text"
                                     class="form-control pesquisa-registo-custom"
-                                    id="fornecedorGarantiaPesquisa"
+                                    id="fornecedorPesquisa"
                                     data-hidden-target="idFornecedorGarantia"
-                                    data-lista-target="listaFornecedoresGarantia"
-                                    value="<?php echo h_novo_equipamento($fornecedorGarantiaTexto); ?>"
-                                    placeholder="Pesquisar e selecionar fornecedor"
+                                    data-lista-target="listaFornecedores"
+                                    value="<?php echo h_novo_equipamento($fornecedorTexto); ?>"
+                                    placeholder="Pesquisar fabricante ou comercial"
                                     autocomplete="off">
 
                                 <input type="hidden"
@@ -955,14 +1149,14 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     name="idFornecedorGarantia"
                                     value="<?php echo valor_novo_equipamento('idFornecedorGarantia'); ?>">
 
-                                <div class="lista-registos-custom" id="listaFornecedoresGarantia">
-                                    <?php foreach ($fornecedoresGarantia as $fornecedor): ?>
+                                <div class="lista-registos-custom" id="listaFornecedores">
+                                    <?php foreach ($fornecedores as $forn): ?>
                                         <button type="button"
                                                 class="opcao-registo-custom"
-                                                data-id="<?php echo h_novo_equipamento($fornecedor['id_fornecedor']); ?>"
-                                                data-texto="<?php echo h_novo_equipamento($fornecedor['nome_empresa'] . ' (' . $fornecedor['tipo_fornecedor'] . ')'); ?>">
-                                            <span><?php echo h_novo_equipamento($fornecedor['nome_empresa']); ?></span>
-                                            <small><?php echo h_novo_equipamento($fornecedor['tipo_fornecedor']); ?></small>
+                                                data-id="<?php echo h_novo_equipamento($forn['id_fornecedor']); ?>"
+                                                data-texto="<?php echo h_novo_equipamento($forn['nome_empresa'] . ' (' . $forn['tipo_fornecedor'] . ')'); ?>">
+                                            <span><?php echo h_novo_equipamento($forn['nome_empresa']); ?></span>
+                                            <small><?php echo h_novo_equipamento($forn['tipo_fornecedor']); ?></small>
                                         </button>
                                     <?php endforeach; ?>
                                 </div>
@@ -970,18 +1164,13 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="col-md-3">
-                            <label for="dataInicioGarantia" class="form-label">Início da Garantia</label>
-                            <input type="date" class="form-control" id="dataInicioGarantia" name="dataInicioGarantia" value="<?php echo valor_novo_equipamento('dataInicioGarantia'); ?>">
+                            <label for="dataInicioGarantia" class="form-label">Início da Garantia *</label>
+                            <input type="date" class="form-control" id="dataInicioGarantia" name="dataInicioGarantia" value="<?php echo valor_novo_equipamento('dataInicioGarantia'); ?>" required autocomplete="off">
                         </div>
 
                         <div class="col-md-3">
-                            <label for="dataFimGarantia" class="form-label">Fim da Garantia</label>
-                            <input type="date" class="form-control" id="dataFimGarantia" name="dataFimGarantia" value="<?php echo valor_novo_equipamento('dataFimGarantia'); ?>">
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="observacoesFornecedor" class="form-label">Observações da Garantia/Fornecedores</label>
-                            <input type="text" class="form-control" id="observacoesFornecedor" name="observacoesFornecedor" value="<?php echo valor_novo_equipamento('observacoesFornecedor'); ?>" placeholder="Ex: Garantia assegurada pelo fornecedor comercial durante 3 anos.">
+                            <label for="dataFimGarantia" class="form-label">Fim da Garantia *</label>
+                            <input type="date" class="form-control" id="dataFimGarantia" name="dataFimGarantia" value="<?php echo valor_novo_equipamento('dataFimGarantia'); ?>" required autocomplete="off">
                         </div>
 
                     </div>
@@ -1023,16 +1212,21 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     <select class="form-select" name="tipoDocumento[]">
                                         <option value="">Selecionar tipo</option>
                                         <option value="manual_instrucoes">Manual de Instruções</option>
+                                        <?php if (!$isEngenheiro): ?>
                                         <option value="datasheet">Datasheet</option>
                                         <option value="contrato">Contrato</option>
                                         <option value="garantia">Documento de Garantia</option>
+                                        <?php endif; ?>
                                         <option value="certificado_calibracao">Certificado de Calibração</option>
+                                        <?php if (!$isEngenheiro): ?>
                                         <option value="relatorio_calibracao">Relatório de Calibração</option>
                                         <option value="relatorio_manutencao">Relatório de Manutenção</option>
+                                        <?php endif; ?>
                                         <option value="ficha_tecnica">Ficha Técnica</option>
                                         <option value="declaracao_conformidade">Declaração de Conformidade</option>
-                                        <option value="fotografia">Fotografia</option>
+                                        <?php if (!$isEngenheiro): ?>
                                         <option value="outro">Outro</option>
+                                        <?php endif; ?>
                                     </select>
                                 </div>
 
@@ -1042,8 +1236,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 </div>
 
                                 <div class="col-md-2">
-                                    <label class="form-label">Data do Documento</label>
-                                    <input type="date" class="form-control" name="dataDocumento[]">
+                                    <label class="form-label">Data do Documento *</label>
+                                    <input type="date" class="form-control" name="dataDocumento[]" autocomplete="off">
                                 </div>
 
                                 <div class="col-md-2">
@@ -1070,6 +1264,118 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
     </form>
 </main>
+
+<!-- =========================================================
+     MODAL NOVO FORNECEDOR
+     ========================================================= -->
+<div class="modal fade" id="modalNovoFornecedor" tabindex="-1" aria-labelledby="modalNovoFornecedorLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalNovoFornecedorLabel">
+                    <i class="fa-solid fa-truck-medical me-2"></i> Novo Fornecedor
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <div id="modalFornecedorErros" class="form-alerta-erros d-none" role="alert">
+                    <strong><i class="fa-solid fa-triangle-exclamation me-2"></i> Corrija os erros antes de guardar.</strong>
+                    <ul id="modalFornecedorListaErros" class="mb-0 mt-2"></ul>
+                </div>
+
+                <!-- IDENTIFICAÇÃO -->
+                <h6 class="secao-ficha-titulo mt-2">Identificação</h6>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-8">
+                        <label class="form-label">Nome do Fornecedor *</label>
+                        <input type="text" class="form-control" id="mf_nome" placeholder="Ex: Philips Healthcare" autocomplete="off">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">NIF *</label>
+                        <input type="text" class="form-control" id="mf_nif" placeholder="Ex: 514987321" maxlength="9" inputmode="numeric" autocomplete="off">
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">Tipo de Fornecedor *</label>
+                        <select class="form-select" id="mf_tipo">
+                            <option value="">Selecionar tipo</option>
+                            <option value="Fabricante">Fabricante</option>
+                            <option value="Comercial">Comercial</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Estado *</label>
+                        <select class="form-select" id="mf_estado">
+                            <option value="">Selecionar estado</option>
+                            <option value="Ativo">Ativo</option>
+                            <option value="Inativo">Inativo</option>
+                            <option value="Em avaliação">Em avaliação</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- CONTACTOS -->
+                <h6 class="secao-ficha-titulo">Contactos</h6>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Telefone *</label>
+                        <input type="text" class="form-control" id="mf_telefone" placeholder="Ex: 221234567" maxlength="9" inputmode="numeric" autocomplete="off">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Email do Fornecedor</label>
+                        <input type="email" class="form-control" id="mf_email_fornecedor" placeholder="Ex: geral@fornecedor.pt" autocomplete="off">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Pessoa Responsável</label>
+                        <input type="text" class="form-control" id="mf_contacto_responsavel" placeholder="Ex: Ana Martins" autocomplete="off">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Telefone do Contacto</label>
+                        <input type="text" class="form-control" id="mf_telefone_contacto" placeholder="Ex: 912345678" maxlength="9" inputmode="numeric" autocomplete="off">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Email do Contacto</label>
+                        <input type="email" class="form-control" id="mf_email_contacto" placeholder="Ex: tecnico@fornecedor.pt" autocomplete="off">
+                    </div>
+                </div>
+
+                <!-- MORADA -->
+                <h6 class="secao-ficha-titulo">Morada</h6>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Morada *</label>
+                        <input type="text" class="form-control" id="mf_morada" placeholder="Ex: Rua da Tecnologia, nº 120" autocomplete="off">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Código Postal *</label>
+                        <input type="text" class="form-control" id="mf_codigo_postal" placeholder="Ex: 4000-000" autocomplete="off">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Localidade *</label>
+                        <input type="text" class="form-control" id="mf_localidade" placeholder="Ex: Porto" autocomplete="off">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">País *</label>
+                        <input type="text" class="form-control" id="mf_pais" value="Portugal" autocomplete="off">
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancelar-modal" data-bs-dismiss="modal">
+                    <i class="fa-solid fa-xmark me-2"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-guardar" id="btnGuardarFornecedor">
+                    <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Fornecedor
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
 
 <?php
 require_once __DIR__ . '/../../includes/footer.php';

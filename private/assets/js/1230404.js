@@ -1,4 +1,4 @@
-﻿// JavaScript Gonçalo Brito 1230404
+// JavaScript Gonçalo Brito 1230404
 // Funcionalidades da Área privada MEDICORE
 
 function $(id) {
@@ -312,7 +312,6 @@ function inicializarPopovers() {
 
 document.addEventListener("DOMContentLoaded", function () {
     inicializarPopovers();
-    inicializarCriticidade();
     inicializarDocumentosEquipamento();
 });
 
@@ -1792,12 +1791,145 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    setTimeout(function () {
+        var placeholders = {
+            "tabela-fornecedores": "Fornecedor, tipo, localidade, estado…",
+            "tabela-manutencoes-abertas": "Código, equipamento, procedimento, estado…",
+            "tabela-calibracoes-abertas": "Código, equipamento, procedimento, estado…",
+            "tabela-processos-encerrados": "Código, alvo, procedimento, execução, responsável, estado…",
+            "tabela-transferencias": "Código, equipamento, origem, destino, pedido por, estado…",
+            "tabela-emprestimos": "Código, equipamento, destino, responsável, devolução, estado…",
+            "tabela-avarias": "Código, equipamento, acessório, reportado por, estado…",
+            "tabelaAcessoriosBD": "Código, acessório, tipo, estado, manutenção, calibração…"
+        };
+
+        /* Alargar barras de pesquisa para caber o texto completo do placeholder */
+        ["tabela-emprestimos", "tabela-avarias"].forEach(function (id) {
+            var tabela = document.getElementById(id);
+            if (!tabela) return;
+            var wrapper = tabela.closest(".dataTables_wrapper");
+            if (!wrapper) return;
+            var input = wrapper.querySelector("input[type='search']");
+            if (input) input.style.minWidth = "360px";
+        });
+
+        (function () {
+            var tabela = document.getElementById("tabelaAcessoriosBD");
+            if (!tabela) return;
+            var wrapper = tabela.closest(".dataTables_wrapper");
+            if (!wrapper) return;
+            var input = wrapper.querySelector("input[type='search']");
+            if (input) input.style.minWidth = "460px";
+        })();
+
+        Object.keys(placeholders).forEach(function (id) {
+            var tabela = document.getElementById(id);
+            if (!tabela) return;
+            var wrapper = tabela.closest(".dataTables_wrapper");
+            if (!wrapper) return;
+            var input = wrapper.querySelector("input[type='search']");
+            if (input) input.placeholder = placeholders[id];
+        });
+    }, 300);
+
     document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(function (tab) {
         tab.addEventListener("shown.bs.tab", function () {
             jQuery.fn.dataTable
                 .tables({ visible: true, api: true })
                 .columns.adjust();
         });
+    });
+});
+
+/* =========================================================
+   MODAL NOVO PROCESSO TÉCNICO
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+    var modal = document.getElementById("modalNovoProcesso");
+    if (!modal) return;
+
+    var tipoExecucaoSel    = document.getElementById("tipoExecucao");
+    var campoFornecedor    = document.getElementById("campoFornecedorProcesso");
+    var campoTecnico       = document.getElementById("campoTecnicoInternoProcesso");
+    var campoCoberta       = document.getElementById("campoCobertaGarantiaProcesso");
+    var cobertaSel         = document.getElementById("cobertaPorGarantia");
+    var dataPrevistaInput  = document.getElementById("dataPrevista");
+
+    if (dataPrevistaInput) {
+        dataPrevistaInput.min = new Date().toISOString().split("T")[0];
+    }
+
+    function atualizarCamposTipoExecucao() {
+        var tipo = tipoExecucaoSel ? tipoExecucaoSel.value : "externa";
+        var ehExterna = tipo === "externa";
+
+        if (campoFornecedor) {
+            campoFornecedor.style.display = ehExterna ? "" : "none";
+            var inputF = campoFornecedor.querySelector(".pesquisa-registo-custom");
+            var hiddenF = document.getElementById("idFornecedorResponsavel");
+            if (inputF) inputF.required = ehExterna;
+            if (!ehExterna) {
+                if (inputF) inputF.value = "";
+                if (hiddenF) hiddenF.value = "";
+            }
+        }
+
+        if (campoTecnico) {
+            campoTecnico.style.display = ehExterna ? "none" : "";
+            var inputT = campoTecnico.querySelector(".pesquisa-registo-custom");
+            var hiddenT = document.getElementById("tecnicoInterno");
+            if (inputT) inputT.required = !ehExterna;
+            if (ehExterna) {
+                if (inputT) inputT.value = "";
+                if (hiddenT) hiddenT.value = "";
+            }
+        }
+
+        if (campoCoberta) {
+            campoCoberta.style.display = ehExterna ? "" : "none";
+            if (!ehExterna && cobertaSel) cobertaSel.value = "0";
+        }
+    }
+
+    if (tipoExecucaoSel) {
+        tipoExecucaoSel.addEventListener("change", atualizarCamposTipoExecucao);
+    }
+
+    atualizarCamposTipoExecucao();
+
+    if (modal.dataset.autoshow === "1" && window.bootstrap) {
+        new bootstrap.Modal(modal).show();
+    }
+
+    var listaEquip = document.getElementById("listaEquipamentosProcesso");
+    var aviso      = document.getElementById("avisoEquipamentoBloqueado");
+    var submitBtn  = modal.querySelector("button[type='submit']");
+
+    function verificarEquipamentoBloqueado() {
+        if (!listaEquip || !aviso) return;
+
+        var bloqueados = [];
+        try { bloqueados = JSON.parse(listaEquip.dataset.bloqueados || "[]"); } catch (e) {}
+
+        var idSel = parseInt(document.getElementById("idEquipamento")?.value || "0", 10);
+        var bloqueado = idSel > 0 && bloqueados.indexOf(idSel) !== -1;
+
+        aviso.style.display = bloqueado ? "" : "none";
+        if (submitBtn) submitBtn.disabled = bloqueado;
+    }
+
+    if (listaEquip) {
+        listaEquip.addEventListener("click", function (e) {
+            if (e.target.closest(".opcao-registo-custom")) {
+                setTimeout(verificarEquipamentoBloqueado, 0);
+            }
+        });
+    }
+
+    modal.addEventListener("hidden.bs.modal", function () {
+        if (aviso) aviso.style.display = "none";
+        if (submitBtn) submitBtn.disabled = false;
     });
 });
 
@@ -2290,3 +2422,591 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
+// Contadores de caracteres para campos com data-max
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.contador-caracteres').forEach(function (contador) {
+        const campo = document.getElementById(contador.dataset.target);
+        const max   = parseInt(contador.dataset.max, 10);
+        if (!campo) return;
+
+        function atualizar() {
+            contador.textContent = campo.value.length + ' / ' + max + ' caracteres';
+        }
+
+        atualizar();
+        campo.addEventListener('input', atualizar);
+    });
+});
+
+// Modal Novo Fornecedor (novo_equipamento.php)
+(function () {
+    const modal = document.getElementById('modalNovoFornecedor');
+    if (!modal) return;
+
+    const camposObrigatoriosModal = [
+        { id: 'mf_nome',          label: 'Nome do Fornecedor' },
+        { id: 'mf_nif',           label: 'NIF' },
+        { id: 'mf_tipo',          label: 'Tipo de Fornecedor' },
+        { id: 'mf_estado',        label: 'Estado' },
+        { id: 'mf_telefone',      label: 'Telefone' },
+        { id: 'mf_morada',        label: 'Morada' },
+        { id: 'mf_codigo_postal', label: 'Código Postal' },
+        { id: 'mf_localidade',    label: 'Localidade' },
+        { id: 'mf_pais',          label: 'País' },
+    ];
+
+    function limparModal() {
+        modal.querySelectorAll('input, select, textarea').forEach(function (el) {
+            if (el.id === 'mf_pais') { el.value = 'Portugal'; return; }
+            el.value = '';
+        });
+        document.getElementById('modalFornecedorErros').classList.add('d-none');
+        document.getElementById('modalFornecedorListaErros').innerHTML = '';
+        modal.querySelectorAll('.is-invalid').forEach(function (el) {
+            el.classList.remove('is-invalid');
+        });
+    }
+
+    modal.addEventListener('show.bs.modal', limparModal);
+
+    document.getElementById('btnGuardarFornecedor').addEventListener('click', function () {
+        const erros = [];
+
+        modal.querySelectorAll('.is-invalid').forEach(function (el) {
+            el.classList.remove('is-invalid');
+        });
+
+        camposObrigatoriosModal.forEach(function (campo) {
+            const el = document.getElementById(campo.id);
+            if (!el || el.value.trim() === '') {
+                erros.push(campo.label + ' é obrigatório.');
+                if (el) el.classList.add('is-invalid');
+            }
+        });
+
+        const elNif = document.getElementById('mf_nif');
+        if (elNif && elNif.value.trim() !== '' && !/^\d{9}$/.test(elNif.value.trim())) {
+            erros.push('O NIF deve ter exatamente 9 dígitos.');
+            elNif.classList.add('is-invalid');
+        }
+
+        const elTelefone = document.getElementById('mf_telefone');
+        if (elTelefone && elTelefone.value.trim() !== '' && !/^\d{9}$/.test(elTelefone.value.trim())) {
+            erros.push('O Telefone deve ter exatamente 9 dígitos.');
+            elTelefone.classList.add('is-invalid');
+        }
+
+        const elTelefoneC = document.getElementById('mf_telefone_contacto');
+        if (elTelefoneC && elTelefoneC.value.trim() !== '' && !/^\d{9}$/.test(elTelefoneC.value.trim())) {
+            erros.push('O Telefone do Contacto deve ter exatamente 9 dígitos.');
+            elTelefoneC.classList.add('is-invalid');
+        }
+
+        const elEmailForn = document.getElementById('mf_email_fornecedor');
+        if (elEmailForn && elEmailForn.value.trim() !== '' && !elEmailForn.value.trim().includes('@')) {
+            erros.push('Email do Fornecedor inválido (deve conter @).');
+            elEmailForn.classList.add('is-invalid');
+        }
+
+        const elEmailC = document.getElementById('mf_email_contacto');
+        if (elEmailC && elEmailC.value.trim() !== '' && !elEmailC.value.trim().includes('@')) {
+            erros.push('Email do Contacto inválido (deve conter @).');
+            elEmailC.classList.add('is-invalid');
+        }
+
+        const blocoErros = document.getElementById('modalFornecedorErros');
+        const listaErros = document.getElementById('modalFornecedorListaErros');
+
+        if (erros.length > 0) {
+            listaErros.innerHTML = erros.map(function (e) { return '<li>' + e + '</li>'; }).join('');
+            blocoErros.classList.remove('d-none');
+            blocoErros.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            return;
+        }
+
+        blocoErros.classList.add('d-none');
+
+        const btn = document.getElementById('btnGuardarFornecedor');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> A guardar...';
+
+        const tipo = document.getElementById('mf_tipo').value;
+        const nome = document.getElementById('mf_nome').value.trim();
+        const dados = new FormData();
+        dados.append('nome',                 nome);
+        dados.append('tipo',                 tipo);
+        dados.append('nif',                  document.getElementById('mf_nif').value.trim());
+        dados.append('estado',               document.getElementById('mf_estado').value);
+        dados.append('telefone',             document.getElementById('mf_telefone').value.trim());
+        dados.append('email_fornecedor',     elEmailForn ? elEmailForn.value.trim() : '');
+        dados.append('contacto_responsavel', document.getElementById('mf_contacto_responsavel').value.trim());
+        dados.append('telefone_contacto',    document.getElementById('mf_telefone_contacto').value.trim());
+        dados.append('email_contacto',       elEmailC ? elEmailC.value.trim() : '');
+        dados.append('morada',               document.getElementById('mf_morada').value.trim());
+        dados.append('codigo_postal',        document.getElementById('mf_codigo_postal').value.trim());
+        dados.append('localidade',           document.getElementById('mf_localidade').value.trim());
+        dados.append('pais',                 document.getElementById('mf_pais').value.trim());
+
+        fetch('adicionar_novo_fornecedor_equipamento.php', { method: 'POST', body: dados })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> Guardar Fornecedor';
+
+                if (!res.sucesso) {
+                    const msgs = res.erros || [res.erro || 'Erro desconhecido.'];
+                    listaErros.innerHTML = msgs.map(function (e) { return '<li>' + e + '</li>'; }).join('');
+                    blocoErros.classList.remove('d-none');
+                    return;
+                }
+
+                const textoCompleto = nome + ' (' + tipo + ')';
+                const lista = document.getElementById('listaFornecedores');
+                const novaBotao = document.createElement('button');
+                novaBotao.type = 'button';
+                novaBotao.className = 'opcao-registo-custom';
+                novaBotao.dataset.id = res.id;
+                novaBotao.dataset.texto = textoCompleto;
+                novaBotao.innerHTML = '<span>' + nome + '</span><small>' + tipo + '</small>';
+                lista.appendChild(novaBotao);
+
+                document.getElementById('fornecedorPesquisa').value = textoCompleto;
+                document.getElementById('idFornecedorGarantia').value = res.id;
+
+                novaBotao.addEventListener('click', function () {
+                    document.getElementById('fornecedorPesquisa').value = novaBotao.dataset.texto;
+                    document.getElementById('idFornecedorGarantia').value = novaBotao.dataset.id;
+                    lista.classList.remove('ativo');
+                });
+
+                bootstrap.Modal.getInstance(modal).hide();
+            })
+            .catch(function () {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> Guardar Fornecedor';
+                listaErros.innerHTML = '<li>Erro de comunicação. Tente novamente.</li>';
+                blocoErros.classList.remove('d-none');
+            });
+    });
+})();
+
+// Validação de datas na aba Fornecedores (novo_equipamento.php)
+document.addEventListener('DOMContentLoaded', function () {
+    const dataFabrico2       = document.getElementById('dataFabrico');
+    const dataInicioGarantia = document.getElementById('dataInicioGarantia');
+    const dataFimGarantia    = document.getElementById('dataFimGarantia');
+
+    if (!dataInicioGarantia || !dataFimGarantia) return;
+
+    function atualizarMinGarantia() {
+        if (dataFabrico2 && dataFabrico2.value) {
+            dataInicioGarantia.min = dataFabrico2.value;
+        } else {
+            dataInicioGarantia.removeAttribute('min');
+        }
+
+        if (dataInicioGarantia.value) {
+            dataFimGarantia.min = dataInicioGarantia.value;
+        } else {
+            dataFimGarantia.removeAttribute('min');
+        }
+    }
+
+    if (dataFabrico2) {
+        dataFabrico2.addEventListener('change', atualizarMinGarantia);
+    }
+    dataInicioGarantia.addEventListener('change', atualizarMinGarantia);
+
+    atualizarMinGarantia();
+});
+
+// Validação de datas na aba Aquisição (novo_equipamento.php)
+document.addEventListener('DOMContentLoaded', function () {
+    const dataFabrico    = document.getElementById('dataFabrico');
+    const dataAquisicao  = document.getElementById('dataAquisicao');
+    const dataInstalacao = document.getElementById('dataInstalacao');
+
+    if (!dataAquisicao || !dataInstalacao) return;
+
+    function atualizarMinDatas() {
+        if (dataFabrico && dataFabrico.value) {
+            dataAquisicao.min = dataFabrico.value;
+        } else {
+            dataAquisicao.removeAttribute('min');
+        }
+
+        if (dataAquisicao.value) {
+            dataInstalacao.min = dataAquisicao.value;
+        } else {
+            dataInstalacao.removeAttribute('min');
+        }
+    }
+
+    if (dataFabrico) {
+        dataFabrico.addEventListener('change', atualizarMinDatas);
+    }
+    dataAquisicao.addEventListener('change', atualizarMinDatas);
+
+    atualizarMinDatas();
+});
+
+/* =========================================================
+   MODAL NOVA TRANSFERÊNCIA — validação
+   ========================================================= */
+
+document.addEventListener('DOMContentLoaded', function () {
+    /* Validação do formulário nova transferência */
+    var form = document.getElementById('formNovaTransferencia');
+    if (!form) return;
+
+    form.addEventListener('submit', function (e) {
+        var erros = [];
+        var motivo = document.getElementById('motivoTransferencia');
+
+        if (!motivo || motivo.value.trim() === '') {
+            erros.push('O campo Motivo é obrigatório.');
+        }
+
+        var equipamento = document.getElementById('idEquipamentoTransferencia');
+        if (!equipamento || !equipamento.value) {
+            erros.push('Selecione o equipamento a transferir.');
+        }
+
+        var localizacao = document.getElementById('idLocalizacaoTransferencia');
+        if (!localizacao || !localizacao.value) {
+            erros.push('Selecione a localização de destino.');
+        }
+
+        if (erros.length > 0) {
+            e.preventDefault();
+            var bloco = document.getElementById('erroNovaTransferencia');
+            var lista = document.getElementById('listaErrosTransferencia');
+            lista.innerHTML = erros.map(function (msg) {
+                return '<li>' + msg + '</li>';
+            }).join('');
+            bloco.classList.remove('d-none');
+            bloco.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    });
+
+    /* Limpar erro ao fechar/reabrir o modal */
+    var modal = document.getElementById('modalNovaTransferencia');
+    if (modal) {
+        modal.addEventListener('hidden.bs.modal', function () {
+            var bloco = document.getElementById('erroNovaTransferencia');
+            if (bloco) bloco.classList.add('d-none');
+        });
+    }
+});
+
+/* =========================================================
+   FORMULÁRIO NOVA AVARIA — validação
+   ========================================================= */
+
+document.addEventListener('DOMContentLoaded', function () {
+    var form = document.getElementById('formNovaAvaria');
+    if (!form) return;
+
+    form.addEventListener('submit', function (e) {
+        var erros = [];
+
+        var equipamento = document.getElementById('idEquipamentoAvaria');
+        if (!equipamento || !equipamento.value) {
+            erros.push('Selecione o equipamento onde ocorreu a avaria.');
+        }
+
+        var descricao = document.getElementById('descricaoAvaria');
+        if (!descricao || descricao.value.trim() === '') {
+            erros.push('Indique o motivo / descrição da avaria.');
+        }
+
+        if (erros.length > 0) {
+            e.preventDefault();
+            var bloco = document.querySelector('.alert.alert-danger');
+            if (!bloco) {
+                bloco = document.createElement('div');
+                bloco.className = 'alert alert-danger';
+                form.parentNode.insertBefore(bloco, form);
+            }
+            bloco.innerHTML = '<strong><i class="fa-solid fa-triangle-exclamation me-2"></i>Erro</strong><ul class="mb-0 mt-1">'
+                + erros.map(function (m) { return '<li>' + m + '</li>'; }).join('')
+                + '</ul>';
+            bloco.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    });
+});
+
+/* =========================================================
+   MODAL NOVO PROCESSO — validação
+   ========================================================= */
+
+document.addEventListener('DOMContentLoaded', function () {
+    var form = document.getElementById('formNovoProcesso');
+    if (!form) return;
+
+    form.addEventListener('submit', function (e) {
+        var erros = [];
+
+        var tipo = document.getElementById('tipoProcesso');
+        if (!tipo || !tipo.value) {
+            erros.push('Selecione o tipo de processo.');
+        }
+
+        var equipamento = document.getElementById('idEquipamento');
+        if (!equipamento || !equipamento.value) {
+            erros.push('Selecione o equipamento associado ao processo.');
+        }
+
+        /* Equipamento bloqueado (já tem processo ativo) */
+        var avisoEquipamento = document.getElementById('avisoEquipamentoBloqueado');
+        if (avisoEquipamento && avisoEquipamento.style.display !== 'none') {
+            erros.push('Este equipamento já tem um processo ativo em curso.');
+        }
+
+        var tipoExecucao = document.getElementById('tipoExecucao');
+        var ehExterna = !tipoExecucao || tipoExecucao.value === 'externa';
+
+        if (ehExterna) {
+            var fornecedor = document.getElementById('idFornecedorResponsavel');
+            if (!fornecedor || !fornecedor.value) {
+                erros.push('Nos processos externos deve indicar o fornecedor responsável.');
+            }
+        } else {
+            var tecnico = document.getElementById('tecnicoInterno');
+            if (!tecnico || !tecnico.value) {
+                erros.push('Nos processos internos deve indicar o técnico responsável.');
+            }
+        }
+
+        var dataPrevista = document.getElementById('dataPrevista');
+        if (!dataPrevista || !dataPrevista.value) {
+            erros.push('A data prevista é obrigatória.');
+        } else {
+            var hoje = new Date().toISOString().slice(0, 10);
+            if (dataPrevista.value < hoje) {
+                erros.push('A data prevista não pode ser anterior ao dia de hoje.');
+            }
+        }
+
+        if (erros.length > 0) {
+            e.preventDefault();
+            var bloco = document.getElementById('erroNovoProcesso');
+            var lista = document.getElementById('listaErrosNovoProcesso');
+            lista.innerHTML = erros.map(function (msg) { return '<li>' + msg + '</li>'; }).join('');
+            bloco.classList.remove('d-none');
+            bloco.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    });
+
+    var modal = document.getElementById('modalNovoProcesso');
+    if (modal) {
+        modal.addEventListener('hidden.bs.modal', function () {
+            var bloco = document.getElementById('erroNovoProcesso');
+            if (bloco) bloco.classList.add('d-none');
+        });
+    }
+});
+
+/* =========================================================
+   MODAL NOVO EMPRÉSTIMO — validação
+   ========================================================= */
+
+document.addEventListener('DOMContentLoaded', function () {
+    var form = document.getElementById('formNovoEmprestimo');
+    if (!form) return;
+
+    /* Guarda a data de aquisição do equipamento selecionado */
+    var dataAquisicaoEquipamento = '';
+    document.querySelectorAll('#listaEquipamentosEmprestimo .opcao-registo-custom').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            dataAquisicaoEquipamento = this.dataset.aquisicao || '';
+        });
+    });
+
+    form.addEventListener('submit', function (e) {
+        var erros = [];
+
+        var equipamento = document.getElementById('idEquipamentoEmprestimo');
+        if (!equipamento || !equipamento.value) {
+            erros.push('Selecione o equipamento.');
+        }
+
+        var localizacao = document.getElementById('idLocalizacaoEmprestimo');
+        if (!localizacao || !localizacao.value) {
+            erros.push('Selecione a localização temporária.');
+        }
+
+        var responsavel = document.getElementById('idResponsavelEmprestimo');
+        if (!responsavel || !responsavel.value) {
+            erros.push('Selecione o responsável pelo empréstimo.');
+        }
+
+        var dataInicio = document.getElementById('dataInicioEmprestimo');
+        var dataDevolucao = document.getElementById('dataDevolucaoEmprestimo');
+
+        if (!dataInicio || !dataInicio.value) {
+            erros.push('Indique a data de início do empréstimo.');
+        } else if (dataAquisicaoEquipamento && dataInicio.value < dataAquisicaoEquipamento) {
+            var partes = dataAquisicaoEquipamento.split('-');
+            erros.push('A data de início não pode ser anterior à data de aquisição do equipamento (' + partes[2] + '/' + partes[1] + '/' + partes[0] + ').');
+        }
+
+        if (!dataDevolucao || !dataDevolucao.value) {
+            erros.push('Indique a data prevista de devolução.');
+        } else if (dataInicio && dataInicio.value && dataDevolucao.value < dataInicio.value) {
+            erros.push('A data prevista de devolução não pode ser anterior à data de início.');
+        }
+
+        var motivo = document.getElementById('motivoEmprestimo');
+        if (!motivo || motivo.value.trim() === '') {
+            erros.push('O campo Motivo é obrigatório.');
+        }
+
+        if (erros.length > 0) {
+            e.preventDefault();
+            var bloco = document.getElementById('erroNovoEmprestimo');
+            var lista = document.getElementById('listaErrosEmprestimo');
+            lista.innerHTML = erros.map(function (msg) { return '<li>' + msg + '</li>'; }).join('');
+            bloco.classList.remove('d-none');
+            bloco.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    });
+
+    var modal = document.getElementById('modalNovoEmprestimo');
+    if (modal) {
+        modal.addEventListener('hidden.bs.modal', function () {
+            var bloco = document.getElementById('erroNovoEmprestimo');
+            if (bloco) bloco.classList.add('d-none');
+            dataAquisicaoEquipamento = '';
+        });
+    }
+});
+
+/* =========================================================
+   DETALHE PROCESSO — botão Guardar topo (troca de form conforme tab ativo)
+   ========================================================= */
+
+document.addEventListener('DOMContentLoaded', function () {
+    const btnGuardar = document.getElementById('btnGuardarTopo');
+    if (!btnGuardar) return;
+
+    /* tabs que guardam dados finais */
+    const tabsGuardar = ['tab-dados', 'tab-documentos'];
+    /* tab que avança etapa */
+    const tabEtapa = 'tab-etapa';
+    /* tabs sem ação de guardar */
+    const tabsSemAcao = ['tab-resumo', 'tab-historico'];
+
+    function atualizarBotaoGuardar(tabId) {
+        if (tabsSemAcao.includes(tabId)) {
+            btnGuardar.style.display = 'none';
+        } else if (tabId === tabEtapa) {
+            const btnInterno = document.getElementById('btnAvancarEtapaInterno');
+            const ehFinalizar = btnInterno && btnInterno.dataset.finalizar === '1';
+            btnGuardar.style.display = '';
+            btnGuardar.setAttribute('form', 'formAvancarEtapa');
+            btnGuardar.innerHTML = ehFinalizar
+                ? '<i class="fa-solid fa-flag-checkered me-2"></i>Finalizar Processo'
+                : '<i class="fa-solid fa-arrow-right me-2"></i>Avançar Etapa';
+        } else {
+            btnGuardar.style.display = '';
+            btnGuardar.setAttribute('form', 'formDadosFinais');
+            btnGuardar.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i>Guardar Processo';
+        }
+    }
+
+    /* se o tab de etapa não existir na página (processo encerrado), tratá-lo como sem ação */
+    if (!document.getElementById('tab-etapa')) {
+        tabsSemAcao.push(tabEtapa);
+    }
+
+    /* inicializar com o tab ativo */
+    const tabAtivo = document.querySelector('#tabsDetalheProcesso .nav-link.active');
+    if (tabAtivo) atualizarBotaoGuardar(tabAtivo.id);
+
+    document.querySelectorAll('#tabsDetalheProcesso .nav-link').forEach(function (tab) {
+        tab.addEventListener('shown.bs.tab', function (e) {
+            atualizarBotaoGuardar(e.target.id);
+        });
+    });
+});
+
+// Validação do modal de acessório (acessorios.php)
+(function () {
+    const form = document.getElementById('formAcessorioBD');
+    if (!form) return;
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const erros = [];
+
+        const camposObrigatorios = [
+            { id: 'designacaoAcessorioBD',     label: 'Nome do acessório' },
+            { id: 'tipoAcessorioBD',            label: 'Tipo' },
+            { id: 'fabricanteAcessorioBD',      label: 'Fabricante' },
+            { id: 'modeloAcessorioBD',          label: 'Modelo' },
+            { id: 'numeroSerieAcessorioBD',     label: 'N.º Série' },
+            { id: 'dataAquisicaoAcessorioBD',   label: 'Data de aquisição' },
+            { id: 'idFornecedorGarantiaBD',     label: 'Fornecedor da garantia' },
+            { id: 'dataInicioGarantiaBD',       label: 'Data de início da garantia' },
+            { id: 'dataFimGarantiaBD',          label: 'Data de fim da garantia' },
+        ];
+
+        camposObrigatorios.forEach(function (campo) {
+            const el = document.getElementById(campo.id);
+            if (!el || el.value.trim() === '') {
+                erros.push(campo.label + ' é obrigatório.');
+            }
+        });
+
+        const opcaoEquipamento = document.querySelector('#seletorEquipamentoAcessoriosBD option:checked');
+        const dataAquisicaoEquipamento = opcaoEquipamento ? opcaoEquipamento.dataset.dataAquisicao : '';
+        const dataAquisicaoEl   = document.getElementById('dataAquisicaoAcessorioBD');
+        const dataInicioGarantiaEl = document.getElementById('dataInicioGarantiaBD');
+        const dataFimGarantiaEl    = document.getElementById('dataFimGarantiaBD');
+
+        const dataAquisicao   = dataAquisicaoEl ? dataAquisicaoEl.value : '';
+        const dataInicioGarantia = dataInicioGarantiaEl ? dataInicioGarantiaEl.value : '';
+        const dataFimGarantia    = dataFimGarantiaEl ? dataFimGarantiaEl.value : '';
+
+        if (dataAquisicao && dataAquisicaoEquipamento && dataAquisicao < dataAquisicaoEquipamento) {
+            erros.push('A data de aquisição do acessório não pode ser anterior à data de aquisição do equipamento.');
+        }
+        if (dataInicioGarantia && dataAquisicao && dataInicioGarantia < dataAquisicao) {
+            erros.push('A data de início da garantia não pode ser anterior à data de aquisição do acessório.');
+        }
+        if (dataFimGarantia && dataInicioGarantia && dataFimGarantia < dataInicioGarantia) {
+            erros.push('A data de fim da garantia não pode ser anterior à data de início da garantia.');
+        }
+
+        const requerManutencao = document.querySelector('input[name="requerManutencao"]:checked');
+        if (requerManutencao && requerManutencao.value === '1') {
+            const per = document.getElementById('periodicidadeManutencaoBD');
+            if (!per || per.value.trim() === '') {
+                erros.push('Periodicidade de manutenção é obrigatória quando o acessório requer manutenção.');
+            }
+        }
+
+        const requerCalibracao = document.querySelector('input[name="requerCalibracao"]:checked');
+        if (requerCalibracao && requerCalibracao.value === '1') {
+            const per = document.getElementById('periodicidadeCalibracaoBD');
+            if (!per || per.value.trim() === '') {
+                erros.push('Periodicidade de calibração é obrigatória quando o acessório requer calibração.');
+            }
+        }
+
+        const blocoErros = document.getElementById('erroModalAcessorio');
+        const listaErros = document.getElementById('listaErrosModalAcessorio');
+
+        if (erros.length > 0) {
+            listaErros.innerHTML = erros.map(function (e) { return '<li>' + e + '</li>'; }).join('');
+            blocoErros.classList.remove('d-none');
+            blocoErros.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            return;
+        }
+
+        blocoErros.classList.add('d-none');
+        form.submit();
+    });
+})();

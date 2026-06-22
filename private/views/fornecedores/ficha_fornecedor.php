@@ -17,17 +17,16 @@ $id_fornecedor = id_from_request();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $camposObrigatorios = [
-    'nomeFornecedor' => 'Nome do fornecedor',
-    'tipoFornecedor' => 'Tipo de fornecedor',
-    'nifFornecedor' => 'NIF',
-    'emailFornecedor' => 'Email',
-    'telefoneFornecedor' => 'Telefone',
-    'contactoResponsavel' => 'Pessoa de contacto',
-    'telefoneContacto' => 'Telefone de contacto',
-    'emailContacto' => 'Email de contacto',
-    'moradaFornecedor' => 'Morada',
+    'nomeFornecedor'        => 'Nome do fornecedor',
+    'tipoFornecedor'        => 'Tipo de fornecedor',
+    'nifFornecedor'         => 'NIF',
+    'telefoneFornecedor'    => 'Telefone',
+    'contactoResponsavel'   => 'Pessoa responsável',
+    'emailContacto'         => 'Email do contacto',
+    'moradaFornecedor'      => 'Morada',
     'codigoPostalFornecedor' => 'Código postal',
-    'localidadeFornecedor' => 'Localidade'
+    'localidadeFornecedor'  => 'Localidade',
+    'paisFornecedor'        => 'País',
 ];
 
 foreach ($camposObrigatorios as $campo => $label) {
@@ -41,10 +40,9 @@ foreach ($camposObrigatorios as $campo => $label) {
             nome_empresa = :nome_empresa,
             tipo_fornecedor = :tipo_fornecedor,
             nif = :nif,
-            email = :email,
             telefone = :telefone,
-            website = :website,
-            pessoa_contacto = :pessoa_contacto,
+            email_fornecedor = :email_fornecedor,
+            pessoa_responsavel = :pessoa_responsavel,
             telefone_contacto = :telefone_contacto,
             email_contacto = :email_contacto,
             morada = :morada,
@@ -57,21 +55,20 @@ foreach ($camposObrigatorios as $campo => $label) {
     ");
 
     $stmt->execute([
-        ':nome_empresa' => trim($_POST['nomeFornecedor'] ?? ''),
-        ':tipo_fornecedor' => trim($_POST['tipoFornecedor'] ?? ''),
-        ':nif' => trim($_POST['nifFornecedor'] ?? ''),
-        ':email' => trim($_POST['emailFornecedor'] ?? ''),
-        ':telefone' => trim($_POST['telefoneFornecedor'] ?? ''),
-        ':website' => trim($_POST['websiteFornecedor'] ?? ''),
-        ':pessoa_contacto' => trim($_POST['contactoResponsavel'] ?? ''),
-        ':telefone_contacto' => trim($_POST['telefoneContacto'] ?? ''),
-        ':email_contacto' => trim($_POST['emailContacto'] ?? ''),
-        ':morada' => trim($_POST['moradaFornecedor'] ?? ''),
-        ':codigo_postal' => trim($_POST['codigoPostalFornecedor'] ?? ''),
-        ':localidade' => trim($_POST['localidadeFornecedor'] ?? ''),
-        ':pais' => trim($_POST['paisFornecedor'] ?? 'Portugal'),
-        ':observacoes' => trim($_POST['observacoesFornecedor'] ?? ''),
-        ':id_fornecedor' => $id_fornecedor
+        ':nome_empresa'       => trim($_POST['nomeFornecedor'] ?? ''),
+        ':tipo_fornecedor'    => trim($_POST['tipoFornecedor'] ?? ''),
+        ':nif'                => trim($_POST['nifFornecedor'] ?? ''),
+        ':telefone'           => trim($_POST['telefoneFornecedor'] ?? ''),
+        ':email_fornecedor'   => trim($_POST['emailEmpresaFornecedor'] ?? ''),
+        ':pessoa_responsavel' => trim($_POST['contactoResponsavel'] ?? ''),
+        ':telefone_contacto'  => trim($_POST['telefoneContacto'] ?? ''),
+        ':email_contacto'     => trim($_POST['emailContacto'] ?? ''),
+        ':morada'             => trim($_POST['moradaFornecedor'] ?? ''),
+        ':codigo_postal'      => trim($_POST['codigoPostalFornecedor'] ?? ''),
+        ':localidade'         => trim($_POST['localidadeFornecedor'] ?? ''),
+        ':pais'               => trim($_POST['paisFornecedor'] ?? 'Portugal'),
+        ':observacoes'        => trim($_POST['observacoesFornecedor'] ?? ''),
+        ':id_fornecedor'      => $id_fornecedor
     ]);
 
     header('Location: ficha_fornecedor.php?ref=' . url_ref($id_fornecedor) . '&guardado=1');
@@ -339,16 +336,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                         <div class="row g-4">
                             <div class="col-md-4">
-                                <label for="emailFornecedor" class="form-label">Email Geral *</label>
-                                <input type="email"
-                                       class="form-control campo-ficha campo-editavel"
-                                       id="emailFornecedor"
-                                       name="emailFornecedor"
-                                       value="<?php echo htmlspecialchars($fornecedor['email']); ?>"
-                                       required>
-                            </div>
-
-                            <div class="col-md-4">
                                 <label for="telefoneFornecedor" class="form-label">Telefone *</label>
                                 <input type="text"
                                        class="form-control campo-ficha campo-editavel"
@@ -359,21 +346,21 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </div>
 
                             <div class="col-md-4">
-                                <label for="websiteFornecedor" class="form-label">Website</label>
-                                <input type="url"
+                                <label for="emailEmpresaFornecedor" class="form-label">Email do Fornecedor</label>
+                                <input type="email"
                                        class="form-control campo-ficha campo-editavel"
-                                       id="websiteFornecedor"
-                                       name="websiteFornecedor"
-                                       value="<?php echo htmlspecialchars($fornecedor['website'] ?? ''); ?>">
+                                       id="emailEmpresaFornecedor"
+                                       name="emailEmpresaFornecedor"
+                                       value="<?php echo htmlspecialchars($fornecedor['email_fornecedor'] ?? ''); ?>">
                             </div>
 
                             <div class="col-md-4">
-                                <label for="contactoResponsavel" class="form-label">Pessoa de Contacto *</label>
+                                <label for="contactoResponsavel" class="form-label">Pessoa Responsável *</label>
                                 <input type="text"
                                     class="form-control campo-ficha campo-editavel"
                                     id="contactoResponsavel"
                                     name="contactoResponsavel"
-                                    value="<?php echo htmlspecialchars($fornecedor['pessoa_contacto'] ?? ''); ?>"
+                                    value="<?php echo htmlspecialchars($fornecedor['pessoa_responsavel'] ?? ''); ?>"
                                     required>
                             </div>
 
