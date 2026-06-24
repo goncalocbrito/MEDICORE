@@ -4,8 +4,8 @@ require_once 'includes/funcoes.php';
 start_session();
 redirect_if_not_logged();
 
-$success_message = $_SESSION['success_message'] ?? '';
-unset($_SESSION['success_message']);
+header('Location: ' . rota_inicial_utilizador());
+exit;
 ?>
 
 <?php

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../includes/funcoes.php';
+require_once __DIR__ . '/../../includes/validacoes.php';
 redirect_if_not_logged();
 
 /* =========================================================
@@ -166,8 +167,8 @@ function guardar_documentos_equipamento($pdo, $idEquipamento, $codigoEquipamento
 
         $extensao = strtolower(pathinfo($nomeOriginal, PATHINFO_EXTENSION));
 
-        if (!in_array($extensao, $extensoesPermitidas, true)) {
-            throw new RuntimeException('Formato de documento não permitido. Use PDF, PNG, JPG, JPEG, DOC ou DOCX.');
+        if ($erro = validar_extensao_ficheiro($extensao)) {
+            throw new RuntimeException($erro);
         }
 
         $tipoDocumento = obter_valor_array_post('tipoDocumento', $indice);
@@ -302,7 +303,6 @@ $camposPorEtapa = [
         'modelo',
         'marca',
         'numeroSerie',
-        'tipoEntrada'
     ],
     'estado_localizacao' => [
         'idLocalizacao',
@@ -321,7 +321,7 @@ $camposPorEtapa = [
     'fornecedores' => [
         'idFornecedorGarantia',
         'dataInicioGarantia',
-        'dataFimGarantia'
+        'dataFimGarantia',
     ],
     'observacoes' => [
         'observacoes'
@@ -336,7 +336,6 @@ $camposObrigatorios = [
         'modelo',
         'marca',
         'numeroSerie',
-        'tipoEntrada'
     ],
     'estado_localizacao' => [
         'idLocalizacao',
@@ -347,8 +346,14 @@ $camposObrigatorios = [
         'idResponsavel'
     ],
     'aquisicao' => [
+        'dataFabrico',
         'dataAquisicao',
         'dataInstalacao'
+    ],
+    'fornecedores' => [
+        'idFornecedorGarantia',
+        'dataInicioGarantia',
+        'dataFimGarantia',
     ],
     'observacoes' => [],
     'documentos' => []
@@ -360,13 +365,14 @@ $labelsCampos = [
     'modelo' => 'Modelo',
     'numeroSerie' => 'Número de série',
     'marca' => 'Marca',
-    'tipoEntrada' => 'Tipo de entrada',
+
     'idLocalizacao' => 'Localização',
     'estado' => 'Estado',
     'criticidade' => 'Criticidade',
     'periodicidadeManutencao' => 'Periodicidade de manutenção',
     'periodicidadeCalibracao' => 'Periodicidade de calibração',
     'idResponsavel' => 'Responsável pelo equipamento',
+    'dataFabrico' => 'Data de fabrico',
     'dataAquisicao' => 'Data de aquisição',
     'dataInstalacao' => 'Data de instalação',
     'idFornecedorGarantia' => 'Fornecedor',
@@ -379,16 +385,15 @@ function validar_ordem_datas_garantia($chaveSessao)
     $erros = [];
     $dados = $_SESSION[$chaveSessao] ?? [];
 
-    $dataFabrico      = $dados['dataFabrico'] ?? '';
+    $dataFabrico        = $dados['dataFabrico'] ?? '';
     $dataInicioGarantia = $dados['dataInicioGarantia'] ?? '';
-    $dataFimGarantia  = $dados['dataFimGarantia'] ?? '';
+    $dataFimGarantia    = $dados['dataFimGarantia'] ?? '';
 
-    if ($dataFabrico !== '' && $dataInicioGarantia !== '' && $dataInicioGarantia < $dataFabrico) {
-        $erros[] = 'O início da garantia não pode ser anterior à data de fabrico.';
+    if ($erro = validar_ordem_datas($dataFabrico, $dataInicioGarantia, 'O início da garantia não pode ser anterior à data de fabrico.')) {
+        $erros[] = $erro;
     }
-
-    if ($dataInicioGarantia !== '' && $dataFimGarantia !== '' && $dataFimGarantia < $dataInicioGarantia) {
-        $erros[] = 'O fim da garantia não pode ser anterior ao início da garantia.';
+    if ($erro = validar_ordem_datas($dataInicioGarantia, $dataFimGarantia, 'O fim da garantia não pode ser anterior ao início da garantia.')) {
+        $erros[] = $erro;
     }
 
     return $erros;
@@ -399,16 +404,15 @@ function validar_ordem_datas_aquisicao($chaveSessao)
     $erros = [];
     $dados = $_SESSION[$chaveSessao] ?? [];
 
-    $dataFabrico   = $dados['dataFabrico'] ?? '';
-    $dataAquisicao = $dados['dataAquisicao'] ?? '';
+    $dataFabrico    = $dados['dataFabrico'] ?? '';
+    $dataAquisicao  = $dados['dataAquisicao'] ?? '';
     $dataInstalacao = $dados['dataInstalacao'] ?? '';
 
-    if ($dataFabrico !== '' && $dataAquisicao !== '' && $dataAquisicao < $dataFabrico) {
-        $erros[] = 'A data de aquisição não pode ser anterior à data de fabrico.';
+    if ($erro = validar_ordem_datas($dataFabrico, $dataAquisicao, 'A data de aquisição não pode ser anterior à data de fabrico.')) {
+        $erros[] = $erro;
     }
-
-    if ($dataAquisicao !== '' && $dataInstalacao !== '' && $dataInstalacao < $dataAquisicao) {
-        $erros[] = 'A data de instalação não pode ser anterior à data de aquisição.';
+    if ($erro = validar_ordem_datas($dataAquisicao, $dataInstalacao, 'A data de instalação não pode ser anterior à data de aquisição.')) {
+        $erros[] = $erro;
     }
 
     return $erros;
@@ -556,6 +560,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException('Família de equipamento inválida.');
             }
 
+            $nsSerie = trim($dadosEquipamento['numeroSerie'] ?? '');
+            if ($nsSerie !== '') {
+                $stmtNs = $pdo->prepare("SELECT COUNT(*) FROM equipamentos WHERE numero_serie = :ns");
+                $stmtNs->execute([':ns' => $nsSerie]);
+                if ((int) $stmtNs->fetchColumn() > 0) {
+                    throw new RuntimeException('Já existe um equipamento registado com o número de série "' . htmlspecialchars($nsSerie) . '". O número de série deve ser único.');
+                }
+            }
+
             $stmtInserirEquipamento = $pdo->prepare("
                 INSERT INTO equipamentos (
                     id_familia_equipamento,
@@ -612,7 +625,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':modelo' => trim($dadosEquipamento['modelo'] ?? ''),
                 ':marca' => trim($dadosEquipamento['marca'] ?? '') ?: null,
                 ':numero_serie' => trim($dadosEquipamento['numeroSerie'] ?? ''),
-                ':tipo_entrada' => trim($dadosEquipamento['tipoEntrada'] ?? '') ?: null,
+                ':tipo_entrada' => null,
                 ':valor_aquisicao' => $isEngenheiro ? null : decimal_novo_equipamento('valorAquisicao'),
                 ':id_localizacao' => (int) $dadosEquipamento['idLocalizacao'],
                 ':estado' => trim($dadosEquipamento['estado'] ?? 'ativo'),
@@ -658,7 +671,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     : null,
                 ':data_inicio_garantia' => data_novo_equipamento('dataInicioGarantia'),
                 ':data_fim_garantia' => data_novo_equipamento('dataFimGarantia'),
-                ':observacoes' => trim($dadosEquipamento['observacoesFornecedor'] ?? '') ?: null,
+                ':observacoes' => null,
                 ':atualizado_por' => $_SESSION['nome'] ?? $_SESSION['username'] ?? 'sistema'
             ]);
 
@@ -704,60 +717,59 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
 <main class="conteudo-private ficha-equipamento-page novo-equipamento-page">
 
-    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
-        <div>
-            <h2 class="titulo-pagina">Novo Equipamento</h2>
-            <p class="subtitulo-pagina">
-                Registe os dados principais do equipamento, os fornecedores associados e a documentação inicial.
-            </p>
-        </div>
-        <div class="form-actions">
-            <a href="lista_equipamentos.php" class="btn btn-cancelar">
-                <i class="fa-solid fa-xmark me-2"></i> Cancelar
-            </a>
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <h2 class="titulo-pagina mb-0" style="font-size:1.5rem;">Novo Equipamento</h2>
 
-            <button type="submit"
-                    class="btn btn-limpar"
-                    name="acao_etapa"
-                    value="limpar_etapa"
-                    form="formNovoEquipamento"
-                    formnovalidate>
-                <i class="fa-solid fa-eraser me-2"></i> Limpar
-            </button>
+            <div class="d-flex align-items-center flex-wrap gap-2">
+                <a href="lista_equipamentos.php" class="btn btn-cancelar">
+                    <i class="fa-solid fa-xmark me-2"></i> Cancelar
+                </a>
 
-            <?php if ($etapaAtual !== $etapas[0]): ?>
+                <button type="button" class="btn btn-dados-teste" onclick="dadosTeste_novoEquipamento()">
+                    <i class="fa-solid fa-flask me-2"></i> Dados de Teste
+                </button>
+
                 <button type="submit"
                         class="btn btn-limpar"
                         name="acao_etapa"
-                        value="anterior"
+                        value="limpar_etapa"
                         form="formNovoEquipamento"
                         formnovalidate>
-                    <i class="fa-solid fa-arrow-left me-2"></i> Anterior
+                    <i class="fa-solid fa-eraser me-2"></i> Limpar
                 </button>
-            <?php endif; ?>
 
-            <button type="submit"
-                    class="btn btn-guardar"
-                    name="acao_etapa"
-                    value="<?php echo $etapaAtual === 'documentos' ? 'finalizar' : 'continuar'; ?>"
-                    form="formNovoEquipamento"
-                    formnovalidate>
-                <i class="fa-solid <?php echo $etapaAtual === 'documentos' ? 'fa-floppy-disk' : 'fa-arrow-right'; ?> me-2"></i>
-                <?php echo $etapaAtual === 'documentos' ? 'Guardar Equipamento' : 'Guardar e Continuar'; ?>
-            </button>
+                <?php if ($etapaAtual !== $etapas[0]): ?>
+                    <button type="submit"
+                            class="btn btn-limpar"
+                            name="acao_etapa"
+                            value="anterior"
+                            form="formNovoEquipamento"
+                            formnovalidate>
+                        <i class="fa-solid fa-arrow-left me-2"></i> Anterior
+                    </button>
+                <?php endif; ?>
+
+                <button type="submit"
+                        class="btn btn-guardar"
+                        name="acao_etapa"
+                        value="<?php echo $etapaAtual === 'documentos' ? 'finalizar' : 'continuar'; ?>"
+                        form="formNovoEquipamento"
+                        formnovalidate>
+                    <i class="fa-solid <?php echo $etapaAtual === 'documentos' ? 'fa-floppy-disk' : 'fa-arrow-right'; ?> me-2"></i>
+                    <?php echo $etapaAtual === 'documentos' ? 'Guardar Equipamento' : 'Guardar e Continuar'; ?>
+                </button>
+            </div>
         </div>
+        <p class="subtitulo-pagina mt-1 mb-0">
+            Registe os dados principais do equipamento, os fornecedores associados e a documentação inicial.
+        </p>
     </div>
 
     <?php if (!empty($errosEquipamento)): ?>
-        <div class="form-alerta-erros" role="alert">
-            <strong>
-                <i class="fa-solid fa-triangle-exclamation me-2"></i>
-                Não é possível avançar para essa etapa.
-            </strong>
-
-            <p class="mb-2 mt-2">Preencha os campos obrigatórios antes de continuar.</p>
-
-            <ul>
+        <div class="alert alert-danger" role="alert">
+            <strong><i class="fa-solid fa-triangle-exclamation me-2"></i> Erro</strong>
+            <ul class="mb-0 mt-1">
                 <?php foreach ($errosEquipamento as $erro): ?>
                     <li><?php echo h_novo_equipamento($erro); ?></li>
                 <?php endforeach; ?>
@@ -893,15 +905,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             <small class="texto-ajuda-form contador-caracteres" data-target="numeroSerie" data-max="120">0 / 120 caracteres</small>
                         </div>
 
-                        <div class="col-md-4">
-                            <label for="tipoEntrada" class="form-label">Tipo de Entrada *</label>
-                            <select class="form-select" id="tipoEntrada" name="tipoEntrada" required>
-                                <option value="">Selecionar tipo</option>
-                                <option value="compra" <?php echo selected_novo_equipamento('tipoEntrada', 'compra'); ?>>Compra</option>
-                                <option value="doacao" <?php echo selected_novo_equipamento('tipoEntrada', 'doacao'); ?>>Doação</option>
-                                <option value="emprestimo" <?php echo selected_novo_equipamento('tipoEntrada', 'emprestimo'); ?>>Empréstimo</option>
-                            </select>
-                        </div>
 
                     </div>
                 </div>
@@ -986,10 +989,10 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                             <select class="form-select" id="criticidade" name="criticidade" required>
                                 <option value="">Selecionar criticidade</option>
-                                <option value="baixa">Baixa</option>
-                                <option value="media">Média</option>
-                                <option value="alta">Alta</option>
-                                <option value="critica">Crítica</option>
+                                <option value="baixa" <?php echo selected_novo_equipamento('criticidade', 'baixa'); ?>>Baixa</option>
+                                <option value="media" <?php echo selected_novo_equipamento('criticidade', 'media'); ?>>Média</option>
+                                <option value="alta" <?php echo selected_novo_equipamento('criticidade', 'alta'); ?>>Alta</option>
+                                <option value="critica" <?php echo selected_novo_equipamento('criticidade', 'critica'); ?>>Crítica</option>
                             </select>
                         </div>
 
@@ -1086,8 +1089,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <?php endif; ?>
 
                         <div class="col-md-3">
-                            <label for="dataFabrico" class="form-label">Data de Fabrico</label>
-                            <input type="date" class="form-control" id="dataFabrico" name="dataFabrico" value="<?php echo valor_novo_equipamento('dataFabrico'); ?>" autocomplete="off">
+                            <label for="dataFabrico" class="form-label">Data de Fabrico *</label>
+                            <input type="date" class="form-control" id="dataFabrico" name="dataFabrico" value="<?php echo valor_novo_equipamento('dataFabrico'); ?>" required autocomplete="off">
                         </div>
 
                         <div class="col-md-3">
@@ -1184,7 +1187,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <p>Registe notas relevantes sobre utilização, limitações, condição física ou contexto do equipamento.</p>
                     </div>
 
-                    <textarea class="form-control" id="observacoes" name="observacoes" rows="7" placeholder="Indique observações relevantes sobre o equipamento."><?php echo valor_novo_equipamento('observacoes'); ?></textarea>
+                    <textarea class="form-control" id="observacoes" name="observacoes" rows="7" maxlength="1000" placeholder="Indique observações relevantes sobre o equipamento."><?php echo valor_novo_equipamento('observacoes'); ?></textarea>
+                    <small class="texto-ajuda-form contador-caracteres" data-target="observacoes" data-max="1000">0 / 1000 caracteres</small>
                 </div>
 
             

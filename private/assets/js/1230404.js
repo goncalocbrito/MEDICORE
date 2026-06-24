@@ -220,6 +220,7 @@ function inicializarDocumentosEquipamento() {
         if (!primeiroDocumento) return;
 
         const novoDocumento = primeiroDocumento.cloneNode(true);
+        novoDocumento.classList.remove('d-none');
 
         novoDocumento.querySelectorAll("input, select, textarea").forEach(function (campo) {
             if (campo.tagName === "SELECT") {
@@ -245,6 +246,22 @@ function inicializarDocumentosEquipamento() {
 
         botaoRemover.closest(".documento-form-item").remove();
         atualizarBotoesRemoverDocumento();
+    });
+
+    listaDocumentos.addEventListener("change", function (event) {
+        const campoData = event.target.closest(".doc-data-documento");
+        if (!campoData) return;
+
+        const item = campoData.closest(".documento-form-item");
+        if (!item) return;
+
+        const campoValidade = item.querySelector(".doc-data-validade");
+        if (campoValidade) {
+            campoValidade.min = campoData.value || "";
+            if (campoValidade.value && campoValidade.value < campoData.value) {
+                campoValidade.value = "";
+            }
+        }
     });
 
     atualizarBotoesRemoverDocumento();
@@ -1061,6 +1078,78 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 /* =========================================================
+   MODAL DE REMOCAO DE EQUIPAMENTO (lista_equipamentos.php)
+   Preenche o modal com os dados do botão de eliminar da linha.
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const modalApagarEquipamento = document.getElementById("modalApagarEquipamento");
+
+    if (!modalApagarEquipamento) return;
+
+    modalApagarEquipamento.addEventListener("show.bs.modal", function (event) {
+        const botao = event.relatedTarget;
+
+        if (!botao) return;
+
+        definirValor("modalApagarIdEquipamento", botao.getAttribute("data-id") || "");
+        definirTexto("modalApagarCodigo", botao.getAttribute("data-codigo") || "---");
+        definirTexto("modalApagarNome", botao.getAttribute("data-nome") || "---");
+        definirTexto("modalApagarCategoria", botao.getAttribute("data-categoria") || "---");
+        definirTexto("modalApagarFabricante", botao.getAttribute("data-fabricante") || "---");
+        definirTexto("modalApagarModelo", botao.getAttribute("data-modelo") || "---");
+        definirTexto("modalApagarSerie", botao.getAttribute("data-serie") || "---");
+        definirTexto("modalApagarLocalizacao", botao.getAttribute("data-localizacao") || "---");
+        definirTexto("modalApagarEstado", botao.getAttribute("data-estado") || "---");
+    });
+
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const modalApagarFornecedor = document.getElementById("modalApagarFornecedor");
+    if (!modalApagarFornecedor) return;
+    modalApagarFornecedor.addEventListener("show.bs.modal", function (event) {
+        const botao = event.relatedTarget;
+        if (!botao) return;
+        definirValor("modalApagarIdFornecedor", botao.getAttribute("data-id") || "");
+    });
+});
+
+/* =========================================================
+   MODAL DE REMOCAO DE DOCUMENTO (ficha_equipamento.php)
+   Preenche o modal com os dados do botão de remover da linha.
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const modalRemoverDocumento = document.getElementById("modalRemoverDocumento");
+
+    if (!modalRemoverDocumento) return;
+
+    modalRemoverDocumento.addEventListener("show.bs.modal", function (event) {
+        const botao = event.relatedTarget;
+
+        if (!botao) return;
+
+        const id = botao.getAttribute("data-id") || "";
+        const nome = botao.getAttribute("data-nome") || "---";
+        const ref = botao.getAttribute("data-ref") || "";
+        const idEquipamento = botao.getAttribute("data-id-equipamento") || "";
+
+        definirTexto("modalRemoverDocumentoNome", nome);
+        definirValor("modalRemoverDocumentoId", id);
+        definirValor("modalRemoverDocumentoIdEquipamento", idEquipamento);
+
+        const form = document.getElementById("formModalRemoverDocumento");
+        if (form) {
+            form.action = "ficha_equipamento.php?ref=" + ref + "#documentos";
+        }
+    });
+
+});
+
+/* =========================================================
    MODAL DE REMOCAO DE UTILIZADOR
    Preenche o modal com os dados da linha e deixa o PHP fazer a remocao logica.
    ========================================================= */
@@ -1507,7 +1596,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function prepararModalNovoAcessorio() {
-        definirTituloModalAcessorio("Adicionar AcessÃ³rio");
+        definirTituloModalAcessorio("Adicionar Acess\u00f3rio");
         definirValor("modalAcessorioIndice", "");
         definirValor("modalAcessorioEquipamento", textoEquipamentoAtual());
         definirValor("modalAcessorioCodigo", "");
@@ -1707,20 +1796,69 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    formBackoffice.addEventListener("submit", function (event) {
-        event.preventDefault();
-
+    formBackoffice.addEventListener("submit", function () {
         localStorage.setItem("medicoreConteudoPublico", JSON.stringify(obterDadosBackoffice()));
-
-        mostrarPopupPedido(
-            "ConteÃºdos guardados",
-            "As alteraÃ§Ãµes da Página pÃºblica foram guardadas no backoffice."
-        );
     });
 
     atualizarPreviewPublico();
 
 });
+
+/* =========================================================
+   PESQUISA DE FORNECEDOR (DROPDOWN CUSTOM)
+   Reutilizável em qualquer modal que tenha um input de pesquisa,
+   um campo hidden com o id, e uma lista com .opcao-fornecedor-custom.
+   Parâmetros: IDs dos elementos. modalId opcional — limpa o campo ao fechar.
+   ========================================================= */
+
+function iniciarPesquisaFornecedor(inputId, hiddenId, listaId, modalId) {
+    var inputEl  = document.getElementById(inputId);
+    var hiddenEl = document.getElementById(hiddenId);
+    var listaEl  = document.getElementById(listaId);
+
+    if (!inputEl || !hiddenEl || !listaEl) return;
+
+    var opcoes = Array.from(listaEl.querySelectorAll('.opcao-fornecedor-custom'));
+
+    function filtrar() {
+        var termo = inputEl.value.trim().toLowerCase();
+        var encontrou = false;
+        opcoes.forEach(function (op) {
+            var visivel = termo !== '' && (op.dataset.texto || '').toLowerCase().includes(termo);
+            op.style.display = visivel ? 'flex' : 'none';
+            if (visivel) encontrou = true;
+        });
+        listaEl.classList.toggle('ativo', encontrou);
+    }
+
+    inputEl.addEventListener('input', function () { hiddenEl.value = ''; filtrar(); });
+    inputEl.addEventListener('focus', filtrar);
+
+    opcoes.forEach(function (op) {
+        op.addEventListener('click', function () {
+            inputEl.value  = op.dataset.texto || '';
+            hiddenEl.value = op.dataset.id || '';
+            listaEl.classList.remove('ativo');
+        });
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!listaEl.contains(e.target) && e.target !== inputEl) {
+            listaEl.classList.remove('ativo');
+        }
+    });
+
+    if (modalId) {
+        var modalEl = document.getElementById(modalId);
+        if (modalEl) {
+            modalEl.addEventListener('hidden.bs.modal', function () {
+                inputEl.value  = '';
+                hiddenEl.value = '';
+                listaEl.classList.remove('ativo');
+            });
+        }
+    }
+}
 
 document.addEventListener("DOMContentLoaded", function () {
     if (typeof jQuery === "undefined" || !jQuery.fn.DataTable) {
@@ -1739,7 +1877,12 @@ document.addEventListener("DOMContentLoaded", function () {
         { id: "tabela-transferencias", entidade: "transferências", vazio: "não existem transferências registadas." },
         { id: "tabela-emprestimos", entidade: "empréstimos", vazio: "não existem empréstimos registados." },
         { id: "tabela-avarias", entidade: "avarias", vazio: "não existem avarias reportadas." },
-        { id: "tabelaAcessoriosBD", entidade: "acessórios", vazio: "não existem acessórios registados para este equipamento." }
+        { id: "tabelaAcessoriosBD", entidade: "acessórios", vazio: "não existem acessórios registados para este equipamento." },
+        { id: "tabelaConsumiveis", entidade: "consumíveis", vazio: "não existem consumíveis registados para este equipamento." },
+        { id: "tabela-garantias-vencer", entidade: "equipamentos", vazio: "não existem equipamentos com garantia a expirar nos próximos 30 dias." },
+        { id: "tabela-garantias-expiradas", entidade: "equipamentos", vazio: "não existem equipamentos com garantia expirada." },
+        { id: "tabela-pendentes", entidade: "registos", vazio: "não existem manutenções ou calibrações a vencer nos próximos 30 dias." },
+        { id: "tabela-expiradas", entidade: "registos", vazio: "não existem manutenções ou calibrações expiradas." }
     ];
 
     const idiomaBaseDataTables = {
@@ -1787,24 +1930,29 @@ document.addEventListener("DOMContentLoaded", function () {
                 infoFiltered: "(filtrado de _MAX_ " + config.entidade + " no total)",
                 lengthMenu: "Mostrar _MENU_ " + config.entidade + " por Página",
                 zeroRecords: "Nenhum resultado encontrado."
-            }
+            },
         });
     });
 
     setTimeout(function () {
         var placeholders = {
             "tabela-fornecedores": "Fornecedor, tipo, localidade, estado…",
+            "tabela-equipamentos": "Código, equipamento, modelo, localização, estado…",
             "tabela-manutencoes-abertas": "Código, equipamento, procedimento, estado…",
             "tabela-calibracoes-abertas": "Código, equipamento, procedimento, estado…",
             "tabela-processos-encerrados": "Código, alvo, procedimento, execução, responsável, estado…",
             "tabela-transferencias": "Código, equipamento, origem, destino, pedido por, estado…",
             "tabela-emprestimos": "Código, equipamento, destino, responsável, devolução, estado…",
             "tabela-avarias": "Código, equipamento, acessório, reportado por, estado…",
-            "tabelaAcessoriosBD": "Código, acessório, tipo, estado, manutenção, calibração…"
+            "tabela-utilizadores": "Utilizador, tipo, serviço, email, estado…",
+            "tabela-localizacoes": "Código, departamento, edifício, piso, sala, estado…",
+            "tabela-preencher-equipamento": "Código, equipamento, localização, estado…",
+            "tabelaAcessoriosBD": "Código, acessório, tipo, estado, manutenção, calibração…",
+            "tabelaConsumiveis": "Código, consumível, categoria, stock, estado…"
         };
 
         /* Alargar barras de pesquisa para caber o texto completo do placeholder */
-        ["tabela-emprestimos", "tabela-avarias"].forEach(function (id) {
+        ["tabela-emprestimos", "tabela-avarias", "tabela-localizacoes"].forEach(function (id) {
             var tabela = document.getElementById(id);
             if (!tabela) return;
             var wrapper = tabela.closest(".dataTables_wrapper");
@@ -1917,6 +2065,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         aviso.style.display = bloqueado ? "" : "none";
         if (submitBtn) submitBtn.disabled = bloqueado;
+
+        if (bloqueado) {
+            setTimeout(function () {
+                aviso.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }, 50);
+        }
     }
 
     if (listaEquip) {
@@ -2066,7 +2220,7 @@ document.addEventListener('DOMContentLoaded', function () {
         setValue('codigoAcessorioBD', botao?.dataset.codigoPreview || 'Gerado automaticamente');
 
         if (tituloModal) {
-            tituloModal.innerHTML = '<i class="fa-solid fa-plug-circle-bolt me-2"></i>Adicionar AcessÃ³rio';
+            tituloModal.innerHTML = '<i class="fa-solid fa-plug-circle-bolt me-2"></i>Adicionar Acess\u00f3rio';
         }
 
         setChecked('requerManutencaoNaoBD', true);
@@ -2931,6 +3085,128 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+// Seletor de equipamento com pesquisa (acessorios.php, consumiveis.php)
+(function () {
+    document.querySelectorAll('.seletor-equipamento-pesquisa').forEach(function (wrapper) {
+        const input     = wrapper.querySelector('.seletor-eq-input');
+        const dropdown  = wrapper.querySelector('.seletor-eq-dropdown');
+        const hidden    = wrapper.querySelector('.seletor-eq-hidden');
+        const items     = wrapper.querySelectorAll('.seletor-eq-item');
+        if (!input || !dropdown || !items.length) return;
+
+        function fechar() { dropdown.classList.add('d-none'); }
+        function abrir()  { dropdown.classList.remove('d-none'); }
+
+        function filtrar() {
+            const termo = input.value.toLowerCase().trim();
+            let visiveis = 0;
+            items.forEach(function (item) {
+                const texto = item.textContent.toLowerCase();
+                const mostra = termo === '' || texto.includes(termo);
+                item.style.display = mostra ? '' : 'none';
+                if (mostra) visiveis++;
+            });
+            const semResultados = wrapper.querySelector('.seletor-eq-vazio');
+            if (semResultados) semResultados.style.display = visiveis === 0 ? '' : 'none';
+        }
+
+        input.addEventListener('focus', function () { filtrar(); abrir(); });
+        input.addEventListener('input', function () { filtrar(); abrir(); });
+
+        items.forEach(function (item) {
+            item.addEventListener('mousedown', function (e) {
+                e.preventDefault();
+                input.value  = item.dataset.label;
+                if (hidden) hidden.value = item.dataset.ref;
+                fechar();
+                const url = item.dataset.url;
+                if (url) window.location.href = url;
+            });
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!wrapper.contains(e.target)) fechar();
+        });
+    });
+})();
+
+// Validação do modal de movimentação de stock (consumiveis.php)
+(function () {
+    const form = document.getElementById('formMovimentarStock');
+    if (!form) return;
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const erros = [];
+        const qty = parseInt(document.getElementById('quantidadeMovimentoBD')?.value || '0', 10);
+        if (isNaN(qty) || qty < 1) erros.push('A quantidade deve ser um número inteiro maior que 0.');
+
+        const blocoErros = document.getElementById('erroModalMovStock');
+        const listaErros = document.getElementById('listaErrosMovStock');
+
+        if (erros.length > 0) {
+            listaErros.innerHTML = erros.map(function (e) { return '<li>' + e + '</li>'; }).join('');
+            blocoErros.classList.remove('d-none');
+            return;
+        }
+
+        blocoErros.classList.add('d-none');
+        form.submit();
+    });
+})();
+
+// Validação do modal de consumível (consumiveis.php)
+(function () {
+    const form = document.getElementById('formConsumivelBD');
+    if (!form) return;
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const erros = [];
+
+        const camposObrigatorios = [
+            { id: 'nomeConsumivelBD',      label: 'Nome do consumível' },
+            { id: 'categoriaConsumivelBD', label: 'Categoria' },
+        ];
+
+        camposObrigatorios.forEach(function (campo) {
+            const el = document.getElementById(campo.id);
+            if (!el || el.value.trim() === '') {
+                erros.push(campo.label + ' é obrigatório.');
+            }
+        });
+
+        /* Fornecedor obrigatório (campo hidden preenchido ao selecionar da lista) */
+        const hiddenForn = document.getElementById('idFornecedorConsumivelBD');
+        if (!hiddenForn || hiddenForn.value.trim() === '') {
+            erros.push('Fornecedor é obrigatório — selecione da lista.');
+        }
+
+        const acao = document.getElementById('acaoConsumivelBD');
+        if (acao && acao.value === 'criar') {
+            const stockEl = document.getElementById('stockInicialConsumivelBD');
+            if (!stockEl || parseFloat(stockEl.value) <= 0) {
+                erros.push('O stock inicial deve ser maior que 0.');
+            }
+        }
+
+        const blocoErros = document.getElementById('erroModalConsumivel');
+        const listaErros = document.getElementById('listaErrosModalConsumivel');
+
+        if (erros.length > 0) {
+            listaErros.innerHTML = erros.map(function (e) { return '<li>' + e + '</li>'; }).join('');
+            blocoErros.classList.remove('d-none');
+            blocoErros.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            return;
+        }
+
+        blocoErros.classList.add('d-none');
+        form.submit();
+    });
+})();
+
 // Validação do modal de acessório (acessorios.php)
 (function () {
     const form = document.getElementById('formAcessorioBD');
@@ -2944,11 +3220,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const camposObrigatorios = [
             { id: 'designacaoAcessorioBD',     label: 'Nome do acessório' },
             { id: 'tipoAcessorioBD',            label: 'Tipo' },
-            { id: 'fabricanteAcessorioBD',      label: 'Fabricante' },
             { id: 'modeloAcessorioBD',          label: 'Modelo' },
             { id: 'numeroSerieAcessorioBD',     label: 'N.º Série' },
             { id: 'dataAquisicaoAcessorioBD',   label: 'Data de aquisição' },
-            { id: 'idFornecedorGarantiaBD',     label: 'Fornecedor da garantia' },
+            { id: 'idFornecedorAcessorioBD',    label: 'Fornecedor' },
             { id: 'dataInicioGarantiaBD',       label: 'Data de início da garantia' },
             { id: 'dataFimGarantiaBD',          label: 'Data de fim da garantia' },
         ];
@@ -3007,6 +3282,31 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         blocoErros.classList.add('d-none');
-        form.submit();
+
+        const btnGuardar = form.querySelector('[type="submit"]');
+        const btnTextoOriginal = btnGuardar ? btnGuardar.innerHTML : '';
+        if (btnGuardar) { btnGuardar.disabled = true; btnGuardar.innerHTML = 'A guardar...'; }
+
+        fetch(form.action || window.location.href, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (data.sucesso) {
+                window.location.reload();
+            } else {
+                listaErros.innerHTML = '<li>' + (data.erro || 'Erro desconhecido.') + '</li>';
+                blocoErros.classList.remove('d-none');
+                blocoErros.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                if (btnGuardar) { btnGuardar.disabled = false; btnGuardar.innerHTML = btnTextoOriginal; }
+            }
+        })
+        .catch(function () {
+            listaErros.innerHTML = '<li>Erro de ligação. Tente novamente.</li>';
+            blocoErros.classList.remove('d-none');
+            if (btnGuardar) { btnGuardar.disabled = false; btnGuardar.innerHTML = btnTextoOriginal; }
+        });
     });
 })();

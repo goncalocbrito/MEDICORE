@@ -113,20 +113,50 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 </a>
 
                                 <button type="button"
-                                        class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-fornecedor"
+                                        class="btn btn-sm btn-eliminar"
                                         data-bs-toggle="modal"
-                                        data-bs-target="#modalApagarFornecedor"
-                                        data-id="<?php echo $fornecedor['id_fornecedor']; ?>"
-                                        data-codigo="<?php echo htmlspecialchars($fornecedor['id_fornecedor']); ?>"
-                                        data-nome="<?php echo htmlspecialchars($fornecedor['nome_empresa']); ?>"
-                                        data-tipo="<?php echo htmlspecialchars($fornecedor['tipo_fornecedor']); ?>"
-                                        data-nif="<?php echo htmlspecialchars($fornecedor['nif']); ?>"
-                                        data-email="<?php echo htmlspecialchars($fornecedor['email_fornecedor'] ?? ''); ?>"
-                                        data-telefone="<?php echo htmlspecialchars($fornecedor['telefone']); ?>"
-                                        data-localidade="<?php echo htmlspecialchars($fornecedor['localidade']); ?>"
-                                        data-estado="Ativo">
+                                        data-bs-target="#modalApagarFornecedor<?php echo (int)$fornecedor['id_fornecedor']; ?>">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
+
+                                <!-- Modal inline por fornecedor -->
+                                <div class="modal fade" id="modalApagarFornecedor<?php echo (int)$fornecedor['id_fornecedor']; ?>" tabindex="-1">
+                                    <div class="modal-dialog modal-dialog-centered modal-remocao-dialog">
+                                        <div class="modal-content modal-apagar-equipamento">
+                                            <div class="modal-header modal-remocao-header">
+                                                <div>
+                                                    <h5 class="modal-title">
+                                                        <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                                                        Confirmar remoção
+                                                    </h5>
+                                                    <p class="modal-remocao-subtitulo">Confirme os dados antes de remover o fornecedor.</p>
+                                                </div>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body modal-remocao-body">
+                                                <div class="modal-resumo-equipamento modal-resumo-remocao">
+                                                    <div class="modal-linha"><strong>Fornecedor</strong><span><?php echo htmlspecialchars($fornecedor['nome_empresa']); ?></span></div>
+                                                    <div class="modal-linha"><strong>Tipo</strong><span><?php echo htmlspecialchars($fornecedor['tipo_fornecedor']); ?></span></div>
+                                                    <div class="modal-linha"><strong>NIF</strong><span><?php echo htmlspecialchars($fornecedor['nif']); ?></span></div>
+                                                    <div class="modal-linha"><strong>Email</strong><span><?php echo htmlspecialchars($fornecedor['email_fornecedor'] ?? '---'); ?></span></div>
+                                                    <div class="modal-linha"><strong>Localidade</strong><span><?php echo htmlspecialchars($fornecedor['localidade'] ?? '---'); ?></span></div>
+                                                </div>
+                                                <p class="texto-confirmacao-remocao">Confirma que pretende remover este fornecedor da lista?</p>
+                                            </div>
+                                            <div class="modal-footer modal-remocao-footer">
+                                                <button type="button" class="btn btn-cancelar-modal" data-bs-dismiss="modal">
+                                                    <i class="fa-solid fa-xmark me-2"></i> Cancelar
+                                                </button>
+                                                <form action="apagar_fornecedor.php" method="post">
+                                                    <input type="hidden" name="id_fornecedor" value="<?php echo (int)$fornecedor['id_fornecedor']; ?>">
+                                                    <button type="submit" class="btn btn-confirmar-remocao">
+                                                        <i class="fa-solid fa-trash me-2"></i> Guardar Alteração
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -134,91 +164,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             </table>
         </div>
     </main>
-    <!-- =========================================================
-         MODAL PARA CONFIRMAR REMOCAO DO FORNECEDOR
-         Envia um POST para apagar_fornecedor.php, que muda isActive para 0.
-         ========================================================= -->
-    <div class="modal fade"
-         id="modalApagarFornecedor"
-         tabindex="-1"
-         aria-labelledby="modalApagarFornecedorLabel"
-         aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-remocao-dialog">
-            <div class="modal-content modal-apagar-equipamento">
-                <div class="modal-header modal-remocao-header">
-                    <div>
-                        <h5 class="modal-title" id="modalApagarFornecedorLabel">
-                            <i class="fa-solid fa-triangle-exclamation me-2"></i>
-                            Confirmar remocao
-                        </h5>
-                        <p class="modal-remocao-subtitulo">
-                            Confirme os dados antes de remover o fornecedor.
-                        </p>
-                    </div>
-                    <button type="button"
-                            class="btn-close btn-close-white"
-                            data-bs-dismiss="modal"
-                            aria-label="Fechar">
-                    </button>
-                </div>
-
-                <div class="modal-body modal-remocao-body">
-                    <div class="modal-resumo-equipamento modal-resumo-remocao">
-                        <div class="modal-linha">
-                            <strong>Fornecedor</strong>
-                            <span id="modalApagarFornecedorNome">---</span>
-                        </div>
-                        <div class="modal-linha">
-                            <strong>Tipo</strong>
-                            <span id="modalApagarFornecedorTipo">---</span>
-                        </div>
-                        <div class="modal-linha">
-                            <strong>NIF</strong>
-                            <span id="modalApagarFornecedorNif">---</span>
-                        </div>
-                        <div class="modal-linha">
-                            <strong>Email</strong>
-                            <span id="modalApagarFornecedorEmail">---</span>
-                        </div>
-                        <div class="modal-linha">
-                            <strong>Telefone</strong>
-                            <span id="modalApagarFornecedorTelefone">---</span>
-                        </div>
-                        <div class="modal-linha">
-                            <strong>Localidade</strong>
-                            <span id="modalApagarFornecedorLocalidade">---</span>
-                        </div>
-                        <div class="modal-linha">
-                            <strong>Estado</strong>
-                            <span id="modalApagarFornecedorEstado">---</span>
-                        </div>
-                    </div>
-
-                    <p class="texto-confirmacao-remocao">
-                        Confirma que pretende remover este fornecedor da lista?
-                    </p>
-                </div>
-
-                <div class="modal-footer modal-remocao-footer">
-                    <button type="button"
-                            class="btn btn-cancelar-modal"
-                            data-bs-dismiss="modal">
-                        <i class="fa-solid fa-xmark me-2"></i>
-                        Cancelar
-                    </button>
-
-                    <form action="apagar_fornecedor.php" method="post">
-                        <input type="hidden" name="id_fornecedor" id="modalApagarIdFornecedor">
-
-                        <button type="submit" class="btn btn-confirmar-remocao">
-                            <i class="fa-solid fa-trash me-2"></i>
-                            Guardar Alteracao
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
 <?php
 require_once __DIR__ . '/../../includes/footer.php';
 ?>

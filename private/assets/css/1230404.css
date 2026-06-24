@@ -605,6 +605,15 @@ body {
     color: var(--cor-branco);
 }
 
+.modal-footer .btn-eliminar {
+    border-radius: 24px;
+    width: auto;
+    height: auto;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
 /* Item ativo no submenu de Equipamentos */
 .submenu-equipamentos li a.submenu-active {
     background-color: rgba(255, 255, 255, 0.10);
@@ -720,6 +729,22 @@ body {
     color: #ffffff;
 }
 
+.btn-dados-teste {
+    background-color: #e8f4fd;
+    color: #1a6fa8;
+    border: 1.5px dashed #1a6fa8;
+    border-radius: 24px;
+    padding: 10px 20px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.btn-dados-teste:hover {
+    background-color: #1a6fa8;
+    color: #ffffff;
+    border-style: solid;
+}
+
 /* Responsividade do formulário - alteração feita por mim */
 @media (max-width: 768px) {
     .form-card {
@@ -828,6 +853,16 @@ body {
     border-radius: 20px;
     background-color: #eaf6f6;
     color: var(--cor-principal);
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.badge-detalhe-nao {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background-color: #f2f2f2;
+    color: #888;
     font-size: 0.88rem;
     font-weight: 700;
 }
@@ -1040,6 +1075,31 @@ body {
 
 .btn-documento-download:hover {
     background-color: var(--cor-secundaria-escura);
+    color: #ffffff;
+}
+
+.form-remover-documento {
+    display: flex;
+    margin: 0;
+}
+
+.btn-documento-remover {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background-color: #fdecea;
+    color: #c0392b;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.btn-documento-remover:hover {
+    background-color: #c0392b;
     color: #ffffff;
 }
 
@@ -1516,6 +1576,11 @@ body {
 .indicador-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 14px 32px rgba(18, 60, 70, 0.14);
+}
+
+a.indicador-card {
+    color: inherit;
+    cursor: pointer;
 }
 
 .indicador-card-alerta {
@@ -2633,9 +2698,42 @@ textarea[readonly] {
     overflow: visible;
 }
 
+/* Lista fechada por defeito */
+.lista-fornecedores-custom {
+    display: none;
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 0;
+    right: 0;
+    z-index: 600;
+    background: #fff;
+    border: 1px solid #c8e6e1;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.10);
+    max-height: 220px;
+    overflow-y: auto;
+    padding: 4px 0;
+}
+
 /* Mostra a lista quando o JS adiciona a classe ativo */
 .lista-fornecedores-custom.ativo {
     display: block;
+}
+
+/* Cada opção */
+.opcao-fornecedor-custom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 14px;
+    background: none;
+    border: none;
+    border-bottom: 1px solid #eef7f5;
+    text-align: left;
+    cursor: pointer;
+    transition: background .15s;
 }
 
 /* Remove linha no último item */
@@ -2880,6 +2978,58 @@ textarea[readonly] {
 
 .lista-checkbox-custom:not(.ativo) {
     display: none;
+}
+
+/* Lista de seleção direta (acessórios e consumíveis por equipamento) */
+.lista-selecao-equipamento {
+    width: 100%;
+    margin-top: 8px;
+    background-color: #ffffff;
+    border: 1px solid #cfe7e4;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.opcao-selecao-equipamento {
+    width: 100%;
+    border-bottom: 1px solid #e3f0ee;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.opcao-selecao-equipamento:last-child {
+    border-bottom: none;
+}
+
+.opcao-selecao-equipamento:hover {
+    background-color: #eef9f6;
+}
+
+.selecao-equipamento-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    flex: 1;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #29445c;
+}
+
+.selecao-equipamento-label input[type="checkbox"] {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.opcao-selecao-equipamento .selecao-equip-qtd {
+    width: 100px;
+    flex: 0 0 100px;
 }
 
 .campo-pesquisa-registo {
@@ -3196,8 +3346,9 @@ a.alerta-emprestimo-card:hover {
     position: absolute;
     top: 100%;
     left: 0;
-    width: 155px;
-    min-width: 155px;
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
     padding: 6px 0;
     margin: 0;
     list-style: none;
@@ -3389,3 +3540,27 @@ a.alerta-emprestimo-card:hover {
 /* Modais acima da top-header (z-index: 3000) */
 .modal-backdrop { z-index: 3500 !important; }
 .modal { z-index: 3600 !important; }
+
+.ficha-topo-acoes {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    width: 100%;
+}
+
+.ficha-topo-acoes .ficha-toolbar {
+    margin-top: 0;
+    align-self: flex-start;
+}
+
+@media (max-width: 768px) {
+    .ficha-topo-acoes {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .ficha-topo-acoes .ficha-toolbar {
+        justify-content: flex-start;
+    }
+}

@@ -17,23 +17,63 @@ $id_fornecedor = id_from_request();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $camposObrigatorios = [
-    'nomeFornecedor'        => 'Nome do fornecedor',
-    'tipoFornecedor'        => 'Tipo de fornecedor',
-    'nifFornecedor'         => 'NIF',
-    'telefoneFornecedor'    => 'Telefone',
-    'contactoResponsavel'   => 'Pessoa responsável',
-    'emailContacto'         => 'Email do contacto',
-    'moradaFornecedor'      => 'Morada',
-    'codigoPostalFornecedor' => 'Código postal',
-    'localidadeFornecedor'  => 'Localidade',
-    'paisFornecedor'        => 'País',
-];
+        'nomeFornecedor'         => 'Nome do Fornecedor',
+        'nifFornecedor'          => 'NIF',
+        'tipoFornecedor'         => 'Tipo de Fornecedor',
+        'telefoneFornecedor'     => 'Telefone do Fornecedor',
+        'emailEmpresaFornecedor' => 'Email do Fornecedor',
+        'contactoResponsavel'    => 'Pessoa Responsável',
+        'telefoneContacto'       => 'Telefone do Contacto',
+        'emailContacto'          => 'Email do Contacto',
+        'moradaFornecedor'       => 'Morada',
+        'codigoPostalFornecedor' => 'Código Postal',
+        'localidadeFornecedor'   => 'Localidade',
+        'paisFornecedor'         => 'País',
+    ];
 
-foreach ($camposObrigatorios as $campo => $label) {
-    if (trim($_POST[$campo] ?? '') === '') {
-        die('O campo "' . $label . '" é obrigatório.');
+    $erros = [];
+    foreach ($camposObrigatorios as $campo => $label) {
+        if (trim($_POST[$campo] ?? '') === '') {
+            $erros[] = 'O campo "' . $label . '" é obrigatório.';
+        }
     }
-}
+
+    $nif = trim($_POST['nifFornecedor'] ?? '');
+    if ($nif !== '' && !preg_match('/^\d{9}$/', $nif)) {
+        $erros[] = 'O NIF deve ter exatamente 9 dígitos.';
+    }
+    $tel = trim($_POST['telefoneFornecedor'] ?? '');
+    if ($tel !== '' && !preg_match('/^\d{9}$/', $tel)) {
+        $erros[] = 'O Telefone do Fornecedor deve ter exatamente 9 dígitos.';
+    }
+    $telC = trim($_POST['telefoneContacto'] ?? '');
+    if ($telC !== '' && !preg_match('/^\d{9}$/', $telC)) {
+        $erros[] = 'O Telefone do Contacto deve ter exatamente 9 dígitos.';
+    }
+    $emailF = trim($_POST['emailEmpresaFornecedor'] ?? '');
+    if ($emailF !== '' && !filter_var($emailF, FILTER_VALIDATE_EMAIL)) {
+        $erros[] = 'Email do Fornecedor inválido.';
+    }
+    $emailC = trim($_POST['emailContacto'] ?? '');
+    if ($emailC !== '' && !filter_var($emailC, FILTER_VALIDATE_EMAIL)) {
+        $erros[] = 'Email do Contacto inválido.';
+    }
+
+    $nifVal = trim($_POST['nifFornecedor'] ?? '');
+    if ($nifVal !== '') {
+        $stmtNif = $pdo->prepare("SELECT COUNT(*) FROM fornecedores WHERE nif = :nif AND isActive = 1 AND id_fornecedor != :id");
+        $stmtNif->execute([':nif' => $nifVal, ':id' => $id_fornecedor]);
+        if ((int) $stmtNif->fetchColumn() > 0) {
+            $erros[] = 'Já existe um fornecedor registado com o NIF "' . htmlspecialchars($nifVal) . '". O NIF deve ser único.';
+        }
+    }
+
+    if (!empty($erros)) {
+        // Recarrega a página com erros na sessão
+        $_SESSION['erros_ficha_fornecedor'] = $erros;
+        header('Location: ficha_fornecedor.php?ref=' . url_ref($id_fornecedor));
+        exit;
+    }
     $stmt = $pdo->prepare("
         UPDATE fornecedores
         SET
@@ -159,7 +199,26 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             </button>
         </div>
 
-        <?php if (isset($_GET['guardado'])): ?>
+        <?php if (!empty($_SESSION['erros_ficha_fornecedor'])): ?>
+            <div class="alert alert-danger" role="alert">
+                <strong><i class="fa-solid fa-triangle-exclamation me-2"></i>Erro</strong>
+                <ul class="mb-0 mt-1">
+                    <?php foreach ($_SESSION['erros_ficha_fornecedor'] as $erro): ?>
+                        <li><?php echo htmlspecialchars($erro); ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+            <?php unset($_SESSION['erros_ficha_fornecedor']); ?>
+        <?php endif; ?>
+
+        <?php if (isset($_GET['criado'])): ?>
+            <div class="form-alerta-sucesso" role="alert">
+                <strong>
+                    <i class="fa-solid fa-circle-check me-2"></i>
+                    Fornecedor criado com sucesso.
+                </strong>
+            </div>
+        <?php elseif (isset($_GET['guardado'])): ?>
             <div class="form-alerta-sucesso" role="alert">
                 <strong>
                     <i class="fa-solid fa-circle-check me-2"></i>
@@ -233,33 +292,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </button>
                     </li>
 
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link"
-                                id="documentos-tab"
-                                data-bs-toggle="tab"
-                                data-bs-target="#documentos"
-                                type="button"
-                                role="tab"
-                                aria-controls="documentos"
-                                aria-selected="false">
-                            <i class="fa-solid fa-folder-open me-2"></i>
-                            Documentos
-                        </button>
-                    </li>
-
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link"
-                                id="observacoes-tab"
-                                data-bs-toggle="tab"
-                                data-bs-target="#observacoes-tab-pane"
-                                type="button"
-                                role="tab"
-                                aria-controls="observacoes-tab-pane"
-                                aria-selected="false">
-                            <i class="fa-solid fa-clipboard-list me-2"></i>
-                            Observações
-                        </button>
-                    </li>
                 </ul>
 
                 <!-- =============================================
@@ -290,7 +322,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        id="nomeFornecedor"
                                        name="nomeFornecedor"
                                        value="<?php echo htmlspecialchars($fornecedor['nome_empresa']); ?>"
+                                       maxlength="255"
                                        required>
+                                <small class="texto-ajuda-form contador-caracteres" data-target="nomeFornecedor" data-max="255">0 / 255 caracteres</small>
                             </div>
 
                             <div class="col-md-4">
@@ -300,7 +334,10 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        id="nifFornecedor"
                                        name="nifFornecedor"
                                        value="<?php echo htmlspecialchars($fornecedor['nif']); ?>"
+                                       maxlength="9"
+                                       inputmode="numeric"
                                        required>
+                                <small class="texto-ajuda-form contador-caracteres" data-target="nifFornecedor" data-max="9">0 / 9 caracteres</small>
                             </div>
 
                             <div class="col-md-8">
@@ -336,51 +373,70 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                         <div class="row g-4">
                             <div class="col-md-4">
-                                <label for="telefoneFornecedor" class="form-label">Telefone *</label>
+                                <label for="telefoneFornecedor" class="form-label">Telefone do Fornecedor *</label>
                                 <input type="text"
                                        class="form-control campo-ficha campo-editavel"
                                        id="telefoneFornecedor"
                                        name="telefoneFornecedor"
                                        value="<?php echo htmlspecialchars($fornecedor['telefone']); ?>"
+                                       placeholder="Ex: 221234567"
+                                       maxlength="9"
+                                       inputmode="numeric"
                                        required>
+                                <small class="texto-ajuda-form contador-caracteres" data-target="telefoneFornecedor" data-max="9">0 / 9 caracteres</small>
                             </div>
 
                             <div class="col-md-4">
-                                <label for="emailEmpresaFornecedor" class="form-label">Email do Fornecedor</label>
+                                <label for="emailEmpresaFornecedor" class="form-label">Email do Fornecedor *</label>
                                 <input type="email"
                                        class="form-control campo-ficha campo-editavel"
                                        id="emailEmpresaFornecedor"
                                        name="emailEmpresaFornecedor"
-                                       value="<?php echo htmlspecialchars($fornecedor['email_fornecedor'] ?? ''); ?>">
+                                       value="<?php echo htmlspecialchars($fornecedor['email_fornecedor'] ?? ''); ?>"
+                                       placeholder="Ex: geral@fornecedor.pt"
+                                       maxlength="255"
+                                       required>
+                                <small class="texto-ajuda-form contador-caracteres" data-target="emailEmpresaFornecedor" data-max="255">0 / 255 caracteres</small>
                             </div>
 
                             <div class="col-md-4">
                                 <label for="contactoResponsavel" class="form-label">Pessoa Responsável *</label>
                                 <input type="text"
-                                    class="form-control campo-ficha campo-editavel"
-                                    id="contactoResponsavel"
-                                    name="contactoResponsavel"
-                                    value="<?php echo htmlspecialchars($fornecedor['pessoa_responsavel'] ?? ''); ?>"
-                                    required>
+                                       class="form-control campo-ficha campo-editavel"
+                                       id="contactoResponsavel"
+                                       name="contactoResponsavel"
+                                       value="<?php echo htmlspecialchars($fornecedor['pessoa_responsavel'] ?? ''); ?>"
+                                       placeholder="Ex: Ana Martins"
+                                       maxlength="150"
+                                       required>
+                                <small class="texto-ajuda-form contador-caracteres" data-target="contactoResponsavel" data-max="150">0 / 150 caracteres</small>
                             </div>
 
                             <div class="col-md-4">
-                                <label for="telefoneContacto" class="form-label">Telefone do Contacto</label>
+                                <label for="telefoneContacto" class="form-label">Telefone do Contacto *</label>
                                 <input type="text"
                                        class="form-control campo-ficha campo-editavel"
                                        id="telefoneContacto"
                                        name="telefoneContacto"
-                                       value="<?php echo htmlspecialchars($fornecedor['telefone_contacto'] ?? ''); ?>" required>
-
+                                       value="<?php echo htmlspecialchars($fornecedor['telefone_contacto'] ?? ''); ?>"
+                                       placeholder="Ex: 912345678"
+                                       maxlength="9"
+                                       inputmode="numeric"
+                                       required>
+                                <small class="texto-ajuda-form contador-caracteres" data-target="telefoneContacto" data-max="9">0 / 9 caracteres</small>
                             </div>
 
                             <div class="col-md-4">
-                                <label for="emailContacto" class="form-label">Email do Contacto</label>
+                                <label for="emailContacto" class="form-label">Email do Contacto *</label>
                                 <input type="email"
                                        class="form-control campo-ficha campo-editavel"
                                        id="emailContacto"
                                        name="emailContacto"
-                                       value="<?php echo htmlspecialchars($fornecedor['email_contacto'] ?? ''); ?>" required>
+                                       value="<?php echo htmlspecialchars($fornecedor['email_contacto'] ?? ''); ?>"
+                                       placeholder="Ex: tecnico@fornecedor.pt"
+                                       maxlength="255"
+                                       required>
+                                <small class="texto-ajuda-form contador-caracteres" data-target="emailContacto" data-max="255">0 / 255 caracteres</small>
                             </div>
                         </div>
                     </div>
@@ -402,21 +458,29 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                         <div class="row g-4">
                             <div class="col-md-6">
-                                <label for="moradaFornecedor" class="form-label">Morada</label>
+                                <label for="moradaFornecedor" class="form-label">Morada *</label>
                                 <input type="text"
                                        class="form-control campo-ficha campo-editavel"
                                        id="moradaFornecedor"
                                        name="moradaFornecedor"
-                                       value="<?php echo htmlspecialchars($fornecedor['morada'] ?? ''); ?>">
+                                       value="<?php echo htmlspecialchars($fornecedor['morada'] ?? ''); ?>"
+                                       placeholder="Ex: Rua da Tecnologia, nº 120"
+                                       maxlength="255"
+                                       required>
+                                <small class="texto-ajuda-form contador-caracteres" data-target="moradaFornecedor" data-max="255">0 / 255 caracteres</small>
                             </div>
 
                             <div class="col-md-2">
-                                <label for="codigoPostalFornecedor" class="form-label">Código Postal</label>
+                                <label for="codigoPostalFornecedor" class="form-label">Código Postal *</label>
                                 <input type="text"
                                        class="form-control campo-ficha campo-editavel"
                                        id="codigoPostalFornecedor"
                                        name="codigoPostalFornecedor"
-                                       value="<?php echo htmlspecialchars($fornecedor['codigo_postal'] ?? ''); ?>">
+                                       value="<?php echo htmlspecialchars($fornecedor['codigo_postal'] ?? ''); ?>"
+                                       placeholder="Ex: 4000-000"
+                                       maxlength="20"
+                                       required>
+                                <small class="texto-ajuda-form contador-caracteres" data-target="codigoPostalFornecedor" data-max="20">0 / 20 caracteres</small>
                             </div>
 
                             <div class="col-md-2">
@@ -426,16 +490,22 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        id="localidadeFornecedor"
                                        name="localidadeFornecedor"
                                        value="<?php echo htmlspecialchars($fornecedor['localidade'] ?? ''); ?>"
+                                       placeholder="Ex: Porto"
+                                       maxlength="100"
                                        required>
+                                <small class="texto-ajuda-form contador-caracteres" data-target="localidadeFornecedor" data-max="100">0 / 100 caracteres</small>
                             </div>
 
                             <div class="col-md-2">
-                                <label for="paisFornecedor" class="form-label">País</label>
+                                <label for="paisFornecedor" class="form-label">País *</label>
                                 <input type="text"
                                        class="form-control campo-ficha campo-editavel"
                                        id="paisFornecedor"
                                        name="paisFornecedor"
-                                       value="<?php echo htmlspecialchars($fornecedor['pais'] ?? 'Portugal'); ?>">
+                                       value="<?php echo htmlspecialchars($fornecedor['pais'] ?? 'Portugal'); ?>"
+                                       maxlength="100"
+                                       required>
+                                <small class="texto-ajuda-form contador-caracteres" data-target="paisFornecedor" data-max="100">0 / 100 caracteres</small>
                             </div>
                         </div>
                     </div>
@@ -445,7 +515,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                          Lista documentos existentes e permite adicionar
                          novos ficheiros quando a ficha está em edição.
                          ========================================= -->
-                    <div class="tab-pane fade"
+                    <div class="tab-pane fade d-none"
                          id="documentos"
                          role="tabpanel"
                          aria-labelledby="documentos-tab"
@@ -576,22 +646,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                          SEPARADOR 6: OBSERVAÇÕES
                          Campo livre para notas técnicas ou administrativas.
                          ========================================= -->
-                    <div class="tab-pane fade"
-                         id="observacoes-tab-pane"
-                         role="tabpanel"
-                         aria-labelledby="observacoes-tab"
-                         tabindex="0">
-
-                        <div class="secao-ficha-titulo">
-                            <h4>Observações</h4>
-                            <p>Notas sobre qualidade do serviço, tempos de resposta, histórico ou acompanhamento técnico.</p>
-                        </div>
-
-                        <textarea class="form-control campo-ficha campo-editavel"
-                                  id="observacoesFornecedor"
-                                  name="observacoesFornecedor"
-                                  rows="7"><?php echo htmlspecialchars($fornecedor['observacoes'] ?? ''); ?></textarea>
-                    </div>
                 </div>
             </div>
         </form>

@@ -62,7 +62,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
         <?php if (!empty($_GET['erro'])): ?>
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fa-solid fa-triangle-exclamation me-2"></i> Ocorreu um erro ao guardar. Tente novamente.
+                <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                <strong>Erro ao guardar:</strong> <?php echo htmlspecialchars($_GET['erro']); ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
@@ -112,13 +113,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                         <div class="row g-4">
                             <div class="col-md-6">
-                                <label class="form-label">Logótipo atual</label>
-                                <input type="text" class="form-control" name="navbar_logo"
-                                       value="<?= htmlspecialchars($config['navbar_logo']) ?>">
-                                <div class="form-text">Caminho relativo a partir de <code>public/</code></div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Substituir logótipo (ficheiro)</label>
+                                <input type="hidden" name="navbar_logo" value="<?= htmlspecialchars($config['navbar_logo']) ?>">
+                                <label class="form-label">Logótipo (ficheiro)</label>
                                 <input type="file" class="form-control" name="navbar_logo_ficheiro" accept=".png,.jpg,.jpeg,.webp,.svg">
                             </div>
 
@@ -178,13 +174,10 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             <?php foreach ($slides as $i => $slide): ?>
                             <div class="backoffice-editor-card">
                                 <h4>Slide <?= $i + 1 ?></h4>
-                                <input type="hidden" name="slide_id[]" value="<?= $slide['id_slide'] ?>">
+                                <input type="hidden" name="slide_id[]"     value="<?= $slide['id_slide'] ?>">
+                                <input type="hidden" name="slide_imagem[]" value="<?= htmlspecialchars($slide['imagem']) ?>">
 
-                                <label class="form-label">Caminho da imagem</label>
-                                <input type="text" class="form-control mb-2" name="slide_imagem[]"
-                                       value="<?= htmlspecialchars($slide['imagem']) ?>">
-
-                                <label class="form-label">Substituir imagem (ficheiro)</label>
+                                <label class="form-label">Imagem (ficheiro)</label>
                                 <input type="file" class="form-control mb-2" name="slide_ficheiro_<?= $slide['id_slide'] ?>" accept=".png,.jpg,.jpeg,.webp">
 
                                 <label class="form-label">Título</label>
@@ -230,10 +223,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                         <textarea class="form-control" name="hospital_descricao[]" rows="2"><?= htmlspecialchars($h['descricao']) ?></textarea>
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label">Imagem (nome s/ extensão)</label>
-                                        <input type="text" class="form-control mb-1" name="hospital_imagem[]"
-                                               value="<?= htmlspecialchars($h['imagem']) ?>"
-                                               placeholder="ex: hospital_central">
+                                        <input type="hidden" name="hospital_imagem[]" value="<?= htmlspecialchars($h['imagem']) ?>">
+                                        <label class="form-label">Imagem (ficheiro)</label>
                                         <input type="file" class="form-control" name="hospital_ficheiro_<?= $h['id_hospital'] ?>" accept=".png,.jpg,.jpeg,.webp">
                                     </div>
                                     <div class="col-md-1 d-flex flex-column gap-2 pt-4">
@@ -362,8 +353,8 @@ document.getElementById('btn-adicionar-hospital').addEventListener('click', func
                 <textarea class="form-control" name="hospital_descricao[]" rows="2" placeholder="Breve descrição..."></textarea>
             </div>
             <div class="col-md-3">
-                <label class="form-label">Imagem (nome s/ extensão)</label>
-                <input type="text" class="form-control mb-1" name="hospital_imagem[]" placeholder="ex: hospital_novo">
+                <input type="hidden" name="hospital_imagem[]" value="">
+                <label class="form-label">Imagem (ficheiro)</label>
                 <input type="file" class="form-control" name="hospital_ficheiro_novo_${novoIdx}" accept=".png,.jpg,.jpeg,.webp">
             </div>
             <div class="col-md-1 d-flex flex-column gap-2 pt-4">

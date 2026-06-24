@@ -99,7 +99,6 @@ $stmt = $pdo->query("
         codigo_utilizador,
         nome,
         tipo_utilizador,
-        departamento,
         email,
         telefone,
         cartao_cidadao,
@@ -142,7 +141,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 <tr>
                     <th>Utilizador</th>
                     <th>Tipo</th>
-                    <th>Serviço</th>
                     <th>Email</th>
                     <th>Estado</th>
                     <th class="text-center">Ações</th>
@@ -161,7 +159,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 <?php echo h($utilizador['tipo_utilizador']); ?>
                             </span>
                         </td>
-                        <td><?php echo h($utilizador['departamento'] ?: '---'); ?></td>
                         <td><?php echo h($utilizador['email']); ?></td>
                         <td>
                             <span class="estado <?php echo h(classe_estado_utilizador($utilizador['estado'])); ?>">
@@ -184,7 +181,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     data-cartao="<?php echo h($utilizador['cartao_cidadao']); ?>"
                                     data-email="<?php echo h($utilizador['email']); ?>"
                                     data-telefone="<?php echo h($utilizador['telefone']); ?>"
-                                    data-servico="<?php echo h($utilizador['departamento']); ?>"
                                     data-estado="<?php echo h($utilizador['estado']); ?>"
                                     title="Remover utilizador">
                                 <i class="fa-solid fa-trash"></i>
@@ -219,7 +215,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <div class="modal-linha"><strong>N.º CC</strong><span id="modalApagarUtilizadorCartao">---</span></div>
                     <div class="modal-linha"><strong>Email</strong><span id="modalApagarUtilizadorEmail">---</span></div>
                     <div class="modal-linha"><strong>Telefone</strong><span id="modalApagarUtilizadorTelefone">---</span></div>
-                    <div class="modal-linha"><strong>Serviço</strong><span id="modalApagarUtilizadorServico">---</span></div>
                     <div class="modal-linha"><strong>Estado</strong><span id="modalApagarUtilizadorEstado">---</span></div>
                 </div>
 

@@ -445,7 +445,7 @@ function obter_consumiveis_processo(PDO $pdo, $tipo, $id)
 {
     $sql = $tipo === 'manutencao'
         ? "
-            SELECT c.codigo_consumivel, c.nome, c.unidade, mc.quantidade_utilizada
+            SELECT c.codigo_consumivel, c.nome, c.stock_atual, mc.quantidade_utilizada
             FROM manutencoes_consumiveis mc
             INNER JOIN consumiveis c ON c.id_consumivel = mc.id_consumivel
             WHERE mc.id_manutencao = :id
@@ -453,7 +453,7 @@ function obter_consumiveis_processo(PDO $pdo, $tipo, $id)
             ORDER BY c.nome ASC
         "
         : "
-            SELECT c.codigo_consumivel, c.nome, c.unidade, cc.quantidade_utilizada
+            SELECT c.codigo_consumivel, c.nome, c.stock_atual, cc.quantidade_utilizada
             FROM calibracoes_consumiveis cc
             INNER JOIN consumiveis c ON c.id_consumivel = cc.id_consumivel
             WHERE cc.id_calibracao = :id
@@ -517,7 +517,9 @@ try {
 
         $decisao = $_POST['decisaoAdmin'] ?? '';
         $motivoDecisao = valor_ou_null($_POST['motivoDecisao'] ?? null);
-        $cobertaPorGarantia = (int) ($_POST['cobertaPorGarantiaDecisao'] ?? ($processo['coberta_por_garantia'] ?? 0));
+        // Garantia lida da BD — não alterável manualmente
+        $cobertaPorGarantia = (int) ($processo['coberta_por_garantia'] ?? 0);
+        $ehInternoProcesso  = ($processo['tipo_execucao'] ?? 'externa') === 'interna';
         $custo = null;
 
         if (!in_array($decisao, ['aprovado', 'reprovado'], true)) {
@@ -528,7 +530,7 @@ try {
             throw new Exception('Indique o motivo da reprovação.');
         }
 
-        if ($decisao === 'aprovado' && $cobertaPorGarantia === 0) {
+        if ($decisao === 'aprovado' && $cobertaPorGarantia === 0 && !$ehInternoProcesso) {
             $custo = decimal_ou_null($_POST['custoDecisao'] ?? null);
 
             if ($custo === null) {
@@ -550,7 +552,6 @@ try {
                     id_admin_decisao = :id_admin_decisao,
                     data_decisao = NOW(),
                     motivo_decisao = :motivo_decisao,
-                    coberta_por_garantia = :coberta_por_garantia,
                     custo = :custo,
                     atualizado_por = :atualizado_por
                 WHERE id_manutencao = :id
@@ -564,7 +565,6 @@ try {
                     id_admin_decisao = :id_admin_decisao,
                     data_decisao = NOW(),
                     motivo_decisao = :motivo_decisao,
-                    coberta_por_garantia = :coberta_por_garantia,
                     custo = :custo,
                     atualizado_por = :atualizado_por
                 WHERE id_calibracao = :id
@@ -576,7 +576,6 @@ try {
             ':decisao_admin' => $decisao,
             ':id_admin_decisao' => $_SESSION['id_utilizador'] ?? null,
             ':motivo_decisao' => $motivoDecisao,
-            ':coberta_por_garantia' => $cobertaPorGarantia,
             ':custo' => $custo,
             ':atualizado_por' => $utilizadorAtual,
             ':id' => $id
@@ -728,8 +727,25 @@ try {
 
     /* ---- Guardar dados finais (resultado, descrição, observações, data fecho) ---- */
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'guardar_dados_finais') {
+        if ($ehAdministrador) {
+            throw new Exception('O administrador não tem permissão para editar os dados do processo.');
+        }
         $descricao   = valor_ou_null($_POST['descricaoProcedimento'] ?? null);
         $observacoes = valor_ou_null($_POST['observacoesProcesso'] ?? null);
+
+        if (!$ehEncerrado && ($processo['estado_processo'] ?? '') === 'devolucao_equipamento') {
+            $resultado       = valor_ou_null($_POST['resultadoProcesso'] ?? null);
+            $dataFinalizacao = data_ou_null($_POST['dataFinalizacao'] ?? null);
+
+            $errosCampos = [];
+            if (!$dataFinalizacao) $errosCampos[] = 'Data de finalização';
+            if (!$resultado)       $errosCampos[] = 'Resultado';
+            if (!$descricao)       $errosCampos[] = 'Descrição do procedimento';
+
+            if (!empty($errosCampos)) {
+                throw new Exception('Os seguintes campos são obrigatórios: ' . implode(', ', $errosCampos) . '.');
+            }
+        }
 
         $pdo->beginTransaction();
 
@@ -880,6 +896,14 @@ try {
 
     /* ---- Avançar etapa ---- */
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'avancar_etapa') {
+        $estadoParaFinalizar = ($processo['estado_processo'] ?? '') === 'devolucao_equipamento';
+        if ($ehAdministrador && !$estadoParaFinalizar) {
+            throw new Exception('O administrador não tem permissão para avançar etapas do processo.');
+        }
+        if (!$ehAdministrador && $estadoParaFinalizar) {
+            throw new Exception('Apenas o administrador pode encerrar o processo nesta etapa.');
+        }
+
         $estadoAtual  = $processo['estado_processo'] ?? '';
         $estadoNovo   = proxima_etapa_processo($estadoAtual);
         $hoje         = date('Y-m-d');
@@ -987,10 +1011,110 @@ try {
             $processoFinal = obter_processo($pdo, $tipo, $id);
             $acessoriosProcessoFinal = obter_acessorios_processo($pdo, $tipo, $id);
             definir_estado_alvo_final($pdo, $processoFinal, $tipo, $processoFinal['resultado'] ?? null, $acessoriosProcessoFinal);
+
+            // Calcular automaticamente a próxima data com base na periodicidade do equipamento
+            $mesesPorPeriodicidade = ['semestral' => 6, 'anual' => 12, 'bienal' => 24, 'trienal' => 36];
+
+            $infoEquip = $pdo->prepare("
+                SELECT periodicidade_manutencao, periodicidade_calibracao
+                FROM equipamentos WHERE id_equipamento = :id
+            ");
+            $infoEquip->execute([':id' => $processoFinal['id_equipamento']]);
+            $equip = $infoEquip->fetch(PDO::FETCH_ASSOC);
+
+            if ($tipo === 'manutencao') {
+                $periodicidade = $equip['periodicidade_manutencao'] ?? null;
+                if ($periodicidade && isset($mesesPorPeriodicidade[$periodicidade])) {
+                    $meses = $mesesPorPeriodicidade[$periodicidade];
+                    $baseData = $dataEtapa ?: date('Y-m-d');
+                    $proximaData = date('Y-m-d', strtotime("+{$meses} months", strtotime($baseData)));
+                    $pdo->prepare("UPDATE manutencoes_equipamento SET proxima_manutencao = :proxima WHERE id_manutencao = :id")
+                        ->execute([':proxima' => $proximaData, ':id' => $id]);
+                }
+            } else {
+                $periodicidade = $equip['periodicidade_calibracao'] ?? null;
+                if ($periodicidade && isset($mesesPorPeriodicidade[$periodicidade])) {
+                    $meses = $mesesPorPeriodicidade[$periodicidade];
+                    $baseData = $dataEtapa ?: date('Y-m-d');
+                    $proximaData = date('Y-m-d', strtotime("+{$meses} months", strtotime($baseData)));
+                    $pdo->prepare("UPDATE calibracoes_equipamento SET proxima_calibracao = :proxima WHERE id_calibracao = :id")
+                        ->execute([':proxima' => $proximaData, ':id' => $id]);
+                }
+            }
         }
 
         $pdo->commit();
         $mensagem_sucesso = 'Etapa avançada para: ' . texto_estado_processo($estadoNovo);
+        $processo = obter_processo($pdo, $tipo, $id);
+    }
+
+    /* ---- Carregar fatura (processo encerrado) ---- */
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'carregar_fatura') {
+        if (!$ehAdministrador) {
+            throw new Exception('Apenas o administrador pode carregar faturas.');
+        }
+
+        if (!$ehEncerrado) {
+            throw new Exception('Só é possível carregar faturas em processos encerrados.');
+        }
+
+        if (empty($_FILES['ficheiroFatura']['name']) || $_FILES['ficheiroFatura']['error'] !== UPLOAD_ERR_OK) {
+            throw new Exception('Selecione um ficheiro para carregar.');
+        }
+
+        $processoFatura = obter_processo($pdo, $tipo, $id);
+        $codigoEquipamentoFatura = $processoFatura['codigo_equipamento'] ?? 'equipamento';
+        $codigoProcessoFatura    = $processoFatura['codigo_processo'] ?? 'processo';
+
+        $pastaFatura = __DIR__ . '/../../assets/documentos/equipamentos/' . $codigoEquipamentoFatura . '/processos/';
+        if (!is_dir($pastaFatura)) {
+            mkdir($pastaFatura, 0775, true);
+        }
+
+        $extFatura = strtolower(pathinfo($_FILES['ficheiroFatura']['name'], PATHINFO_EXTENSION));
+        if (!in_array($extFatura, ['pdf', 'jpg', 'jpeg', 'png'], true)) {
+            throw new Exception('Tipo de ficheiro não permitido. Use PDF, JPG ou PNG.');
+        }
+
+        $baseNomeFatura = normalizar_nome_ficheiro($_FILES['ficheiroFatura']['name']);
+        $nomeFinalFatura = $codigoProcessoFatura . '_fatura_' . $baseNomeFatura . '_' . time() . '.' . $extFatura;
+        $destinoFatura   = $pastaFatura . $nomeFinalFatura;
+
+        if (!move_uploaded_file($_FILES['ficheiroFatura']['tmp_name'], $destinoFatura)) {
+            throw new Exception('Não foi possível guardar a fatura.');
+        }
+
+        $tipoDocFatura  = $tipo === 'manutencao' ? 'fatura_manutencao' : 'fatura_calibracao';
+        $nomeDocFatura  = valor_ou_null($_POST['nomeFatura'] ?? null) ?: ($tipo === 'manutencao' ? 'Fatura de manutenção' : 'Fatura de calibração');
+        $caminhoFatura  = 'equipamentos/' . $codigoEquipamentoFatura . '/processos/' . $nomeFinalFatura;
+
+        $pdo->beginTransaction();
+
+        $stmtFatura = $pdo->prepare("
+            INSERT INTO documentos_equipamentos (
+                id_equipamento, id_acessorio, id_manutencao, id_calibracao,
+                id_equipamento_fornecedor, tipo_documento, nome_documento,
+                caminho_ficheiro, data_documento, data_validade, observacoes, atualizado_por
+            ) VALUES (
+                :id_equipamento, NULL, :id_manutencao, :id_calibracao,
+                NULL, :tipo_documento, :nome_documento,
+                :caminho_ficheiro, :data_documento, NULL, :observacoes, :atualizado_por
+            )
+        ");
+        $stmtFatura->execute([
+            ':id_equipamento'   => $processoFatura['id_equipamento'],
+            ':id_manutencao'    => $tipo === 'manutencao' ? $id : null,
+            ':id_calibracao'    => $tipo === 'calibracao'  ? $id : null,
+            ':tipo_documento'   => $tipoDocFatura,
+            ':nome_documento'   => $nomeDocFatura,
+            ':caminho_ficheiro' => $caminhoFatura,
+            ':data_documento'   => date('Y-m-d'),
+            ':observacoes'      => 'Fatura carregada para o processo ' . $codigoProcessoFatura,
+            ':atualizado_por'   => $utilizadorAtual
+        ]);
+
+        $pdo->commit();
+        $mensagem_sucesso = 'Fatura carregada com sucesso.';
         $processo = obter_processo($pdo, $tipo, $id);
     }
 
@@ -1052,11 +1176,24 @@ $alvoNome = $processo['equipamento_nome'] ?? 'Equipamento';
 $proximaIntervencao = $tipo === 'manutencao' ? ($processo['proxima_manutencao'] ?? null) : ($processo['proxima_calibracao'] ?? null);
 $dataIntervencao = $tipo === 'manutencao' ? ($processo['data_manutencao'] ?? null) : ($processo['data_calibracao'] ?? null);
 $descricaoProcedimento = $tipo === 'manutencao' ? ($processo['descricao_procedimento'] ?? null) : ($processo['procedimento'] ?? null);
-$urlVoltar = ($_GET['from'] ?? '') === 'encerrados' ? 'processos_encerrados.php' : 'calibracao_manutencao.php';
+if (($_GET['from'] ?? '') === 'encerrados') {
+    $urlVoltar = 'processos_encerrados.php';
+} elseif ($ehAdministrador) {
+    $urlVoltar = 'aprovacao_processos.php';
+} else {
+    $urlVoltar = 'calibracao_manutencao.php';
+}
 ?>
 
 <main class="conteudo-private ficha-equipamento-page">
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <?php if (!empty($erroAcessoFlash)): ?>
+        <div class="alert alert-danger">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+            <?php echo htmlspecialchars($erroAcessoFlash, ENT_QUOTES, 'UTF-8'); ?>
+        </div>
+    <?php endif; ?>
+
+    <div class="ficha-topo-acoes mb-4">
         <div>
             <h2 class="titulo-pagina">Detalhe do Processo</h2>
             <p class="subtitulo-pagina">
@@ -1070,11 +1207,28 @@ $urlVoltar = ($_GET['from'] ?? '') === 'encerrados' ? 'processos_encerrados.php'
                 Voltar à Lista
             </a>
 
-            <?php if (!empty($processo) && ($processo['estado_processo'] ?? '') !== 'aguarda_decisao'): ?>
+            <?php
+            $estadoAtualTopo = $processo['estado_processo'] ?? '';
+            $adminPodeEncerrar = $ehAdministrador && $estadoAtualTopo === 'devolucao_equipamento';
+            ?>
+            <?php if (!empty($processo) && $estadoAtualTopo !== 'aguarda_decisao' && !$adminPodeEncerrar): ?>
                 <button type="submit" form="formDadosFinais" id="btnGuardarTopo" class="btn btn-guardar">
                     <i class="fa-solid fa-floppy-disk me-2"></i>
                     Guardar Processo
                 </button>
+            <?php endif; ?>
+            <?php if ($adminPodeEncerrar): ?>
+                <form method="post" style="display:inline;">
+                    <input type="hidden" name="acao" value="avancar_etapa">
+                    <input type="hidden" name="tipo" value="<?php echo h($tipo); ?>">
+                    <input type="hidden" name="id" value="<?php echo h($id); ?>">
+                    <input type="hidden" name="dataEtapa" value="<?php echo date('Y-m-d'); ?>">
+                    <input type="hidden" name="observacoesEtapa" value="">
+                    <button type="submit" class="btn btn-guardar">
+                        <i class="fa-solid fa-flag-checkered me-2"></i>
+                        Encerrar Processo
+                    </button>
+                </form>
             <?php endif; ?>
         </div>
     </div>
@@ -1113,15 +1267,23 @@ $urlVoltar = ($_GET['from'] ?? '') === 'encerrados' ? 'processos_encerrados.php'
                 <input type="hidden" name="acao" value="decidir_processo">
 
                 <div class="col-md-4">
-                    <label for="cobertaPorGarantiaDecisao" class="form-label">Coberto por garantia?</label>
-                    <select class="form-select" id="cobertaPorGarantiaDecisao" name="cobertaPorGarantiaDecisao">
-                        <option value="0">Não</option>
-                        <option value="1">Sim</option>
-                    </select>
+                    <label class="form-label">Coberto por garantia</label>
+                    <?php $garantiaAtual = (int) ($processo['coberta_por_garantia'] ?? 0); ?>
+                    <div class="campo-visualizacao">
+                        <?php if ($garantiaAtual === 1): ?>
+                            <span class="estado estado-ativo">Sim</span>
+                        <?php else: ?>
+                            <span class="estado estado-inativo">Não</span>
+                        <?php endif; ?>
+                    </div>
                 </div>
 
-                <div class="col-md-4">
-                    <label for="custoDecisao" class="form-label">Custo previsto</label>
+                <?php
+                $ehInternoDetalhe  = ($processo['tipo_execucao'] ?? 'externa') === 'interna';
+                $mostrarCustoAdmin = !$ehInternoDetalhe && $garantiaAtual === 0;
+                ?>
+                <div class="col-md-4" id="campoCustoDecisao" <?php echo $mostrarCustoAdmin ? '' : 'style="display:none;"'; ?>>
+                    <label for="custoDecisao" class="form-label">Custo previsto (€) <span class="text-danger">*</span></label>
                     <input type="number"
                         step="0.01"
                         min="0"
@@ -1129,6 +1291,7 @@ $urlVoltar = ($_GET['from'] ?? '') === 'encerrados' ? 'processos_encerrados.php'
                         id="custoDecisao"
                         name="custoDecisao"
                         placeholder="Ex: 125.00">
+                    <small class="text-muted">Obrigatório quando não coberto por garantia.</small>
                 </div>
 
                 <div class="col-md-4">
@@ -1182,29 +1345,6 @@ $urlVoltar = ($_GET['from'] ?? '') === 'encerrados' ? 'processos_encerrados.php'
     <?php if ($mostrarFormularioTecnico): ?>
     <div class="form-ficha-equipamento">
 
-        <?php if (($processo['estado_processo'] ?? '') === 'devolucao_equipamento'): ?>
-        <div class="card-formulario mb-4" style="border: 2px solid var(--cor-secundaria);">
-            <div class="secao-ficha-titulo mb-2">
-                <h4><i class="fa-solid fa-flag-checkered me-2"></i>Processo pronto a finalizar</h4>
-                <p class="mb-0">O equipamento foi devolvido. Confirma os dados finais no separador <strong>Dados finais</strong> e clica em Finalizar Processo.</p>
-            </div>
-            <div class="d-flex gap-3 mt-3">
-                <a href="<?php echo h($urlVoltar); ?>" class="btn btn-voltar">
-                    <i class="fa-solid fa-arrow-left me-2"></i>Voltar à Lista
-                </a>
-                <form id="formFinalizar" method="post" style="display:inline;">
-                    <input type="hidden" name="acao" value="avancar_etapa">
-                    <input type="hidden" name="tipo" value="<?php echo h($tipo); ?>">
-                    <input type="hidden" name="id" value="<?php echo h($id); ?>">
-                    <input type="hidden" name="dataEtapa" value="<?php echo date('Y-m-d'); ?>">
-                    <input type="hidden" name="observacoesEtapa" value="">
-                    <button type="submit" class="btn btn-guardar">
-                        <i class="fa-solid fa-flag-checkered me-2"></i>Finalizar Processo
-                    </button>
-                </form>
-            </div>
-        </div>
-        <?php endif; ?>
 
         <div class="ficha-area">
             <ul class="nav nav-tabs ficha-tabs" id="tabsDetalheProcesso" role="tablist">
@@ -1213,7 +1353,7 @@ $urlVoltar = ($_GET['from'] ?? '') === 'encerrados' ? 'processos_encerrados.php'
                         <i class="fa-solid fa-circle-info me-2"></i>Resumo
                     </button>
                 </li>
-                <?php if (!$ehEncerrado): ?>
+                <?php if (!$ehEncerrado && !$ehAdministrador): ?>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="tab-etapa" data-bs-toggle="tab" data-bs-target="#conteudo-etapa" type="button" role="tab">
                         <i class="fa-solid fa-pen-to-square me-2"></i>Etapa
@@ -1230,6 +1370,13 @@ $urlVoltar = ($_GET['from'] ?? '') === 'encerrados' ? 'processos_encerrados.php'
                         <i class="fa-solid fa-file-lines me-2"></i>Documentos
                     </button>
                 </li>
+                <?php if ($ehEncerrado && $ehAdministrador): ?>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tab-fatura" data-bs-toggle="tab" data-bs-target="#conteudo-fatura" type="button" role="tab">
+                        <i class="fa-solid fa-file-invoice-dollar me-2"></i>Fatura
+                    </button>
+                </li>
+                <?php endif; ?>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="tab-historico" data-bs-toggle="tab" data-bs-target="#conteudo-historico" type="button" role="tab">
                         <i class="fa-solid fa-timeline me-2"></i>Histórico
@@ -1282,7 +1429,10 @@ $urlVoltar = ($_GET['from'] ?? '') === 'encerrados' ? 'processos_encerrados.php'
                                     <?php foreach ($consumiveisProcesso as $consumivel): ?>
                                         <div>
                                             <?php echo h($consumivel['codigo_consumivel'] . ' - ' . $consumivel['nome']); ?>
-                                            <?php echo h($consumivel['quantidade_utilizada'] . ' ' . ($consumivel['unidade'] ?? '')); ?>
+                                            <?php echo h('Quantidade usada: ' . $consumivel['quantidade_utilizada']); ?>
+                                                <small class="d-block text-muted">
+                                                    Stock atual: <?php echo h($consumivel['stock_atual']); ?>
+                                                </small>
                                         </div>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
@@ -1330,7 +1480,26 @@ $urlVoltar = ($_GET['from'] ?? '') === 'encerrados' ? 'processos_encerrados.php'
                     </div>
 
                     <?php $proximaEtapa = proxima_etapa_processo($processo['estado_processo'] ?? ''); ?>
+                    <?php $engenheiroAguardaEncerramento = !$ehAdministrador && ($processo['estado_processo'] ?? '') === 'devolucao_equipamento'; ?>
 
+                    <?php if ($engenheiroAguardaEncerramento): ?>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Etapa atual</label>
+                                <div class="campo-visualizacao"><?php echo h(texto_estado_processo($processo['estado_processo'] ?? '')); ?></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Próxima etapa</label>
+                                <div class="campo-visualizacao"><?php echo h(texto_estado_processo('processo_finalizado')); ?></div>
+                            </div>
+                            <div class="col-12">
+                                <div class="alert alert-info mb-0">
+                                    <i class="fa-solid fa-circle-info me-2"></i>
+                                    O equipamento foi devolvido. Preencha os <strong>Dados finais</strong> (resultado e descrição do procedimento) e aguarde que o <strong>Administrador</strong> encerre o processo.
+                                </div>
+                            </div>
+                        </div>
+                    <?php else: ?>
                     <form id="formAvancarEtapa" method="post">
                         <input type="hidden" name="acao" value="avancar_etapa">
                         <input type="hidden" name="tipo" value="<?php echo h($tipo); ?>">
@@ -1364,7 +1533,7 @@ $urlVoltar = ($_GET['from'] ?? '') === 'encerrados' ? 'processos_encerrados.php'
                                 <div class="col-12">
                                     <button type="submit" form="formAvancarEtapa" class="btn btn-guardar" id="btnAvancarEtapaInterno" data-finalizar="<?php echo $proximaEtapa === 'processo_finalizado' ? '1' : '0'; ?>">
                                         <?php if ($proximaEtapa === 'processo_finalizado'): ?>
-                                            <i class="fa-solid fa-flag-checkered me-2"></i>Finalizar Processo
+                                            <i class="fa-solid fa-flag-checkered me-2"></i>Encerrar Processo
                                         <?php else: ?>
                                             <i class="fa-solid fa-arrow-right me-2"></i>Avançar Etapa
                                         <?php endif; ?>
@@ -1373,6 +1542,7 @@ $urlVoltar = ($_GET['from'] ?? '') === 'encerrados' ? 'processos_encerrados.php'
                             <?php endif; ?>
                         </div>
                     </form>
+                    <?php endif; ?>
                 </div>
 
                 <div class="tab-pane fade" id="conteudo-dados" role="tabpanel">
@@ -1387,10 +1557,22 @@ $urlVoltar = ($_GET['from'] ?? '') === 'encerrados' ? 'processos_encerrados.php'
                         </p>
                     </div>
 
+                    <?php
+                        $estadoDevolucao = !$ehEncerrado && ($processo['estado_processo'] ?? '') === 'devolucao_equipamento';
+                        $asterisco = $estadoDevolucao && !$ehAdministrador ? ' <span class="text-danger">*</span>' : '';
+                    ?>
+
+                    <?php if ($estadoDevolucao && !$ehAdministrador && ($processo['tipo_execucao'] ?? 'externa') === 'externa'): ?>
+                        <div class="alert alert-warning mb-3">
+                            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                            Não te esqueças de carregar o relatório/certificado no separador <strong>Documentos</strong>.
+                        </div>
+                    <?php endif; ?>
+
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label">Data de finalização</label>
-                            <?php if ($ehEncerrado): ?>
+                            <label class="form-label">Data de finalização<?php echo $asterisco; ?></label>
+                            <?php if ($ehEncerrado || $ehAdministrador): ?>
                                 <div class="campo-visualizacao"><?php echo h(formatar_data($processo['data_finalizacao'] ?? null)); ?></div>
                             <?php else: ?>
                                 <input type="date" class="form-control" id="dataFinalizacao" name="dataFinalizacao" form="formDadosFinais" value="<?php echo valor_data($processo['data_finalizacao'] ?? null); ?>">
@@ -1398,8 +1580,8 @@ $urlVoltar = ($_GET['from'] ?? '') === 'encerrados' ? 'processos_encerrados.php'
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Resultado <?php echo $tipo === 'manutencao' ? 'da manutenção' : 'da calibração'; ?></label>
-                            <?php if ($ehEncerrado): ?>
+                            <label class="form-label">Resultado <?php echo $tipo === 'manutencao' ? 'da manutenção' : 'da calibração'; ?><?php echo $asterisco; ?></label>
+                            <?php if ($ehEncerrado || $ehAdministrador): ?>
                                 <div class="campo-visualizacao">
                                     <?php
                                         $textoResultados = [
@@ -1421,15 +1603,23 @@ $urlVoltar = ($_GET['from'] ?? '') === 'encerrados' ? 'processos_encerrados.php'
                         </div>
 
                         <div class="col-12">
-                            <label for="descricaoProcedimento" class="form-label">Descrição do procedimento</label>
-                            <textarea class="form-control" id="descricaoProcedimento" name="descricaoProcedimento" rows="4" maxlength="2000" form="formDadosFinais"><?php echo h($descricaoProcedimento); ?></textarea>
-                            <small class="texto-ajuda-form contador-caracteres" data-target="descricaoProcedimento" data-max="2000">0 / 2000 caracteres</small>
+                            <label class="form-label">Descrição do procedimento<?php echo $asterisco; ?></label>
+                            <?php if ($ehAdministrador): ?>
+                                <div class="campo-visualizacao"><?php echo h($descricaoProcedimento ?: '---'); ?></div>
+                            <?php else: ?>
+                                <textarea class="form-control" id="descricaoProcedimento" name="descricaoProcedimento" rows="4" maxlength="2000" form="formDadosFinais"><?php echo h($descricaoProcedimento); ?></textarea>
+                                <small class="texto-ajuda-form contador-caracteres" data-target="descricaoProcedimento" data-max="2000">0 / 2000 caracteres</small>
+                            <?php endif; ?>
                         </div>
 
                         <div class="col-12">
-                            <label for="observacoesProcesso" class="form-label">Observações</label>
-                            <textarea class="form-control" id="observacoesProcesso" name="observacoesProcesso" rows="3" maxlength="1000" form="formDadosFinais"><?php echo h($processo['observacoes'] ?? ''); ?></textarea>
-                            <small class="texto-ajuda-form contador-caracteres" data-target="observacoesProcesso" data-max="1000">0 / 1000 caracteres</small>
+                            <label class="form-label">Observações</label>
+                            <?php if ($ehAdministrador): ?>
+                                <div class="campo-visualizacao"><?php echo h($processo['observacoes'] ?? '---'); ?></div>
+                            <?php else: ?>
+                                <textarea class="form-control" id="observacoesProcesso" name="observacoesProcesso" rows="3" maxlength="1000" form="formDadosFinais"><?php echo h($processo['observacoes'] ?? ''); ?></textarea>
+                                <small class="texto-ajuda-form contador-caracteres" data-target="observacoesProcesso" data-max="1000">0 / 1000 caracteres</small>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -1445,6 +1635,7 @@ $urlVoltar = ($_GET['from'] ?? '') === 'encerrados' ? 'processos_encerrados.php'
                         </p>
                     </div>
 
+                    <?php if (!$ehAdministrador): ?>
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
                             <label for="nomeDocumento" class="form-label">Nome do documento</label>
@@ -1461,6 +1652,7 @@ $urlVoltar = ($_GET['from'] ?? '') === 'encerrados' ? 'processos_encerrados.php'
                             <input type="file" class="form-control" id="ficheiroRelatorio" name="ficheiroRelatorio" form="formDadosFinais" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
                         </div>
                     </div>
+                    <?php endif; ?>
 
                     <h5 class="subtitulo-bloco-form">Documentos associados</h5>
                     <?php if (empty($documentos)): ?>
@@ -1477,9 +1669,20 @@ $urlVoltar = ($_GET['from'] ?? '') === 'encerrados' ? 'processos_encerrados.php'
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($documentos as $documento): ?>
+                                    <?php
+                                    $tiposDocLabel = [
+                                        'relatorio_manutencao'   => 'Relatório',
+                                        'certificado_calibracao' => 'Certificado',
+                                        'contrato_manutencao'    => 'Contrato',
+                                        'contrato_calibracao'    => 'Contrato',
+                                        'fatura_manutencao'      => 'Fatura',
+                                        'fatura_calibracao'      => 'Fatura',
+                                    ];
+                                    foreach ($documentos as $documento):
+                                        $labelTipo = $tiposDocLabel[$documento['tipo_documento']] ?? str_replace('_', ' ', ucfirst($documento['tipo_documento']));
+                                    ?>
                                         <tr>
-                                            <td><?php echo h(str_replace('_', ' ', ucfirst($documento['tipo_documento']))); ?></td>
+                                            <td><?php echo h($labelTipo); ?></td>
                                             <td><?php echo h($documento['nome_documento']); ?></td>
                                             <td><?php echo h(formatar_data($documento['data_documento'])); ?></td>
                                             <td>
@@ -1494,6 +1697,72 @@ $urlVoltar = ($_GET['from'] ?? '') === 'encerrados' ? 'processos_encerrados.php'
                         </div>
                     <?php endif; ?>
                 </div>
+
+                <?php if ($ehEncerrado && $ehAdministrador): ?>
+                <div class="tab-pane fade" id="conteudo-fatura" role="tabpanel">
+                    <div class="secao-ficha-titulo">
+                        <h4><i class="fa-solid fa-file-invoice-dollar me-2"></i>Fatura do processo</h4>
+                        <p>Carregue a fatura associada a este processo encerrado.</p>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data" class="row g-3">
+                        <input type="hidden" name="acao" value="carregar_fatura">
+                        <input type="hidden" name="tipo" value="<?php echo h($tipo); ?>">
+                        <input type="hidden" name="id" value="<?php echo h($id); ?>">
+
+                        <div class="col-md-6">
+                            <label for="nomeFatura" class="form-label">Nome da fatura</label>
+                            <input type="text" class="form-control" id="nomeFatura" name="nomeFatura"
+                                   maxlength="255" placeholder="Ex: Fatura n.º 2026/001">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="ficheiroFatura" class="form-label">Ficheiro <span class="text-danger">*</span> <small class="text-muted">(PDF, JPG, PNG)</small></label>
+                            <input type="file" class="form-control" id="ficheiroFatura" name="ficheiroFatura"
+                                   accept=".pdf,.jpg,.jpeg,.png" required>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-guardar">
+                                <i class="fa-solid fa-upload me-2"></i> Carregar Fatura
+                            </button>
+                        </div>
+                    </form>
+
+                    <?php
+                    $faturas = array_filter($documentos, fn($d) => in_array($d['tipo_documento'], ['fatura_manutencao', 'fatura_calibracao'], true));
+                    ?>
+                    <?php if (!empty($faturas)): ?>
+                        <h5 class="subtitulo-bloco-form mt-4">Faturas associadas</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle tabela-equipamentos">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Data</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($faturas as $fatura): ?>
+                                        <tr>
+                                            <td><?php echo h($fatura['nome_documento']); ?></td>
+                                            <td><?php echo h(formatar_data($fatura['data_documento'])); ?></td>
+                                            <td>
+                                                <a class="btn btn-sm btn-documento-ver"
+                                                   href="../../assets/documentos/<?php echo h($fatura['caminho_ficheiro']); ?>"
+                                                   target="_blank">
+                                                    <i class="fa-solid fa-eye me-1"></i> Ver
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php else: ?>
+                        <p class="text-muted mt-3">Ainda não existe nenhuma fatura associada a este processo.</p>
+                    <?php endif; ?>
+                </div>
+                <?php endif; ?>
 
                 <div class="tab-pane fade" id="conteudo-historico" role="tabpanel">
                     <div class="secao-ficha-titulo">
@@ -1555,6 +1824,7 @@ $urlVoltar = ($_GET['from'] ?? '') === 'encerrados' ? 'processos_encerrados.php'
         </div>
     <?php endif; ?>
 </main>
+
 
 <?php
 require_once __DIR__ . '/../../includes/footer.php';

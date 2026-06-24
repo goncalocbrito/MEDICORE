@@ -70,13 +70,7 @@ $fotoPerfilUrl = $fotoPerfil !== ''
     </div>
 </header>
 
-<?php if (!empty($_SESSION['erro_acesso'])): ?>
-    <div class="container-fluid px-5 mt-3">
-        <div class="alert alert-danger alerta-acesso-negado">
-            <i class="fa-solid fa-triangle-exclamation me-2"></i>
-            <?php echo htmlspecialchars($_SESSION['erro_acesso'], ENT_QUOTES, 'UTF-8'); ?>
-        </div>
-    </div>
-
-    <?php unset($_SESSION['erro_acesso']); ?>
-<?php endif; ?>
+<?php
+$erroAcessoFlash = $_SESSION['erro_acesso'] ?? '';
+unset($_SESSION['erro_acesso']);
+?>

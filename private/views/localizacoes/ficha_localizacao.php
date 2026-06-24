@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../includes/funcoes.php';
+require_once __DIR__ . '/../../includes/validacoes.php';
 redirect_if_not_logged();
 
 require_once __DIR__ . '/../../../config/config.php';
@@ -13,6 +14,16 @@ $pdo = new PDO(
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     ]
 );
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'apagar_localizacao') {
+    $idApagar = (int) ($_POST['id_localizacao'] ?? 0);
+    if ($idApagar > 0) {
+        $pdo->prepare("UPDATE localizacoes SET isActive = 0 WHERE id_localizacao = :id")
+            ->execute([':id' => $idApagar]);
+    }
+    header('Location: lista_localizacoes.php?apagado=1');
+    exit;
+}
 
 $idLocalizacao = id_from_request();
 
@@ -61,18 +72,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($departamentoSigla === '') {
         $errosLocalizacao[] = 'O campo "Sigla" é obrigatório.';
+    } elseif ($erro = validar_sigla($departamentoSigla)) {
+        $errosLocalizacao[] = $erro;
     }
 
     if ($edificio === '') {
         $errosLocalizacao[] = 'O campo "Edifício" é obrigatório.';
+    } elseif ($erro = validar_apenas_letras($edificio, 'Edifício')) {
+        $errosLocalizacao[] = $erro;
     }
 
     if ($piso === '') {
         $errosLocalizacao[] = 'O campo "Piso" é obrigatório.';
+    } elseif (!preg_match('/^-?\d{1,2}$/', $piso)) {
+        $errosLocalizacao[] = '"Piso" deve ser um número (positivo ou negativo) com no máximo 2 dígitos. Ex: -1, 0, 2.';
     }
 
     if ($sala === '') {
         $errosLocalizacao[] = 'O campo "Sala" é obrigatório.';
+    } elseif ($erro = validar_apenas_digitos($sala, 'Sala', 1, 3)) {
+        $errosLocalizacao[] = $erro;
     }
 
     if ($tipoEspaco === '') {
@@ -81,6 +100,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($estado === '') {
         $errosLocalizacao[] = 'O campo "Estado" é obrigatório.';
+    }
+
+    if ($capacidadeEquipamentos === '') {
+        $errosLocalizacao[] = 'O campo "Capacidade de Equipamentos" é obrigatório.';
+    }
+
+    if (empty($errosLocalizacao)) {
+        $stmtDup = $pdo->prepare("SELECT COUNT(*) FROM localizacoes WHERE codigo = :codigo AND isActive = 1 AND id_localizacao != :id");
+        $stmtDup->execute([':codigo' => $codigo, ':id' => $idLocalizacao]);
+        if ((int) $stmtDup->fetchColumn() > 0) {
+            $errosLocalizacao[] = 'Já existe uma localização com o código "' . htmlspecialchars($codigo) . '". Altere a sigla, o piso ou a sala para gerar um código único.';
+        }
     }
 
     if (empty($errosLocalizacao)) {
@@ -207,13 +238,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
     <?php endif; ?>
 
     <?php if (!empty($errosLocalizacao)): ?>
-        <div class="form-alerta-erros" role="alert">
-            <strong>
-                <i class="fa-solid fa-triangle-exclamation me-2"></i>
-                Não foi possível guardar as alterações.
-            </strong>
-
-            <ul>
+        <div class="alert alert-danger" role="alert">
+            <strong><i class="fa-solid fa-triangle-exclamation me-2"></i> Erro</strong>
+            <ul class="mb-0 mt-1">
                 <?php foreach ($errosLocalizacao as $erro): ?>
                     <li><?php echo htmlspecialchars($erro); ?></li>
                 <?php endforeach; ?>
@@ -224,7 +251,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
     <form class="form-equipamento form-ficha-equipamento"
       id="formFichaLocalizacao"
       action="ficha_localizacao.php?ref=<?php echo url_ref($localizacao['id_localizacao']); ?>"
-      method="post">
+      method="post"
+      novalidate>
 
         <input type="hidden"
                id="idLocalizacao"
@@ -314,13 +342,14 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="col-md-3">
-                            <label for="departamentoSigla" class="form-label">Sigla *</label>
+                            <label for="departamentoSigla" class="form-label">Sigla * <small class="text-muted">(máx. 3 letras)</small></label>
                             <input type="text"
                                    class="form-control campo-ficha campo-editavel"
                                    id="departamentoSigla"
                                    name="departamentoSigla"
                                    value="<?php echo htmlspecialchars($localizacao['departamento_sigla']); ?>"
-                                   maxlength="20"
+                                   maxlength="3"
+                                   oninput="this.value=this.value.toUpperCase().replace(/[^A-Za-z]/g,'')"
                                    required>
                         </div>
 
@@ -335,22 +364,26 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="col-md-2">
-                            <label for="pisoLocalizacao" class="form-label">Piso *</label>
+                            <label for="pisoLocalizacao" class="form-label">Piso * <small class="text-muted">(ex: -1, 0, 2)</small></label>
                             <input type="text"
                                    class="form-control campo-ficha campo-editavel"
                                    id="pisoLocalizacao"
                                    name="pisoLocalizacao"
                                    value="<?php echo htmlspecialchars($localizacao['piso']); ?>"
+                                   maxlength="3"
+                                   oninput="this.value=this.value.replace(/[^0-9-]/g,'').replace(/(?!^)-/g,'')"
                                    required>
                         </div>
 
                         <div class="col-md-3">
-                            <label for="salaLocalizacao" class="form-label">Sala *</label>
+                            <label for="salaLocalizacao" class="form-label">Sala * <small class="text-muted">(máx. 3 dígitos)</small></label>
                             <input type="text"
                                    class="form-control campo-ficha campo-editavel"
                                    id="salaLocalizacao"
                                    name="salaLocalizacao"
                                    value="<?php echo htmlspecialchars($localizacao['sala']); ?>"
+                                   maxlength="3"
+                                   oninput="this.value=this.value.replace(/\D/g,'')"
                                    required>
                         </div>
 
@@ -428,13 +461,14 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="col-md-4">
-                            <label for="capacidadeEquipamentos" class="form-label">Capacidade de Equipamentos</label>
+                            <label for="capacidadeEquipamentos" class="form-label">Capacidade de Equipamentos *</label>
                             <input type="number"
                                    class="form-control campo-ficha campo-editavel"
                                    id="capacidadeEquipamentos"
                                    name="capacidadeEquipamentos"
                                    min="0"
-                                   value="<?php echo htmlspecialchars($localizacao['capacidade_equipamentos'] ?? ''); ?>">
+                                   value="<?php echo htmlspecialchars($localizacao['capacidade_equipamentos'] ?? ''); ?>"
+                                   required>
                         </div>
 
                         <div class="col-md-4">
@@ -482,49 +516,15 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                               id="observacoesLocalizacao"
                               name="observacoesLocalizacao"
                               rows="7"
+                              maxlength="1000"
                               placeholder="Indique observações relevantes sobre a localização."><?php echo htmlspecialchars($localizacao['observacoes'] ?? ''); ?></textarea>
+                    <small class="texto-ajuda-form contador-caracteres" data-target="observacoesLocalizacao" data-max="1000">0 / 1000 caracteres</small>
                 </div>
             </div>
         </div>
     </form>
 </main>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const sigla = document.getElementById("departamentoSigla");
-    const piso = document.getElementById("pisoLocalizacao");
-    const sala = document.getElementById("salaLocalizacao");
-    const codigo = document.getElementById("codigoLocalizacao");
-
-    if (!sigla || !piso || !sala || !codigo) {
-        return;
-    }
-
-    function limparTextoCodigo(texto) {
-        return texto
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "")
-            .replace(/[^a-zA-Z0-9]/g, "")
-            .toUpperCase();
-    }
-
-    function gerarCodigoLocalizacao() {
-        const siglaValor = limparTextoCodigo(sigla.value.trim());
-        const pisoValor = limparTextoCodigo(piso.value.trim());
-        const salaValor = limparTextoCodigo(sala.value.trim());
-
-        if (siglaValor === "" || pisoValor === "" || salaValor === "") {
-            return;
-        }
-
-        codigo.value = siglaValor + "-P" + pisoValor + "-S" + salaValor;
-    }
-
-    sigla.addEventListener("input", gerarCodigoLocalizacao);
-    piso.addEventListener("input", gerarCodigoLocalizacao);
-    sala.addEventListener("input", gerarCodigoLocalizacao);
-});
-</script>
 
 <?php
 require_once __DIR__ . '/../../includes/footer.php';

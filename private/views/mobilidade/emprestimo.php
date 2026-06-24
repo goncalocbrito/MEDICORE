@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../includes/funcoes.php';
+require_once __DIR__ . '/../../includes/validacoes.php';
 redirect_if_no_permission('mobilidade');
 
 $pdo = medicore_pdo();
@@ -42,12 +43,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $rowAq = $stmtAq->fetch();
             $dataAquisicao = $rowAq['data_aquisicao'] ?? null;
 
-            if ($dataAquisicao && $dataInicio < $dataAquisicao) {
-                throw new Exception('A data de início não pode ser anterior à data de aquisição do equipamento (' . date('d/m/Y', strtotime($dataAquisicao)) . ').');
+            if ($erro = validar_ordem_datas((string)($dataAquisicao ?? ''), $dataInicio, 'A data de início não pode ser anterior à data de aquisição do equipamento (' . ($dataAquisicao ? date('d/m/Y', strtotime($dataAquisicao)) : '') . ').')) {
+                throw new Exception($erro);
             }
 
-            if ($dataDevolucao && $dataInicio && $dataDevolucao < $dataInicio) {
-                throw new Exception('A data prevista de devolução não pode ser anterior à data de início.');
+            if ($erro = validar_ordem_datas($dataInicio, $dataDevolucao, 'A data prevista de devolução não pode ser anterior à data de início.')) {
+                throw new Exception($erro);
             }
 
             /* Buscar nome do responsável */
@@ -380,6 +381,23 @@ $engenheiros = $pdo->query("
     ORDER BY nome
 ")->fetchAll();
 
+function prazo_emprestimo(string $estado, ?string $dataDevolucao): array
+{
+    if (in_array($estado, ['terminado', 'rejeitado', 'pendente'], true)) {
+        return ['---', ''];
+    }
+    if (!$dataDevolucao) {
+        return ['Sem data', 'estado-inativo'];
+    }
+    $hoje = strtotime(date('Y-m-d'));
+    $dev  = strtotime($dataDevolucao);
+    $dias = (int) round(($dev - $hoje) / 86400);
+
+    if ($dias < 0)    return ['Em atraso',  'estado-avariado'];
+    if ($dias <= 2)   return ['A terminar', 'estado-manutencao'];
+    return             ['Em dia',      'estado-ativo'];
+}
+
 $emprestimos = $pdo->query("
     SELECT emp.*, e.codigo_equipamento, e.designacao,
            CONCAT(lo.departamento_nome, ' - Sala ', lo.sala) AS origem_localizacao,
@@ -406,9 +424,11 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             </p>
         </div>
 
+        <?php if (strtolower($tipoUtilizador) !== 'administrador'): ?>
         <button type="button" class="btn btn-adicionar" data-bs-toggle="modal" data-bs-target="#modalNovoEmprestimo">
             <i class="fa-solid fa-plus me-2"></i> Novo Empréstimo
         </button>
+        <?php endif; ?>
     </div>
 
     <?php if ($mensagemSucesso): ?>
@@ -429,6 +449,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <th>Responsável</th>
                     <th>Data devolução</th>
                     <th>Estado</th>
+                    <th>Prazo</th>
                     <th class="text-center">Ações</th>
                 </tr>
             </thead>
@@ -454,6 +475,14 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             <span class="estado <?php echo $classeEstadoEmprestimo[$emprestimo['estado']] ?? 'estado-inativo'; ?>">
                                 <?php echo htmlspecialchars($emprestimo['estado']); ?>
                             </span>
+                        </td>
+                        <?php [$textoPrazo, $classePrazo] = prazo_emprestimo($emprestimo['estado'], $emprestimo['data_prevista_devolucao']); ?>
+                        <td>
+                            <?php if ($textoPrazo !== '---'): ?>
+                                <span class="estado <?php echo $classePrazo; ?>"><?php echo $textoPrazo; ?></span>
+                            <?php else: ?>
+                                <span class="text-muted">---</span>
+                            <?php endif; ?>
                         </td>
                         <td class="text-center">
                             <div class="acoes-operacao">
@@ -718,6 +747,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <button type="button" class="btn btn-cancelar-modal" data-bs-dismiss="modal">
                         <i class="fa-solid fa-xmark me-2"></i> Cancelar
                     </button>
+                    <button type="button" class="btn btn-dados-teste" onclick="dadosTeste_novoEmprestimo()">
+                        <i class="fa-solid fa-flask me-2"></i> Dados de Teste
+                    </button>
                     <button type="submit" class="btn btn-guardar">
                         <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Empréstimo
                     </button>
@@ -726,5 +758,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         </div>
     </div>
 </div>
+
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

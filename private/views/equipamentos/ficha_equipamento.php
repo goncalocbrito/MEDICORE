@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../includes/funcoes.php';
+require_once __DIR__ . '/../../includes/validacoes.php';
 redirect_if_not_logged();
 
 /* =========================================================
@@ -15,8 +16,9 @@ $pdo = new PDO(
     ]
 );
 
-$tipoUtilizador = $_SESSION['tipo_utilizador'] ?? '';
-$isEngenheiro = ($tipoUtilizador === 'Engenheiro');
+$tipoUtilizador   = $_SESSION['tipo_utilizador'] ?? '';
+$isEngenheiro     = ($tipoUtilizador === 'Engenheiro');
+$ehAdministrador  = ($tipoUtilizador === 'Administrador');
 
 /* =========================================================
    FUNÇÕES AUXILIARES
@@ -274,6 +276,11 @@ function guardar_documentos_ficha_equipamento($pdo, $idEquipamento, $codigoEquip
         $dataDocumento = obter_valor_array_post_equipamento('dataDocumento', $indice);
         $dataValidade = obter_valor_array_post_equipamento('dataValidadeDocumento', $indice);
 
+        $tipoUtilizadorDoc = $_SESSION['tipo_utilizador'] ?? '';
+        if ($tipoUtilizadorDoc === 'Engenheiro' && in_array($tipoDocumento, ['contrato', 'garantia'], true)) {
+            continue;
+        }
+
         if ($tipoDocumento === '') {
             $tipoDocumento = 'outro';
         }
@@ -359,14 +366,46 @@ $fornecedoresGarantia = $pdo->query("
 /* =========================================================
    ATUALIZAÇÃO DA FICHA
    ========================================================= */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'remover_documento') {
+    $idDocumento = (int) ($_POST['idDocumento'] ?? 0);
+    if ($idDocumento > 0 && $idEquipamento > 0) {
+        $pdo->prepare("UPDATE documentos_equipamentos SET isActive = 0 WHERE id_documento_equipamento = :id AND id_equipamento = :id_eq")
+            ->execute([':id' => $idDocumento, ':id_eq' => $idEquipamento]);
+    }
+    header('Location: ficha_equipamento.php?ref=' . url_ref($idEquipamento) . '#documentos');
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualizar') {
+    // Administrador só pode atualizar o valor de aquisição
+    if ($ehAdministrador) {
+        try {
+            $pdo->prepare("UPDATE equipamentos SET valor_aquisicao = :valor, tipo_entrada = :tipo, atualizado_por = :por WHERE id_equipamento = :id AND isActive = 1")
+                ->execute([
+                    ':valor' => decimal_post_equipamento('valorAquisicao'),
+                    ':tipo'  => trim($_POST['tipoEntrada'] ?? '') ?: null,
+                    ':por'   => $_SESSION['nome'] ?? $_SESSION['username'] ?? 'sistema',
+                    ':id'    => $idEquipamento
+                ]);
+
+            $codigoGuardarAdmin = $pdo->query("SELECT codigo_equipamento FROM equipamentos WHERE id_equipamento = $idEquipamento LIMIT 1")->fetchColumn();
+            $idEqFornAdmin = $pdo->query("SELECT id_equipamento_fornecedor FROM equipamentos_fornecedores WHERE id_equipamento = $idEquipamento LIMIT 1")->fetchColumn() ?: null;
+            guardar_documentos_ficha_equipamento($pdo, $idEquipamento, $codigoGuardarAdmin, $idEqFornAdmin);
+
+            header('Location: ficha_equipamento.php?ref=' . url_ref($idEquipamento) . '&guardado=1');
+            exit;
+        } catch (Throwable $e) {
+            $errosEquipamento[] = 'Erro ao guardar o valor de aquisição.';
+        }
+    }
+
     $camposObrigatorios = [
         'idFamiliaEquipamento'    => 'Família do equipamento',
         'nomeEquipamento'         => 'Designação do equipamento',
         'modelo'                  => 'Modelo',
         'marca'                   => 'Marca',
         'numeroSerie'             => 'Número de série',
-        'tipoEntrada'             => 'Tipo de entrada',
+
         'idLocalizacao'           => 'Localização',
         'estado'                  => 'Estado',
         'criticidade'             => 'Criticidade',
@@ -393,17 +432,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualiz
         $dataInicioGarantia = trim($_POST['dataInicioGarantia'] ?? '');
         $dataFimGarantia    = trim($_POST['dataFimGarantia'] ?? '');
 
-        if ($dataFabrico !== '' && $dataAquisicao !== '' && $dataAquisicao < $dataFabrico) {
-            $errosEquipamento[] = 'A data de aquisição não pode ser anterior à data de fabrico.';
+        if ($erro = validar_ordem_datas($dataFabrico, $dataAquisicao, 'A data de aquisição não pode ser anterior à data de fabrico.')) {
+            $errosEquipamento[] = $erro;
         }
-        if ($dataAquisicao !== '' && $dataInstalacao !== '' && $dataInstalacao < $dataAquisicao) {
-            $errosEquipamento[] = 'A data de instalação não pode ser anterior à data de aquisição.';
+        if ($erro = validar_ordem_datas($dataAquisicao, $dataInstalacao, 'A data de instalação não pode ser anterior à data de aquisição.')) {
+            $errosEquipamento[] = $erro;
         }
-        if ($dataFabrico !== '' && $dataInicioGarantia !== '' && $dataInicioGarantia < $dataFabrico) {
-            $errosEquipamento[] = 'O início da garantia não pode ser anterior à data de fabrico.';
+        if ($erro = validar_ordem_datas($dataFabrico, $dataInicioGarantia, 'O início da garantia não pode ser anterior à data de fabrico.')) {
+            $errosEquipamento[] = $erro;
         }
-        if ($dataInicioGarantia !== '' && $dataFimGarantia !== '' && $dataFimGarantia < $dataInicioGarantia) {
-            $errosEquipamento[] = 'O fim da garantia não pode ser anterior ao início da garantia.';
+        if ($erro = validar_ordem_datas($dataInicioGarantia, $dataFimGarantia, 'O fim da garantia não pode ser anterior ao início da garantia.')) {
+            $errosEquipamento[] = $erro;
         }
     }
 
@@ -450,6 +489,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualiz
                 $codigoGuardar = $equipamentoAtual['codigo_equipamento'];
             }
 
+            $nsSerie = trim($_POST['numeroSerie'] ?? '');
+            if ($nsSerie !== '') {
+                $stmtNs = $pdo->prepare("SELECT COUNT(*) FROM equipamentos WHERE numero_serie = :ns AND id_equipamento != :id");
+                $stmtNs->execute([':ns' => $nsSerie, ':id' => $idEquipamento]);
+                if ((int) $stmtNs->fetchColumn() > 0) {
+                    throw new RuntimeException('Já existe um equipamento registado com o número de série "' . htmlspecialchars($nsSerie) . '". O número de série deve ser único.');
+                }
+            }
+
             $stmtAtualizarEquipamento = $pdo->prepare("
                 UPDATE equipamentos
                 SET
@@ -460,7 +508,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualiz
                     modelo = :modelo,
                     marca = :marca,
                     numero_serie = :numero_serie,
-                    tipo_entrada = :tipo_entrada,
                     valor_aquisicao = :valor_aquisicao,
                     id_localizacao = :id_localizacao,
                     estado = :estado,
@@ -485,7 +532,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['acao'] ?? '') === 'atualiz
                 ':modelo' => trim($_POST['modelo']),
                 ':marca' => trim($_POST['marca'] ?? '') ?: null,
                 ':numero_serie' => trim($_POST['numeroSerie']),
-                ':tipo_entrada' => trim($_POST['tipoEntrada'] ?? '') ?: null,
                 ':valor_aquisicao' => $isEngenheiro
                     ? ($equipamento['valor_aquisicao'] ?? null)
                     : decimal_post_equipamento('valorAquisicao'),
@@ -852,14 +898,14 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 </li>
 
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="documentos-tab" data-bs-toggle="tab" data-bs-target="#documentos" type="button" role="tab" aria-controls="documentos" aria-selected="false">
-                        <i class="fa-solid fa-folder-open me-2"></i> Documentos
+                    <button class="nav-link" id="observacoes-tab" data-bs-toggle="tab" data-bs-target="#observacoes-tab-pane" type="button" role="tab" aria-controls="observacoes-tab-pane" aria-selected="false">
+                        <i class="fa-solid fa-clipboard-list me-2"></i> Observações
                     </button>
                 </li>
 
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="observacoes-tab" data-bs-toggle="tab" data-bs-target="#observacoes-tab-pane" type="button" role="tab" aria-controls="observacoes-tab-pane" aria-selected="false">
-                        <i class="fa-solid fa-clipboard-list me-2"></i> Observações
+                    <button class="nav-link" id="documentos-tab" data-bs-toggle="tab" data-bs-target="#documentos" type="button" role="tab" aria-controls="documentos" aria-selected="false">
+                        <i class="fa-solid fa-folder-open me-2"></i> Documentos
                     </button>
                 </li>
             </ul>
@@ -884,6 +930,10 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                         <div class="col-md-4">
                             <label for="idFamiliaEquipamento" class="form-label">Família do Equipamento *</label>
+                            <?php if ($ehAdministrador): ?>
+                                <div class="form-control campo-ficha campo-bloqueado"><?php echo h_equipamento($equipamento['codigo_familia'] . ' - ' . $equipamento['familia_nome']); ?></div>
+                                <input type="hidden" name="idFamiliaEquipamento" value="<?php echo h_equipamento($equipamento['id_familia_equipamento']); ?>">
+                            <?php else: ?>
                             <select class="form-select campo-ficha campo-editavel" id="idFamiliaEquipamento" name="idFamiliaEquipamento">
                                 <option value="">Selecionar família</option>
                                 <?php foreach ($familiasEquipamento as $familia): ?>
@@ -892,6 +942,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     </option>
                                 <?php endforeach; ?>
                             </select>
+                            <?php endif; ?>
                         </div>
 
                         <div class="col-md-4">
@@ -918,15 +969,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             <small class="texto-ajuda-form contador-caracteres" data-target="numeroSerie" data-max="120">0 / 120 caracteres</small>
                         </div>
 
-                        <div class="col-md-4">
-                            <label for="tipoEntrada" class="form-label">Tipo de Entrada *</label>
-                            <select class="form-select campo-ficha campo-editavel" id="tipoEntrada" name="tipoEntrada" required>
-                                <option value="">Selecionar tipo</option>
-                                <option value="compra" <?php echo selected_equipamento($equipamento['tipo_entrada'], 'compra'); ?>>Compra</option>
-                                <option value="doacao" <?php echo selected_equipamento($equipamento['tipo_entrada'], 'doacao'); ?>>Doação</option>
-                                <option value="emprestimo" <?php echo selected_equipamento($equipamento['tipo_entrada'], 'emprestimo'); ?>>Empréstimo</option>
-                            </select>
-                        </div>
 
                     </div>
                 </div>
@@ -946,6 +988,10 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         ?>
                         <div class="col-md-8">
                             <label for="localizacaoPesquisa" class="form-label">Localização *</label>
+                            <?php if ($ehAdministrador): ?>
+                                <div class="form-control campo-ficha campo-bloqueado"><?php echo h_equipamento($localizacaoFichaTexto); ?></div>
+                                <input type="hidden" name="idLocalizacao" value="<?php echo h_equipamento($equipamento['id_localizacao'] ?? ''); ?>">
+                            <?php else: ?>
                             <div class="campo-pesquisa-registo">
                                 <input type="text"
                                     class="form-control campo-ficha campo-editavel pesquisa-registo-custom"
@@ -973,10 +1019,15 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     <?php endforeach; ?>
                                 </div>
                             </div>
+                            <?php endif; ?>
                         </div>
 
                         <div class="col-md-4">
                             <label for="estado" class="form-label">Estado *</label>
+                            <?php if ($ehAdministrador): ?>
+                                <div class="form-control campo-ficha campo-bloqueado"><?php echo h_equipamento(texto_estado_equipamento($equipamento['estado'])); ?></div>
+                                <input type="hidden" name="estado" value="<?php echo h_equipamento($equipamento['estado']); ?>">
+                            <?php else: ?>
                             <select class="form-select campo-ficha campo-editavel" id="estado" name="estado" required>
                                 <option value="">Selecionar estado</option>
                                 <option value="ativo" <?php echo selected_equipamento($equipamento['estado'], 'ativo'); ?>>Ativo</option>
@@ -986,21 +1037,15 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 <option value="inativo" <?php echo selected_equipamento($equipamento['estado'], 'inativo'); ?>>Inativo</option>
                                 <option value="abatido" <?php echo selected_equipamento($equipamento['estado'], 'abatido'); ?>>Abatido</option>
                             </select>
+                            <?php endif; ?>
                         </div>
 
                         <div class="col-md-4">
-                            <label for="idCriticidade" class="form-label">
-                                Criticidade *
-                                <span class="tooltip-ajuda" tabindex="0">
-                                    ?
-                                    <span class="tooltip-ajuda-texto">
-                                        <strong>Baixa:</strong> existem alternativas disponíveis.<br>
-                                        <strong>Média:</strong> pode atrasar o serviço, mas existem alternativas.<br>
-                                        <strong>Alta:</strong> impacto direto no funcionamento clínico.<br>
-                                        <strong>Crítica:</strong> equipamento essencial para prestação de cuidados.
-                                    </span>
-                                </span>
-                            </label>
+                            <label for="idCriticidade" class="form-label">Criticidade *</label>
+                            <?php if ($ehAdministrador): ?>
+                                <div class="form-control campo-ficha campo-bloqueado"><?php echo h_equipamento(texto_criticidade_equipamento($equipamento['criticidade'])); ?></div>
+                                <input type="hidden" name="criticidade" value="<?php echo h_equipamento($equipamento['criticidade']); ?>">
+                            <?php else: ?>
                             <select class="form-select campo-ficha campo-editavel" id="criticidade" name="criticidade" required>
                                 <option value="">Selecionar criticidade</option>
                                 <option value="baixa" <?php echo selected_equipamento($equipamento['criticidade'], 'baixa'); ?>>Baixa</option>
@@ -1008,11 +1053,15 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 <option value="alta" <?php echo selected_equipamento($equipamento['criticidade'], 'alta'); ?>>Alta</option>
                                 <option value="critica" <?php echo selected_equipamento($equipamento['criticidade'], 'critica'); ?>>Crítica</option>
                             </select>
-
+                            <?php endif; ?>
                         </div>
 
                         <div class="col-md-4">
                             <label for="periodicidadeManutencao" class="form-label">Periodicidade de Manutenção *</label>
+                            <?php if ($ehAdministrador): ?>
+                                <div class="form-control campo-ficha campo-bloqueado"><?php echo h_equipamento(texto_periodicidade_equipamento($equipamento['periodicidade_manutencao'])); ?></div>
+                                <input type="hidden" name="periodicidadeManutencao" value="<?php echo h_equipamento($equipamento['periodicidade_manutencao']); ?>">
+                            <?php else: ?>
                             <select class="form-select campo-ficha campo-editavel" id="periodicidadeManutencao" name="periodicidadeManutencao" required>
                                 <option value="">Selecionar periodicidade</option>
                                 <option value="semestral" <?php echo selected_equipamento($equipamento['periodicidade_manutencao'], 'semestral'); ?>>Semestral</option>
@@ -1020,10 +1069,15 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 <option value="bienal" <?php echo selected_equipamento($equipamento['periodicidade_manutencao'], 'bienal'); ?>>Bienal</option>
                                 <option value="trienal" <?php echo selected_equipamento($equipamento['periodicidade_manutencao'], 'trienal'); ?>>Trienal</option>
                             </select>
+                            <?php endif; ?>
                         </div>
 
                         <div class="col-md-4">
                             <label for="periodicidadeCalibracao" class="form-label">Periodicidade de Calibração *</label>
+                            <?php if ($ehAdministrador): ?>
+                                <div class="form-control campo-ficha campo-bloqueado"><?php echo h_equipamento(texto_periodicidade_equipamento($equipamento['periodicidade_calibracao'])); ?></div>
+                                <input type="hidden" name="periodicidadeCalibracao" value="<?php echo h_equipamento($equipamento['periodicidade_calibracao']); ?>">
+                            <?php else: ?>
                             <select class="form-select campo-ficha campo-editavel" id="periodicidadeCalibracao" name="periodicidadeCalibracao" required>
                                 <option value="">Selecionar periodicidade</option>
                                 <option value="semestral" <?php echo selected_equipamento($equipamento['periodicidade_calibracao'], 'semestral'); ?>>Semestral</option>
@@ -1031,6 +1085,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 <option value="bienal" <?php echo selected_equipamento($equipamento['periodicidade_calibracao'], 'bienal'); ?>>Bienal</option>
                                 <option value="trienal" <?php echo selected_equipamento($equipamento['periodicidade_calibracao'], 'trienal'); ?>>Trienal</option>
                             </select>
+                            <?php endif; ?>
                         </div>
 
                         <?php
@@ -1039,6 +1094,10 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         ?>
                         <div class="col-md-4">
                             <label for="responsavelPesquisa" class="form-label">Responsável pelo Equipamento *</label>
+                            <?php if ($ehAdministrador): ?>
+                                <div class="form-control campo-ficha campo-bloqueado"><?php echo h_equipamento($responsavelNomeFicha ?: '---'); ?></div>
+                                <input type="hidden" name="idResponsavel" value="<?php echo h_equipamento($idResponsavelFicha); ?>">
+                            <?php else: ?>
                             <div class="campo-pesquisa-registo">
                                 <input type="text"
                                     class="form-control campo-ficha campo-editavel pesquisa-registo-custom"
@@ -1066,6 +1125,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     <?php endforeach; ?>
                                 </div>
                             </div>
+                            <?php endif; ?>
                         </div>
 
                     </div>
@@ -1095,6 +1155,18 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     placeholder="Ex: 2500.00"
                                 >
                             </div>
+                        <?php endif; ?>
+
+                        <?php if ($ehAdministrador): ?>
+                        <div class="col-md-4">
+                            <label for="tipoEntrada" class="form-label">Tipo de Entrada *</label>
+                            <select class="form-select campo-ficha" id="tipoEntrada" name="tipoEntrada">
+                                <option value="">Selecionar tipo</option>
+                                <option value="compra" <?php echo selected_equipamento($equipamento['tipo_entrada'], 'compra'); ?>>Compra</option>
+                                <option value="doacao" <?php echo selected_equipamento($equipamento['tipo_entrada'], 'doacao'); ?>>Doação</option>
+                                <option value="emprestimo" <?php echo selected_equipamento($equipamento['tipo_entrada'], 'emprestimo'); ?>>Empréstimo</option>
+                            </select>
+                        </div>
                         <?php endif; ?>
 
                         <div class="col-md-3">
@@ -1267,6 +1339,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             <p class="texto-ajuda-form mb-0">Ainda não existem documentos registados para este equipamento.</p>
                         <?php else: ?>
                             <?php foreach ($documentos as $documento): ?>
+                                <?php if ($isEngenheiro && in_array($documento['tipo_documento'], ['contrato', 'garantia'], true)): continue; endif; ?>
                                 <?php $urlDocumento = '../../assets/documentos/' . $documento['caminho_ficheiro']; ?>
                                 <div class="documento-item">
                                     <div class="documento-info">
@@ -1292,6 +1365,18 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                         <a class="btn-documento-download" href="<?php echo h_equipamento($urlDocumento); ?>" download>
                                             Download
                                         </a>
+                                        <button
+                                            type="button"
+                                            class="btn-documento-remover"
+                                            title="Remover documento"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalRemoverDocumento"
+                                            data-id="<?php echo (int) $documento['id_documento_equipamento']; ?>"
+                                            data-nome="<?php echo h_equipamento($documento['nome_documento']); ?>"
+                                            data-ref="<?php echo url_ref($idEquipamento); ?>"
+                                            data-id-equipamento="<?php echo $idEquipamento; ?>">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -1302,45 +1387,48 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <div class="documento-form-item d-none">
                             <div class="row g-4 align-items-end">
 
-                                <div class="col-md-3">
+                                <div class="col-md-5">
                                     <label class="form-label">Tipo de Documento</label>
                                     <select class="form-select campo-ficha campo-editavel" name="tipoDocumento[]">
                                         <option value="">Selecionar tipo</option>
-                                        <option value="manual_instrucoes">Manual de Instruções</option>
-                                        <option value="datasheet">Datasheet</option>
-                                        <option value="contrato">Contrato</option>
-                                        <option value="garantia">Documento de Garantia</option>
-                                        <option value="certificado_calibracao">Certificado de Calibração</option>
-                                        <option value="relatorio_calibracao">Relatório de Calibração</option>
-                                        <option value="relatorio_manutencao">Relatório de Manutenção</option>
-                                        <option value="ficha_tecnica">Ficha Técnica</option>
-                                        <option value="declaracao_conformidade">Declaração de Conformidade</option>
-                                        <option value="fotografia">Fotografia</option>
-                                        <option value="outro">Outro</option>
+                                        <?php if ($ehAdministrador): ?>
+                                            <option value="contrato">Contrato de Aquisição</option>
+                                            <option value="garantia">Contrato de Garantia</option>
+                                        <?php else: ?>
+                                            <option value="manual_instrucoes">Manual de Instruções</option>
+                                            <option value="datasheet">Datasheet</option>
+                                            <option value="certificado_calibracao">Certificado de Calibração</option>
+                                            <option value="relatorio_calibracao">Relatório de Calibração</option>
+                                            <option value="relatorio_manutencao">Relatório de Manutenção</option>
+                                            <option value="ficha_tecnica">Ficha Técnica</option>
+                                            <option value="declaracao_conformidade">Declaração de Conformidade</option>
+                                            <option value="fotografia">Fotografia</option>
+                                            <option value="outro">Outro</option>
+                                        <?php endif; ?>
                                     </select>
                                 </div>
 
-                                <div class="col-md-3">
+                                <div class="col-md-7">
                                     <label class="form-label">Nome do Documento</label>
                                     <input type="text" class="form-control campo-ficha campo-editavel" name="nomeDocumento[]" placeholder="Ex: Manual técnico">
                                 </div>
 
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <label class="form-label">Data do Documento</label>
-                                    <input type="date" class="form-control campo-ficha campo-editavel" name="dataDocumento[]">
+                                    <input type="date" class="form-control campo-ficha campo-editavel doc-data-documento" name="dataDocumento[]" max="<?php echo date('Y-m-d'); ?>">
                                 </div>
 
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <label class="form-label">Validade <span class="text-muted fw-normal">(opcional)</span></label>
-                                    <input type="date" class="form-control campo-ficha campo-editavel" name="dataValidadeDocumento[]">
+                                    <input type="date" class="form-control campo-ficha campo-editavel doc-data-validade" name="dataValidadeDocumento[]">
                                 </div>
 
-                                <div class="col-md-2">
+                                <div class="col-md-5">
                                     <label class="form-label">Ficheiro</label>
                                     <input type="file" class="form-control campo-ficha campo-editavel" name="ficheiroDocumento[]" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx">
                                 </div>
 
-                                <div class="col-md-12 text-end">
+                                <div class="col-md-1 text-end d-flex align-items-end justify-content-end">
                                     <button type="button" class="btn btn-remover-documento" title="Remover documento">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
@@ -1359,7 +1447,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <p>Notas relevantes sobre utilização, limitações, condição física ou contexto do equipamento.</p>
                     </div>
 
-                    <textarea class="form-control campo-ficha campo-editavel" id="observacoes" name="observacoes" rows="7" placeholder="Indique observações relevantes sobre o equipamento."><?php echo h_equipamento($equipamento['observacoes']); ?></textarea>
+                    <textarea class="form-control campo-ficha campo-editavel" id="observacoes" name="observacoes" rows="7" maxlength="1000" placeholder="Indique observações relevantes sobre o equipamento."><?php echo h_equipamento($equipamento['observacoes']); ?></textarea>
+                    <small class="texto-ajuda-form contador-caracteres" data-target="observacoes" data-max="1000">0 / 1000 caracteres</small>
                 </div>
 
             </div>
@@ -1367,6 +1456,90 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
     </form>
 </main>
+
+<?php if ($ehAdministrador): ?>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.campo-editavel').forEach(function (el) {
+        el.disabled = true;
+    });
+    document.querySelectorAll('.opcao-registo-custom').forEach(function (el) {
+        el.disabled = true;
+    });
+    document.querySelectorAll('.lista-registos-custom').forEach(function (el) {
+        el.style.display = 'none';
+        el.style.pointerEvents = 'none';
+    });
+});
+</script>
+<?php endif; ?>
+
+<!-- =========================================================
+     MODAL PARA CONFIRMAR REMOÇÃO DO DOCUMENTO
+     ========================================================= -->
+<div
+    class="modal fade"
+    id="modalRemoverDocumento"
+    tabindex="-1"
+    aria-labelledby="modalRemoverDocumentoLabel"
+    aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered modal-remocao-dialog">
+        <div class="modal-content modal-apagar-equipamento">
+
+            <div class="modal-header modal-remocao-header">
+                <div>
+                    <h5 class="modal-title" id="modalRemoverDocumentoLabel">
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                        Confirmar remoção
+                    </h5>
+                    <p class="modal-remocao-subtitulo">
+                        Confirme os dados antes de remover o documento.
+                    </p>
+                </div>
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Fechar">
+                </button>
+            </div>
+
+            <div class="modal-body modal-remocao-body">
+                <div class="modal-resumo-equipamento modal-resumo-remocao">
+                    <div class="modal-linha">
+                        <strong>Documento</strong>
+                        <span id="modalRemoverDocumentoNome">---</span>
+                    </div>
+                </div>
+                <p class="texto-confirmacao-remocao">
+                    Confirma que pretende remover este documento do equipamento?
+                </p>
+            </div>
+
+            <div class="modal-footer modal-remocao-footer">
+                <button
+                    type="button"
+                    class="btn btn-cancelar-modal"
+                    data-bs-dismiss="modal">
+                    <i class="fa-solid fa-xmark me-2"></i>
+                    Cancelar
+                </button>
+
+                <form id="formModalRemoverDocumento" method="post" action="">
+                    <input type="hidden" name="acao" value="remover_documento">
+                    <input type="hidden" name="idDocumento" id="modalRemoverDocumentoId">
+                    <input type="hidden" name="idEquipamento" id="modalRemoverDocumentoIdEquipamento">
+                    <button type="submit" class="btn btn-confirmar-remocao">
+                        <i class="fa-solid fa-trash me-2"></i>
+                        Remover Documento
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
 
 <?php
 require_once __DIR__ . '/../../includes/footer.php';

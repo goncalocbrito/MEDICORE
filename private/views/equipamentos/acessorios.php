@@ -157,6 +157,8 @@ try {
     /* =========================================================
        AÇÕES POST
        ========================================================= */
+    $isAjax = ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'XMLHttpRequest';
+
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $acao = $_POST['acao'] ?? '';
         $idEquipamentoPost = (int) ($_POST['id_equipamento'] ?? 0);
@@ -170,6 +172,7 @@ try {
             $designacao = valor_ou_null($_POST['designacaoAcessorio'] ?? null);
             $tipo = $_POST['tipoAcessorio'] ?? 'outro';
             $estado = $_POST['estadoAcessorio'] ?? 'ativo';
+            $idFornecedorAcessorio = (int) ($_POST['idFornecedorAcessorio'] ?? 0) ?: null;
 
             if (empty($designacao)) {
                 throw new RuntimeException('Indique o nome/designação do acessório.');
@@ -186,9 +189,6 @@ try {
                 ? valor_ou_null($_POST['periodicidadeCalibracao'] ?? null)
                 : null;
 
-            $idFornecedorGarantia = (int) ($_POST['idFornecedorGarantia'] ?? 0);
-            $idFornecedorGarantia = $idFornecedorGarantia > 0 ? $idFornecedorGarantia : null;
-
             $dataAquisicaoAcessorio = valor_ou_null($_POST['dataAquisicaoAcessorio'] ?? null);
             $dataInicioGarantia    = valor_ou_null($_POST['dataInicioGarantia'] ?? null);
             $dataFimGarantia       = valor_ou_null($_POST['dataFimGarantia'] ?? null);
@@ -197,7 +197,16 @@ try {
                 throw new RuntimeException('A data de aquisição do acessório é obrigatória.');
             }
 
-            $stmtDataEqp = $pdo->prepare("SELECT data_aquisicao FROM equipamentos WHERE id_equipamento = :id");
+            $numeroSerie = valor_ou_null($_POST['numeroSerieAcessorio'] ?? null);
+            if ($numeroSerie !== null) {
+                $stmtSerie = $pdo->prepare("SELECT COUNT(*) FROM acessorios_equipamento WHERE numero_serie = :ns");
+                $stmtSerie->execute([':ns' => $numeroSerie]);
+                if ((int) $stmtSerie->fetchColumn() > 0) {
+                    throw new RuntimeException('Já existe um acessório registado com o número de série "' . htmlspecialchars($numeroSerie) . '". O número de série deve ser único.');
+                }
+            }
+
+            $stmtDataEqp = $pdo->prepare("SELECT data_aquisicao FROM equipamentos WHERE id_equipamento = :id AND isActive = 1");
             $stmtDataEqp->execute([':id' => $idEquipamentoPost]);
             $dataAquisicaoEquipamento = $stmtDataEqp->fetchColumn();
 
@@ -211,7 +220,15 @@ try {
                 throw new RuntimeException('A data de fim da garantia não pode ser anterior à data de início da garantia.');
             }
 
-            $stmtProximoNumero = $pdo->prepare(" 
+            $stmtLocEqp = $pdo->prepare("SELECT id_localizacao FROM equipamentos WHERE id_equipamento = :id AND isActive = 1");
+            $stmtLocEqp->execute([':id' => $idEquipamentoPost]);
+            $idLocalizacaoAcessorio = $stmtLocEqp->fetchColumn();
+
+            if (!$idLocalizacaoAcessorio) {
+                throw new RuntimeException('Equipamento não encontrado ou sem localização definida.');
+            }
+
+            $stmtProximoNumero = $pdo->prepare("
                 SELECT COALESCE(MAX(numero_sequencial), 0) + 1 AS proximo_numero
                 FROM acessorios_equipamento
                 WHERE id_equipamento = :id_equipamento
@@ -226,10 +243,11 @@ try {
             $stmtInserir = $pdo->prepare("
                 INSERT INTO acessorios_equipamento (
                     id_equipamento,
+                    id_localizacao,
                     numero_sequencial,
                     designacao,
                     tipo,
-                    fabricante,
+                    id_fornecedor,
                     modelo,
                     numero_serie,
                     data_aquisicao,
@@ -238,17 +256,17 @@ try {
                     periodicidade_manutencao,
                     requer_calibracao,
                     periodicidade_calibracao,
-                    id_fornecedor_garantia,
                     data_inicio_garantia,
                     data_fim_garantia,
                     observacoes,
                     atualizado_por
                 ) VALUES (
                     :id_equipamento,
+                    :id_localizacao,
                     :numero_sequencial,
                     :designacao,
                     :tipo,
-                    :fabricante,
+                    :id_fornecedor,
                     :modelo,
                     :numero_serie,
                     :data_aquisicao,
@@ -257,7 +275,6 @@ try {
                     :periodicidade_manutencao,
                     :requer_calibracao,
                     :periodicidade_calibracao,
-                    :id_fornecedor_garantia,
                     :data_inicio_garantia,
                     :data_fim_garantia,
                     :observacoes,
@@ -267,10 +284,11 @@ try {
 
             $stmtInserir->execute([
                 ':id_equipamento'          => $idEquipamentoPost,
+                ':id_localizacao'          => (int) $idLocalizacaoAcessorio,
                 ':numero_sequencial'       => $proximoNumero,
                 ':designacao'              => $designacao,
                 ':tipo'                    => $tipo,
-                ':fabricante'              => valor_ou_null($_POST['fabricanteAcessorio'] ?? null),
+                ':id_fornecedor'           => $idFornecedorAcessorio,
                 ':modelo'                  => valor_ou_null($_POST['modeloAcessorio'] ?? null),
                 ':numero_serie'            => valor_ou_null($_POST['numeroSerieAcessorio'] ?? null),
                 ':data_aquisicao'          => $dataAquisicaoAcessorio,
@@ -279,13 +297,17 @@ try {
                 ':periodicidade_manutencao'=> $periodicidadeManutencao,
                 ':requer_calibracao'       => $requerCalibracao,
                 ':periodicidade_calibracao'=> $periodicidadeCalibracao,
-                ':id_fornecedor_garantia'  => $idFornecedorGarantia,
                 ':data_inicio_garantia'    => $dataInicioGarantia,
                 ':data_fim_garantia'       => $dataFimGarantia,
                 ':observacoes'             => valor_ou_null($_POST['observacoesAcessorio'] ?? null),
                 ':atualizado_por'          => $utilizadorAtual
             ]);
 
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['sucesso' => true]);
+                exit;
+            }
             header('Location: acessorios.php?ref_equipamento=' . url_ref($idEquipamentoPost) . '&criado=1');
             exit;
         }
@@ -300,6 +322,7 @@ try {
             $designacao = valor_ou_null($_POST['designacaoAcessorio'] ?? null);
             $tipo = $_POST['tipoAcessorio'] ?? 'outro';
             $estado = $_POST['estadoAcessorio'] ?? 'ativo';
+            $idFornecedorAcessorio = (int) ($_POST['idFornecedorAcessorio'] ?? 0) ?: null;
 
             if (empty($designacao)) {
                 throw new RuntimeException('Indique o nome/designação do acessório.');
@@ -316,9 +339,6 @@ try {
                 ? valor_ou_null($_POST['periodicidadeCalibracao'] ?? null)
                 : null;
 
-            $idFornecedorGarantia = (int) ($_POST['idFornecedorGarantia'] ?? 0);
-            $idFornecedorGarantia = $idFornecedorGarantia > 0 ? $idFornecedorGarantia : null;
-
             $dataAquisicaoAcessorio = valor_ou_null($_POST['dataAquisicaoAcessorio'] ?? null);
             $dataInicioGarantia    = valor_ou_null($_POST['dataInicioGarantia'] ?? null);
             $dataFimGarantia       = valor_ou_null($_POST['dataFimGarantia'] ?? null);
@@ -327,7 +347,7 @@ try {
                 throw new RuntimeException('A data de aquisição do acessório é obrigatória.');
             }
 
-            $stmtDataEqp = $pdo->prepare("SELECT data_aquisicao FROM equipamentos WHERE id_equipamento = :id");
+            $stmtDataEqp = $pdo->prepare("SELECT data_aquisicao FROM equipamentos WHERE id_equipamento = :id AND isActive = 1");
             $stmtDataEqp->execute([':id' => $idEquipamentoPost ?: id_from_request('id_equipamento', 'ref_equipamento')]);
             $dataAquisicaoEquipamento = $stmtDataEqp->fetchColumn();
 
@@ -346,7 +366,7 @@ try {
                 SET
                     designacao = :designacao,
                     tipo = :tipo,
-                    fabricante = :fabricante,
+                    id_fornecedor = :id_fornecedor,
                     modelo = :modelo,
                     numero_serie = :numero_serie,
                     data_aquisicao = :data_aquisicao,
@@ -355,7 +375,6 @@ try {
                     periodicidade_manutencao = :periodicidade_manutencao,
                     requer_calibracao = :requer_calibracao,
                     periodicidade_calibracao = :periodicidade_calibracao,
-                    id_fornecedor_garantia = :id_fornecedor_garantia,
                     data_inicio_garantia = :data_inicio_garantia,
                     data_fim_garantia = :data_fim_garantia,
                     observacoes = :observacoes,
@@ -368,7 +387,7 @@ try {
                 ':id_acessorio'            => $idAcessorio,
                 ':designacao'              => $designacao,
                 ':tipo'                    => $tipo,
-                ':fabricante'              => valor_ou_null($_POST['fabricanteAcessorio'] ?? null),
+                ':id_fornecedor'           => $idFornecedorAcessorio,
                 ':modelo'                  => valor_ou_null($_POST['modeloAcessorio'] ?? null),
                 ':numero_serie'            => valor_ou_null($_POST['numeroSerieAcessorio'] ?? null),
                 ':data_aquisicao'          => $dataAquisicaoAcessorio,
@@ -377,13 +396,17 @@ try {
                 ':periodicidade_manutencao'=> $periodicidadeManutencao,
                 ':requer_calibracao'       => $requerCalibracao,
                 ':periodicidade_calibracao'=> $periodicidadeCalibracao,
-                ':id_fornecedor_garantia'  => $idFornecedorGarantia,
                 ':data_inicio_garantia'    => $dataInicioGarantia,
                 ':data_fim_garantia'       => $dataFimGarantia,
                 ':observacoes'             => valor_ou_null($_POST['observacoesAcessorio'] ?? null),
                 ':atualizado_por'          => $utilizadorAtual
             ]);
 
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['sucesso' => true]);
+                exit;
+            }
             $idEquipamentoRedirecionar = $idEquipamentoPost > 0 ? $idEquipamentoPost : id_from_request('id_equipamento', 'ref_equipamento');
             header('Location: acessorios.php?ref_equipamento=' . url_ref($idEquipamentoRedirecionar) . '&editado=1');
             exit;
@@ -439,14 +462,15 @@ try {
         }
     }
 
-    $stmtFornecedores = $pdo->query("
-        SELECT id_fornecedor, nome_empresa, tipo_fornecedor
-        FROM fornecedores
-        WHERE isActive = 1
-        ORDER BY nome_empresa ASC
-    ");
 
-    $fornecedoresGarantia = $stmtFornecedores->fetchAll();
+$stmtFornecedores = $pdo->query("
+    SELECT id_fornecedor, nome_empresa, tipo_fornecedor
+    FROM fornecedores
+    WHERE isActive = 1
+      AND tipo_fornecedor IN ('Fabricante', 'Comercial')
+    ORDER BY nome_empresa ASC
+");
+$fornecedoresAcessorio = $stmtFornecedores->fetchAll();
 
     $stmtLocalizacoes = $pdo->query("
         SELECT id_localizacao, codigo, departamento_nome, edificio, piso, sala
@@ -464,7 +488,8 @@ try {
                 e.codigo_equipamento,
                 e.designacao AS equipamento_nome,
                 CONCAT(e.codigo_equipamento, '.', LPAD(a.numero_sequencial, 3, '0')) AS codigo_acessorio,
-                f.nome_empresa AS fornecedor_garantia_nome,
+                f.nome_empresa AS fornecedor_nome,
+                f.tipo_fornecedor AS fornecedor_tipo,
                 l.codigo AS codigo_localizacao,
                 l.departamento_nome,
                 l.edificio,
@@ -491,7 +516,7 @@ try {
                 ON e.id_equipamento = a.id_equipamento
 
             LEFT JOIN fornecedores f
-                ON f.id_fornecedor = a.id_fornecedor_garantia
+                ON f.id_fornecedor = a.id_fornecedor
 
             LEFT JOIN localizacoes l
                 ON l.id_localizacao = a.id_localizacao
@@ -526,7 +551,16 @@ try {
     }
 
 } catch (Throwable $e) {
-    $erro_bd = $e->getMessage();
+    $mensagemErro = (str_contains($e->getMessage(), 'uk_acessorio_numero_serie') || str_contains($e->getMessage(), 'Duplicate entry'))
+        ? 'Já existe um acessório com este número de série. Por favor, introduza um número de série diferente.'
+        : $e->getMessage();
+
+    if ($isAjax) {
+        header('Content-Type: application/json');
+        echo json_encode(['sucesso' => false, 'erro' => $mensagemErro]);
+        exit;
+    }
+    $erro_bd = $mensagemErro;
 }
 
 if (isset($_GET['criado'])) {
@@ -634,22 +668,42 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         <div class="row g-3 align-items-end">
 
             <div class="col-lg-12">
-                <label for="seletorEquipamentoAcessoriosBD" class="form-label">Equipamento</label>
-                <select class="form-select" id="seletorEquipamentoAcessoriosBD">
-                    <?php if (empty($equipamentos)): ?>
-                        <option value="">Sem equipamentos registados</option>
-                    <?php else: ?>
-                        <?php foreach ($equipamentos as $equipamento): ?>
-                            <option
-                                value="<?php echo h($equipamento['id_equipamento']); ?>"
-                                data-ref="<?php echo url_ref($equipamento['id_equipamento']); ?>"
-                                data-data-aquisicao="<?php echo h($equipamento['data_aquisicao'] ?? ''); ?>"
-                                <?php echo selected_option($idEquipamentoSelecionado, $equipamento['id_equipamento']); ?>>
-                                <?php echo h($equipamento['codigo_equipamento'] . ' - ' . $equipamento['designacao']); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </select>
+                <label class="form-label">Equipamento</label>
+                <div class="seletor-equipamento-pesquisa position-relative" id="seletorEquipamentoAcessoriosBD">
+                    <div class="input-group">
+                        <span class="input-group-text" style="background:#fff;border-right:0">
+                            <i class="fa-solid fa-magnifying-glass text-muted"></i>
+                        </span>
+                        <input type="text" class="form-control seletor-eq-input" style="border-left:0"
+                            placeholder="Pesquisar equipamento pelo nome ou código…"
+                            value="<?php echo h($equipamentoSelecionado ? $equipamentoSelecionado['codigo_equipamento'] . ' - ' . $equipamentoSelecionado['designacao'] : ''); ?>"
+                            autocomplete="off">
+                    </div>
+                    <input type="hidden" class="seletor-eq-hidden">
+                    <div class="seletor-eq-dropdown d-none position-absolute w-100 bg-white border rounded shadow-sm" style="z-index:500;max-height:260px;overflow-y:auto;top:calc(100% + 4px)">
+                        <?php if (empty($equipamentos)): ?>
+                            <div class="px-3 py-2 text-muted">Sem equipamentos registados</div>
+                        <?php else: ?>
+                            <?php foreach ($equipamentos as $equipamento):
+                                $label = h($equipamento['codigo_equipamento'] . ' - ' . $equipamento['designacao']);
+                                $ref   = url_ref($equipamento['id_equipamento']);
+                                $url   = 'acessorios.php?ref_equipamento=' . $ref;
+                                $ativo = (int) $equipamento['id_equipamento'] === $idEquipamentoSelecionado;
+                            ?>
+                                <div class="seletor-eq-item px-3 py-2"
+                                    style="cursor:pointer<?php echo $ativo ? ';background:#f0faf7;font-weight:600' : ''; ?>"
+                                    data-label="<?php echo $label; ?>"
+                                    data-ref="<?php echo h($ref); ?>"
+                                    data-url="<?php echo h($url); ?>"
+                                    onmouseover="this.style.background='#f8f9fa'"
+                                    onmouseout="this.style.background='<?php echo $ativo ? '#f0faf7' : ''; ?>'">
+                                    <?php echo $label; ?>
+                                </div>
+                            <?php endforeach; ?>
+                            <div class="seletor-eq-vazio px-3 py-2 text-muted d-none">Nenhum resultado encontrado.</div>
+                        <?php endif; ?>
+                    </div>
+                </div>
             </div>
 
         </div>
@@ -719,17 +773,15 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 <td>
                                     <?php if ((int) $acessorio['requer_manutencao'] === 1): ?>
                                         <span class="badge-detalhe">Sim</span>
-                                        <small class="d-block text-muted"><?php echo h(texto_periodicidade($acessorio['periodicidade_manutencao'])); ?></small>
                                     <?php else: ?>
-                                        Não
+                                        <span class="badge-detalhe-nao">Não</span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
                                     <?php if ((int) $acessorio['requer_calibracao'] === 1): ?>
                                         <span class="badge-detalhe">Sim</span>
-                                        <small class="d-block text-muted"><?php echo h(texto_periodicidade($acessorio['periodicidade_calibracao'])); ?></small>
                                     <?php else: ?>
-                                        Não
+                                        <span class="badge-detalhe-nao">Não</span>
                                     <?php endif; ?>
                                 </td>
                                 <td class="text-center">
@@ -743,7 +795,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                         data-codigo="<?php echo h($codigoAcessorio); ?>"
                                         data-designacao="<?php echo h($acessorio['designacao']); ?>"
                                         data-tipo="<?php echo h($acessorio['tipo']); ?>"
-                                        data-fabricante="<?php echo h($acessorio['fabricante']); ?>"
+                                        data-id-fornecedor="<?php echo h($acessorio['id_fornecedor'] ?? ''); ?>"
+                                        data-fornecedor-texto="<?php echo h(($acessorio['fornecedor_nome'] ?? '') . (!empty($acessorio['fornecedor_tipo']) ? ' (' . $acessorio['fornecedor_tipo'] . ')' : '')); ?>"
                                         data-modelo="<?php echo h($acessorio['modelo']); ?>"
                                         data-numero-serie="<?php echo h($acessorio['numero_serie']); ?>"
                                         data-data-aquisicao="<?php echo h($acessorio['data_aquisicao'] ?? ''); ?>"
@@ -752,7 +805,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                         data-periodicidade-manutencao="<?php echo h($acessorio['periodicidade_manutencao']); ?>"
                                         data-requer-calibracao="<?php echo h($acessorio['requer_calibracao']); ?>"
                                         data-periodicidade-calibracao="<?php echo h($acessorio['periodicidade_calibracao']); ?>"
-                                        data-id-fornecedor-garantia="<?php echo h($acessorio['id_fornecedor_garantia']); ?>"
                                         data-data-inicio-garantia="<?php echo h($acessorio['data_inicio_garantia']); ?>"
                                         data-data-fim-garantia="<?php echo h($acessorio['data_fim_garantia']); ?>"
                                         data-observacoes="<?php echo h($acessorio['observacoes']); ?>">
@@ -854,6 +906,34 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             <input type="date" class="form-control" id="dataAquisicaoAcessorioBD" name="dataAquisicaoAcessorio">
                         </div>
 
+                        <div class="col-md-6 position-relative">
+                            <label for="fornecedorAcessorioPesquisaBD" class="form-label">Fornecedor *</label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="fornecedorAcessorioPesquisaBD"
+                                name="fornecedorAcessorioTexto"
+                                placeholder="Pesquisar fornecedor fabricante ou comercial"
+                                autocomplete="off"
+                                maxlength="180">
+                            <input
+                                type="hidden"
+                                id="idFornecedorAcessorioBD"
+                                name="idFornecedorAcessorio">
+                            <div class="lista-fornecedores-custom" id="listaFornecedoresAcessorioBD">
+                                <?php foreach ($fornecedoresAcessorio as $fornecedor): ?>
+                                    <button
+                                        type="button"
+                                        class="opcao-fornecedor-custom"
+                                        data-id="<?php echo h($fornecedor['id_fornecedor']); ?>"
+                                        data-texto="<?php echo h($fornecedor['nome_empresa'] . ' (' . $fornecedor['tipo_fornecedor'] . ')'); ?>">
+                                        <span><?php echo h($fornecedor['nome_empresa']); ?></span>
+                                        <small><?php echo h($fornecedor['tipo_fornecedor']); ?></small>
+                                    </button>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+
                         <div class="col-md-4">
                             <label for="tipoAcessorioBD" class="form-label">Tipo *</label>
                             <select class="form-select" id="tipoAcessorioBD" name="tipoAcessorio" required>
@@ -866,18 +946,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 <option value="bateria">Bateria</option>
                                 <option value="outro">Outro</option>
                             </select>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label for="fabricanteAcessorioBD" class="form-label">Fabricante *</label>
-                            <input
-                                type="text"
-                                class="form-control"
-                                id="fabricanteAcessorioBD"
-                                name="fabricanteAcessorio"
-                                placeholder="Ex: Philips"
-                                maxlength="150">
-                            <small class="texto-ajuda-form contador-caracteres" data-target="fabricanteAcessorioBD" data-max="150">0 / 150 caracteres</small>
                         </div>
 
                         <div class="col-md-4">
@@ -916,19 +984,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </select>
                         </div>
 
-                        <div class="col-md-4">
-                            <label for="idFornecedorGarantiaBD" class="form-label">Fornecedor da garantia *</label>
-                            <select class="form-select" id="idFornecedorGarantiaBD" name="idFornecedorGarantia">
-                                <option value="">Selecionar fornecedor</option>
-
-                                <?php foreach ($fornecedoresGarantia as $fornecedor): ?>
-                                    <option value="<?php echo h($fornecedor['id_fornecedor']); ?>">
-                                        <?php echo h($fornecedor['nome_empresa'] . ' (' . $fornecedor['tipo_fornecedor'] . ')'); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-
                         <div class="col-md-6">
                             <label for="dataInicioGarantiaBD" class="form-label">Início da garantia *</label>
                             <input
@@ -947,38 +1002,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 name="dataFimGarantia">
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label d-block">Requer manutenção?</label>
-
-                            <div class="d-flex gap-4 align-items-center">
-                                <div class="form-check">
-                                    <input
-                                        class="form-check-input"
-                                        type="radio"
-                                        name="requerManutencao"
-                                        id="requerManutencaoNaoBD"
-                                        value="0"
-                                        checked>
-                                    <label class="form-check-label" for="requerManutencaoNaoBD">
-                                        Não
-                                    </label>
-                                </div>
-
-                                <div class="form-check">
-                                    <input
-                                        class="form-check-input"
-                                        type="radio"
-                                        name="requerManutencao"
-                                        id="requerManutencaoSimBD"
-                                        value="1">
-                                    <label class="form-check-label" for="requerManutencaoSimBD">
-                                        Sim
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
+                        <div class="col-md-8">
                             <label for="periodicidadeManutencaoBD" class="form-label">Periodicidade de manutenção</label>
                             <select class="form-select" id="periodicidadeManutencaoBD" name="periodicidadeManutencao" disabled>
                                 <option value="">Não aplicável</option>
@@ -989,38 +1013,21 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </select>
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label d-block">Requer calibração?</label>
-
-                            <div class="d-flex gap-4 align-items-center">
+                        <div class="col-md-4">
+                            <label class="form-label d-block">Requer manutenção?</label>
+                            <div class="d-flex gap-4 align-items-center" style="padding-top:0.375rem;">
                                 <div class="form-check">
-                                    <input
-                                        class="form-check-input"
-                                        type="radio"
-                                        name="requerCalibracao"
-                                        id="requerCalibracaoNaoBD"
-                                        value="0"
-                                        checked>
-                                    <label class="form-check-label" for="requerCalibracaoNaoBD">
-                                        Não
-                                    </label>
+                                    <input class="form-check-input" type="radio" name="requerManutencao" id="requerManutencaoNaoBD" value="0" checked>
+                                    <label class="form-check-label" for="requerManutencaoNaoBD">Não</label>
                                 </div>
-
                                 <div class="form-check">
-                                    <input
-                                        class="form-check-input"
-                                        type="radio"
-                                        name="requerCalibracao"
-                                        id="requerCalibracaoSimBD"
-                                        value="1">
-                                    <label class="form-check-label" for="requerCalibracaoSimBD">
-                                        Sim
-                                    </label>
+                                    <input class="form-check-input" type="radio" name="requerManutencao" id="requerManutencaoSimBD" value="1">
+                                    <label class="form-check-label" for="requerManutencaoSimBD">Sim</label>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="col-md-6">
+                        <div class="col-md-8">
                             <label for="periodicidadeCalibracaoBD" class="form-label">Periodicidade de calibração</label>
                             <select class="form-select" id="periodicidadeCalibracaoBD" name="periodicidadeCalibracao" disabled>
                                 <option value="">Não aplicável</option>
@@ -1029,6 +1036,20 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                 <option value="bienal">Bienal</option>
                                 <option value="trienal">Trienal</option>
                             </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label d-block">Requer calibração?</label>
+                            <div class="d-flex gap-4 align-items-center" style="padding-top:0.375rem;">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="requerCalibracao" id="requerCalibracaoNaoBD" value="0" checked>
+                                    <label class="form-check-label" for="requerCalibracaoNaoBD">Não</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="requerCalibracao" id="requerCalibracaoSimBD" value="1">
+                                    <label class="form-check-label" for="requerCalibracaoSimBD">Sim</label>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="col-md-12">
@@ -1050,6 +1071,10 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <button type="button" class="btn btn-cancelar-modal" data-bs-dismiss="modal">
                         <i class="fa-solid fa-xmark me-2"></i>
                         Cancelar
+                    </button>
+
+                    <button type="button" class="btn btn-dados-teste" onclick="dadosTeste_novoAcessorio()">
+                        <i class="fa-solid fa-flask me-2"></i> Dados de Teste
                     </button>
 
                     <button type="submit" class="btn btn-adicionar">
@@ -1143,7 +1168,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return document.getElementById(id);
     };
 
-    const seletorEquipamento = $('seletorEquipamentoAcessoriosBD');
+    const seletorEquipamento = null; /* substituído por seletor-equipamento-pesquisa */
     const pesquisa = $('pesquisaAcessoriosBD');
     const btnLimpar = $('btnLimparPesquisaAcessoriosBD');
     const tabela = $('tabelaAcessoriosBD');
@@ -1220,9 +1245,10 @@ document.addEventListener('DOMContentLoaded', function () {
         setValue('acaoAcessorioBD', 'criar');
         setValue('idAcessorioBD', '');
         setValue('codigoAcessorioBD', botao?.dataset.codigoPreview || 'Gerado automaticamente');
-
+        setValue('fornecedorAcessorioPesquisaBD', '');
+        setValue('idFornecedorAcessorioBD', '');
         if (tituloModal) {
-            tituloModal.innerHTML = '<i class="fa-solid fa-plug-circle-bolt me-2"></i>Adicionar Acessório';
+            tituloModal.innerHTML = '<i class="fa-solid fa-plug-circle-bolt me-2"></i>Adicionar Acess\u00f3rio';
         }
 
         setChecked('requerManutencaoNaoBD', true);
@@ -1244,12 +1270,12 @@ document.addEventListener('DOMContentLoaded', function () {
         setValue('codigoAcessorioBD', botao.dataset.codigo || '---');
         setValue('designacaoAcessorioBD', botao.dataset.designacao || '');
         setValue('tipoAcessorioBD', botao.dataset.tipo || '');
-        setValue('fabricanteAcessorioBD', botao.dataset.fabricante || '');
+        setValue('fornecedorAcessorioPesquisaBD', botao.dataset.fornecedorTexto || '');
+        setValue('idFornecedorAcessorioBD', botao.dataset.idFornecedor || '');
         setValue('modeloAcessorioBD', botao.dataset.modelo || '');
         setValue('numeroSerieAcessorioBD', botao.dataset.numeroSerie || '');
         setValue('dataAquisicaoAcessorioBD', botao.dataset.dataAquisicao || '');
         setValue('estadoAcessorioBD', botao.dataset.estado || 'ativo');
-        setValue('idFornecedorGarantiaBD', botao.dataset.idFornecedorGarantia || '');
         setValue('dataInicioGarantiaBD', botao.dataset.dataInicioGarantia || '');
         setValue('dataFimGarantiaBD', botao.dataset.dataFimGarantia || '');
         setValue('observacoesAcessorioBD', botao.dataset.observacoes || '');
@@ -1273,7 +1299,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (tituloModal) {
-            tituloModal.innerHTML = '<i class="fa-solid fa-file-pen me-2"></i>Editar Acessório';
+            tituloModal.innerHTML = '<i class="fa-solid fa-file-pen me-2"></i>Editar Acess&oacute;rio';
         }
     }
 
@@ -1335,6 +1361,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     atualizarPeriodicidades();
+
+    iniciarPesquisaFornecedor('fornecedorAcessorioPesquisaBD', 'idFornecedorAcessorioBD', 'listaFornecedoresAcessorioBD');
+
 });
 </script>
 

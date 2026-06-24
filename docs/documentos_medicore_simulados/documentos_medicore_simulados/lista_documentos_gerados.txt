@@ -1,0 +1,17 @@
+contrato_aquisicao | 01.001 | Contrato de Aquisicao - Ventilador Pulmonar | equipamentos/01.001/contratos/contrato_aquisicao_01_001_ventilador_pulmonar.pdf
+contrato_aquisicao | 02.001 | Contrato de Aquisicao - Ecografo Portatil | equipamentos/02.001/contratos/contrato_aquisicao_02_001_ecografo_portatil.pdf
+contrato_aquisicao | 05.001 | Contrato de Aquisicao - Bomba Infusora Volumetrica | equipamentos/05.001/contratos/contrato_aquisicao_05_001_bomba_infusora_volumetrica.pdf
+contrato_aquisicao | 07.001 | Contrato de Aquisicao - Incubadora Neonatal | equipamentos/07.001/contratos/contrato_aquisicao_07_001_incubadora_neonatal.pdf
+contrato_garantia | 01.001 | Contrato de Garantia - Ventilador Pulmonar | equipamentos/01.001/garantias/contrato_garantia_01_001_ventilador_pulmonar.pdf
+contrato_garantia | 04.001 | Contrato de Garantia - Monitor Multiparametrico | equipamentos/04.001/garantias/contrato_garantia_04_001_monitor_multiparametrico.pdf
+contrato_garantia | 05.001 | Contrato de Garantia - Bomba Infusora Volumetrica | equipamentos/05.001/garantias/contrato_garantia_05_001_bomba_infusora_volumetrica.pdf
+contrato_garantia | 07.001 | Contrato de Garantia - Incubadora Neonatal | equipamentos/07.001/garantias/contrato_garantia_07_001_incubadora_neonatal.pdf
+contrato_manutencao | 01.001 | Contrato de Manutencao - Ventilador Pulmonar | equipamentos/01.001/manutencoes/contrato_manutencao_01_001_ventilador_pulmonar.pdf
+contrato_manutencao | 05.001 | Contrato de Manutencao - Bomba Infusora Volumetrica | equipamentos/05.001/manutencoes/contrato_manutencao_05_001_bomba_infusora_volumetrica.pdf
+contrato_manutencao | 08.001 | Contrato de Manutencao - Autoclave Hospitalar | equipamentos/08.001/manutencoes/contrato_manutencao_08_001_autoclave_hospitalar.pdf
+contrato_calibracao | 01.001 | Contrato de Calibracao - Ventilador Pulmonar | equipamentos/01.001/calibracoes/contrato_calibracao_01_001_ventilador_pulmonar.pdf
+contrato_calibracao | 05.001 | Contrato de Calibracao - Bomba Infusora Volumetrica | equipamentos/05.001/calibracoes/contrato_calibracao_05_001_bomba_infusora_volumetrica.pdf
+contrato_calibracao | 08.001 | Contrato de Calibracao - Autoclave Hospitalar | equipamentos/08.001/calibracoes/contrato_calibracao_08_001_autoclave_hospitalar.pdf
+manual_instrucoes | 01.001 | Manual de Instrucoes - Ventilador Pulmonar | equipamentos/01.001/manuais/manual_instrucoes_01_001_ventilador_pulmonar.pdf
+manual_instrucoes | 05.001 | Manual de Instrucoes - Bomba Infusora Volumetrica | equipamentos/05.001/manuais/manual_instrucoes_05_001_bomba_infusora_volumetrica.pdf
+manual_instrucoes | 08.001 | Manual de Instrucoes - Autoclave Hospitalar | equipamentos/08.001/manuais/manual_instrucoes_08_001_autoclave_hospitalar.pdf

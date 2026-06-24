@@ -18,6 +18,9 @@ require_once __DIR__ . '/../../config/config.php';
     <!-- JavaScript do projeto -->
     <script src="<?php echo PRIVATE_ASSETS_URL; ?>/js/1230404.js?v=<?php echo filemtime(__DIR__ . '/../assets/js/1230404.js'); ?>"></script>
 
+    <!-- Dados de teste (remover em produção) -->
+    <script src="<?php echo PRIVATE_ASSETS_URL; ?>/js/dados_teste.js?v=<?php echo filemtime(__DIR__ . '/../assets/js/dados_teste.js'); ?>"></script>
+
     <div class="modal fade" id="modalSairSemGuardar" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content modal-remocao">

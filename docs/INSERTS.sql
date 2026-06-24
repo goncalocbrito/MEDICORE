@@ -1,2454 +1,428 @@
-INSERT INTO fornecedores (
-    nome_empresa,
-    tipo_fornecedor,
-    nif,
-    email,
-    telefone,
-    website,
-    pessoa_contacto,
-    telefone_contacto,
-    email_contacto,
-    morada,
-    codigo_postal,
-    localidade,
-    pais,
-    isActive
-) VALUES
-(
-    'Philips Medical Systems Portugal',
-    'Fabricante',
-    509123456,
-    'suporte@philips-medical.pt',
-    220000111,
-    'https://www.philips.pt',
-    'Carlos Almeida',
-    912345678,
-    'carlos.almeida@philips-medical.pt',
-    'Avenida da Boavista 1837',
-    '4100-133',
-    'Porto',
-    'Portugal',
-    1
-),
-(
-    'MedSupply Portugal',
-    'Comercial',
-    514987321,
-    'comercial@medsupply.pt',
-    221234567,
-    'https://www.medsupply.pt',
-    'Ana Martins',
-    913456789,
-    'ana.martins@medsupply.pt',
-    'Rua do Campo Grande 28',
-    '1700-093',
-    'Lisboa',
-    'Portugal',
-    1
-),
-(
-    'Biomedical Solutions',
-    'Manutenção',
-    507654789,
-    'tecnica@biomedicalsolutions.pt',
-    222456789,
-    'https://www.biomedicalsolutions.pt',
-    'Rui Ferreira',
-    914567890,
-    'rui.ferreira@biomedicalsolutions.pt',
-    'Rua Engenheiro Frederico Ulrich 2650',
-    '4470-605',
-    'Maia',
-    'Portugal',
-    1
-),
-(
-    'Drager Portugal',
-    'Fabricante',
-    501234987,
-    'assistencia@drager.pt',
-    218765432,
-    'https://www.draeger.com',
-    'Marta Costa',
-    915678901,
-    'marta.costa@drager.pt',
-    'Lagoas Park, Edificio 5',
-    '2740-245',
-    'Oeiras',
-    'Portugal',
-    1
-),
-(
-    'CalibraMed',
-    'Manutenção',
-    515321987,
-    'geral@calibramed.pt',
-    223987654,
-    'https://www.calibramed.pt',
-    'João Pereira',
-    916789012,
-    'joao.pereira@calibramed.pt',
-    'Parque Tecnologico de Braga',
-    '4705-319',
-    'Braga',
-    'Portugal',
-    1
-),
-(
-    'HospitalTech Equipamentos',
-    'Comercial',
-    508456123,
-    'vendas@hospitaltech.pt',
-    239123456,
-    'https://www.hospitaltech.pt',
-    'Sofia Ribeiro',
-    917890123,
-    'sofia.ribeiro@hospitaltech.pt',
-    'Rua Pedro Nunes 303',
-    '3030-199',
-    'Coimbra',
-    'Portugal',
-    1
-);
-
-INSERT INTO localizacoes (
-    codigo,
-    departamento_nome,
-    departamento_sigla,
-    edificio,
-    piso,
-    sala,
-    tipo_espaco,
-    estado,
-    capacidade_equipamentos,
-    permite_equipamentos_criticos,
-    observacoes,
-    isActive
-) VALUES
-('UCI-P2-S201', 'Unidade de Cuidados Intensivos', 'UCI', 'Edifício A', '2', '201', 'UCI', 'Ativa', 12, 1, 'Sala destinada a cuidados intensivos com equipamentos críticos.', 1),
-('UCI-P2-S202', 'Unidade de Cuidados Intensivos', 'UCI', 'Edifício A', '2', '202', 'UCI', 'Ativa', 10, 1, 'Sala com monitorização contínua de doentes críticos.', 1),
-('UCI-P2-S203', 'Unidade de Cuidados Intensivos', 'UCI', 'Edifício A', '2', '203', 'UCI', 'Em manutenção', 8, 1, 'Espaço temporariamente em manutenção técnica.', 1),
-
-('URG-P0-S001', 'Urgência', 'URG', 'Edifício B', '0', '001', 'Urgência', 'Ativa', 15, 1, 'Sala principal de atendimento urgente.', 1),
-('URG-P0-S002', 'Urgência', 'URG', 'Edifício B', '0', '002', 'Urgência', 'Ativa', 8, 1, 'Sala de observação rápida.', 1),
-('URG-P0-S003', 'Urgência', 'URG', 'Edifício B', '0', '003', 'Triagem', 'Ativa', 5, 0, 'Área destinada à triagem inicial dos utentes.', 1),
-
-('BO-P1-S101', 'Bloco Operatório', 'BO', 'Edifício C', '1', '101', 'Bloco Operatório', 'Ativa', 7, 1, 'Sala operatória equipada para cirurgia geral.', 1),
-('BO-P1-S102', 'Bloco Operatório', 'BO', 'Edifício C', '1', '102', 'Bloco Operatório', 'Ativa', 7, 1, 'Sala operatória com suporte para equipamentos críticos.', 1),
-('BO-P1-S103', 'Bloco Operatório', 'BO', 'Edifício C', '1', '103', 'Bloco Operatório', 'Indisponível', 6, 1, 'Sala temporariamente indisponível para intervenção técnica.', 1),
-
-('RAD-P0-S010', 'Radiologia', 'RAD', 'Edifício A', '0', '010', 'Radiologia', 'Ativa', 4, 0, 'Sala destinada a exames de imagem.', 1),
-('RAD-P0-S011', 'Radiologia', 'RAD', 'Edifício A', '0', '011', 'Radiologia', 'Ativa', 3, 0, 'Sala com equipamento de diagnóstico por imagem.', 1),
-('RAD-P0-S012', 'Radiologia', 'RAD', 'Edifício A', '0', '012', 'Radiologia', 'Em manutenção', 2, 0, 'Sala em manutenção preventiva.', 1),
-
-('LAB-P1-S105', 'Laboratório Clínico', 'LAB', 'Edifício D', '1', '105', 'Laboratório', 'Ativa', 10, 0, 'Laboratório destinado ao processamento de amostras clínicas.', 1),
-('LAB-P1-S106', 'Laboratório Clínico', 'LAB', 'Edifício D', '1', '106', 'Laboratório', 'Ativa', 8, 0, 'Sala de apoio técnico laboratorial.', 1),
-('LAB-P1-S107', 'Laboratório Clínico', 'LAB', 'Edifício D', '1', '107', 'Laboratório', 'Ativa', 6, 0, 'Espaço reservado para equipamentos laboratoriais.', 1),
-
-('CARD-P3-S301', 'Cardiologia', 'CARD', 'Edifício A', '3', '301', 'Consulta Externa', 'Ativa', 5, 0, 'Sala de consulta de cardiologia.', 1),
-('CARD-P3-S302', 'Cardiologia', 'CARD', 'Edifício A', '3', '302', 'Consulta Externa', 'Ativa', 5, 0, 'Sala destinada a avaliação cardiológica.', 1),
-('CARD-P3-S303', 'Cardiologia', 'CARD', 'Edifício A', '3', '303', 'Sala de Exames', 'Ativa', 6, 0, 'Sala equipada para exames complementares de cardiologia.', 1),
-
-('PED-P2-S210', 'Pediatria', 'PED', 'Edifício B', '2', '210', 'Consulta Externa', 'Ativa', 6, 0, 'Sala de consulta pediátrica.', 1),
-('PED-P2-S211', 'Pediatria', 'PED', 'Edifício B', '2', '211', 'Consulta Externa', 'Ativa', 6, 0, 'Sala adaptada ao atendimento pediátrico.', 1),
-('PED-P2-S212', 'Pediatria', 'PED', 'Edifício B', '2', '212', 'Sala de Tratamentos', 'Ativa', 7, 0, 'Sala para pequenos procedimentos pediátricos.', 1),
-
-('NEO-P2-S220', 'Neonatologia', 'NEO', 'Edifício B', '2', '220', 'Neonatologia', 'Ativa', 10, 1, 'Sala com suporte para cuidados neonatais.', 1),
-('NEO-P2-S221', 'Neonatologia', 'NEO', 'Edifício B', '2', '221', 'Neonatologia', 'Ativa', 8, 1, 'Sala destinada a recém-nascidos com necessidade de monitorização.', 1),
-
-('MI-P4-S401', 'Medicina Interna', 'MI', 'Edifício A', '4', '401', 'Enfermaria', 'Ativa', 12, 0, 'Sala/enfermaria de medicina interna.', 1),
-('MI-P4-S402', 'Medicina Interna', 'MI', 'Edifício A', '4', '402', 'Enfermaria', 'Ativa', 12, 0, 'Espaço de internamento de medicina interna.', 1),
-
-('CE-P-1-S001', 'Central de Esterilização', 'CE', 'Edifício Técnico', '-1', '001', 'Esterilização', 'Ativa', 9, 0, 'Área técnica dedicada à esterilização de material.', 1),
-('CE-P-1-S002', 'Central de Esterilização', 'CE', 'Edifício Técnico', '-1', '002', 'Esterilização', 'Ativa', 7, 0, 'Sala de apoio ao processamento de material esterilizado.', 1),
-
-('ARM-P-1-S010', 'Armazém Técnico', 'ARM', 'Edifício Técnico', '-1', '010', 'Armazém Técnico', 'Ativa', 20, 0, 'Armazém para equipamentos e acessórios técnicos.', 1),
-('ARM-P-1-S011', 'Armazém Técnico', 'ARM', 'Edifício Técnico', '-1', '011', 'Armazém Técnico', 'Ativa', 18, 0, 'Espaço de armazenamento de consumíveis e peças.', 1),
-
-('MN-P1-S115', 'Medicina Nuclear', 'MN', 'Edifício D', '1', '115', 'Sala de Exames', 'Ativa', 4, 0, 'Sala destinada a exames de medicina nuclear.', 1);
-
--- Inserts adicionais para MEDICORE
--- Executar depois dos INSERTS.sql que já tens para fornecedores e localizações.
-
--- 1) Famílias de equipamentos
-INSERT IGNORE INTO familias_equipamento (codigo_familia, nome, descricao, isActive) VALUES
-('01', 'Suporte de vida', 'Equipamentos críticos de suporte ventilatório, reanimação e emergência.', 1),
-('02', 'Diagnóstico por imagem', 'Equipamentos usados na aquisição e apoio ao diagnóstico por imagem.', 1),
-('03', 'Laboratório clínico', 'Equipamentos laboratoriais para processamento, análise e conservação de amostras.', 1),
-('04', 'Monitores de sinais vitais', 'Monitores multiparamétricos e sistemas de monitorização clínica.', 1),
-('05', 'Terapêutica e administração', 'Equipamentos destinados à administração controlada de terapêuticas.', 1),
-('06', 'Cardiologia', 'Equipamentos de avaliação, diagnóstico e monitorização cardiológica.', 1),
-('07', 'Neonatologia e pediatria', 'Equipamentos de apoio clínico a recém-nascidos e doentes pediátricos.', 1),
-('08', 'Esterilização', 'Equipamentos técnicos associados à esterilização e reprocessamento de material.', 1),
-('09', 'Mobilidade e apoio clínico', 'Equipamentos de apoio à mobilidade, transporte e suporte ao ato clínico.', 1),
-('10', 'Informática médica e apoio técnico', 'Equipamentos de apoio digital, rastreabilidade e continuidade operacional.', 1);
-
-INSERT INTO fornecedores (
-    nome_empresa,
-    tipo_fornecedor,
-    nif,
-    email,
-    telefone,
-    website,
-    pessoa_contacto,
-    telefone_contacto,
-    email_contacto,
-    morada,
-    codigo_postal,
-    localidade,
-    pais,
-    observacoes
-) VALUES
-(
-    'CalibraMed Portugal',
-    'Calibração',
-    509111222,
-    'geral@calibramed.pt',
-    210111222,
-    'https://www.calibramed.pt',
-    'João Martins',
-    910111222,
-    'joao.martins@calibramed.pt',
-    'Rua da Metrologia, 25',
-    '1000-250',
-    'Lisboa',
-    'Portugal',
-    'Fornecedor especializado em calibração de equipamentos médicos.'
-),
-(
-    'TecnoCalibra Saúde',
-    'Calibração',
-    509333444,
-    'geral@tecnocalibra.pt',
-    220333444,
-    'https://www.tecnocalibra.pt',
-    'Ana Ribeiro',
-    930333444,
-    'ana.ribeiro@tecnocalibra.pt',
-    'Avenida dos Ensaios Técnicos, 14',
-    '4200-140',
-    'Porto',
-    'Portugal',
-    'Empresa responsável por calibrações e ensaios técnicos.'
-);
-
-INSERT INTO equipamentos (
-    id_familia_equipamento,
-    numero_sequencial,
-    codigo_equipamento,
-    designacao,
-    modelo,
-    numero_serie,
-    tipo_entrada,
-    valor_aquisicao,
-    id_localizacao,
-    estado,
-    criticidade,
-    periodicidade_manutencao,
-    periodicidade_calibracao,
-    data_fabrico,
-    data_aquisicao,
-    data_instalacao,
-    responsavel_equipamento,
-    observacoes,
-    atualizado_por
-) VALUES
-(
-    (SELECT id_familia_equipamento FROM familias_equipamento WHERE codigo_familia = '01' LIMIT 1),
-    1,
-    '01.001',
-    'Ventilador Pulmonar',
-    'Evita V600',
-    'SN-VENT-001',
-    'compra',
-    18500.00,
-    (SELECT id_localizacao FROM localizacoes WHERE codigo = 'UCI-P2-S201' LIMIT 1),
-    'ativo',
-    'critica',
-    'semestral',
-    'anual',
-    '2022-01-10',
-    '2022-03-01',
-    '2022-03-15',
-    'Eng. Gonçalo',
-    'Equipamento crítico de suporte ventilatório utilizado em cuidados intensivos.',
-    'admin'
-),
-(
-    (SELECT id_familia_equipamento FROM familias_equipamento WHERE codigo_familia = '01' LIMIT 1),
-    2,
-    '01.002',
-    'Desfibrilhador Externo',
-    'HeartStart XL',
-    'SN-DESF-002',
-    'compra',
-    7200.00,
-    (SELECT id_localizacao FROM localizacoes WHERE codigo = 'URG-P0-S001' LIMIT 1),
-    'ativo',
-    'critica',
-    'semestral',
-    'anual',
-    '2021-05-20',
-    '2021-07-10',
-    '2021-07-20',
-    'Eng. Gonçalo',
-    'Equipamento de emergência para suporte avançado de vida.',
-    'admin'
-),
-(
-    (SELECT id_familia_equipamento FROM familias_equipamento WHERE codigo_familia = '02' LIMIT 1),
-    1,
-    '02.001',
-    'Ecógrafo Portátil',
-    'ClearVue 550',
-    'SN-ECO-001',
-    'compra',
-    32000.00,
-    (SELECT id_localizacao FROM localizacoes WHERE codigo = 'RAD-P0-S010' LIMIT 1),
-    'ativo',
-    'alta',
-    'anual',
-    'anual',
-    '2021-06-12',
-    '2021-08-20',
-    '2021-09-01',
-    'Eng. Gonçalo',
-    'Equipamento usado em exames de diagnóstico por imagem.',
-    'admin'
-),
-(
-    (SELECT id_familia_equipamento FROM familias_equipamento WHERE codigo_familia = '03' LIMIT 1),
-    1,
-    '03.001',
-    'Centrífuga Laboratorial',
-    'LabSpin 3000',
-    'SN-CENT-001',
-    'compra',
-    4500.00,
-    (SELECT id_localizacao FROM localizacoes WHERE codigo = 'LAB-P1-S105' LIMIT 1),
-    'ativo',
-    'media',
-    'anual',
-    'anual',
-    '2023-02-18',
-    '2023-04-10',
-    '2023-04-20',
-    'Eng. Gonçalo',
-    'Equipamento laboratorial para processamento de amostras clínicas.',
-    'admin'
-),
-(
-    (SELECT id_familia_equipamento FROM familias_equipamento WHERE codigo_familia = '04' LIMIT 1),
-    1,
-    '04.001',
-    'Monitor Multiparamétrico',
-    'IntelliVue MX450',
-    'SN-MON-001',
-    'compra',
-    6200.00,
-    (SELECT id_localizacao FROM localizacoes WHERE codigo = 'UCI-P2-S202' LIMIT 1),
-    'ativo',
-    'alta',
-    'anual',
-    'bienal',
-    '2022-06-01',
-    '2022-08-10',
-    '2022-08-20',
-    'Eng. Gonçalo',
-    'Monitorização contínua de sinais vitais em contexto hospitalar.',
-    'admin'
-),
-(
-    (SELECT id_familia_equipamento FROM familias_equipamento WHERE codigo_familia = '05' LIMIT 1),
-    1,
-    '05.001',
-    'Bomba Infusora Volumétrica',
-    'Infusomat Space',
-    'SN-INF-001',
-    'compra',
-    2450.00,
-    (SELECT id_localizacao FROM localizacoes WHERE codigo = 'MI-P4-S401' LIMIT 1),
-    'ativo',
-    'critica',
-    'anual',
-    'anual',
-    '2023-01-15',
-    '2023-03-01',
-    '2023-03-10',
-    'Eng. Gonçalo',
-    'Equipamento destinado à administração controlada de terapêutica intravenosa.',
-    'admin'
-),
-(
-    (SELECT id_familia_equipamento FROM familias_equipamento WHERE codigo_familia = '06' LIMIT 1),
-    1,
-    '06.001',
-    'Eletrocardiógrafo',
-    'PageWriter TC30',
-    'SN-ECG-001',
-    'compra',
-    3800.00,
-    (SELECT id_localizacao FROM localizacoes WHERE codigo = 'CARD-P3-S303' LIMIT 1),
-    'ativo',
-    'alta',
-    'anual',
-    'bienal',
-    '2020-09-05',
-    '2020-10-15',
-    '2020-10-25',
-    'Eng. Gonçalo',
-    'Equipamento de apoio ao diagnóstico cardiológico.',
-    'admin'
-),
-(
-    (SELECT id_familia_equipamento FROM familias_equipamento WHERE codigo_familia = '07' LIMIT 1),
-    1,
-    '07.001',
-    'Incubadora Neonatal',
-    'Isolette 8000',
-    'SN-INC-001',
-    'compra',
-    14500.00,
-    (SELECT id_localizacao FROM localizacoes WHERE codigo = 'NEO-P2-S220' LIMIT 1),
-    'ativo',
-    'critica',
-    'semestral',
-    'anual',
-    '2021-11-20',
-    '2022-01-10',
-    '2022-01-20',
-    'Eng. Gonçalo',
-    'Equipamento de suporte clínico neonatal.',
-    'admin'
-),
-(
-    (SELECT id_familia_equipamento FROM familias_equipamento WHERE codigo_familia = '08' LIMIT 1),
-    1,
-    '08.001',
-    'Autoclave Hospitalar',
-    'Sterilizer 1000',
-    'SN-AUT-001',
-    'compra',
-    21000.00,
-    (SELECT id_localizacao FROM localizacoes WHERE codigo = 'CE-P-1-S001' LIMIT 1),
-    'em_manutencao',
-    'alta',
-    'semestral',
-    'anual',
-    '2019-04-10',
-    '2019-06-01',
-    '2019-06-15',
-    'Eng. Gonçalo',
-    'Equipamento de esterilização e reprocessamento de material clínico.',
-    'admin'
-),
-(
-    (SELECT id_familia_equipamento FROM familias_equipamento WHERE codigo_familia = '09' LIMIT 1),
-    1,
-    '09.001',
-    'Cama Hospitalar Elétrica',
-    'Eleganza Smart',
-    'SN-CAMA-001',
-    'compra',
-    2950.00,
-    (SELECT id_localizacao FROM localizacoes WHERE codigo = 'MI-P4-S402' LIMIT 1),
-    'ativo',
-    'media',
-    'anual',
-    NULL,
-    '2022-12-01',
-    '2023-01-10',
-    '2023-01-20',
-    'Eng. Gonçalo',
-    'Equipamento de apoio clínico e mobilidade do doente.',
-    'admin'
-);
-
-INSERT INTO equipamentos_fornecedores (
-    id_equipamento,
-    id_fornecedor_fabricante,
-    id_fornecedor_comercial,
-    id_fornecedor_garantia,
-    data_inicio_garantia,
-    data_fim_garantia,
-    observacoes,
-    atualizado_por
-) VALUES
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '01.001' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'Drager Portugal' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'MedSupply Portugal' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'Drager Portugal' LIMIT 1),
-    '2022-03-15',
-    '2025-03-15',
-    'Garantia assegurada pelo fabricante.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '01.002' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'Philips Medical Systems Portugal' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'HospitalTech Equipamentos' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'HospitalTech Equipamentos' LIMIT 1),
-    '2021-07-20',
-    '2024-07-20',
-    'Garantia assegurada pelo fornecedor comercial.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '02.001' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'Philips Medical Systems Portugal' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'MedSupply Portugal' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'Philips Medical Systems Portugal' LIMIT 1),
-    '2021-09-01',
-    '2024-09-01',
-    'Garantia assegurada pelo fabricante.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '03.001' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'Biomedical Solutions' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'MedSupply Portugal' LIMIT 1),
-    NULL,
-    NULL,
-    NULL,
-    'Equipamento sem fornecedor de garantia associado.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '04.001' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'Philips Medical Systems Portugal' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'HospitalTech Equipamentos' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'HospitalTech Equipamentos' LIMIT 1),
-    '2022-08-20',
-    '2025-08-20',
-    'Garantia associada ao fornecedor comercial.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '05.001' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'Biomedical Solutions' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'MedSupply Portugal' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'MedSupply Portugal' LIMIT 1),
-    '2023-03-10',
-    '2026-03-10',
-    'Garantia válida por três anos.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '06.001' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'Philips Medical Systems Portugal' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'HospitalTech Equipamentos' LIMIT 1),
-    NULL,
-    NULL,
-    NULL,
-    'Sem garantia ativa registada.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '07.001' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'Drager Portugal' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'HospitalTech Equipamentos' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'Drager Portugal' LIMIT 1),
-    '2022-01-20',
-    '2025-01-20',
-    'Garantia assegurada pelo fabricante.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '08.001' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'Biomedical Solutions' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'MedSupply Portugal' LIMIT 1),
-    NULL,
-    NULL,
-    NULL,
-    'Garantia expirada ou não aplicável.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '09.001' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'HospitalTech Equipamentos' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'HospitalTech Equipamentos' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'HospitalTech Equipamentos' LIMIT 1),
-    '2023-01-20',
-    '2025-01-20',
-    'Garantia associada ao fornecedor comercial.',
-    'admin'
-);
-
-INSERT INTO manutencoes_equipamento (
-    id_equipamento,
-    tipo_manutencao,
-    id_fornecedor_responsavel,
-    tecnico_interno,
-    data_manutencao,
-    proxima_manutencao,
-    descricao_procedimento,
-    resultado,
-    coberta_por_garantia,
-    custo,
-    observacoes,
-    atualizado_por
-) VALUES
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '01.001' LIMIT 1),
-    'preventiva',
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'Drager Portugal' LIMIT 1),
-    NULL,
-    '2024-03-15',
-    '2024-09-15',
-    'Inspeção geral, teste funcional, verificação de alarmes e limpeza técnica.',
-    'realizada',
-    1,
-    0.00,
-    'Manutenção realizada durante o período de garantia.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '01.002' LIMIT 1),
-    'preventiva',
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'Biomedical Solutions' LIMIT 1),
-    NULL,
-    '2024-07-20',
-    '2025-01-20',
-    'Teste de descarga, inspeção dos elétrodos, verificação da bateria e alarmes.',
-    'realizada',
-    0,
-    140.00,
-    'Manutenção preventiva realizada por fornecedor técnico.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '02.001' LIMIT 1),
-    'preventiva',
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'Biomedical Solutions' LIMIT 1),
-    NULL,
-    '2024-09-01',
-    '2025-09-01',
-    'Verificação funcional, inspeção dos transdutores e limpeza técnica.',
-    'realizada_com_observacoes',
-    0,
-    220.00,
-    'Recomendada substituição futura de cabo de sonda.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '03.001' LIMIT 1),
-    'preventiva',
-    NULL,
-    'Técnico Interno - Engenharia Clínica',
-    '2024-04-20',
-    '2025-04-20',
-    'Limpeza, inspeção visual, verificação de rotação e teste funcional.',
-    'realizada',
-    0,
-    NULL,
-    'Intervenção interna sem necessidade de fornecedor externo.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '04.001' LIMIT 1),
-    'corretiva',
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'Biomedical Solutions' LIMIT 1),
-    NULL,
-    '2024-11-10',
-    NULL,
-    'Substituição de cabo ECG danificado e teste funcional posterior.',
-    'realizada',
-    0,
-    95.00,
-    'Equipamento voltou ao serviço após intervenção.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '05.001' LIMIT 1),
-    'preventiva',
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'MedSupply Portugal' LIMIT 1),
-    NULL,
-    '2024-03-10',
-    '2025-03-10',
-    'Teste de alarmes, inspeção mecânica e verificação do funcionamento geral.',
-    'realizada',
-    1,
-    0.00,
-    'Manutenção coberta pela garantia.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '06.001' LIMIT 1),
-    'preventiva',
-    NULL,
-    'Técnico Interno - Engenharia Clínica',
-    '2024-10-25',
-    '2025-10-25',
-    'Inspeção visual, teste de aquisição de sinal e verificação de acessórios.',
-    'realizada',
-    0,
-    NULL,
-    'Sem anomalias detetadas.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '07.001' LIMIT 1),
-    'preventiva',
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'Drager Portugal' LIMIT 1),
-    NULL,
-    '2024-01-20',
-    '2024-07-20',
-    'Verificação de temperatura, alarmes, sensores e integridade física.',
-    'realizada',
-    1,
-    0.00,
-    'Intervenção realizada no âmbito da garantia.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '08.001' LIMIT 1),
-    'corretiva',
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'CalibraMed' LIMIT 1),
-    NULL,
-    '2024-06-12',
-    NULL,
-    'Correção de falha no ciclo de esterilização e teste de funcionamento.',
-    'realizada_com_observacoes',
-    0,
-    350.00,
-    'Necessária nova avaliação no próximo ciclo preventivo.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '09.001' LIMIT 1),
-    'preventiva',
-    NULL,
-    'Técnico Interno - Engenharia Clínica',
-    '2024-01-20',
-    '2025-01-20',
-    'Verificação de comandos elétricos, travões e estrutura mecânica.',
-    'realizada',
-    0,
-    NULL,
-    'Equipamento funcional.',
-    'admin'
-);
-
-INSERT INTO calibracoes_equipamento (
-    id_equipamento,
-    id_fornecedor_responsavel,
-    tecnico_interno,
-    data_calibracao,
-    proxima_calibracao,
-    numero_certificado,
-    resultado,
-    procedimento,
-    coberta_por_garantia,
-    custo,
-    observacoes,
-    atualizado_por
-) VALUES
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '01.001' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'CalibraMed Portugal' LIMIT 1),
-    NULL,
-    '2024-03-20',
-    '2025-03-20',
-    'CERT-01-001-2024',
-    'aprovado',
-    'Verificação de parâmetros ventilatórios e alarmes associados.',
-    0,
-    180.00,
-    'Equipamento aprovado para utilização clínica.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '01.002' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'TecnoCalibra Saúde' LIMIT 1),
-    NULL,
-    '2024-07-25',
-    '2025-07-25',
-    'CERT-01-002-2024',
-    'aprovado',
-    'Verificação dos parâmetros de energia, descarga e segurança funcional.',
-    0,
-    150.00,
-    'Certificado emitido sem restrições.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '02.001' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'TecnoCalibra Saúde' LIMIT 1),
-    NULL,
-    '2024-09-05',
-    '2025-09-05',
-    'CERT-02-001-2024',
-    'aprovado',
-    'Verificação funcional e calibração dos parâmetros aplicáveis.',
-    0,
-    250.00,
-    'Calibração anual concluída.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '03.001' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'CalibraMed Portugal' LIMIT 1),
-    NULL,
-    '2024-04-25',
-    '2025-04-25',
-    'CERT-03-001-2024',
-    'aprovado',
-    'Calibração de velocidade de rotação e temporização.',
-    0,
-    90.00,
-    'Equipamento conforme.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '04.001' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'TecnoCalibra Saúde' LIMIT 1),
-    NULL,
-    '2024-09-01',
-    '2026-09-01',
-    'CERT-04-001-2024',
-    'aprovado',
-    'Verificação de parâmetros de monitorização e módulos disponíveis.',
-    0,
-    130.00,
-    'Validade bienal.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '05.001' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'CalibraMed Portugal' LIMIT 1),
-    NULL,
-    '2024-04-05',
-    '2025-04-05',
-    'CERT-05-001-2024',
-    'aprovado',
-    'Ensaio metrológico de caudal e volume administrado.',
-    0,
-    85.00,
-    'Equipamento aprovado.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '06.001' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'TecnoCalibra Saúde' LIMIT 1),
-    NULL,
-    '2024-10-30',
-    '2026-10-30',
-    'CERT-06-001-2024',
-    'aprovado',
-    'Verificação dos parâmetros elétricos e funcionais do ECG.',
-    0,
-    110.00,
-    'Equipamento conforme.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '07.001' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'CalibraMed Portugal' LIMIT 1),
-    NULL,
-    '2024-02-01',
-    '2025-02-01',
-    'CERT-07-001-2024',
-    'aprovado_com_restricoes',
-    'Verificação de temperatura, humidade e alarmes.',
-    1,
-    0.00,
-    'Aprovado com recomendação de vigilância do sensor de humidade.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '08.001' LIMIT 1),
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'TecnoCalibra Saúde' LIMIT 1),
-    NULL,
-    '2024-06-20',
-    '2025-06-20',
-    'CERT-08-001-2024',
-    'aprovado',
-    'Verificação de temperatura, pressão e parâmetros do ciclo.',
-    0,
-    200.00,
-    'Autoclave aprovada após correção.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '09.001' LIMIT 1),
-    NULL,
-    'Técnico Interno - Engenharia Clínica',
-    '2024-01-25',
-    NULL,
-    'VER-09-001-2024',
-    'aprovado',
-    'Verificação funcional interna dos comandos e segurança elétrica básica.',
-    0,
-    NULL,
-    'Registo interno sem certificado externo.',
-    'admin'
-);
-
-INSERT INTO documentos_equipamentos (
-    id_equipamento,
-    id_manutencao,
-    id_calibracao,
-    id_equipamento_fornecedor,
-    tipo_documento,
-    nome_documento,
-    caminho_ficheiro,
-    data_documento,
-    data_validade,
-    observacoes,
-    atualizado_por
-) VALUES
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '01.001' LIMIT 1),
-    NULL,
-    NULL,
-    NULL,
-    'manual_instrucoes',
-    'Manual de Instruções - Ventilador Pulmonar',
-    'equipamentos/01.001/manual_instrucoes.pdf',
-    '2022-03-15',
-    NULL,
-    'Manual técnico do ventilador pulmonar.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '01.002' LIMIT 1),
-    NULL,
-    NULL,
-    NULL,
-    'manual_instrucoes',
-    'Manual de Instruções - Desfibrilhador Externo',
-    'equipamentos/01.002/manual_instrucoes.pdf',
-    '2021-07-20',
-    NULL,
-    'Manual de operação do desfibrilhador.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '02.001' LIMIT 1),
-    NULL,
-    NULL,
-    NULL,
-    'datasheet',
-    'Datasheet - Ecógrafo Portátil',
-    'equipamentos/02.001/datasheet.pdf',
-    '2021-09-01',
-    NULL,
-    'Ficha técnica do ecógrafo portátil.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '04.001' LIMIT 1),
-    NULL,
-    NULL,
-    NULL,
-    'manual_instrucoes',
-    'Manual de Instruções - Monitor Multiparamétrico',
-    'equipamentos/04.001/manual_instrucoes.pdf',
-    '2022-08-20',
-    NULL,
-    'Manual de utilização do monitor multiparamétrico.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '05.001' LIMIT 1),
-    NULL,
-    NULL,
-    NULL,
-    'datasheet',
-    'Datasheet - Bomba Infusora Volumétrica',
-    'equipamentos/05.001/datasheet.pdf',
-    '2023-03-10',
-    NULL,
-    'Ficha técnica da bomba infusora.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '05.001' LIMIT 1),
-    NULL,
-    (SELECT id_calibracao FROM calibracoes_equipamento WHERE numero_certificado = 'CERT-05-001-2024' LIMIT 1),
-    NULL,
-    'certificado_calibracao',
-    'Certificado de Calibração - Bomba Infusora - 2024',
-    'equipamentos/05.001/calibracoes/certificado_2024.pdf',
-    '2024-04-05',
-    '2025-04-05',
-    'Certificado associado à calibração anual.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '01.001' LIMIT 1),
-    NULL,
-    (SELECT id_calibracao FROM calibracoes_equipamento WHERE numero_certificado = 'CERT-01-001-2024' LIMIT 1),
-    NULL,
-    'certificado_calibracao',
-    'Certificado de Calibração - Ventilador Pulmonar - 2024',
-    'equipamentos/01.001/calibracoes/certificado_2024.pdf',
-    '2024-03-20',
-    '2025-03-20',
-    'Certificado de calibração do ventilador.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '08.001' LIMIT 1),
-    (SELECT id_manutencao FROM manutencoes_equipamento 
-     WHERE id_equipamento = (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '08.001' LIMIT 1)
-       AND data_manutencao = '2024-06-12'
-     LIMIT 1),
-    NULL,
-    NULL,
-    'relatorio_manutencao',
-    'Relatório de Manutenção Corretiva - Autoclave',
-    'equipamentos/08.001/manutencoes/relatorio_corretiva_2024.pdf',
-    '2024-06-12',
-    NULL,
-    'Relatório técnico da intervenção corretiva.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '07.001' LIMIT 1),
-    NULL,
-    NULL,
-    (SELECT id_equipamento_fornecedor FROM equipamentos_fornecedores 
-     WHERE id_equipamento = (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '07.001' LIMIT 1)
-     LIMIT 1),
-    'garantia',
-    'Documento de Garantia - Incubadora Neonatal',
-    'equipamentos/07.001/garantia/documento_garantia.pdf',
-    '2022-01-20',
-    '2025-01-20',
-    'Documento comprovativo da garantia do equipamento.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '03.001' LIMIT 1),
-    NULL,
-    NULL,
-    NULL,
-    'declaracao_conformidade',
-    'Declaração de Conformidade - Centrífuga Laboratorial',
-    'equipamentos/03.001/declaracao_conformidade.pdf',
-    '2023-04-20',
-    NULL,
-    'Declaração de conformidade do equipamento laboratorial.',
-    'admin'
-);
-
-
-
-INSERT INTO acessorios_equipamento (
-    id_equipamento,
-    numero_sequencial,
-    designacao,
-    tipo,
-    fabricante,
-    modelo,
-    numero_serie,
-    estado,
-    requer_manutencao,
-    periodicidade_manutencao,
-    requer_calibracao,
-    periodicidade_calibracao,
-    id_fornecedor_garantia,
-    data_inicio_garantia,
-    data_fim_garantia,
-    observacoes,
-    atualizado_por
-) VALUES
-
--- =========================================================
--- 01.001 - Ventilador Pulmonar
--- =========================================================
-
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '01.001' LIMIT 1),
-    1,
-    'Circuito respiratório reutilizável',
-    'modulo',
-    'Drager',
-    'Reusable Breathing Circuit',
-    'SN-ACC-01001001',
-    'ativo',
-    1,
-    'semestral',
-    0,
-    NULL,
-    (SELECT ef.id_fornecedor_garantia
-     FROM equipamentos_fornecedores ef
-     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
-     WHERE e.codigo_equipamento = '01.001'
-     LIMIT 1),
-    '2022-03-15',
-    '2025-03-15',
-    'Acessório associado ao ventilador pulmonar.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '01.001' LIMIT 1),
-    2,
-    'Sensor de fluxo expiratório',
-    'sensor',
-    'Drager',
-    'FlowSensor Pro',
-    'SN-ACC-01001002',
-    'ativo',
-    1,
-    'anual',
-    1,
-    'anual',
-    (SELECT ef.id_fornecedor_garantia
-     FROM equipamentos_fornecedores ef
-     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
-     WHERE e.codigo_equipamento = '01.001'
-     LIMIT 1),
-    '2022-03-15',
-    '2025-03-15',
-    'Sensor sujeito a verificação funcional e calibração periódica.',
-    'admin'
-),
-
--- =========================================================
--- 01.002 - Desfibrilhador Externo
--- =========================================================
-
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '01.002' LIMIT 1),
-    1,
-    'Pás de desfibrilhação adulto',
-    'modulo',
-    'Philips',
-    'Adult Defib Paddles',
-    'SN-ACC-01002001',
-    'ativo',
-    1,
-    'anual',
-    0,
-    NULL,
-    (SELECT ef.id_fornecedor_garantia
-     FROM equipamentos_fornecedores ef
-     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
-     WHERE e.codigo_equipamento = '01.002'
-     LIMIT 1),
-    '2021-07-20',
-    '2024-07-20',
-    'Pás reutilizáveis para desfibrilhação adulto.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '01.002' LIMIT 1),
-    2,
-    'Bateria recarregável',
-    'bateria',
-    'Philips',
-    'Defib Battery Pack',
-    'SN-ACC-01002002',
-    'ativo',
-    1,
-    'anual',
-    0,
-    NULL,
-    (SELECT ef.id_fornecedor_garantia
-     FROM equipamentos_fornecedores ef
-     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
-     WHERE e.codigo_equipamento = '01.002'
-     LIMIT 1),
-    '2021-07-20',
-    '2024-07-20',
-    'Bateria principal do desfibrilhador.',
-    'admin'
-),
-
--- =========================================================
--- 02.001 - Ecógrafo Portátil
--- =========================================================
-
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '02.001' LIMIT 1),
-    1,
-    'Sonda convexa',
-    'sensor',
-    'Philips',
-    'C5-2 Convex Probe',
-    'SN-ACC-02001001',
-    'ativo',
-    1,
-    'anual',
-    1,
-    'anual',
-    (SELECT ef.id_fornecedor_garantia
-     FROM equipamentos_fornecedores ef
-     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
-     WHERE e.codigo_equipamento = '02.001'
-     LIMIT 1),
-    '2021-09-01',
-    '2024-09-01',
-    'Sonda convexa para exames abdominais.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '02.001' LIMIT 1),
-    2,
-    'Sonda linear',
-    'sensor',
-    'Philips',
-    'L12-4 Linear Probe',
-    'SN-ACC-02001002',
-    'ativo',
-    1,
-    'anual',
-    1,
-    'anual',
-    (SELECT ef.id_fornecedor_garantia
-     FROM equipamentos_fornecedores ef
-     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
-     WHERE e.codigo_equipamento = '02.001'
-     LIMIT 1),
-    '2021-09-01',
-    '2024-09-01',
-    'Sonda linear para exames superficiais e vasculares.',
-    'admin'
-),
-
--- =========================================================
--- 03.001 - Centrífuga Laboratorial
--- =========================================================
-
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '03.001' LIMIT 1),
-    1,
-    'Rotor para tubos de 15 mL',
-    'modulo',
-    'Biomedical Solutions',
-    'Rotor 15mL',
-    'SN-ACC-03001001',
-    'ativo',
-    1,
-    'anual',
-    0,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    'Rotor utilizado para centrifugação de amostras clínicas.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '03.001' LIMIT 1),
-    2,
-    'Adaptador para microtubos',
-    'adaptador',
-    'Biomedical Solutions',
-    'Microtube Adapter',
-    'SN-ACC-03001002',
-    'ativo',
-    0,
-    NULL,
-    0,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    'Adaptador para utilização de microtubos na centrífuga.',
-    'admin'
-),
-
--- =========================================================
--- 04.001 - Monitor Multiparamétrico
--- =========================================================
-
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '04.001' LIMIT 1),
-    1,
-    'Cabo ECG 5 derivações',
-    'cabo',
-    'Philips',
-    'ECG 5 Lead Cable',
-    'SN-ACC-04001001',
-    'ativo',
-    1,
-    'anual',
-    0,
-    NULL,
-    (SELECT ef.id_fornecedor_garantia
-     FROM equipamentos_fornecedores ef
-     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
-     WHERE e.codigo_equipamento = '04.001'
-     LIMIT 1),
-    '2022-08-20',
-    '2025-08-20',
-    'Cabo ECG associado ao monitor multiparamétrico.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '04.001' LIMIT 1),
-    2,
-    'Sensor SpO2 adulto',
-    'sensor',
-    'Philips',
-    'SpO2 Adult Sensor',
-    'SN-ACC-04001002',
-    'ativo',
-    1,
-    'anual',
-    1,
-    'bienal',
-    (SELECT ef.id_fornecedor_garantia
-     FROM equipamentos_fornecedores ef
-     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
-     WHERE e.codigo_equipamento = '04.001'
-     LIMIT 1),
-    '2022-08-20',
-    '2025-08-20',
-    'Sensor de oximetria sujeito a verificação periódica.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '04.001' LIMIT 1),
-    3,
-    'Braçadeira NIBP adulto',
-    'consumivel_reutilizavel',
-    'Philips',
-    'NIBP Adult Cuff',
-    'SN-ACC-04001003',
-    'ativo',
-    1,
-    'anual',
-    0,
-    NULL,
-    (SELECT ef.id_fornecedor_garantia
-     FROM equipamentos_fornecedores ef
-     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
-     WHERE e.codigo_equipamento = '04.001'
-     LIMIT 1),
-    '2022-08-20',
-    '2025-08-20',
-    'Braçadeira reutilizável para medição não invasiva da pressão arterial.',
-    'admin'
-),
-
--- =========================================================
--- 05.001 - Bomba Infusora Volumétrica
--- =========================================================
-
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '05.001' LIMIT 1),
-    1,
-    'Suporte para seringa/linha de infusão',
-    'adaptador',
-    'MedSupply Portugal',
-    'Infusion Line Holder',
-    'SN-ACC-05001001',
-    'ativo',
-    1,
-    'anual',
-    0,
-    NULL,
-    (SELECT ef.id_fornecedor_garantia
-     FROM equipamentos_fornecedores ef
-     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
-     WHERE e.codigo_equipamento = '05.001'
-     LIMIT 1),
-    '2023-03-10',
-    '2026-03-10',
-    'Acessório de suporte à administração intravenosa.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '05.001' LIMIT 1),
-    2,
-    'Sensor de gotas',
-    'sensor',
-    'MedSupply Portugal',
-    'Drop Sensor DS-100',
-    'SN-ACC-05001002',
-    'ativo',
-    1,
-    'anual',
-    1,
-    'anual',
-    (SELECT ef.id_fornecedor_garantia
-     FROM equipamentos_fornecedores ef
-     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
-     WHERE e.codigo_equipamento = '05.001'
-     LIMIT 1),
-    '2023-03-10',
-    '2026-03-10',
-    'Sensor associado ao controlo do fluxo de perfusão.',
-    'admin'
-),
-
--- =========================================================
--- 06.001 - Eletrocardiógrafo
--- =========================================================
-
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '06.001' LIMIT 1),
-    1,
-    'Cabo ECG 10 derivações',
-    'cabo',
-    'Philips',
-    'ECG 10 Lead Cable',
-    'SN-ACC-06001001',
-    'ativo',
-    1,
-    'anual',
-    0,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    'Cabo principal para aquisição de ECG de 12 derivações.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '06.001' LIMIT 1),
-    2,
-    'Conjunto de elétrodos reutilizáveis',
-    'consumivel_reutilizavel',
-    'Philips',
-    'Reusable ECG Electrodes',
-    'SN-ACC-06001002',
-    'ativo',
-    1,
-    'anual',
-    0,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    'Elétrodos reutilizáveis associados ao eletrocardiógrafo.',
-    'admin'
-),
-
--- =========================================================
--- 07.001 - Incubadora Neonatal
--- =========================================================
-
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '07.001' LIMIT 1),
-    1,
-    'Sensor de temperatura neonatal',
-    'sensor',
-    'Drager',
-    'NeoTemp Sensor',
-    'SN-ACC-07001001',
-    'ativo',
-    1,
-    'semestral',
-    1,
-    'anual',
-    (SELECT ef.id_fornecedor_garantia
-     FROM equipamentos_fornecedores ef
-     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
-     WHERE e.codigo_equipamento = '07.001'
-     LIMIT 1),
-    '2022-01-20',
-    '2025-01-20',
-    'Sensor crítico para controlo térmico neonatal.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '07.001' LIMIT 1),
-    2,
-    'Sensor de humidade',
-    'sensor',
-    'Drager',
-    'NeoHumidity Sensor',
-    'SN-ACC-07001002',
-    'ativo',
-    1,
-    'semestral',
-    1,
-    'anual',
-    (SELECT ef.id_fornecedor_garantia
-     FROM equipamentos_fornecedores ef
-     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
-     WHERE e.codigo_equipamento = '07.001'
-     LIMIT 1),
-    '2022-01-20',
-    '2025-01-20',
-    'Sensor sujeito a verificação e calibração periódica.',
-    'admin'
-),
-
--- =========================================================
--- 08.001 - Autoclave Hospitalar
--- =========================================================
-
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '08.001' LIMIT 1),
-    1,
-    'Cesto de esterilização',
-    'modulo',
-    'Biomedical Solutions',
-    'Sterilization Basket',
-    'SN-ACC-08001001',
-    'ativo',
-    1,
-    'anual',
-    0,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    'Cesto utilizado nos ciclos de esterilização.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '08.001' LIMIT 1),
-    2,
-    'Sonda de temperatura da câmara',
-    'sensor',
-    'Biomedical Solutions',
-    'Chamber Temp Probe',
-    'SN-ACC-08001002',
-    'em_manutencao',
-    1,
-    'semestral',
-    1,
-    'anual',
-    NULL,
-    NULL,
-    NULL,
-    'Sonda em avaliação técnica devido a instabilidade de leitura.',
-    'admin'
-),
-
--- =========================================================
--- 09.001 - Cama Hospitalar Elétrica
--- =========================================================
-
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '09.001' LIMIT 1),
-    1,
-    'Comando elétrico da cama',
-    'modulo',
-    'HospitalTech Equipamentos',
-    'Bed Remote Control',
-    'SN-ACC-09001001',
-    'ativo',
-    1,
-    'anual',
-    0,
-    NULL,
-    (SELECT ef.id_fornecedor_garantia
-     FROM equipamentos_fornecedores ef
-     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
-     WHERE e.codigo_equipamento = '09.001'
-     LIMIT 1),
-    '2023-01-20',
-    '2025-01-20',
-    'Comando elétrico associado à cama hospitalar.',
-    'admin'
-),
-(
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '09.001' LIMIT 1),
-    2,
-    'Bateria de emergência',
-    'bateria',
-    'HospitalTech Equipamentos',
-    'Emergency Battery Pack',
-    'SN-ACC-09001002',
-    'ativo',
-    1,
-    'anual',
-    0,
-    NULL,
-    (SELECT ef.id_fornecedor_garantia
-     FROM equipamentos_fornecedores ef
-     INNER JOIN equipamentos e ON e.id_equipamento = ef.id_equipamento
-     WHERE e.codigo_equipamento = '09.001'
-     LIMIT 1),
-    '2023-01-20',
-    '2025-01-20',
-    'Bateria de apoio para movimentação em caso de falha elétrica.',
-    'admin'
-);
-
-UPDATE acessorios_equipamento a
-INNER JOIN equipamentos e
-    ON e.id_equipamento = a.id_equipamento
-SET a.id_localizacao = e.id_localizacao
-WHERE a.id_localizacao IS NULL;
-
-INSERT INTO historico_etapas_processos (
-    tipo_processo,
-    id_manutencao,
-    id_calibracao,
-    estado_anterior,
-    estado_novo,
-    responsavel_etapa,
-    tipo_responsavel,
-    id_fornecedor_responsavel,
-    observacoes,
-    data_registo,
-    atualizado_por
-)
-SELECT
-    'manutencao',
-    m.id_manutencao,
-    NULL,
-    NULL,
-    'processo_finalizado',
-
-    COALESCE(m.tecnico_interno, f.nome_empresa, 'Registo migrado'),
-
-    CASE
-        WHEN m.id_fornecedor_responsavel IS NOT NULL THEN 'fornecedor'
-        ELSE 'interno'
-    END,
-
-    m.id_fornecedor_responsavel,
-
-    'Registo antigo migrado para o novo modelo de processos.',
-
-    COALESCE(CONCAT(m.data_finalizacao, ' 09:00:00'), m.criado_em, NOW()),
-
-    COALESCE(m.atualizado_por, 'admin')
-FROM manutencoes_equipamento m
-LEFT JOIN fornecedores f
-    ON f.id_fornecedor = m.id_fornecedor_responsavel
-WHERE m.isActive = 1
-  AND m.estado_processo = 'processo_finalizado'
-  AND NOT EXISTS (
-      SELECT 1
-      FROM historico_etapas_processos h
-      WHERE h.tipo_processo = 'manutencao'
-        AND h.id_manutencao = m.id_manutencao
-        AND h.estado_novo = 'processo_finalizado'
-  );
-  
-/* =========================================================
-   MEDICORE - Inserts de processos corrigidos
-   Compatível com:
-   - tipo_execucao ENUM('interna', 'externa')
-   - tipo_responsavel ENUM('interno', 'fornecedor')
-   ========================================================= */
-
-
-/* =========================================================
-   NOTA IMPORTANTE
-   Se ainda não permitiste fornecedores do tipo Calibração,
-   executa este ALTER antes dos inserts de fornecedores de calibração.
-   ========================================================= */
-
-ALTER TABLE fornecedores
-MODIFY tipo_fornecedor ENUM(
-    'Manutenção',
-    'Comercial',
-    'Fabricante',
-    'Calibração'
-) NOT NULL;
-
-
-/* =========================================================
-   1. Mais inserts para manutencoes_equipamento
-   ========================================================= */
-
-INSERT INTO manutencoes_equipamento (
-    codigo_processo,
-    id_equipamento,
-    id_acessorio,
-    tipo_manutencao,
-    tipo_execucao,
-    estado_processo,
-
-    data_abertura,
-    data_prevista,
-    data_recolha,
-    data_inicio_procedimento,
-    data_fim_procedimento,
-    data_emissao_relatorio,
-    data_finalizacao,
-
-    id_fornecedor_responsavel,
-    tecnico_interno,
-
-    data_manutencao,
-    proxima_manutencao,
-    numero_relatorio,
-
-    descricao_procedimento,
-    resultado,
-
-    coberta_por_garantia,
-    custo,
-    observacoes,
-    atualizado_por
-) VALUES
-
--- Processo aberto: manutenção preventiva externa ao ventilador
-(
-    'MAN-2026-0101',
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '01.001' LIMIT 1),
-    NULL,
-    'preventiva',
-    'externa',
-    'aguarda_recolha',
-
-    '2026-06-10',
-    '2026-06-20',
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'Drager Portugal' LIMIT 1),
-    NULL,
-
-    NULL,
-    '2026-12-20',
-    NULL,
-
-    NULL,
-    NULL,
-
-    0,
-    180.00,
-    'Processo aberto para manutenção preventiva semestral do ventilador.',
-    'admin'
-),
-
--- Processo aberto: manutenção corretiva externa em acessório do monitor multiparamétrico
-(
-    'MAN-2026-0102',
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '04.001' LIMIT 1),
-    (
-        SELECT a.id_acessorio
-        FROM acessorios_equipamento a
-        INNER JOIN equipamentos e ON e.id_equipamento = a.id_equipamento
-        WHERE e.codigo_equipamento = '04.001'
-          AND a.numero_sequencial = 2
-        LIMIT 1
-    ),
-    'corretiva',
-    'externa',
-    'procedimento_a_decorrer',
-
-    '2026-06-08',
-    '2026-06-18',
-    '2026-06-10',
-    '2026-06-12',
-    NULL,
-    NULL,
-    NULL,
-
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'Biomedical Solutions' LIMIT 1),
-    NULL,
-
-    NULL,
-    NULL,
-    NULL,
-
-    'Análise técnica do sensor SpO2 com leituras intermitentes.',
-    NULL,
-
-    0,
-    95.00,
-    'Sensor SpO2 enviado para avaliação técnica externa.',
-    'admin'
-),
-
--- Processo aberto: manutenção interna em eletrocardiógrafo
-(
-    'MAN-2026-0103',
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '06.001' LIMIT 1),
-    NULL,
-    'preventiva',
-    'interna',
-    'procedimento_efetuado',
-
-    '2026-06-05',
-    '2026-06-15',
-    NULL,
-    '2026-06-12',
-    '2026-06-12',
-    NULL,
-    NULL,
-
-    NULL,
-    'Técnico Interno - Engenharia Clínica',
-
-    '2026-06-12',
-    '2027-06-12',
-    NULL,
-
-    'Inspeção visual, limpeza técnica, verificação de cabo ECG e teste funcional.',
-    'realizada',
-
-    0,
-    NULL,
-    'A aguardar emissão de relatório interno.',
-    'admin'
-),
-
--- Processo finalizado: manutenção corretiva externa em autoclave
-(
-    'MAN-2026-0104',
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '08.001' LIMIT 1),
-    (
-        SELECT a.id_acessorio
-        FROM acessorios_equipamento a
-        INNER JOIN equipamentos e ON e.id_equipamento = a.id_equipamento
-        WHERE e.codigo_equipamento = '08.001'
-          AND a.numero_sequencial = 2
-        LIMIT 1
-    ),
-    'corretiva',
-    'externa',
-    'processo_finalizado',
-
-    '2026-05-20',
-    '2026-05-30',
-    '2026-05-21',
-    '2026-05-23',
-    '2026-05-24',
-    '2026-05-27',
-    '2026-05-28',
-
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'CalibraMed' LIMIT 1),
-    'Técnico Interno - Engenharia Clínica',
-
-    '2026-05-24',
-    NULL,
-    'REL-MAN-2026-0104',
-
-    'Correção de instabilidade na sonda de temperatura da câmara e validação funcional posterior.',
-    'realizada_com_observacoes',
-
-    0,
-    275.00,
-    'Processo finalizado com recomendação de vigilância no próximo ciclo.',
-    'admin'
-),
-
--- Processo finalizado: manutenção externa coberta por garantia numa bomba infusora
-(
-    'MAN-2026-0105',
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '05.001' LIMIT 1),
-    NULL,
-    'preventiva',
-    'externa',
-    'processo_finalizado',
-
-    '2026-03-01',
-    '2026-03-10',
-    '2026-03-03',
-    '2026-03-06',
-    '2026-03-06',
-    '2026-03-08',
-    '2026-03-10',
-
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'MedSupply Portugal' LIMIT 1),
-    NULL,
-
-    '2026-03-06',
-    '2027-03-06',
-    'REL-MAN-2026-0105',
-
-    'Manutenção preventiva, verificação de alarmes, inspeção mecânica e teste funcional.',
-    'realizada',
-
-    1,
-    0.00,
-    'Manutenção realizada no âmbito da garantia.',
-    'admin'
-);
-
-
-/* =========================================================
-   2. Mais inserts para calibracoes_equipamento
-   ========================================================= */
-
-INSERT INTO calibracoes_equipamento (
-    codigo_processo,
-    id_equipamento,
-    id_acessorio,
-
-    id_fornecedor_responsavel,
-    tipo_execucao,
-    estado_processo,
-
-    data_abertura,
-    data_prevista,
-    data_recolha,
-    data_inicio_procedimento,
-    data_fim_procedimento,
-    data_emissao_relatorio,
-    data_finalizacao,
-
-    tecnico_interno,
-
-    data_calibracao,
-    proxima_calibracao,
-    numero_certificado,
-
-    resultado,
-    procedimento,
-
-    coberta_por_garantia,
-    custo,
-    observacoes,
-    atualizado_por
-) VALUES
-
--- Processo aberto: calibração externa de sensor de fluxo do ventilador
-(
-    'CAL-2026-0101',
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '01.001' LIMIT 1),
-    (
-        SELECT a.id_acessorio
-        FROM acessorios_equipamento a
-        INNER JOIN equipamentos e ON e.id_equipamento = a.id_equipamento
-        WHERE e.codigo_equipamento = '01.001'
-          AND a.numero_sequencial = 2
-        LIMIT 1
-    ),
-
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'CalibraMed Portugal' LIMIT 1),
-    'externa',
-    'aguarda_recolha',
-
-    '2026-06-10',
-    '2026-06-25',
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-
-    NULL,
-
-    NULL,
-    '2027-06-25',
-    NULL,
-
-    NULL,
-    NULL,
-
-    0,
-    95.00,
-    'Calibração programada do sensor de fluxo expiratório.',
-    'admin'
-),
-
--- Processo aberto: calibração externa de sensor SpO2
-(
-    'CAL-2026-0102',
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '04.001' LIMIT 1),
-    (
-        SELECT a.id_acessorio
-        FROM acessorios_equipamento a
-        INNER JOIN equipamentos e ON e.id_equipamento = a.id_equipamento
-        WHERE e.codigo_equipamento = '04.001'
-          AND a.numero_sequencial = 2
-        LIMIT 1
-    ),
-
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'TecnoCalibra Saúde' LIMIT 1),
-    'externa',
-    'procedimento_a_decorrer',
-
-    '2026-06-01',
-    '2026-06-18',
-    '2026-06-05',
-    '2026-06-12',
-    NULL,
-    NULL,
-    NULL,
-
-    NULL,
-
-    NULL,
-    '2028-06-18',
-    NULL,
-
-    NULL,
-    'Verificação metrológica do sensor SpO2 em curso.',
-    0,
-    75.00,
-    'Processo em execução no fornecedor externo.',
-    'admin'
-),
-
--- Processo aberto: calibração/verificação interna funcional do ECG
-(
-    'CAL-2026-0103',
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '06.001' LIMIT 1),
-    NULL,
-
-    NULL,
-    'interna',
-    'emissao_relatorio',
-
-    '2026-05-28',
-    '2026-06-05',
-    NULL,
-    '2026-06-03',
-    '2026-06-03',
-    '2026-06-04',
-    NULL,
-
-    'Técnico Interno - Engenharia Clínica',
-
-    '2026-06-03',
-    '2028-06-03',
-    'VER-06-001-2026',
-
-    'aprovado',
-    'Verificação funcional interna dos parâmetros elétricos e aquisição de sinal.',
-    0,
-    NULL,
-    'A aguardar validação final do relatório interno.',
-    'admin'
-),
-
--- Processo finalizado: calibração externa de bomba infusora
-(
-    'CAL-2026-0104',
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '05.001' LIMIT 1),
-    NULL,
-
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'CalibraMed Portugal' LIMIT 1),
-    'externa',
-    'processo_finalizado',
-
-    '2026-04-01',
-    '2026-04-12',
-    '2026-04-02',
-    '2026-04-05',
-    '2026-04-05',
-    '2026-04-08',
-    '2026-04-10',
-
-    NULL,
-
-    '2026-04-05',
-    '2027-04-05',
-    'CERT-05-001-2026',
-
-    'aprovado',
-    'Ensaio metrológico de caudal e volume administrado com analisador de fluxo.',
-    0,
-    90.00,
-    'Bomba infusora aprovada para utilização clínica.',
-    'admin'
-),
-
--- Processo finalizado: calibração externa coberta por garantia da incubadora
-(
-    'CAL-2026-0105',
-    (SELECT id_equipamento FROM equipamentos WHERE codigo_equipamento = '07.001' LIMIT 1),
-    (
-        SELECT a.id_acessorio
-        FROM acessorios_equipamento a
-        INNER JOIN equipamentos e ON e.id_equipamento = a.id_equipamento
-        WHERE e.codigo_equipamento = '07.001'
-          AND a.numero_sequencial = 1
-        LIMIT 1
-    ),
-
-    (SELECT id_fornecedor FROM fornecedores WHERE nome_empresa = 'CalibraMed Portugal' LIMIT 1),
-    'externa',
-    'processo_finalizado',
-
-    '2026-02-01',
-    '2026-02-15',
-    '2026-02-03',
-    '2026-02-07',
-    '2026-02-07',
-    '2026-02-10',
-    '2026-02-12',
-
-    NULL,
-
-    '2026-02-07',
-    '2027-02-07',
-    'CERT-07-001-2026',
-
-    'aprovado_com_restricoes',
-    'Calibração do sensor de temperatura neonatal e verificação de alarmes térmicos.',
-    1,
-    0.00,
-    'Aprovado com recomendação de vigilância periódica do sensor.',
-    'admin'
-);
-
-
-/* =========================================================
-   3. Histórico coerente para calibrações existentes
-   Compatível com tipo_responsavel apenas:
-   - interno
-   - fornecedor
-   ========================================================= */
-
-
-/* 3.1. Etapa inicial: aguarda_recolha */
-INSERT INTO historico_etapas_processos (
-    tipo_processo,
-    id_manutencao,
-    id_calibracao,
-    estado_anterior,
-    estado_novo,
-    responsavel_etapa,
-    tipo_responsavel,
-    id_fornecedor_responsavel,
-    observacoes,
-    data_registo,
-    atualizado_por
-)
-SELECT
-    'calibracao',
-    NULL,
-    c.id_calibracao,
-    NULL,
-    'aguarda_recolha',
-
-    COALESCE(c.tecnico_interno, f.nome_empresa, 'Responsável não definido'),
-
-    CASE
-        WHEN c.id_fornecedor_responsavel IS NOT NULL THEN 'fornecedor'
-        WHEN c.tecnico_interno IS NOT NULL THEN 'interno'
-        ELSE NULL
-    END,
-
-    c.id_fornecedor_responsavel,
-
-    'Processo de calibração aberto e a aguardar recolha ou início do procedimento.',
-
-    COALESCE(CONCAT(c.data_abertura, ' 09:00:00'), c.criado_em, NOW()),
-
-    COALESCE(c.atualizado_por, 'admin')
-FROM calibracoes_equipamento c
-LEFT JOIN fornecedores f
-    ON f.id_fornecedor = c.id_fornecedor_responsavel
-WHERE c.isActive = 1
-  AND NOT EXISTS (
-      SELECT 1
-      FROM historico_etapas_processos h
-      WHERE h.tipo_processo = 'calibracao'
-        AND h.id_calibracao = c.id_calibracao
-        AND h.estado_novo = 'aguarda_recolha'
-  );
-
-
-/* 3.2. Etapa: procedimento_a_decorrer */
-INSERT INTO historico_etapas_processos (
-    tipo_processo,
-    id_manutencao,
-    id_calibracao,
-    estado_anterior,
-    estado_novo,
-    responsavel_etapa,
-    tipo_responsavel,
-    id_fornecedor_responsavel,
-    observacoes,
-    data_registo,
-    atualizado_por
-)
-SELECT
-    'calibracao',
-    NULL,
-    c.id_calibracao,
-    'aguarda_recolha',
-    'procedimento_a_decorrer',
-
-    COALESCE(c.tecnico_interno, f.nome_empresa, 'Responsável não definido'),
-
-    CASE
-        WHEN c.id_fornecedor_responsavel IS NOT NULL THEN 'fornecedor'
-        WHEN c.tecnico_interno IS NOT NULL THEN 'interno'
-        ELSE NULL
-    END,
-
-    c.id_fornecedor_responsavel,
-
-    'Procedimento de calibração iniciado.',
-
-    COALESCE(CONCAT(c.data_inicio_procedimento, ' 10:00:00'), CONCAT(c.data_calibracao, ' 10:00:00'), c.criado_em, NOW()),
-
-    COALESCE(c.atualizado_por, 'admin')
-FROM calibracoes_equipamento c
-LEFT JOIN fornecedores f
-    ON f.id_fornecedor = c.id_fornecedor_responsavel
-WHERE c.isActive = 1
-  AND (
-      c.estado_processo IN (
-          'procedimento_a_decorrer',
-          'procedimento_efetuado',
-          'emissao_relatorio',
-          'processo_finalizado'
-      )
-      OR c.data_inicio_procedimento IS NOT NULL
-      OR c.data_calibracao IS NOT NULL
-  )
-  AND NOT EXISTS (
-      SELECT 1
-      FROM historico_etapas_processos h
-      WHERE h.tipo_processo = 'calibracao'
-        AND h.id_calibracao = c.id_calibracao
-        AND h.estado_novo = 'procedimento_a_decorrer'
-  );
-
-
-/* 3.3. Etapa: procedimento_efetuado */
-INSERT INTO historico_etapas_processos (
-    tipo_processo,
-    id_manutencao,
-    id_calibracao,
-    estado_anterior,
-    estado_novo,
-    responsavel_etapa,
-    tipo_responsavel,
-    id_fornecedor_responsavel,
-    observacoes,
-    data_registo,
-    atualizado_por
-)
-SELECT
-    'calibracao',
-    NULL,
-    c.id_calibracao,
-    'procedimento_a_decorrer',
-    'procedimento_efetuado',
-
-    COALESCE(c.tecnico_interno, f.nome_empresa, 'Responsável não definido'),
-
-    CASE
-        WHEN c.id_fornecedor_responsavel IS NOT NULL THEN 'fornecedor'
-        WHEN c.tecnico_interno IS NOT NULL THEN 'interno'
-        ELSE NULL
-    END,
-
-    c.id_fornecedor_responsavel,
-
-    'Procedimento de calibração efetuado.',
-
-    COALESCE(CONCAT(c.data_fim_procedimento, ' 15:00:00'), CONCAT(c.data_calibracao, ' 15:00:00'), c.criado_em, NOW()),
-
-    COALESCE(c.atualizado_por, 'admin')
-FROM calibracoes_equipamento c
-LEFT JOIN fornecedores f
-    ON f.id_fornecedor = c.id_fornecedor_responsavel
-WHERE c.isActive = 1
-  AND (
-      c.estado_processo IN (
-          'procedimento_efetuado',
-          'emissao_relatorio',
-          'processo_finalizado'
-      )
-      OR c.data_fim_procedimento IS NOT NULL
-      OR c.data_calibracao IS NOT NULL
-  )
-  AND NOT EXISTS (
-      SELECT 1
-      FROM historico_etapas_processos h
-      WHERE h.tipo_processo = 'calibracao'
-        AND h.id_calibracao = c.id_calibracao
-        AND h.estado_novo = 'procedimento_efetuado'
-  );
-
-
-/* 3.4. Etapa: emissao_relatorio */
-INSERT INTO historico_etapas_processos (
-    tipo_processo,
-    id_manutencao,
-    id_calibracao,
-    estado_anterior,
-    estado_novo,
-    responsavel_etapa,
-    tipo_responsavel,
-    id_fornecedor_responsavel,
-    observacoes,
-    data_registo,
-    atualizado_por
-)
-SELECT
-    'calibracao',
-    NULL,
-    c.id_calibracao,
-    'procedimento_efetuado',
-    'emissao_relatorio',
-
-    COALESCE(c.tecnico_interno, f.nome_empresa, 'Responsável não definido'),
-
-    CASE
-        WHEN c.id_fornecedor_responsavel IS NOT NULL THEN 'fornecedor'
-        WHEN c.tecnico_interno IS NOT NULL THEN 'interno'
-        ELSE NULL
-    END,
-
-    c.id_fornecedor_responsavel,
-
-    CASE
-        WHEN c.numero_certificado IS NOT NULL
-            THEN CONCAT('Emissão do certificado ', c.numero_certificado, '.')
-        ELSE 'Etapa de emissão do relatório/certificado de calibração.'
-    END,
-
-    COALESCE(CONCAT(c.data_emissao_relatorio, ' 11:00:00'), CONCAT(c.data_calibracao, ' 16:00:00'), c.criado_em, NOW()),
-
-    COALESCE(c.atualizado_por, 'admin')
-FROM calibracoes_equipamento c
-LEFT JOIN fornecedores f
-    ON f.id_fornecedor = c.id_fornecedor_responsavel
-WHERE c.isActive = 1
-  AND (
-      c.estado_processo IN (
-          'emissao_relatorio',
-          'processo_finalizado'
-      )
-      OR c.data_emissao_relatorio IS NOT NULL
-      OR c.numero_certificado IS NOT NULL
-  )
-  AND NOT EXISTS (
-      SELECT 1
-      FROM historico_etapas_processos h
-      WHERE h.tipo_processo = 'calibracao'
-        AND h.id_calibracao = c.id_calibracao
-        AND h.estado_novo = 'emissao_relatorio'
-  );
-
-
-/* 3.5. Etapa final: processo_finalizado */
-INSERT INTO historico_etapas_processos (
-    tipo_processo,
-    id_manutencao,
-    id_calibracao,
-    estado_anterior,
-    estado_novo,
-    responsavel_etapa,
-    tipo_responsavel,
-    id_fornecedor_responsavel,
-    observacoes,
-    data_registo,
-    atualizado_por
-)
-SELECT
-    'calibracao',
-    NULL,
-    c.id_calibracao,
-    'emissao_relatorio',
-    'processo_finalizado',
-
-    COALESCE(c.tecnico_interno, f.nome_empresa, 'Responsável não definido'),
-
-    CASE
-        WHEN c.id_fornecedor_responsavel IS NOT NULL THEN 'fornecedor'
-        WHEN c.tecnico_interno IS NOT NULL THEN 'interno'
-        ELSE NULL
-    END,
-
-    c.id_fornecedor_responsavel,
-
-    CASE
-        WHEN c.resultado IS NOT NULL
-            THEN CONCAT('Processo de calibração finalizado com resultado: ', REPLACE(c.resultado, '_', ' '), '.')
-        ELSE 'Processo de calibração finalizado.'
-    END,
-
-    COALESCE(CONCAT(c.data_finalizacao, ' 17:00:00'), CONCAT(c.data_calibracao, ' 17:00:00'), c.criado_em, NOW()),
-
-    COALESCE(c.atualizado_por, 'admin')
-FROM calibracoes_equipamento c
-LEFT JOIN fornecedores f
-    ON f.id_fornecedor = c.id_fornecedor_responsavel
-WHERE c.isActive = 1
-  AND c.estado_processo = 'processo_finalizado'
-  AND NOT EXISTS (
-      SELECT 1
-      FROM historico_etapas_processos h
-      WHERE h.tipo_processo = 'calibracao'
-        AND h.id_calibracao = c.id_calibracao
-        AND h.estado_novo = 'processo_finalizado'
-  );
-
-
-/* =========================================================
-   4. Query de verificação
-   ========================================================= */
-
-SELECT
-    c.codigo_processo,
-    c.numero_certificado,
-    e.codigo_equipamento,
-    c.tipo_execucao,
-    c.estado_processo,
-    h.estado_anterior,
-    h.estado_novo,
-    h.responsavel_etapa,
-    h.tipo_responsavel,
-    h.data_registo
-FROM historico_etapas_processos h
-INNER JOIN calibracoes_equipamento c
-    ON c.id_calibracao = h.id_calibracao
-INNER JOIN equipamentos e
-    ON e.id_equipamento = c.id_equipamento
-WHERE h.tipo_processo = 'calibracao'
-ORDER BY c.codigo_processo ASC, h.data_registo ASC;
-
-
-INSERT INTO utilizadores (
-    codigo_utilizador, nome, tipo_utilizador, estado,
-    cartao_cidadao, nif, data_nascimento, numero_mecanografico,
-    email, telefone, extensao, morada, codigo_postal, localidade,
-    username, password_hash, perfil_acesso, data_ativacao, validade_acesso,
-    departamento, funcao, superior_hierarquico, edificio, piso, data_admissao,
-    observacoes, isActive, atualizado_por
-) VALUES
-('USR-001', 'Administrador MEDICORE', 'Administrador', 'Ativo',
- '100000001', '200000001', '1985-02-14', 'ADM001',
- 'admin@medicore.pt', '220000001', '1001', 'Rua Central do Hospital', '4200-001', 'Porto',
- 'admin', '$2y$10$n8zhehnR214fGYtzUx5Zj.e7IWEiL4bmSptDxABQhG8D1UDNupEzC', 'Acesso total', '2026-01-01', NULL,
- 'Administração', 'Administrador do Sistema', NULL, 'Edifício Técnico', '0', '2026-01-01',
- 'Conta administrativa principal.', 1, 'sistema'),
-
-('USR-002', 'João Ferreira', 'Engenheiro', 'Ativo',
- '100000002', '200000002', '1992-06-20', 'ENG001',
- 'joao.ferreira@medicore.pt', '220000002', '1201', 'Avenida da Saúde, 25', '4100-002', 'Porto',
- 'jferreira', '$2y$10$f7eHOPgbI6W7nyNCu75V/ekB9S9YbLD7jW4Cw9Q9fxtXv0JVGG9jK', 'Gestão técnica', '2026-01-01', NULL,
- 'Engenharia Biomédica', 'Engenheiro Biomédico', 'Administrador MEDICORE', 'Edifício Técnico', '1', '2026-01-02',
- 'Responsável por equipamentos e processos técnicos.', 1, 'sistema'),
-
-('USR-003', 'Ana Martins', 'Enfermeiro', 'Ativo',
- '100000003', '200000003', '1994-09-11', 'ENF001',
- 'ana.martins@medicore.pt', '220000003', '2301', 'Rua Clínica, 10', '4000-003', 'Porto',
- 'amartins', '$2y$10$hlPRCqmcyuVURgq9L4zQQ.RSkPmykTbEI.Xkx.ldvkMu6G6fIrQ.K', 'Consulta clínica', '2026-01-01', NULL,
- 'UCI', 'Enfermeira', 'João Ferreira', 'Edifício A', '2', '2026-01-03',
- 'Acesso orientado à consulta de equipamentos e localizações.', 1, 'sistema');
- 
- INSERT IGNORE INTO utilizadores_permissoes (
-    id_utilizador, id_permissao, isActive, atualizado_por
-)
-SELECT u.id_utilizador, p.id_permissao, 1, 'sistema'
-FROM utilizadores u
-JOIN permissoes_sistema p
-WHERE u.codigo_utilizador = 'USR-001';
-
-INSERT IGNORE INTO utilizadores_permissoes (
-    id_utilizador, id_permissao, isActive, atualizado_por
-)
-SELECT u.id_utilizador, p.id_permissao, 1, 'sistema'
-FROM utilizadores u
-JOIN permissoes_sistema p
-WHERE u.codigo_utilizador = 'USR-002'
-  AND p.codigo_permissao IN (
-      'dashboard', 'equipamentos', 'calibracoes', 'localizacoes',
-      'fornecedores', 'acessorios', 'consumiveis', 'documentos'
-  );
-
-INSERT IGNORE INTO utilizadores_permissoes (
-    id_utilizador, id_permissao, isActive, atualizado_por
-)
-SELECT u.id_utilizador, p.id_permissao, 1, 'sistema'
-FROM utilizadores u
-JOIN permissoes_sistema p
-WHERE u.codigo_utilizador = 'USR-003'
-  AND p.codigo_permissao IN (
-      'dashboard', 'equipamentos', 'localizacoes', 'acessorios', 'consumiveis'
-  );
-
-UPDATE utilizadores SET password_hash = '$2y$10$upuIEklOVMbnYyH6cC0hl.QE0yZk0CDudXiU.V3VWUjgA0w8t0weG' WHERE username = 'admin';
-UPDATE utilizadores SET password_hash = '$2y$10$u5eTI2zY1Rx5WRkkqijgyuC28FM8NeSgmis1DS40.pQ7bJoQIsnvi' WHERE username = 'jferreira';
-UPDATE utilizadores SET password_hash = '$2y$10$CVonDPUaVhypLcjt4dBUM.BAFiwTN25fAdPwd8sCbjqfOLH06soRC' WHERE username = 'amartins';
+-- =============================================================================
+-- MEDICORE - Script de Dados de Teste
+-- Número de Aluno: 1230404
+-- Unidade Curricular: Sistemas de Informação e Bases de Dados Aplicados à Saúde
+-- Ano Letivo: 2025/2026
+-- =============================================================================
+-- ATENÇÃO: Executar APÓS o script create_tables_medicore.sql
+-- =============================================================================
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- =============================================================================
+-- UTILIZADORES
+-- Passwords: admin → admin123 | jferreira → engenheiro123 | msantos → engenheiro123
+-- =============================================================================
+INSERT INTO `utilizadores`
+    (`id_utilizador`, `codigo_utilizador`, `nome`, `tipo_utilizador`, `estado`,
+     `cartao_cidadao`, `nif`, `data_nascimento`, `email`, `telefone`,
+     `morada`, `codigo_postal`, `localidade`, `username`, `password_hash`, `isActive`)
+VALUES
+(1, 'ADM-001', 'Administrador do Sistema', 'Administrador', 'Ativo',
+ '12345678', '123456789', '1980-05-15', 'admin@medicore.pt', '912000001',
+ 'Rua do Hospital, nº 1', '4000-001', 'Porto', 'admin',
+ '$2y$10$XglSiUDsUENNtiJ7xzkfsut5t/ryISlDIxoQP81sMmzozOnRzRU5K', 1),
+
+(2, 'ENG-001', 'João Ferreira', 'Engenheiro', 'Ativo',
+ '23456789', '234567890', '1990-03-22', 'jferreira@medicore.pt', '912000002',
+ 'Avenida da Engenharia, nº 45', '4100-001', 'Porto', 'jferreira',
+ '$2y$10$vArUmO2fsD7AVrzfFFbzsOCucBymnt2whswY0FgCRHt3qxbeqTOZK', 1),
+
+(3, 'ENG-002', 'Maria Santos', 'Engenheiro', 'Ativo',
+ '34567890', '345678901', '1988-07-10', 'msantos@medicore.pt', '912000003',
+ 'Rua das Flores, nº 12', '4200-001', 'Porto', 'msantos',
+ '$2y$10$vArUmO2fsD7AVrzfFFbzsOCucBymnt2whswY0FgCRHt3qxbeqTOZK', 1);
+
+
+-- =============================================================================
+-- LOCALIZAÇÕES
+-- =============================================================================
+INSERT INTO `localizacoes`
+    (`id_localizacao`, `codigo`, `departamento_nome`, `departamento_sigla`,
+     `edificio`, `piso`, `sala`, `tipo_espaco`, `estado`,
+     `capacidade_equipamentos`, `permite_equipamentos_criticos`, `isActive`)
+VALUES
+(1, 'URG-A0-01', 'Urgência Geral',                    'URG', 'Bloco A', 'Piso 0', 'Sala 01',  'Sala de Tratamento', 'Ativa', 10, 1, 1),
+(2, 'CAR-B1-01', 'Cardiologia',                       'CAR', 'Bloco B', 'Piso 1', 'Sala 01',  'Sala de Exames',     'Ativa',  8, 1, 1),
+(3, 'NEU-C2-01', 'Neurologia',                        'NEU', 'Bloco C', 'Piso 2', 'Sala 01',  'Sala de Consultas',  'Ativa',  6, 0, 1),
+(4, 'ARM-D0-01', 'Armazém de Equipamentos',           'ARM', 'Bloco D', 'Piso 0', 'Armazém',  'Armazém',            'Ativa', 50, 0, 1),
+(5, 'PED-B2-01', 'Pediatria',                         'PED', 'Bloco B', 'Piso 2', 'Sala 01',  'Sala de Tratamento', 'Ativa',  8, 1, 1),
+(6, 'UCI-A1-01', 'Unidade de Cuidados Intensivos',    'UCI', 'Bloco A', 'Piso 1', 'UCI 1',    'UCI',                'Ativa', 12, 1, 1);
+
+
+-- =============================================================================
+-- FAMÍLIAS DE EQUIPAMENTO
+-- =============================================================================
+INSERT INTO `familias_equipamento`
+    (`id_familia_equipamento`, `codigo_familia`, `nome`, `descricao`, `isActive`)
+VALUES
+(1, 'ECG',  'Eletrocardiógrafos',  'Equipamentos para registo de atividade elétrica cardíaca', 1),
+(2, 'VENT', 'Ventiladores',        'Equipamentos de suporte ventilatório invasivo e não-invasivo', 1),
+(3, 'MON',  'Monitores de Sinais', 'Monitores multiparamétricos de sinais vitais', 1),
+(4, 'DEF',  'Desfibrilhadores',    'Equipamentos de desfibrilhação e monitorização cardíaca', 1),
+(5, 'OXI',  'Oxímetros de Pulso',  'Equipamentos de medição de saturação de oxigénio', 1),
+(6, 'INF',  'Bombas Infusoras',    'Equipamentos de administração controlada de medicação', 1);
+
+
+-- =============================================================================
+-- FORNECEDORES
+-- =============================================================================
+INSERT INTO `fornecedores`
+    (`id_fornecedor`, `nome_empresa`, `tipo_fornecedor`, `nif`, `telefone`,
+     `email_fornecedor`, `pessoa_responsavel`, `telefone_contacto`, `email_contacto`,
+     `morada`, `codigo_postal`, `localidade`, `pais`, `isActive`)
+VALUES
+(1, 'Philips Healthcare Portugal', 'Fabricante',  500100001, 218000001,
+   'geral@philips-healthcare.pt', 'Carlos Mendes', 912100001, 'carlos.mendes@philips-healthcare.pt',
+   'Rua Filipe Folque, nº 12', '1050-113', 'Lisboa', 'Portugal', 1),
+
+(2, 'Siemens Healthineers Portugal', 'Calibração', 500200002, 218000002,
+   'geral@siemens-healthineers.pt', 'Ana Costa', 912200002, 'ana.costa@siemens-healthineers.pt',
+   'Avenida José Malhoa, nº 16', '1099-017', 'Lisboa', 'Portugal', 1),
+
+(3, 'MedEquip Manutenção Hospitalar', 'Manutenção', 500300003, 222000003,
+   'geral@medequip.pt', 'Rui Oliveira', 912300003, 'rui.oliveira@medequip.pt',
+   'Rua de Santa Catarina, nº 200', '4000-450', 'Porto', 'Portugal', 1),
+
+(4, 'BioMedical Soluções', 'Comercial', 500400004, 219000004,
+   'geral@biomedical.pt', 'Sofia Lopes', 912400004, 'sofia.lopes@biomedical.pt',
+   'Estrada de Alfragide, nº 67', '2614-503', 'Amadora', 'Portugal', 1),
+
+(5, 'GE Healthcare Portugal', 'Fabricante', 500500005, 217000005,
+   'geral@ge-healthcare.pt', 'Pedro Nunes', 912500005, 'pedro.nunes@ge-healthcare.pt',
+   'Rua Ramalho Ortigão, nº 51', '1099-090', 'Lisboa', 'Portugal', 1);
+
+
+-- =============================================================================
+-- CONSUMÍVEIS
+-- =============================================================================
+INSERT INTO `consumiveis`
+    (`id_consumivel`, `codigo_consumivel`, `nome`, `categoria`,
+     `stock_atual`, `stock_minimo`, `stock_maximo`, `preco_unitario`,
+     `id_localizacao`, `id_fornecedor_preferencial`, `isActive`)
+VALUES
+(1, 'CONS-001', 'Papel Termossensível ECG (50 mm)',      'papel_tecnico',        50.00, 10.00, 200.00,  3.50, 4, 4, 1),
+(2, 'CONS-002', 'Eletrodos Descartáveis Adulto (pack 50)', 'eletrodos',         120.00, 20.00, 500.00, 12.00, 4, 4, 1),
+(3, 'CONS-003', 'Gel de Contacto ECG (250ml)',            'gel_contacto',        30.00,  5.00, 100.00,  4.80, 4, 4, 1),
+(4, 'CONS-004', 'Reagente de Calibração Multimarca',      'reagente_calibracao',  8.00,  2.00,  20.00, 45.00, 4, 2, 1);
+
+
+-- =============================================================================
+-- EQUIPAMENTOS
+-- =============================================================================
+INSERT INTO `equipamentos`
+    (`id_equipamento`, `id_familia_equipamento`, `numero_sequencial`, `codigo_equipamento`,
+     `designacao`, `modelo`, `marca`, `numero_serie`, `tipo_entrada`, `valor_aquisicao`,
+     `id_localizacao`, `estado`, `criticidade`,
+     `periodicidade_manutencao`, `periodicidade_calibracao`,
+     `id_responsavel`, `data_fabrico`, `data_aquisicao`, `data_instalacao`, `isActive`)
+VALUES
+(1, 1, 1, 'ECG-001', 'Eletrocardiógrafo 12 Derivações', 'PageWriter TC30', 'Philips',
+   'SN-ECG-001-2021', 'compra', 8500.00, 2, 'ativo', 'alta', 'anual', 'anual',
+   2, '2020-06-01', '2021-01-15', '2021-02-01', 1),
+
+(2, 1, 2, 'ECG-002', 'Eletrocardiógrafo Portátil', 'PageWriter TC10', 'Philips',
+   'SN-ECG-002-2021', 'compra', 5200.00, 1, 'ativo', 'media', 'anual', 'anual',
+   2, '2020-09-01', '2021-03-10', '2021-03-20', 1),
+
+(3, 3, 1, 'MON-001', 'Monitor Multiparamétrico', 'IntelliVue MX450', 'Philips',
+   'SN-MON-001-2020', 'compra', 15000.00, 6, 'ativo', 'critica', 'semestral', 'anual',
+   2, '2019-05-01', '2020-02-20', '2020-03-01', 1),
+
+(4, 3, 2, 'MON-002', 'Monitor de Sinais Vitais', 'IntelliVue MX40', 'Philips',
+   'SN-MON-002-2022', 'compra', 9800.00, 5, 'ativo', 'alta', 'anual', 'anual',
+   2, '2021-11-01', '2022-01-10', '2022-01-25', 1),
+
+(5, 4, 1, 'DEF-001', 'Desfibrilhador Semi-Automático', 'HeartStart FR3', 'Philips',
+   'SN-DEF-001-2021', 'compra', 3200.00, 1, 'ativo', 'critica', 'semestral', 'semestral',
+   2, '2021-01-01', '2021-06-01', '2021-06-15', 1),
+
+(6, 2, 1, 'VENT-001', 'Ventilador de Cuidados Intensivos', 'Evita V500', 'Dräger',
+   'SN-VENT-001-2019', 'compra', 42000.00, 6, 'ativo', 'critica', 'semestral', 'anual',
+   2, '2018-03-01', '2019-01-10', '2019-02-01', 1),
+
+(7, 6, 1, 'INF-001', 'Bomba Infusora Volumétrica', 'Infusomat Space', 'B.Braun',
+   'SN-INF-001-2022', 'compra', 2800.00, 6, 'ativo', 'alta', 'anual', 'anual',
+   3, '2022-04-01', '2022-07-01', '2022-07-15', 1),
+
+(8, 5, 1, 'OXI-001', 'Oxímetro de Pulso de Mesa', 'Rad-97', 'Masimo',
+   'SN-OXI-001-2023', 'compra', 1800.00, 3, 'ativo', 'media', 'anual', 'bienal',
+   3, '2022-12-01', '2023-02-01', '2023-02-10', 1);
+
+
+-- =============================================================================
+-- ACESSÓRIOS DE EQUIPAMENTO
+-- =============================================================================
+INSERT INTO `acessorios_equipamento`
+    (`id_acessorio`, `id_equipamento`, `id_localizacao`, `numero_sequencial`,
+     `designacao`, `tipo`, `fabricante`, `id_fornecedor`, `modelo`, `numero_serie`,
+     `data_aquisicao`, `estado`, `requer_calibracao`, `periodicidade_calibracao`, `isActive`)
+VALUES
+(1, 1, 2, 1, 'Cabo de Derivações para Membros',  'cabo',     'Philips', 1, 'M1510A',          'SN-CABO-ECG001-A',  '2021-02-01', 'ativo', 0, NULL,   1),
+(2, 1, 2, 2, 'Cabo de Derivações Precordiais',   'cabo',     'Philips', 1, 'M1514A',          'SN-CABO-ECG001-B',  '2021-02-01', 'ativo', 0, NULL,   1),
+(3, 3, 6, 1, 'Sensor SpO2 Adulto',               'sensor',   'Philips', 1, 'M1196A',          'SN-SENS-MON001-A',  '2020-03-01', 'ativo', 1, 'anual',1),
+(4, 3, 6, 2, 'Manguito de Pressão Adulto',       'adaptador','Philips', 1, 'M1574A',          'SN-MANG-MON001-A',  '2020-03-01', 'ativo', 0, NULL,   1),
+(5, 5, 1, 1, 'Eletrodos Adulto DEA',             'sensor',   'Philips', 1, 'M3714A',          'SN-EL-DEF001-A',    '2021-06-15', 'ativo', 0, NULL,   1),
+(6, 6, 6, 1, 'Circuito de Paciente Adulto',      'modulo',   'Dräger',  NULL,'EvitaXL-CKT-A', 'SN-CKT-VENT001-A',  '2019-02-01', 'ativo', 0, NULL,   1),
+(7, 2, 1, 1, 'Cabo USB / Transferência de Dados','cabo',     'Philips', 1, 'M1520A',          'SN-CABO-ECG002-A',  '2021-03-20', 'ativo', 0, NULL,   1);
+
+
+-- =============================================================================
+-- CONSUMÍVEIS POR EQUIPAMENTO
+-- =============================================================================
+INSERT INTO `consumiveis_equipamentos`
+    (`id_consumivel`, `id_equipamento`, `necessario_utilizacao`, `necessario_calibracao`,
+     `quantidade_prevista`, `isActive`)
+VALUES
+(1, 1, 1, 0, 1.00, 1),
+(2, 1, 1, 0, 10.00, 1),
+(3, 1, 1, 0, 1.00, 1),
+(4, 1, 0, 1, 1.00, 1),
+(1, 2, 1, 0, 1.00, 1),
+(2, 2, 1, 0, 10.00, 1),
+(2, 3, 1, 0, 5.00, 1),
+(2, 4, 1, 0, 5.00, 1);
+
+
+-- =============================================================================
+-- EQUIPAMENTOS — FORNECEDORES / GARANTIA
+-- =============================================================================
+INSERT INTO `equipamentos_fornecedores`
+    (`id_equipamento_fornecedor`, `id_equipamento`, `id_fornecedor_garantia`,
+     `data_inicio_garantia`, `data_fim_garantia`, `isActive`)
+VALUES
+(1, 1, 1, '2021-01-15', '2024-01-15', 1),
+(2, 2, 1, '2021-03-10', '2024-03-10', 1),
+(3, 3, 1, '2020-02-20', '2023-02-20', 1),
+(4, 4, 1, '2022-01-10', '2025-01-10', 1),
+(5, 5, 1, '2021-06-01', '2024-06-01', 1),
+(6, 6, 5, '2019-01-10', '2022-01-10', 1),
+(7, 7, 4, '2022-07-01', '2025-07-01', 1),
+(8, 8, 4, '2023-02-01', '2026-02-01', 1);
+
+
+-- =============================================================================
+-- CALIBRAÇÕES
+-- =============================================================================
+INSERT INTO `calibracoes_equipamento`
+    (`id_calibracao`, `codigo_processo`, `id_equipamento`, `id_acessorio`,
+     `id_fornecedor_responsavel`, `tipo_execucao`, `estado_processo`,
+     `decisao_admin`, `id_admin_decisao`, `data_decisao`,
+     `data_abertura`, `data_prevista`, `data_recolha`,
+     `data_inicio_procedimento`, `data_fim_procedimento`,
+     `data_emissao_relatorio`, `data_devolucao`, `data_finalizacao`,
+     `data_calibracao`, `proxima_calibracao`,
+     `numero_certificado`, `resultado`, `procedimento`, `custo`, `isActive`)
+VALUES
+(1, 'CAL-2024-001', 1, NULL, 2, 'externa', 'processo_finalizado',
+   'aprovado', 1, '2024-02-05 10:00:00',
+   '2024-02-01', '2024-02-28', '2024-02-08',
+   '2024-02-10', '2024-02-15', '2024-02-20', '2024-02-22', '2024-02-23',
+   '2024-02-15', '2025-02-15',
+   'CERT-2024-001', 'aprovado',
+   'Calibração completa efetuada segundo norma IEC 60601. Todos os parâmetros dentro dos limites.', 350.00, 1),
+
+(2, 'CAL-2025-001', 3, 3, 2, 'externa', 'aguarda_decisao',
+   'pendente', NULL, NULL,
+   '2025-01-10', '2025-02-10', NULL,
+   NULL, NULL, NULL, NULL, NULL,
+   NULL, NULL, NULL, NULL, NULL, 350.00, 1),
+
+(3, 'CAL-2025-002', 2, NULL, 2, 'externa', 'devolucao_equipamento',
+   'aprovado', 1, '2025-03-05 09:00:00',
+   '2025-03-01', '2025-03-31', '2025-03-08',
+   '2025-03-10', '2025-03-18', '2025-03-22', '2025-03-25', NULL,
+   '2025-03-18', '2026-03-18',
+   'CERT-2025-002', 'aprovado',
+   'Calibração efetuada com sucesso. Parâmetros de medição verificados e ajustados.', 280.00, 1);
+
+
+-- =============================================================================
+-- MANUTENÇÕES
+-- =============================================================================
+INSERT INTO `manutencoes_equipamento`
+    (`id_manutencao`, `codigo_processo`, `id_equipamento`, `id_acessorio`,
+     `tipo_manutencao`, `tipo_execucao`, `estado_processo`,
+     `decisao_admin`, `id_admin_decisao`, `data_decisao`,
+     `data_abertura`, `data_prevista`, `data_recolha`,
+     `data_inicio_procedimento`, `data_fim_procedimento`,
+     `data_emissao_relatorio`, `data_devolucao`, `data_finalizacao`,
+     `id_fornecedor_responsavel`, `numero_relatorio`,
+     `descricao_procedimento`, `resultado`, `custo`, `isActive`)
+VALUES
+(1, 'MAN-2024-001', 3, NULL, 'preventiva', 'externa', 'processo_finalizado',
+   'aprovado', 1, '2024-04-05 14:00:00',
+   '2024-04-01', '2024-04-30', '2024-04-07',
+   '2024-04-10', '2024-04-20', '2024-04-25', '2024-04-27', '2024-04-28',
+   3, 'REL-MAN-2024-001',
+   'Manutenção preventiva anual realizada. Substituição de filtros, limpeza interna e verificação de todos os módulos.', 'aprovado', 520.00, 1),
+
+(2, 'MAN-2025-001', 5, 5, 'corretiva', 'externa', 'aguarda_decisao',
+   'pendente', NULL, NULL,
+   '2025-04-10', '2025-05-10', NULL,
+   NULL, NULL, NULL, NULL, NULL,
+   3, NULL, NULL, NULL, 0.00, 1),
+
+(3, 'MAN-2025-002', 6, NULL, 'preventiva', 'externa', 'devolucao_equipamento',
+   'aprovado', 1, '2025-05-05 11:00:00',
+   '2025-05-01', '2025-05-31', '2025-05-07',
+   '2025-05-10', '2025-05-22', '2025-05-26', '2025-05-28', NULL,
+   3, 'REL-MAN-2025-002',
+   'Manutenção preventiva semestral. Revisão completa do sistema ventilatório, calibração de sensores de fluxo e pressão.', 'aprovado', 780.00, 1);
+
+
+-- =============================================================================
+-- ACESSÓRIOS EM CALIBRAÇÕES
+-- =============================================================================
+INSERT INTO `calibracoes_acessorios` (`id_calibracao`, `id_acessorio`, `isActive`)
+VALUES
+(1, 1, 1),
+(2, 3, 1);
+
+
+-- =============================================================================
+-- CONSUMÍVEIS EM CALIBRAÇÕES
+-- =============================================================================
+INSERT INTO `calibracoes_consumiveis` (`id_calibracao`, `id_consumivel`, `quantidade_utilizada`, `isActive`)
+VALUES
+(1, 4, 1.00, 1),
+(2, 4, 1.00, 1),
+(3, 4, 1.00, 1);
+
+
+-- =============================================================================
+-- ACESSÓRIOS EM MANUTENÇÕES
+-- =============================================================================
+INSERT INTO `manutencoes_acessorios` (`id_manutencao`, `id_acessorio`, `isActive`)
+VALUES
+(2, 5, 1);
+
+
+-- =============================================================================
+-- AVARIAS REPORTADAS
+-- =============================================================================
+INSERT INTO `avarias_reportadas`
+    (`id_avaria`, `codigo_avaria`, `id_equipamento`, `id_acessorio`,
+     `id_utilizador_reportou`, `descricao_avaria`, `estado`, `isActive`)
+VALUES
+(1, 'AVA-2025-001', 2, 7, 2,
+   'Cabo USB não reconhecido pelo sistema — impossível transferir registos ECG para o sistema informático.',
+   'reportada', 1),
+
+(2, 'AVA-2025-002', 5, 5, 3,
+   'Eletrodos apresentam má adesão à pele do paciente. Sinal instável durante utilização.',
+   'em_analise', 1);
+
+
+-- =============================================================================
+-- EMPRÉSTIMOS
+-- =============================================================================
+INSERT INTO `emprestimos_equipamentos`
+    (`id_emprestimo`, `codigo_emprestimo`, `id_equipamento`,
+     `id_localizacao_origem`, `id_localizacao_destino`,
+     `id_utilizador_pedido`, `responsavel_emprestimo`,
+     `motivo`, `data_inicio`, `data_prevista_devolucao`, `estado`, `isActive`)
+VALUES
+(1, 'EMP-2025-001', 8, 3, 5, 2, 'João Ferreira',
+   'Necessidade temporária de monitorização de SpO2 em Pediatria',
+   '2025-06-01', '2025-06-15', 'terminado', 1),
+
+(2, 'EMP-2025-002', 4, 5, 1, 3, 'Maria Santos',
+   'Monitor substituto para a Urgência durante manutenção do equipamento principal',
+   '2025-06-10', '2025-06-20', 'ativo', 1);
+
+
+-- =============================================================================
+-- TRANSFERÊNCIAS
+-- =============================================================================
+INSERT INTO `transferencias_equipamentos`
+    (`id_transferencia`, `codigo_transferencia`, `id_equipamento`,
+     `id_localizacao_origem`, `id_localizacao_destino`,
+     `id_utilizador_pedido`, `id_utilizador_aprovacao`,
+     `motivo`, `estado`, `data_pedido`, `data_aprovacao`, `isActive`)
+VALUES
+(1, 'TRF-2025-001', 7, 6, 5, 3, 1,
+   'Transferência para Pediatria — necessidade de bomba infusora adicional.',
+   'aprovado', '2025-05-15 09:00:00', '2025-05-16 10:30:00', 1),
+
+(2, 'TRF-2025-002', 1, 2, 3, 2, NULL,
+   'Transferência do ECG para a Neurologia para exames de rotina.',
+   'pendente', '2025-06-20 14:00:00', NULL, 1);
+
+
+-- =============================================================================
+-- PÁGINA PÚBLICA — CONFIGURAÇÃO
+-- =============================================================================
+INSERT INTO `pagina_publica_config`
+    (`id_config`, `navbar_logo`, `navbar_link_sobre`, `navbar_link_equipa`,
+     `navbar_link_funcional`, `navbar_link_hospitais`, `navbar_link_contacto`,
+     `navbar_btn_restrita`, `sobre_titulo`, `sobre_texto`, `contacto_texto`,
+     `rodape_localizacao`, `rodape_horario_semana`, `rodape_email`, `rodape_telefone`)
+VALUES
+(1,
+ 'assets/img/MEDICORE_logotipo_branco.png',
+ 'Sobre', 'Nossa Equipa', 'Funcionalidades', 'Hospitais e Clínicas', 'Contacto', 'Área Restrita',
+ 'Gestão Inteligente do Inventário Hospitalar',
+ 'O MEDICORE é uma plataforma web desenvolvida para hospitais e clínicas que pretendem gerir de forma eficiente o seu inventário de equipamentos médicos. Permite o controlo de equipamentos, acessórios, calibrações, manutenções, mobilidade e avarias — tudo num único sistema integrado.',
+ 'Para mais informações sobre o MEDICORE, entre em contacto através dos seguintes meios. A nossa equipa terá todo o gosto em responder às suas questões.',
+ 'Rua do Hospital, nº 1, 4000-001 Porto, Portugal',
+ '2ª a 6ª Feira: 9h — 18h',
+ 'geral@medicore.pt',
+ '+351 919 323 121');
+
+
+-- =============================================================================
+-- PÁGINA PÚBLICA — SLIDES
+-- =============================================================================
+INSERT INTO `pagina_publica_slides`
+    (`id_slide`, `ordem`, `imagem`, `titulo`, `descricao`, `isActive`)
+VALUES
+(1, 1, 'assets/img/slide1.jpg',
+   'Gestão Completa de Equipamentos',
+   'Controle todos os equipamentos médicos da sua instituição numa única plataforma intuitiva e segura.', 1),
+(2, 2, 'assets/img/slide2.jpg',
+   'Calibrações e Manutenções',
+   'Acompanhe o ciclo completo de calibrações e manutenções, desde a abertura do processo até ao encerramento.', 1),
+(3, 3, 'assets/img/slide3.jpg',
+   'Mobilidade de Equipamentos',
+   'Gira empréstimos e transferências de equipamentos entre departamentos com facilidade.', 1);
+
+
+-- =============================================================================
+-- PÁGINA PÚBLICA — HOSPITAIS / CLÍNICAS
+-- =============================================================================
+INSERT INTO `pagina_publica_hospitais`
+    (`id_hospital`, `ordem`, `nome`, `descricao`, `imagem`, `isActive`)
+VALUES
+(1, 1, 'Hospital de São João — Porto',
+   'Um dos maiores hospitais públicos de Portugal, com mais de 1000 camas e equipamentos de última geração.',
+   'assets/img/hospital1.jpg', 1),
+(2, 2, 'Centro Hospitalar e Universitário do Porto',
+   'Centro de excelência clínica e académica no norte de Portugal, referência em cuidados especializados.',
+   'assets/img/hospital2.jpg', 1),
+(3, 3, 'Hospital da Luz — Lisboa',
+   'Hospital privado de referência com as mais avançadas tecnologias de diagnóstico e tratamento.',
+   'assets/img/hospital3.jpg', 1),
+(4, 4, 'Clínica CUF — Porto',
+   'Clínica moderna com ampla rede de especialidades médicas e equipamentos de diagnóstico.',
+   'assets/img/hospital4.jpg', 1);
+
+
+-- =============================================================================
+-- MOVIMENTOS DE STOCK (consumo em calibração)
+-- =============================================================================
+INSERT INTO `movimentos_stock_consumiveis`
+    (`id_consumivel`, `tipo_movimento`, `quantidade`,
+     `stock_anterior`, `stock_posterior`,
+     `id_equipamento`, `id_calibracao`,
+     `motivo`, `atualizado_por`)
+VALUES
+(4, 'consumo_calibracao', 1.00, 9.00, 8.00, 1, 1,
+   'Consumo de reagente na calibração CAL-2024-001', 'admin');
+
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- =============================================================================
+-- FIM DO SCRIPT DE DADOS DE TESTE
+-- =============================================================================

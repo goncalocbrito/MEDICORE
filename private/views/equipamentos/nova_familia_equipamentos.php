@@ -91,6 +91,10 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             <i class="fa-solid fa-xmark me-2"></i> Cancelar
         </a>
 
+        <button type="button" class="btn btn-dados-teste" onclick="dadosTeste_novaFamilia()">
+            <i class="fa-solid fa-flask me-2"></i> Dados de Teste
+        </button>
+
         <button type="reset"
                 class="btn btn-limpar"
                 form="formNovaFamiliaEquipamentos">

@@ -14,6 +14,7 @@ redirect_if_not_logged();
 
 $equipamentos = [];
 $erro_bd = '';
+$ehAdministrador = ($_SESSION['tipo_utilizador'] ?? '') === 'Administrador';
 
 function h($valor)
 {
@@ -140,7 +141,6 @@ try {
             e.numero_serie,
             e.estado,
             e.criticidade,
-
             fe.nome AS familia,
             fe.codigo_familia,
 
@@ -202,9 +202,11 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             </p>
         </div>
 
+        <?php if (!$ehAdministrador): ?>
         <a href="novo_equipamento.php" class="btn btn-adicionar">
             <i class="fa-solid fa-plus me-2"></i> Adicionar Equipamento
         </a>
+        <?php endif; ?>
     </div>
 
     <?php if (isset($_GET['removido'])): ?>
@@ -213,6 +215,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             Equipamento removido da lista com sucesso.
         </div>
     <?php endif; ?>
+
 
     <!-- Pesquisa e filtros da tabela de equipamentos -->
     <div class="table-responsive tabela-container">
@@ -268,14 +271,15 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                             <td class="text-center">
 
-                                <a 
+                                <a
                                     href="ficha_equipamento.php?ref=<?php echo url_ref($equipamento['id_equipamento']); ?>"
                                     class="btn btn-sm btn-ficha"
                                     title="Abrir ficha do equipamento">
                                     <i class="fa-solid fa-file-lines"></i>
                                 </a>
 
-                                <button 
+                                <?php if (!$ehAdministrador): ?>
+                                <button
                                     type="button"
                                     class="btn btn-sm btn-eliminar btn-abrir-modal-apagar"
                                     title="Eliminar equipamento"
@@ -292,6 +296,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     data-estado="<?php echo h($estadoTexto); ?>">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
+                                <?php endif; ?>
 
                             </td>
                         </tr>
@@ -419,18 +424,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    // Aguarda o DataTables inicializar antes de ajustar o placeholder
-    setTimeout(function () {
-        const input = document.querySelector('#tabela-equipamentos_filter input[type="search"]');
-        if (input) {
-            input.placeholder = 'Código, equipamento, modelo, localização, estado…';
-            input.style.minWidth = '380px';
-        }
-    }, 100);
-});
-</script>
 
 <?php
 require_once __DIR__ . '/../../includes/footer.php';

@@ -32,6 +32,15 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
     <!-- Conteúdo principal da lista de localizações. -->
     <main class="conteudo-private">
+        <?php if (isset($_GET['criado'])): ?>
+            <div class="form-alerta-sucesso" role="alert">
+                <strong>
+                    <i class="fa-solid fa-circle-check me-2"></i>
+                    Localização criada com sucesso.
+                </strong>
+            </div>
+        <?php endif; ?>
+
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
             <div>
                 <h2 class="titulo-pagina">Gestão de Localizações</h2>
@@ -82,21 +91,53 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     </a>
 
                                     <button type="button"
-                                            class="btn btn-sm btn-eliminar btn-abrir-modal-apagar-localizacao"
+                                            class="btn btn-sm btn-eliminar"
                                             title="Eliminar localização"
                                             data-bs-toggle="modal"
-                                            data-bs-target="#modalApagarLocalizacao"
-                                            data-id="<?php echo htmlspecialchars($localizacao['id_localizacao']); ?>"
-                                            data-codigo="<?php echo htmlspecialchars($localizacao['codigo']); ?>"
-                                            data-departamento="<?php echo htmlspecialchars($localizacao['departamento_nome']); ?>"
-                                            data-edificio="<?php echo htmlspecialchars($localizacao['edificio']); ?>"
-                                            data-piso="<?php echo htmlspecialchars($localizacao['piso']); ?>"
-                                            data-sala="<?php echo htmlspecialchars($localizacao['sala']); ?>"
-                                            data-tipo="<?php echo htmlspecialchars($localizacao['tipo_espaco']); ?>"
-                                            data-estado="<?php echo htmlspecialchars($localizacao['estado']); ?>"
-                                            data-equipamentos="<?php echo htmlspecialchars($localizacao['capacidade_equipamentos'] ?? '-'); ?>">
+                                            data-bs-target="#modalApagarLocalizacao<?php echo (int)$localizacao['id_localizacao']; ?>">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
+
+                                    <!-- Modal inline por localização -->
+                                    <div class="modal fade" id="modalApagarLocalizacao<?php echo (int)$localizacao['id_localizacao']; ?>" tabindex="-1">
+                                        <div class="modal-dialog modal-dialog-centered modal-remocao-dialog">
+                                            <div class="modal-content modal-apagar-equipamento">
+                                                <div class="modal-header modal-remocao-header">
+                                                    <div>
+                                                        <h5 class="modal-title">
+                                                            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                                                            Confirmar remoção
+                                                        </h5>
+                                                        <p class="modal-remocao-subtitulo">Confirme os dados antes de remover a localização.</p>
+                                                    </div>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body modal-remocao-body">
+                                                    <div class="modal-resumo-equipamento modal-resumo-remocao">
+                                                        <div class="modal-linha"><strong>Código</strong><span><?php echo htmlspecialchars($localizacao['codigo']); ?></span></div>
+                                                        <div class="modal-linha"><strong>Departamento</strong><span><?php echo htmlspecialchars($localizacao['departamento_nome']); ?></span></div>
+                                                        <div class="modal-linha"><strong>Edifício</strong><span><?php echo htmlspecialchars($localizacao['edificio']); ?></span></div>
+                                                        <div class="modal-linha"><strong>Piso</strong><span><?php echo htmlspecialchars($localizacao['piso']); ?></span></div>
+                                                        <div class="modal-linha"><strong>Sala</strong><span><?php echo htmlspecialchars($localizacao['sala']); ?></span></div>
+                                                        <div class="modal-linha"><strong>Estado</strong><span><?php echo htmlspecialchars($localizacao['estado']); ?></span></div>
+                                                    </div>
+                                                    <p class="texto-confirmacao-remocao">Confirma que pretende remover esta localização da lista?</p>
+                                                </div>
+                                                <div class="modal-footer modal-remocao-footer">
+                                                    <button type="button" class="btn btn-cancelar-modal" data-bs-dismiss="modal">
+                                                        <i class="fa-solid fa-xmark me-2"></i> Cancelar
+                                                    </button>
+                                                    <form action="ficha_localizacao.php" method="post">
+                                                        <input type="hidden" name="acao" value="apagar_localizacao">
+                                                        <input type="hidden" name="id_localizacao" value="<?php echo (int)$localizacao['id_localizacao']; ?>">
+                                                        <button type="submit" class="btn btn-confirmar-remocao">
+                                                            <i class="fa-solid fa-trash me-2"></i> Guardar Alteração
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -105,48 +146,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             </table>
         </div>
     </main>
-    <!-- Modal de confirmação de remoção da localização. -->
-    <div class="modal fade" id="modalApagarLocalizacao" tabindex="-1" aria-labelledby="modalApagarLocalizacaoLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-remocao-dialog">
-            <div class="modal-content modal-apagar-equipamento">
-                <div class="modal-header modal-remocao-header">
-                    <div>
-                        <h5 class="modal-title" id="modalApagarLocalizacaoLabel">
-                            <i class="fa-solid fa-triangle-exclamation me-2"></i>
-                            Confirmar remoção
-                        </h5>
-                        <p class="modal-remocao-subtitulo">Confirme os dados antes de remover a localização.</p>
-                    </div>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                </div>
-                <div class="modal-body modal-remocao-body">
-                    <div class="modal-resumo-equipamento modal-resumo-remocao">
-                        <div class="modal-linha"><strong>Código</strong><span id="modalApagarLocalizacaoCodigo">---</span></div>
-                        <div class="modal-linha"><strong>Departamento</strong><span id="modalApagarLocalizacaoDepartamento">---</span></div>
-                        <div class="modal-linha"><strong>Edifício</strong><span id="modalApagarLocalizacaoEdificio">---</span></div>
-                        <div class="modal-linha"><strong>Piso</strong><span id="modalApagarLocalizacaoPiso">---</span></div>
-                        <div class="modal-linha"><strong>Sala</strong><span id="modalApagarLocalizacaoSala">---</span></div>
-                        <div class="modal-linha"><strong>Tipo</strong><span id="modalApagarLocalizacaoTipo">---</span></div>
-                        <div class="modal-linha"><strong>Responsável</strong><span id="modalApagarLocalizacaoResponsavel">---</span></div>
-                        <div class="modal-linha"><strong>Estado</strong><span id="modalApagarLocalizacaoEstado">---</span></div>
-                        <div class="modal-linha"><strong>Equipamentos</strong><span id="modalApagarLocalizacaoEquipamentos">---</span></div>
-                    </div>
-                    <input type="hidden" id="modalApagarIdLocalizacao">
-                    <p class="texto-confirmacao-remocao">
-                        Confirma que pretende remover esta localização da lista?
-                    </p>
-                </div>
-                <div class="modal-footer modal-remocao-footer">
-                    <button type="button" class="btn btn-cancelar-modal" data-bs-dismiss="modal">
-                        <i class="fa-solid fa-xmark me-2"></i> Cancelar
-                    </button>
-                    <button type="button" class="btn btn-confirmar-remocao" id="btnConfirmarApagarLocalizacao">
-                        <i class="fa-solid fa-trash me-2"></i> Guardar Alteração
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
 <?php
 require_once __DIR__ . '/../../includes/footer.php';

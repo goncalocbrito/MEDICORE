@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../includes/funcoes.php';
+require_once __DIR__ . '/../../includes/validacoes.php';
 redirect_if_not_logged();
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -46,7 +47,9 @@ $camposObrigatoriosFornecedor = [
 
     'contactos' => [
         'telefoneFornecedor',
+        'emailEmpresaFornecedor',
         'contactoResponsavel',
+        'telefoneContacto',
         'emailContacto'
     ],
 
@@ -64,7 +67,7 @@ $labelsCamposFornecedor = [
     'tipoFornecedor'          => 'Tipo de Fornecedor',
     'estadoFornecedor'        => 'Estado',
 
-    'telefoneFornecedor'      => 'Telefone',
+    'telefoneFornecedor'      => 'Telefone do Fornecedor',
     'emailEmpresaFornecedor'  => 'Email do Fornecedor',
     'contactoResponsavel'     => 'Pessoa Responsável',
     'telefoneContacto'        => 'Telefone do Contacto',
@@ -90,9 +93,8 @@ function validar_formato_identificacao_fornecedor($chaveSessao)
     $dados = $_SESSION[$chaveSessao] ?? [];
     $erros = [];
 
-    $nif = $dados['nifFornecedor'] ?? '';
-    if (!preg_match('/^\d{9}$/', $nif)) {
-        $erros[] = 'O NIF deve ter exatamente 9 dígitos numéricos.';
+    if ($erro = validar_nif($dados['nifFornecedor'] ?? '')) {
+        $erros[] = $erro;
     }
 
     return $erros;
@@ -103,28 +105,22 @@ function validar_formato_contactos_fornecedor($chaveSessao)
     $dados = $_SESSION[$chaveSessao] ?? [];
     $erros = [];
 
-    $tel = preg_replace('/\D/', '', $dados['telefoneFornecedor'] ?? '');
-    if (strlen($tel) !== 9) {
-        $erros[] = 'O Telefone deve ter exatamente 9 dígitos.';
+    if ($erro = validar_telefone($dados['telefoneFornecedor'] ?? '')) {
+        $erros[] = 'O Telefone: ' . lcfirst($erro);
     }
 
-    $telContacto = $dados['telefoneContacto'] ?? '';
-    if ($telContacto !== '') {
-        if (strlen(preg_replace('/\D/', '', $telContacto)) !== 9) {
-            $erros[] = 'O Telefone do Contacto deve ter exatamente 9 dígitos.';
+    if ($dados['telefoneContacto'] ?? '' !== '') {
+        if ($erro = validar_telefone($dados['telefoneContacto'] ?? '')) {
+            $erros[] = 'O Telefone do Contacto: ' . lcfirst($erro);
         }
     }
 
-    foreach (['emailContacto' => 'Email do Contacto'] as $campo => $label) {
-        $val = $dados[$campo] ?? '';
-        if ($val !== '' && !str_contains($val, '@')) {
-            $erros[] = 'O campo "' . $label . '" deve conter o carácter @.';
-        }
+    if ($erro = validar_email($dados['emailContacto'] ?? '')) {
+        $erros[] = 'O campo "Email do Contacto": ' . lcfirst($erro);
     }
 
-    $emailEmpresa = $dados['emailEmpresaFornecedor'] ?? '';
-    if ($emailEmpresa !== '' && !str_contains($emailEmpresa, '@')) {
-        $erros[] = 'O campo "Email do Fornecedor" deve conter o carácter @.';
+    if ($erro = validar_email($dados['emailEmpresaFornecedor'] ?? '')) {
+        $erros[] = 'O campo "Email do Fornecedor": ' . lcfirst($erro);
     }
 
     return $erros;
@@ -275,6 +271,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errosFornecedor)) {
         $dadosFornecedor = $_SESSION[$chaveSessao] ?? [];
 
+        $nifVal = trim($dadosFornecedor['nifFornecedor'] ?? '');
+        if ($nifVal !== '') {
+            $stmtNif = $pdo->prepare("SELECT COUNT(*) FROM fornecedores WHERE nif = :nif");
+            $stmtNif->execute([':nif' => $nifVal]);
+            if ((int) $stmtNif->fetchColumn() > 0) {
+                $errosFornecedor[] = 'Já existe um fornecedor registado com o NIF "' . htmlspecialchars($nifVal) . '". O NIF deve ser único.';
+            }
+        }
+
+        if (!empty($errosFornecedor)) {
+            $etapaAtual = 'identificacao';
+        } else {
+
         $stmt = $pdo->prepare("
             INSERT INTO fornecedores (
                 nome_empresa,
@@ -326,8 +335,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         unset($_SESSION[$chaveSessao]);
 
-        header('Location: lista_fornecedores.php');
+        header('Location: ficha_fornecedor.php?ref=' . url_ref($id_fornecedor) . '&criado=1');
         exit;
+        } // end else (NIF não duplicado)
     }
 }
 
@@ -352,6 +362,10 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             <a href="lista_fornecedores.php" class="btn btn-cancelar">
                 <i class="fa-solid fa-xmark me-2"></i> Cancelar
             </a>
+
+            <button type="button" class="btn btn-dados-teste" onclick="dadosTeste_novoFornecedor()">
+                <i class="fa-solid fa-flask me-2"></i> Dados de Teste
+            </button>
 
             <button type="submit"
                     class="btn btn-limpar"
@@ -424,17 +438,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             </div>
 
            <?php if (!empty($errosFornecedor)): ?>
-                <div class="form-alerta-erros" role="alert">
-                    <strong>
-                        <i class="fa-solid fa-triangle-exclamation me-2"></i>
-                        Não é possível avançar para essa etapa.
-                    </strong>
-
-                    <p class="mb-2 mt-2">
-                        Preencha os campos obrigatórios antes de continuar.
-                    </p>
-
-                    <ul>
+                <div class="alert alert-danger" role="alert">
+                    <strong><i class="fa-solid fa-triangle-exclamation me-2"></i> Erro</strong>
+                    <ul class="mb-0 mt-1">
                         <?php foreach ($errosFornecedor as $erro): ?>
                             <li><?php echo htmlspecialchars($erro); ?></li>
                         <?php endforeach; ?>
@@ -603,7 +609,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
                         <div class="row g-4">
                             <div class="col-md-4">
-                                <label for="telefoneFornecedor" class="form-label">Telefone *</label>
+                                <label for="telefoneFornecedor" class="form-label">Telefone do Fornecedor *</label>
                                 <input type="text"
                                        class="form-control"
                                        id="telefoneFornecedor"
@@ -618,14 +624,15 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </div>
 
                             <div class="col-md-4">
-                                <label for="emailEmpresaFornecedor" class="form-label">Email do Fornecedor</label>
+                                <label for="emailEmpresaFornecedor" class="form-label">Email do Fornecedor *</label>
                                 <input type="email"
                                        class="form-control"
                                        id="emailEmpresaFornecedor"
                                        name="emailEmpresaFornecedor"
                                        value="<?php echo valor_temporario($chaveSessao, 'emailEmpresaFornecedor'); ?>"
                                        placeholder="Ex: geral@fornecedor.pt"
-                                       maxlength="255">
+                                       maxlength="255"
+                                       required>
                                 <small class="texto-ajuda-form contador-caracteres" data-target="emailEmpresaFornecedor" data-max="255">0 / 255 caracteres</small>
                             </div>
 
@@ -643,7 +650,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </div>
 
                             <div class="col-md-4">
-                                <label for="telefoneContacto" class="form-label">Telefone do Contacto</label>
+                                <label for="telefoneContacto" class="form-label">Telefone do Contacto *</label>
                                 <input type="text"
                                        class="form-control"
                                        id="telefoneContacto"
@@ -652,7 +659,8 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        placeholder="Ex: 912345678"
                                        maxlength="9"
                                        pattern="\d{9}"
-                                       inputmode="numeric">
+                                       inputmode="numeric"
+                                       required>
                                 <small class="texto-ajuda-form contador-caracteres" data-target="telefoneContacto" data-max="9">0 / 9 caracteres</small>
                             </div>
 

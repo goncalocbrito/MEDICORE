@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../includes/funcoes.php';
+require_once __DIR__ . '/../../includes/validacoes.php';
 redirect_if_no_permission('mobilidade');
 
 $pdo = medicore_pdo();
@@ -46,8 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $idLocalizacaoOrigem = (int) $equipamentoAtual['id_localizacao'];
 
-            if ($idLocalizacaoOrigem === $idLocalizacaoDestino) {
-                throw new Exception('A localização de destino não pode ser igual à localização atual.');
+            if ($erro = validar_localizacoes_diferentes($idLocalizacaoOrigem, $idLocalizacaoDestino)) {
+                throw new Exception($erro);
             }
             $stmt = $pdo->prepare("
                 INSERT INTO transferencias_equipamentos (
@@ -347,9 +348,11 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             </p>
         </div>
 
+        <?php if (strtolower($tipoUtilizador) !== 'administrador'): ?>
         <button type="button" class="btn btn-adicionar" data-bs-toggle="modal" data-bs-target="#modalNovaTransferencia">
             <i class="fa-solid fa-plus me-2"></i> Nova Transferência
         </button>
+        <?php endif; ?>
     </div>
 
     <?php if ($mensagemSucesso): ?>
@@ -614,6 +617,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                     <button type="button" class="btn btn-cancelar-modal" data-bs-dismiss="modal">
                         <i class="fa-solid fa-xmark me-2"></i> Cancelar
                     </button>
+                    <button type="button" class="btn btn-dados-teste" onclick="dadosTeste_novaTransferencia()">
+                        <i class="fa-solid fa-flask me-2"></i> Dados de Teste
+                    </button>
                     <button type="submit" class="btn btn-guardar">
                         <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Pedido
                     </button>
@@ -622,5 +628,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         </div>
     </div>
 </div>
+
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

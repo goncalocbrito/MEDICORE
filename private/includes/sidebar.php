@@ -31,7 +31,9 @@ function menu_equipamentos_ativo()
         BASE_URL . '/private/views/equipamentos/acessorios.php',
         BASE_URL . '/private/views/equipamentos/consumiveis.php',
         BASE_URL . '/private/views/equipamentos/lista_familia_equipamentos.php',
-        BASE_URL . '/private/views/equipamentos/nova_familia_equipamentos.php'
+        BASE_URL . '/private/views/equipamentos/nova_familia_equipamentos.php',
+        BASE_URL . '/private/views/equipamentos/preencher_equipamento.php',
+        BASE_URL . '/private/views/equipamentos/garantias_equipamentos.php'
     ];
 
     return in_array($paginaAtual, $paginasEquipamentos, true) ? ' active' : '';
@@ -66,7 +68,7 @@ $isEngenheiro = strpos($tipoUtilizadorNormalizado, 'engenheiro') !== false;
                     <li class="nav-item">
                         <a href="<?php echo BASE_URL; ?>/private/index.php"
                            class="nav-link<?php echo menu_ativo(BASE_URL . '/private/index.php'); ?>">
-                            <i class="fa-solid fa-chart-line me-2"></i> Dashboard Tecnico
+                            <i class="fa-solid fa-chart-line me-2"></i> Administrador
                         </a>
                     </li>
                 <?php endif; ?>
@@ -75,7 +77,7 @@ $isEngenheiro = strpos($tipoUtilizadorNormalizado, 'engenheiro') !== false;
                     <li class="nav-item">
                         <a href="<?php echo BASE_URL; ?>/private/views/dashboard/dashboard_engenheiro.php"
                            class="nav-link<?php echo menu_ativo(BASE_URL . '/private/views/dashboard/dashboard_engenheiro.php'); ?>">
-                            <i class="fa-solid fa-gauge-high me-2"></i> Dashboard Engenheiro
+                            <i class="fa-solid fa-gauge-high me-2"></i> Dashboard
                         </a>
                     </li>
                 <?php endif; ?>
@@ -97,7 +99,7 @@ $isEngenheiro = strpos($tipoUtilizadorNormalizado, 'engenheiro') !== false;
                                     </a>
                                 </li>
 
-                                <?php if ($isEngenheiro): ?>
+                                    <?php if ($isEngenheiro): ?>
                                     <li>
                                         <a href="<?php echo BASE_URL; ?>/private/views/equipamentos/novo_equipamento.php"
                                            class="<?php echo submenu_ativo(BASE_URL . '/private/views/equipamentos/novo_equipamento.php'); ?>">
@@ -105,6 +107,22 @@ $isEngenheiro = strpos($tipoUtilizadorNormalizado, 'engenheiro') !== false;
                                         </a>
                                     </li>
                                 <?php endif; ?>
+
+                                <?php if ($isAdministrador): ?>
+                                    <li>
+                                        <a href="<?php echo BASE_URL; ?>/private/views/equipamentos/preencher_equipamento.php"
+                                           class="<?php echo submenu_ativo(BASE_URL . '/private/views/equipamentos/preencher_equipamento.php'); ?>">
+                                            <i class="fa-solid fa-pen-to-square me-2"></i> Preencher Equipamentos
+                                        </a>
+                                    </li>
+                                <?php endif; ?>
+
+                                <li>
+                                    <a href="<?php echo BASE_URL; ?>/private/views/equipamentos/garantias_equipamentos.php"
+                                       class="<?php echo submenu_ativo(BASE_URL . '/private/views/equipamentos/garantias_equipamentos.php'); ?>">
+                                        <i class="fa-solid fa-shield me-2"></i> Garantias
+                                    </a>
+                                </li>
                             <?php endif; ?>
 
                             <?php if (pode_ver('acessorios')): ?>
@@ -199,6 +217,13 @@ $isEngenheiro = strpos($tipoUtilizadorNormalizado, 'engenheiro') !== false;
                                     <i class="fa-solid fa-box-archive me-2"></i> Processos Encerrados
                                 </a>
                             </li>
+
+                            <li>
+                                <a href="<?php echo BASE_URL; ?>/private/views/calibracao_manutencao/periodicidade.php"
+                                class="<?php echo submenu_ativo(BASE_URL . '/private/views/calibracao_manutencao/periodicidade.php'); ?>">
+                                    <i class="fa-solid fa-calendar-check me-2"></i> Periodicidade
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 <?php endif; ?>
@@ -253,7 +278,7 @@ $isEngenheiro = strpos($tipoUtilizadorNormalizado, 'engenheiro') !== false;
                     </li>
                 <?php endif; ?>
 
-                <?php if (pode_ver('fornecedores')): ?>
+                <?php if (pode_ver('fornecedores') && !$isAdministrador): ?>
                     <li class="nav-item menu-dropdown-hover">
                         <a href="<?php echo BASE_URL; ?>/private/views/fornecedores/lista_fornecedores.php"
                            class="nav-link<?php echo menu_ativo(BASE_URL . '/private/views/fornecedores/'); ?>">

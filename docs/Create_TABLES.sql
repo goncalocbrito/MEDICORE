@@ -1598,3 +1598,109 @@ ALTER TABLE fornecedores DROP COLUMN email;
 -----------------
 
 ALTER TABLE acessorios_equipamento ADD COLUMN data_aquisicao DATE NULL AFTER numero_serie;
+
+ALTER TABLE consumiveis 
+    ADD COLUMN id_equipamento INT NULL AFTER id_consumivel,
+    MODIFY COLUMN id_localizacao INT NULL;
+    
+ALTER TABLE consumiveis DROP COLUMN unidade;
+
+ALTER TABLE acessorios_equipamento
+ADD COLUMN id_fornecedor INT NULL AFTER fabricante;
+
+ALTER TABLE acessorios_equipamento
+ADD CONSTRAINT fk_acessorio_fornecedor
+FOREIGN KEY (id_fornecedor)
+REFERENCES fornecedores(id_fornecedor);
+
+
+ALTER TABLE utilizadores
+    DROP COLUMN numero_mecanografico,
+    DROP COLUMN extensao,
+    DROP COLUMN perfil_acesso,
+    DROP COLUMN data_ativacao,
+    DROP COLUMN validade_acesso,
+    DROP COLUMN departamento,
+    DROP COLUMN funcao,
+    DROP COLUMN superior_hierarquico,
+    DROP COLUMN edificio,
+    DROP COLUMN piso,
+    DROP COLUMN data_admissao,
+    DROP COLUMN observacoes;
+    
+
+--- 23/06/2026 ---
+
+-- =========================================================
+-- Remover tabelas sem uso no projeto
+-- =========================================================
+
+-- Tabela de ligação consumíveis ↔ acessórios (nunca referenciada)
+DROP TABLE IF EXISTS consumiveis_acessorios;
+
+-- Tabela de ligação consumíveis ↔ equipamentos (nunca referenciada;
+-- o projeto usa a coluna directa consumiveis.id_equipamento em vez desta)
+DROP TABLE IF EXISTS consumiveis_equipamentos;
+
+-- Tabela de documentos de fornecedores (nunca referenciada)
+DROP TABLE IF EXISTS documentos_fornecedores;
+
+
+-- =========================================================
+-- Remover coluna sem uso
+-- =========================================================
+
+-- Referência do fabricante nos consumíveis (nunca lida nem escrita)
+ALTER TABLE consumiveis DROP COLUMN referencia_fabricante;
+
+
+UPDATE documentos_equipamentos
+SET isActive = 0
+WHERE id_documento = :id AND id_equipamento = :id_equipamento
+
+
+CREATE TABLE consumiveis_equipamentos (
+    id_consumivel_equipamento INT AUTO_INCREMENT PRIMARY KEY,
+
+    id_consumivel INT NOT NULL,
+    id_equipamento INT NOT NULL,
+
+    necessario_utilizacao TINYINT(1) NOT NULL DEFAULT 1,
+    necessario_calibracao TINYINT(1) NOT NULL DEFAULT 0,
+
+    quantidade_prevista DECIMAL(10,2) NULL,
+
+    observacoes TEXT,
+
+    isActive TINYINT(1) NOT NULL DEFAULT 1,
+
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    atualizado_por VARCHAR(150) NULL,
+
+    FOREIGN KEY (id_consumivel)
+        REFERENCES consumiveis(id_consumivel),
+
+    FOREIGN KEY (id_equipamento)
+        REFERENCES equipamentos(id_equipamento),
+
+    UNIQUE (id_consumivel, id_equipamento)
+);
+
+
+ALTER TABLE calibracoes_equipamento
+ADD COLUMN data_devolucao DATE NULL AFTER data_emissao_relatorio;
+
+ALTER TABLE manutencoes_equipamento
+ADD COLUMN data_devolucao DATE NULL AFTER data_emissao_relatorio;
+
+ALTER TABLE fornecedores
+ADD CONSTRAINT uk_fornecedor_nif UNIQUE (nif);
+
+UPDATE utilizadores 
+SET password_hash = '$2y$10$XglSiUDsUENNtiJ7xzkfsut5t/ryISlDIxoQP81sMmzozOnRzRU5K'
+WHERE username = 'admin';
+
+UPDATE utilizadores 
+SET password_hash = '$2y$10$vArUmO2fsD7AVrzfFFbzsOCucBymnt2whswY0FgCRHt3qxbeqTOZK'
+WHERE username = 'jferreira';

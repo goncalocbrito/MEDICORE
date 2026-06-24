@@ -74,15 +74,19 @@ try {
     ");
 
     $acessorios = $stmtAcessorios->fetchAll();
+
+    // Agrupar acessórios por equipamento para o JS
+    $acessoriosPorEquipamento = [];
+    foreach ($acessorios as $ac) {
+        $acessoriosPorEquipamento[$ac['id_equipamento']][] = $ac;
+    }
 } catch (Throwable $e) {
     $mensagemErro = $e->getMessage();
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $idEquipamento = (int) ($_POST['id_equipamento'] ?? 0);
-    $idAcessorio = trim($_POST['id_acessorio'] ?? '') !== ''
-        ? (int) $_POST['id_acessorio']
-        : null;
+    $idEquipamento   = (int) ($_POST['id_equipamento'] ?? 0);
+    $idsAcessorios   = array_filter(array_map('intval', (array) ($_POST['id_acessorio'] ?? [])));
     $descricaoAvaria = trim($_POST['descricao_avaria'] ?? '');
 
     if ($idEquipamento <= 0) {
@@ -91,49 +95,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mensagemErro = 'Indique o motivo/descrição da avaria.';
     } else {
         try {
-            $codigoAvaria = gerar_codigo_avaria($pdo);
+            $pdo->beginTransaction();
 
-            $stmt = $pdo->prepare("
+            $stmtInsert = $pdo->prepare("
                 INSERT INTO avarias_reportadas (
-                    codigo_avaria,
-                    id_equipamento,
-                    id_acessorio,
-                    id_utilizador_reportou,
-                    descricao_avaria,
-                    estado,
-                    data_reporte,
-                    isActive
+                    codigo_avaria, id_equipamento, id_acessorio,
+                    id_utilizador_reportou, descricao_avaria,
+                    estado, data_reporte, isActive
                 ) VALUES (
-                    :codigo_avaria,
-                    :id_equipamento,
-                    :id_acessorio,
-                    :id_utilizador_reportou,
-                    :descricao_avaria,
-                    'reportada',
-                    NOW(),
-                    1
+                    :codigo_avaria, :id_equipamento, :id_acessorio,
+                    :id_utilizador_reportou, :descricao_avaria,
+                    'reportada', NOW(), 1
                 )
             ");
 
-            $stmt->execute([
-                ':codigo_avaria' => $codigoAvaria,
-                ':id_equipamento' => $idEquipamento,
-                ':id_acessorio' => $idAcessorio,
-                ':id_utilizador_reportou' => $_SESSION['id_utilizador'],
-                ':descricao_avaria' => $descricaoAvaria
-            ]);
-
-            if ($idAcessorio !== null) {
-                $stmtEstado = $pdo->prepare("UPDATE acessorios_equipamento SET estado = 'avariado' WHERE id_acessorio = :id");
-                $stmtEstado->execute([':id' => $idAcessorio]);
+            if (empty($idsAcessorios)) {
+                // Avaria no equipamento principal
+                $stmtInsert->execute([
+                    ':codigo_avaria'          => gerar_codigo_avaria($pdo),
+                    ':id_equipamento'         => $idEquipamento,
+                    ':id_acessorio'           => null,
+                    ':id_utilizador_reportou' => $_SESSION['id_utilizador'],
+                    ':descricao_avaria'       => $descricaoAvaria,
+                ]);
+                $pdo->prepare("UPDATE equipamentos SET estado = 'avariado' WHERE id_equipamento = :id")
+                    ->execute([':id' => $idEquipamento]);
             } else {
-                $stmtEstado = $pdo->prepare("UPDATE equipamentos SET estado = 'avariado' WHERE id_equipamento = :id");
-                $stmtEstado->execute([':id' => $idEquipamento]);
+                // Uma avaria por acessório selecionado
+                $stmtEstadoAc = $pdo->prepare("UPDATE acessorios_equipamento SET estado = 'avariado' WHERE id_acessorio = :id");
+                foreach ($idsAcessorios as $idAc) {
+                    $stmtInsert->execute([
+                        ':codigo_avaria'          => gerar_codigo_avaria($pdo),
+                        ':id_equipamento'         => $idEquipamento,
+                        ':id_acessorio'           => $idAc,
+                        ':id_utilizador_reportou' => $_SESSION['id_utilizador'],
+                        ':descricao_avaria'       => $descricaoAvaria,
+                    ]);
+                    $stmtEstadoAc->execute([':id' => $idAc]);
+                }
             }
 
+            $pdo->commit();
             header('Location: lista_avarias.php?criada=1');
             exit;
         } catch (Throwable $e) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
             $mensagemErro = $e->getMessage();
         }
     }
@@ -158,6 +164,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 <i class="fa-solid fa-arrow-left me-2"></i>
                 Voltar à Lista
             </a>
+
 
             <button type="submit" form="formNovaAvaria" class="btn btn-guardar">
                 <i class="fa-solid fa-floppy-disk me-2"></i>
@@ -193,8 +200,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                        data-hidden-target="idEquipamentoAvaria"
                                        data-lista-target="listaEquipamentosAvaria"
                                        data-localizacao-target="localizacaoAtualAvaria"
-                                       data-filtra-lista="listaAcessoriosAvaria"
-                                       data-filtra-campo="equipamento"
+                                       data-filtra-acessorios-avaria="listaAcessoriosAvaria"
                                        placeholder="Pesquisar e selecionar equipamento"
                                        autocomplete="off"
                                        required>
@@ -226,36 +232,32 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="col-md-6">
-                            <label for="pesquisaAcessorioAvaria" class="form-label">Acessório associado</label>
+                            <label class="form-label">Acessórios avariados</label>
 
-                            <input type="text"
-                                   class="form-control pesquisa-checkbox-custom"
-                                   id="pesquisaAcessorioAvaria"
-                                   data-lista-target="listaAcessoriosAvaria"
-                                   placeholder="Pesquisar acessório do equipamento"
-                                   autocomplete="off">
+                            <div id="avisoSelecionarEquipamentoAvaria" class="text-muted" style="font-size:0.9rem; margin-top:6px;">
+                                Selecione primeiro um equipamento.
+                            </div>
+                            <div id="avisoSemAcessoriosAvaria" class="text-muted d-none" style="font-size:0.9rem; margin-top:6px;">
+                                Este equipamento não tem acessórios.
+                            </div>
 
-                            <div class="lista-checkbox-custom mt-2" id="listaAcessoriosAvaria">
+                            <div class="lista-selecao-equipamento d-none" id="listaAcessoriosAvaria">
                                 <?php foreach ($acessorios as $acessorio): ?>
-                                    <div class="opcao-checkbox-custom"
+                                    <div class="opcao-selecao-equipamento"
                                          data-equipamento="<?php echo h($acessorio['id_equipamento']); ?>"
-                                         data-texto="<?php echo h($acessorio['codigo_acessorio'] . ' - ' . $acessorio['designacao']); ?>"
-                                         data-visivel-filtro-pai="0"
-                                         hidden>
-                                        <label>
-                                            <input type="radio"
-                                                   name="id_acessorio"
+                                         style="display:none;">
+                                        <label class="selecao-equipamento-label">
+                                            <input type="checkbox"
+                                                   name="id_acessorio[]"
                                                    value="<?php echo h($acessorio['id_acessorio']); ?>">
-                                            <span>
-                                                <?php echo h($acessorio['codigo_acessorio'] . ' - ' . $acessorio['designacao']); ?>
-                                            </span>
+                                            <?php echo h($acessorio['codigo_acessorio'] . ' - ' . $acessorio['designacao']); ?>
                                         </label>
                                     </div>
                                 <?php endforeach; ?>
                             </div>
 
-                            <small class="text-muted">
-                                Deixe vazio se a avaria for do equipamento principal.
+                            <small class="text-muted mt-1 d-block">
+                                Deixe sem seleção se a avaria for do equipamento principal.
                             </small>
                         </div>
 
@@ -277,5 +279,53 @@ require_once __DIR__ . '/../../includes/sidebar.php';
 
     </form>
 </main>
+
+<script>
+(function () {
+    const listaAcessorios    = document.getElementById('listaAcessoriosAvaria');
+    const avisoSelecionar    = document.getElementById('avisoSelecionarEquipamentoAvaria');
+    const avisoSemAcessorios = document.getElementById('avisoSemAcessoriosAvaria');
+
+    function filtrarAcessoriosPorEquipamento(idEquipamento) {
+        const itens = listaAcessorios ? listaAcessorios.querySelectorAll('.opcao-selecao-equipamento') : [];
+
+        itens.forEach(function (item) {
+            var cb = item.querySelector('input[type="checkbox"]');
+            if (cb) cb.checked = false;
+            item.style.display = 'none';
+        });
+
+        if (!idEquipamento) {
+            if (listaAcessorios) listaAcessorios.classList.add('d-none');
+            if (avisoSelecionar) avisoSelecionar.classList.remove('d-none');
+            if (avisoSemAcessorios) avisoSemAcessorios.classList.add('d-none');
+            return;
+        }
+
+        if (avisoSelecionar) avisoSelecionar.classList.add('d-none');
+
+        var visiveis = 0;
+        itens.forEach(function (item) {
+            if (item.getAttribute('data-equipamento') === String(idEquipamento)) {
+                item.style.display = '';
+                visiveis++;
+            }
+        });
+
+        if (listaAcessorios) listaAcessorios.classList.toggle('d-none', visiveis === 0);
+        if (avisoSemAcessorios) avisoSemAcessorios.classList.toggle('d-none', visiveis > 0);
+    }
+
+    // Interceta o click nas opções do campo de pesquisa de equipamento
+    document.addEventListener('click', function (e) {
+        var opcao = e.target.closest('#listaEquipamentosAvaria .opcao-registo-custom');
+        if (!opcao) return;
+        setTimeout(function () {
+            var hidden = document.getElementById('idEquipamentoAvaria');
+            filtrarAcessoriosPorEquipamento(hidden ? hidden.value : '');
+        }, 0);
+    });
+})();
+</script>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

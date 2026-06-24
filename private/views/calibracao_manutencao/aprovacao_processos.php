@@ -46,7 +46,7 @@ function decimal_ou_null($valor)
 
 $erro = null;
 $sucesso = null;
-$utilizadorAtual = $_SESSION['nome_utilizador'] ?? $_SESSION['username'] ?? 'Administrador';
+$utilizadorAtual = $_SESSION['nome'] ?? $_SESSION['username'] ?? 'Administrador';
 
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -54,8 +54,6 @@ try {
         $idProcesso = (int) ($_POST['id_processo'] ?? 0);
         $decisao = $_POST['decisao'] ?? '';
         $motivoDecisao = trim($_POST['motivo_decisao'] ?? '');
-        $cobertaPorGarantia = (int) ($_POST['coberta_por_garantia'] ?? 0);
-        $custo = null;
 
         if (!in_array($tipoProcesso, ['manutencao', 'calibracao'], true)) {
             throw new Exception('Tipo de processo inválido.');
@@ -73,11 +71,18 @@ try {
             throw new Exception('Indique o motivo da reprovação.');
         }
 
+        // Obter coberta_por_garantia da BD para este processo
+        $tabelaConsulta = $tipoProcesso === 'manutencao' ? 'manutencoes_equipamento' : 'calibracoes_equipamento';
+        $campoIdConsulta = $tipoProcesso === 'manutencao' ? 'id_manutencao' : 'id_calibracao';
+        $stmtGar = $pdo->prepare("SELECT coberta_por_garantia FROM {$tabelaConsulta} WHERE {$campoIdConsulta} = :id AND isActive = 1 LIMIT 1");
+        $stmtGar->execute([':id' => $idProcesso]);
+        $cobertaPorGarantia = (int) ($stmtGar->fetchColumn() ?? 0);
+
+        $custo = null;
         if ($decisao === 'aprovado' && $cobertaPorGarantia === 0) {
             $custo = decimal_ou_null($_POST['custo'] ?? null);
-
             if ($custo === null) {
-                throw new Exception('Indique o custo quando o processo não está coberto por garantia.');
+                throw new Exception('Indique o custo do processo — obrigatório quando não está coberto por garantia.');
             }
         }
 
@@ -103,7 +108,6 @@ try {
                 id_admin_decisao = :id_admin_decisao,
                 data_decisao = NOW(),
                 motivo_decisao = :motivo_decisao,
-                coberta_por_garantia = :coberta_por_garantia,
                 custo = :custo,
                 atualizado_por = :atualizado_por
             WHERE {$campoId} = :id
@@ -116,7 +120,6 @@ try {
             ':decisao_admin' => $decisao,
             ':id_admin_decisao' => $_SESSION['id_utilizador'] ?? null,
             ':motivo_decisao' => $motivoDecisao !== '' ? $motivoDecisao : null,
-            ':coberta_por_garantia' => $cobertaPorGarantia,
             ':custo' => $custo,
             ':atualizado_por' => $utilizadorAtual,
             ':id' => $idProcesso
@@ -143,6 +146,7 @@ try {
             m.data_prevista,
             m.coberta_por_garantia,
             m.custo,
+            m.tipo_execucao,
             e.codigo_equipamento,
             e.designacao AS equipamento,
             f.nome_empresa AS fornecedor
@@ -164,6 +168,7 @@ try {
             c.data_prevista,
             c.coberta_por_garantia,
             c.custo,
+            c.tipo_execucao,
             e.codigo_equipamento,
             e.designacao AS equipamento,
             f.nome_empresa AS fornecedor
@@ -177,6 +182,51 @@ try {
     ");
 
     $processos = $stmtProcessos->fetchAll();
+
+    $stmtParaEncerrar = $pdo->query("
+        SELECT
+            'manutencao' AS tipo_processo,
+            m.id_manutencao AS id_processo,
+            CONCAT('MAN-', YEAR(COALESCE(m.data_abertura, m.criado_em)), '-', LPAD(m.id_manutencao, 4, '0')) AS codigo,
+            CASE
+                WHEN m.tipo_manutencao = 'preventiva' THEN 'Manutenção preventiva'
+                ELSE 'Manutenção corretiva'
+            END AS procedimento,
+            m.estado_processo,
+            m.data_abertura,
+            m.data_prevista,
+            e.codigo_equipamento,
+            e.designacao AS equipamento,
+            f.nome_empresa AS fornecedor
+        FROM manutencoes_equipamento m
+        INNER JOIN equipamentos e ON e.id_equipamento = m.id_equipamento
+        LEFT JOIN fornecedores f ON f.id_fornecedor = m.id_fornecedor_responsavel
+        WHERE m.isActive = 1
+          AND m.estado_processo = 'devolucao_equipamento'
+
+        UNION ALL
+
+        SELECT
+            'calibracao' AS tipo_processo,
+            c.id_calibracao AS id_processo,
+            CONCAT('CAL-', YEAR(COALESCE(c.data_abertura, c.criado_em)), '-', LPAD(c.id_calibracao, 4, '0')) AS codigo,
+            'Calibração' AS procedimento,
+            c.estado_processo,
+            c.data_abertura,
+            c.data_prevista,
+            e.codigo_equipamento,
+            e.designacao AS equipamento,
+            f.nome_empresa AS fornecedor
+        FROM calibracoes_equipamento c
+        INNER JOIN equipamentos e ON e.id_equipamento = c.id_equipamento
+        LEFT JOIN fornecedores f ON f.id_fornecedor = c.id_fornecedor_responsavel
+        WHERE c.isActive = 1
+          AND c.estado_processo = 'devolucao_equipamento'
+
+        ORDER BY data_abertura DESC, codigo DESC
+    ");
+    $processosParaEncerrar = $stmtParaEncerrar->fetchAll();
+
 } catch (Exception $e) {
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
@@ -184,6 +234,7 @@ try {
 
     $erro = $e->getMessage();
     $processos = $processos ?? [];
+    $processosParaEncerrar = $processosParaEncerrar ?? [];
 }
 
 require_once __DIR__ . '/../../includes/header.php';
@@ -276,6 +327,11 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                         </div>
 
                                         <div class="modal-body">
+                                            <div class="alert alert-danger d-none alerta-custo-aprovar" role="alert">
+                                                <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                                                O custo do processo é obrigatório quando não está coberto por garantia.
+                                            </div>
+
                                             <input type="hidden" name="tipo_processo" value="<?php echo h($processo['tipo_processo']); ?>">
                                             <input type="hidden" name="id_processo" value="<?php echo (int) $processo['id_processo']; ?>">
                                             <input type="hidden" name="decisao" value="aprovado">
@@ -286,17 +342,22 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                             </p>
 
                                             <div class="mb-3">
-                                                <label class="form-label">Está coberto por garantia?</label>
-                                                <select name="coberta_por_garantia" class="form-select">
-                                                    <option value="1">Sim</option>
-                                                    <option value="0">Não</option>
-                                                </select>
+                                                <label class="form-label">Coberto por garantia</label>
+                                                <div>
+                                                    <?php if ((int) ($processo['coberta_por_garantia'] ?? 0) === 1): ?>
+                                                        <span class="estado estado-ativo">Sim</span>
+                                                    <?php else: ?>
+                                                        <span class="estado estado-inativo">Não</span>
+                                                    <?php endif; ?>
+                                                </div>
                                             </div>
 
+                                            <?php if ((int) ($processo['coberta_por_garantia'] ?? 0) === 0): ?>
                                             <div class="mb-3">
-                                                <label class="form-label">Custo previsto</label>
-                                                <input type="number" step="0.01" min="0" name="custo" class="form-control" placeholder="Ex: 120.00">
+                                                <label class="form-label">Custo do processo (€) <span class="text-danger">*</span></label>
+                                                <input type="number" step="0.01" min="0" name="custo" class="form-control input-custo-aprovar" placeholder="Ex: 120.00">
                                             </div>
+                                            <?php endif; ?>
 
                                             <div class="mb-3">
                                                 <label class="form-label">Observação</label>
@@ -350,6 +411,73 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 </tbody>
             </table>
         </div>
+
+    <div class="pagina-topo mt-4">
+        <div>
+            <h1>Processos para Encerrar</h1>
+            <p>Processos em fase de devolução do equipamento aguardando encerramento pelo administrador.</p>
+        </div>
+    </div>
+
+    <div class="table-responsive tabela-container">
+        <table id="tabela-processos-encerrar"
+               class="table table-hover align-middle tabela-equipamentos tabela-calibracoes-manutencoes tabela-datatables-medicore">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Processo</th>
+                    <th>Equipamento</th>
+                    <th>Fornecedor</th>
+                    <th>Data prevista</th>
+                    <th class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($processosParaEncerrar as $pe): ?>
+                    <tr>
+                        <td><?php echo h($pe['codigo']); ?></td>
+                        <td><?php echo h($pe['procedimento']); ?></td>
+                        <td>
+                            <?php echo h($pe['codigo_equipamento']); ?> -
+                            <?php echo h($pe['equipamento']); ?>
+                        </td>
+                        <td><?php echo h($pe['fornecedor'] ?: '---'); ?></td>
+                        <td><?php echo h($pe['data_prevista'] ?: '---'); ?></td>
+                        <td class="text-center">
+                            <div class="acoes-operacao">
+                                <a href="detalhe_processo.php?tipo=<?php echo urlencode($pe['tipo_processo']); ?>&id=<?php echo (int) $pe['id_processo']; ?>"
+                                   class="btn-acao-circular btn-acao-ver"
+                                   title="Ver e encerrar processo">
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 </main>
+
+<script>
+document.addEventListener('submit', function (e) {
+    const form = e.target;
+    const modal = form.closest('.modal-content');
+    if (!modal) return;
+
+    const inputCusto = modal.querySelector('.input-custo-aprovar');
+    const alerta     = modal.querySelector('.alerta-custo-aprovar');
+
+    if (!inputCusto || !alerta) return;
+
+    if (!inputCusto.value || parseFloat(inputCusto.value) <= 0) {
+        e.preventDefault();
+        alerta.classList.remove('d-none');
+        inputCusto.focus();
+    } else {
+        alerta.classList.add('d-none');
+    }
+});
+</script>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

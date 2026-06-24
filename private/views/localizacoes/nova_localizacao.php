@@ -1,5 +1,6 @@
 ﻿<?php
 require_once __DIR__ . '/../../includes/funcoes.php';
+require_once __DIR__ . '/../../includes/validacoes.php';
 redirect_if_not_logged();
 
 require_once __DIR__ . '/../../../config/config.php';
@@ -69,15 +70,42 @@ $camposObrigatorios = [
     'observacoes' => []
 ];
 
+$camposObrigatorios['caracteristicas'][] = 'capacidadeEquipamentos';
+
 $labelsCampos = [
-    'departamentoNome' => 'Nome do Departamento / Serviço',
-    'departamentoSigla' => 'Sigla',
-    'edificioLocalizacao' => 'Edifício',
-    'pisoLocalizacao' => 'Piso',
-    'salaLocalizacao' => 'Sala',
-    'estadoLocalizacao' => 'Estado',
-    'tipoEspaco' => 'Tipo de Espaço'
+    'departamentoNome'       => 'Nome do Departamento / Serviço',
+    'departamentoSigla'      => 'Sigla',
+    'edificioLocalizacao'    => 'Edifício',
+    'pisoLocalizacao'        => 'Piso',
+    'salaLocalizacao'        => 'Sala',
+    'estadoLocalizacao'      => 'Estado',
+    'tipoEspaco'             => 'Tipo de Espaço',
+    'capacidadeEquipamentos' => 'Capacidade de Equipamentos',
 ];
+
+function validar_formato_etapa_localizacao(string $chaveSessao, string $etapa): array
+{
+    $dados = $_SESSION[$chaveSessao] ?? [];
+    $erros = [];
+
+    if ($etapa === 'identificacao') {
+        if ($erro = validar_sigla($dados['departamentoSigla'] ?? '')) {
+            $erros[] = $erro;
+        }
+        if ($erro = validar_apenas_letras($dados['edificioLocalizacao'] ?? '', 'Edifício')) {
+            $erros[] = $erro;
+        }
+        $pisoval = trim($dados['pisoLocalizacao'] ?? '');
+        if ($pisoval !== '' && !preg_match('/^-?\d{1,2}$/', $pisoval)) {
+            $erros[] = '"Piso" deve ser um número (positivo ou negativo) com no máximo 2 dígitos. Ex: -1, 0, 2.';
+        }
+        if ($erro = validar_apenas_digitos($dados['salaLocalizacao'] ?? '', 'Sala', 1, 3)) {
+            $erros[] = $erro;
+        }
+    }
+
+    return $erros;
+}
 
 $errosLocalizacao = [];
 
@@ -130,6 +158,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     guardar_etapa_temporaria($chaveSessao, $etapaSubmetida, $camposPorEtapa);
+
+    if (isset($_SESSION[$chaveSessao]['departamentoSigla'])) {
+        $_SESSION[$chaveSessao]['departamentoSigla'] = strtoupper(trim($_SESSION[$chaveSessao]['departamentoSigla']));
+    }
+
     $_SESSION[$chaveSessao]['codigoLocalizacao'] = gerar_codigo_localizacao_temporario($chaveSessao);
 
     if ($acaoEtapa === 'anterior') {
@@ -154,7 +187,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         for ($i = 0; $i < $indiceDestino; $i++) {
             $etapaValidar = $etapas[$i];
-            $errosEtapa = validar_etapa_temporaria($chaveSessao, $etapaValidar, $camposObrigatorios, $labelsCampos);
+            $errosEtapa = array_merge(
+                validar_etapa_temporaria($chaveSessao, $etapaValidar, $camposObrigatorios, $labelsCampos),
+                validar_formato_etapa_localizacao($chaveSessao, $etapaValidar)
+            );
 
             if (!empty($errosEtapa)) {
                 $errosLocalizacao = $errosEtapa;
@@ -170,7 +206,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errosLocalizacao)) {
-        $errosLocalizacao = validar_etapa_temporaria($chaveSessao, $etapaSubmetida, $camposObrigatorios, $labelsCampos);
+        $errosLocalizacao = array_merge(
+            validar_etapa_temporaria($chaveSessao, $etapaSubmetida, $camposObrigatorios, $labelsCampos),
+            validar_formato_etapa_localizacao($chaveSessao, $etapaSubmetida)
+        );
 
         if (!empty($errosLocalizacao)) {
             $etapaAtual = $etapaSubmetida;
@@ -186,13 +225,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errosLocalizacao)) {
         foreach ($etapas as $etapa) {
-            $errosEtapa = validar_etapa_temporaria($chaveSessao, $etapa, $camposObrigatorios, $labelsCampos);
+            $errosEtapa = array_merge(
+                validar_etapa_temporaria($chaveSessao, $etapa, $camposObrigatorios, $labelsCampos),
+                validar_formato_etapa_localizacao($chaveSessao, $etapa)
+            );
 
             if (!empty($errosEtapa)) {
                 $errosLocalizacao = $errosEtapa;
                 $etapaAtual = $etapa;
                 break;
             }
+        }
+    }
+
+    if (empty($errosLocalizacao)) {
+        $dadosLocalizacao = $_SESSION[$chaveSessao] ?? [];
+        $codigo = gerar_codigo_localizacao_temporario($chaveSessao);
+
+        $stmtDup = $pdo->prepare("SELECT COUNT(*) FROM localizacoes WHERE codigo = :codigo AND isActive = 1");
+        $stmtDup->execute([':codigo' => $codigo]);
+        if ((int) $stmtDup->fetchColumn() > 0) {
+            $errosLocalizacao[] = 'Já existe uma localização com o código "' . htmlspecialchars($codigo) . '". Altere a sigla, o piso ou a sala para gerar um código único.';
+            $etapaAtual = 'identificacao';
         }
     }
 
@@ -246,7 +300,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
 
             unset($_SESSION[$chaveSessao]);
-            header('Location: lista_localizacoes.php');
+            header('Location: lista_localizacoes.php?criado=1');
             exit;
         } catch (PDOException $e) {
             if ($e->getCode() === '23000') {
@@ -276,6 +330,10 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             <a href="lista_localizacoes.php" class="btn btn-cancelar">
                 <i class="fa-solid fa-xmark me-2"></i> Cancelar
             </a>
+
+            <button type="button" class="btn btn-dados-teste" onclick="dadosTeste_novaLocalizacao()">
+                <i class="fa-solid fa-flask me-2"></i> Dados de Teste
+            </button>
 
             <button type="submit"
                     class="btn btn-limpar"
@@ -345,17 +403,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
             </div>
 
             <?php if (!empty($errosLocalizacao)): ?>
-                <div class="form-alerta-erros" role="alert">
-                    <strong>
-                        <i class="fa-solid fa-triangle-exclamation me-2"></i>
-                        Não é possível avançar para essa etapa.
-                    </strong>
-
-                    <p class="mb-2 mt-2">
-                        Preencha os campos obrigatórios antes de continuar.
-                    </p>
-
-                    <ul>
+                <div class="alert alert-danger" role="alert">
+                    <strong><i class="fa-solid fa-triangle-exclamation me-2"></i> Erro</strong>
+                    <ul class="mb-0 mt-1">
                         <?php foreach ($errosLocalizacao as $erro): ?>
                             <li><?php echo htmlspecialchars($erro); ?></li>
                         <?php endforeach; ?>
@@ -433,14 +483,16 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </div>
 
                             <div class="col-md-2">
-                                <label for="departamentoSigla" class="form-label">Sigla *</label>
+                                <label for="departamentoSigla" class="form-label">Sigla * <small class="text-muted">(máx. 3 letras)</small></label>
                                 <input type="text"
                                        class="form-control"
                                        id="departamentoSigla"
                                        name="departamentoSigla"
-                                       value="<?php echo valor_temporario($chaveSessao, 'departamentoSigla'); ?>"
+                                       value="<?php echo strtoupper(valor_temporario($chaveSessao, 'departamentoSigla')); ?>"
                                        placeholder="Ex: UCI"
-                                       maxlength="20"
+                                       maxlength="3"
+                                       pattern="[A-Za-z]{1,3}"
+                                       oninput="this.value=this.value.toUpperCase().replace(/[^A-Za-z]/g,'')"
                                        required>
                             </div>
 
@@ -457,7 +509,7 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </div>
 
                             <div class="col-md-4">
-                                <label for="edificioLocalizacao" class="form-label">Edifício *</label>
+                                <label for="edificioLocalizacao" class="form-label">Edifício * <small class="text-muted">(só letras)</small></label>
                                 <input type="text"
                                        class="form-control"
                                        id="edificioLocalizacao"
@@ -468,24 +520,29 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </div>
 
                             <div class="col-md-2">
-                                <label for="pisoLocalizacao" class="form-label">Piso *</label>
+                                <label for="pisoLocalizacao" class="form-label">Piso * <small class="text-muted">(ex: -1, 0, 2)</small></label>
                                 <input type="text"
                                        class="form-control"
                                        id="pisoLocalizacao"
                                        name="pisoLocalizacao"
                                        value="<?php echo valor_temporario($chaveSessao, 'pisoLocalizacao'); ?>"
-                                       placeholder="Ex: 2"
+                                       placeholder="Ex: -1, 0, 2"
+                                       maxlength="3"
+                                       oninput="this.value=this.value.replace(/[^0-9-]/g,'').replace(/(?!^)-/g,'')"
                                        required>
                             </div>
 
                             <div class="col-md-3">
-                                <label for="salaLocalizacao" class="form-label">Sala *</label>
+                                <label for="salaLocalizacao" class="form-label">Sala * <small class="text-muted">(máx. 3 dígitos)</small></label>
                                 <input type="text"
                                        class="form-control"
                                        id="salaLocalizacao"
                                        name="salaLocalizacao"
                                        value="<?php echo valor_temporario($chaveSessao, 'salaLocalizacao'); ?>"
                                        placeholder="Ex: 201"
+                                       maxlength="3"
+                                       pattern="\d{1,3}"
+                                       oninput="this.value=this.value.replace(/\D/g,'')"
                                        required>
                             </div>
 
@@ -537,14 +594,15 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                             </div>
 
                             <div class="col-md-4">
-                                <label for="capacidadeEquipamentos" class="form-label">Capacidade de Equipamentos</label>
+                                <label for="capacidadeEquipamentos" class="form-label">Capacidade de Equipamentos *</label>
                                 <input type="number"
                                        class="form-control"
                                        id="capacidadeEquipamentos"
                                        name="capacidadeEquipamentos"
                                        min="0"
                                        value="<?php echo valor_temporario($chaveSessao, 'capacidadeEquipamentos'); ?>"
-                                       placeholder="Ex: 10">
+                                       placeholder="Ex: 10"
+                                       required>
                             </div>
 
                             <div class="col-md-4">

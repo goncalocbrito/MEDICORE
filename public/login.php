@@ -6,6 +6,7 @@
    ========================================================= */
 
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../private/includes/funcoes.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -16,7 +17,7 @@ if (!headers_sent()) {
 }
 
 if (!empty($_SESSION['autenticado']) && !empty($_SESSION['utilizador'])) {
-    header('Location: ' . BASE_URL . '/private/home.php');
+    header('Location: ' . rota_inicial_utilizador());
     exit;
 }
 
@@ -74,10 +75,10 @@ if (!empty($_SESSION['server_error'])) {
 
             <form name="formulario" id="loginForm" action="<?php echo BASE_URL; ?>/private/processa_login.php" method="post">
                 <div class="form-group">
-                    <label for="email">Email / Utilizador</label>
+                    <label for="email">Utilizador</label>
                     <div class="input-wrapper">
                         <i class="fa-solid fa-user"></i>
-                        <input type="text" id="email" name="text_username" placeholder="Ex: engenheiro@medicore.pt" required>
+                        <input type="text" id="email" name="text_username" placeholder="Ex: engenheiro" required>
                     </div>
                 </div>
 

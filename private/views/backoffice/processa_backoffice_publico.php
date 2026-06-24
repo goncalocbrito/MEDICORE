@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../includes/funcoes.php';
 redirect_if_not_logged();
-require_once __DIR__ . '/../../../../config/config.php';
+require_once __DIR__ . '/../../../config/config.php';
 
 // Só aceita POST com a ação correta
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || ($_POST['acao'] ?? '') !== 'atualizar_pagina_publica') {
@@ -20,7 +20,7 @@ $pdo = new PDO(
 );
 
 // Pasta onde ficam as imagens da página pública
-$pasta_img = __DIR__ . '/../../../../public/assets/img/';
+$pasta_img = __DIR__ . '/../../../public/assets/img/';
 
 // ---------------------------------------------------------
 // Função auxiliar: mover upload para pasta pública
@@ -221,9 +221,10 @@ try {
     exit;
 
 } catch (Throwable $e) {
-    $pdo->rollBack();
-    // Em produção não expor $e->getMessage(); aqui fica para desenvolvimento
-    error_log('[backoffice] Erro ao guardar: ' . $e->getMessage());
-    header('Location: backoffice.php?erro=1');
+    if (isset($pdo) && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    error_log('[backoffice] Erro ao guardar: ' . $e->getMessage() . ' em ' . $e->getFile() . ':' . $e->getLine());
+    header('Location: backoffice.php?erro=' . urlencode($e->getMessage()));
     exit;
 }

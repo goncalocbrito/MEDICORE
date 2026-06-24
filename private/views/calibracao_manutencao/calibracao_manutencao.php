@@ -288,6 +288,7 @@ $acessorios = [];
 $consumiveis = [];
 $fornecedores = [];
 $idsEquipamentosComProcessoAtivo = [];
+$garantiasPorEquipamento = [];
 $avariaOrigem = null;
 $idAvariaOrigem = 0;
 
@@ -355,7 +356,7 @@ try {
             $idFornecedor = !empty($_POST['idFornecedorResponsavel']) ? (int) $_POST['idFornecedorResponsavel'] : null;
             $tecnicoInterno = valor_ou_null($_POST['tecnicoInterno'] ?? null);
             $dataPrevista = data_ou_null($_POST['dataPrevista'] ?? null);
-            $cobertaPorGarantia = (int) ($_POST['cobertaPorGarantia'] ?? 0);
+            $cobertaPorGarantia = 0; // calculado a partir da BD após validação
             $custo = null;
             $observacoes = valor_ou_null($_POST['observacoesProcesso'] ?? null);
 
@@ -410,6 +411,25 @@ try {
             }
 
             if (empty($erros_formulario)) {
+            // Calcular coberta_por_garantia a partir da BD
+            if ($tipoExecucao !== 'interna' && $idEquipamento > 0 && !empty($dataPrevista)) {
+                $stmtGar = $pdo->prepare("
+                    SELECT data_inicio_garantia, data_fim_garantia
+                    FROM equipamentos_fornecedores
+                    WHERE id_equipamento = :id AND isActive = 1
+                    LIMIT 1
+                ");
+                $stmtGar->execute([':id' => $idEquipamento]);
+                $gar = $stmtGar->fetch();
+                if ($gar
+                    && !empty($gar['data_inicio_garantia'])
+                    && !empty($gar['data_fim_garantia'])
+                    && $dataPrevista >= $gar['data_inicio_garantia']
+                    && $dataPrevista <= $gar['data_fim_garantia']) {
+                    $cobertaPorGarantia = 1;
+                }
+            }
+
             $pdo->beginTransaction();
 
             $estadoInicial = 'aguarda_decisao';
@@ -766,10 +786,14 @@ try {
     $acessorios = $stmtAcessorios->fetchAll();
 
     $stmtConsumiveis = $pdo->query("
-        SELECT id_consumivel, codigo_consumivel, nome, unidade, stock_atual
-        FROM consumiveis
-        WHERE isActive = 1
-        ORDER BY nome ASC
+        SELECT c.id_consumivel, c.codigo_consumivel, c.nome, c.stock_atual, ce.id_equipamento
+        FROM consumiveis c
+        INNER JOIN consumiveis_equipamentos ce
+            ON ce.id_consumivel = c.id_consumivel AND ce.isActive = 1
+        INNER JOIN equipamentos e
+            ON e.id_equipamento = ce.id_equipamento AND e.isActive = 1
+        WHERE c.isActive = 1
+        ORDER BY c.nome ASC
     ");
     $consumiveis = $stmtConsumiveis->fetchAll();
 
@@ -798,6 +822,20 @@ try {
         ORDER BY nome ASC
     ");
     $engenheiros = $stmtEngenheiros->fetchAll();
+
+    $stmtGarantias = $pdo->query("
+        SELECT id_equipamento, data_inicio_garantia, data_fim_garantia
+        FROM equipamentos_fornecedores
+        WHERE isActive = 1
+    ");
+    foreach ($stmtGarantias->fetchAll() as $g) {
+        if (!isset($garantiasPorEquipamento[$g['id_equipamento']])) {
+            $garantiasPorEquipamento[$g['id_equipamento']] = [
+                'inicio' => $g['data_inicio_garantia'] ?? '',
+                'fim'    => $g['data_fim_garantia'] ?? ''
+            ];
+        }
+    }
 
     $sqlManutencoes = "
         SELECT
@@ -1039,8 +1077,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                                     id="pesquisaEquipamentoProcesso"
                                     data-hidden-target="idEquipamento"
                                     data-lista-target="listaEquipamentosProcesso"
-                                    data-filtra-lista="listaAcessoriosProcesso"
-                                    data-filtra-campo="equipamento"
                                     placeholder="Pesquisar e selecionar equipamento"
                                     autocomplete="off"
                                     value="<?php echo $avariaOrigem ? h($avariaOrigem['codigo_equipamento'] . ' - ' . $avariaOrigem['equipamento_nome']) : ''; ?>"
@@ -1068,26 +1104,23 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="col-12">
-                            <label for="pesquisaAcessoriosProcesso" class="form-label">Acessórios associados</label>
-                            <input type="text"
-                                class="form-control pesquisa-checkbox-custom"
-                                id="pesquisaAcessoriosProcesso"
-                                data-lista-target="listaAcessoriosProcesso"
-                                placeholder="Pesquisar acessórios do equipamento"
-                                autocomplete="off">
-                            <div class="lista-checkbox-custom mt-2" id="listaAcessoriosProcesso">
+                            <label class="form-label">Acessórios envolvidos</label>
+                            <div id="placeholderAcessoriosProcesso" class="texto-ajuda-form mt-1">
+                                <i class="fa-solid fa-circle-info me-1"></i> Selecione um equipamento para ver os acessórios associados.
+                            </div>
+                            <div id="semAcessoriosProcesso" class="texto-ajuda-form mt-1 d-none">
+                                Este equipamento não tem acessórios associados.
+                            </div>
+                            <div class="lista-selecao-equipamento d-none" id="listaAcessoriosProcesso">
                                 <?php foreach ($acessorios as $acessorio): ?>
-                                    <div class="opcao-checkbox-custom"
-                                        data-equipamento="<?php echo h($acessorio['id_equipamento']); ?>"
-                                        data-texto="<?php echo h($acessorio['codigo_acessorio'] . ' ' . $acessorio['designacao']); ?>">
-                                        <label>
+                                    <div class="opcao-selecao-equipamento"
+                                        data-equipamento="<?php echo h($acessorio['id_equipamento']); ?>">
+                                        <label class="selecao-equipamento-label">
                                             <input type="checkbox"
                                                 name="idsAcessorios[]"
                                                 value="<?php echo h($acessorio['id_acessorio']); ?>"
                                                 <?php echo ($avariaOrigem && (int) $avariaOrigem['id_acessorio'] === (int) $acessorio['id_acessorio']) ? 'checked' : ''; ?>>
-                                            <span>
-                                                <?php echo h($acessorio['codigo_acessorio'] . ' - ' . $acessorio['designacao']); ?>
-                                            </span>
+                                            <span><?php echo h($acessorio['codigo_acessorio'] . ' — ' . $acessorio['designacao']); ?></span>
                                         </label>
                                     </div>
                                 <?php endforeach; ?>
@@ -1095,29 +1128,31 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="col-12">
-                            <label for="pesquisaConsumiveisProcesso" class="form-label">Consumíveis utilizados</label>
-                            <input type="text"
-                                class="form-control pesquisa-checkbox-custom"
-                                id="pesquisaConsumiveisProcesso"
-                                data-lista-target="listaConsumiveisProcesso"
-                                placeholder="Pesquisar consumíveis"
-                                autocomplete="off">
-                            <div class="lista-checkbox-custom mt-2" id="listaConsumiveisProcesso">
+                            <label class="form-label">Consumíveis utilizados</label>
+                            <div id="placeholderConsumiveisProcesso" class="texto-ajuda-form mt-1">
+                                <i class="fa-solid fa-circle-info me-1"></i> Selecione um equipamento para ver os consumíveis associados.
+                            </div>
+                            <div id="semConsumiveisProcesso" class="texto-ajuda-form mt-1 d-none">
+                                Este equipamento não tem consumíveis associados.
+                            </div>
+                            <div class="lista-selecao-equipamento d-none" id="listaConsumiveisProcesso">
                                 <?php foreach ($consumiveis as $consumivel): ?>
-                                    <div class="opcao-checkbox-custom"
-                                        data-texto="<?php echo h($consumivel['codigo_consumivel'] . ' ' . $consumivel['nome']); ?>">
-                                        <label>
+                                    <div class="opcao-selecao-equipamento"
+                                        data-equipamento="<?php echo h($consumivel['id_equipamento']); ?>">
+                                        <label class="selecao-equipamento-label">
                                             <input type="checkbox"
                                                 name="idsConsumiveis[]"
                                                 value="<?php echo h($consumivel['id_consumivel']); ?>">
-                                            <span>
-                                                <?php echo h($consumivel['codigo_consumivel'] . ' - ' . $consumivel['nome']); ?>
+                                            <span><?php echo h($consumivel['codigo_consumivel'] . ' — ' . $consumivel['nome']); ?>
+                                                <?php if ($consumivel['stock_atual'] !== null): ?>
+                                                    <small class="text-muted">(stock: <?php echo h($consumivel['stock_atual']); ?>)</small>
+                                                <?php endif; ?>
                                             </span>
                                         </label>
                                         <input type="number"
                                             name="quantidadeConsumivel[<?php echo h($consumivel['id_consumivel']); ?>]"
-                                            class="form-control form-control-sm"
-                                            min="0"
+                                            class="form-control form-control-sm selecao-equip-qtd"
+                                            min="0.01"
                                             step="0.01"
                                             placeholder="Qtd.">
                                     </div>
@@ -1187,11 +1222,12 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         </div>
 
                         <div class="col-md-4" id="campoCobertaGarantiaProcesso">
-                            <label for="cobertaPorGarantia" class="form-label">Coberta por garantia?</label>
-                            <select class="form-select" id="cobertaPorGarantia" name="cobertaPorGarantia">
-                                <option value="0">Não</option>
-                                <option value="1">Sim</option>
-                            </select>
+                            <label class="form-label">Coberta por garantia?</label>
+                            <input type="hidden" id="cobertaPorGarantia" name="cobertaPorGarantia" value="0">
+                            <div class="campo-visualizacao" id="garantiaBadge">
+                                <span class="estado estado-inativo">Indeterminado</span>
+                            </div>
+                            <small class="texto-ajuda-form">Calculado automaticamente com base na data prevista e garantia do equipamento.</small>
                         </div>
 
                         <div class="col-12">
@@ -1216,6 +1252,9 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                         <i class="fa-solid fa-xmark me-2"></i>
                         Cancelar
                     </button>
+                    <button type="button" class="btn btn-dados-teste" onclick="dadosTeste_novoProcesso()">
+                        <i class="fa-solid fa-flask me-2"></i> Dados de Teste
+                    </button>
                     <button type="submit" class="btn btn-adicionar">
                         <i class="fa-solid fa-floppy-disk me-2"></i>
                         Abrir Processo
@@ -1225,6 +1264,118 @@ require_once __DIR__ . '/../../includes/sidebar.php';
         </div>
     </div>
 </div>
+
+<script>
+(function () {
+    var garantias = <?php echo json_encode($garantiasPorEquipamento); ?>;
+
+    function atualizarGarantia() {
+        var idEquip  = (document.getElementById('idEquipamento') || {}).value || '';
+        var dataPrev = (document.getElementById('dataPrevista') || {}).value || '';
+        var hidden   = document.getElementById('cobertaPorGarantia');
+        var badge    = document.getElementById('garantiaBadge');
+        var tipoExec = (document.getElementById('tipoExecucao') || {}).value || 'externa';
+
+        if (!hidden || !badge) return;
+
+        if (tipoExec === 'interna') {
+            hidden.value = '0';
+            badge.innerHTML = '<span class="estado estado-inativo">Não aplicável (interno)</span>';
+            return;
+        }
+
+        if (!idEquip || !dataPrev) {
+            hidden.value = '0';
+            badge.innerHTML = '<span class="estado estado-inativo">Indeterminado</span>';
+            return;
+        }
+
+        var g = garantias[idEquip];
+        var emGarantia = g && g.inicio && g.fim && dataPrev >= g.inicio && dataPrev <= g.fim;
+
+        hidden.value = emGarantia ? '1' : '0';
+        badge.innerHTML = emGarantia
+            ? '<span class="estado estado-ativo">Sim</span>'
+            : '<span class="estado estado-inativo">Não</span>';
+    }
+
+    // Filtrar acessórios e consumíveis pelo equipamento selecionado
+    function filtrarItensPorEquipamento(idEquipamento) {
+        var pares = [
+            {
+                lista: document.getElementById('listaAcessoriosProcesso'),
+                placeholder: document.getElementById('placeholderAcessoriosProcesso'),
+                semItens: document.getElementById('semAcessoriosProcesso')
+            },
+            {
+                lista: document.getElementById('listaConsumiveisProcesso'),
+                placeholder: document.getElementById('placeholderConsumiveisProcesso'),
+                semItens: document.getElementById('semConsumiveisProcesso')
+            }
+        ];
+
+        pares.forEach(function (par) {
+            if (!par.lista) return;
+            var itens = Array.from(par.lista.querySelectorAll('.opcao-selecao-equipamento'));
+
+            if (!idEquipamento) {
+                par.lista.classList.add('d-none');
+                if (par.placeholder) par.placeholder.classList.remove('d-none');
+                if (par.semItens) par.semItens.classList.add('d-none');
+                itens.forEach(function (item) {
+                    var cb = item.querySelector('input[type="checkbox"]');
+                    if (cb) cb.checked = false;
+                });
+                return;
+            }
+
+            if (par.placeholder) par.placeholder.classList.add('d-none');
+
+            var algumVisivel = false;
+            itens.forEach(function (item) {
+                var pertence = item.dataset.equipamento === String(idEquipamento);
+                item.style.display = pertence ? '' : 'none';
+                if (!pertence) {
+                    var cb = item.querySelector('input[type="checkbox"]');
+                    if (cb) cb.checked = false;
+                    var qtd = item.querySelector('.selecao-equip-qtd');
+                    if (qtd) qtd.value = '';
+                } else {
+                    algumVisivel = true;
+                }
+            });
+
+            par.lista.classList.toggle('d-none', !algumVisivel);
+            if (par.semItens) par.semItens.classList.toggle('d-none', algumVisivel);
+        });
+    }
+
+    var listaEquip = document.getElementById('listaEquipamentosProcesso');
+    if (listaEquip) {
+        listaEquip.addEventListener('click', function (e) {
+            if (e.target.closest('.opcao-registo-custom')) {
+                setTimeout(function () {
+                    var idEquip = (document.getElementById('idEquipamento') || {}).value || '';
+                    filtrarItensPorEquipamento(idEquip);
+                    atualizarGarantia();
+                }, 30);
+            }
+        });
+    }
+
+    // Se avaria de origem já tem equipamento, filtrar imediatamente
+    (function () {
+        var idEquip = (document.getElementById('idEquipamento') || {}).value || '';
+        if (idEquip) filtrarItensPorEquipamento(idEquip);
+    })();
+
+    var dataPrevEl = document.getElementById('dataPrevista');
+    if (dataPrevEl) dataPrevEl.addEventListener('change', atualizarGarantia);
+
+    var tipoExecEl = document.getElementById('tipoExecucao');
+    if (tipoExecEl) tipoExecEl.addEventListener('change', atualizarGarantia);
+})();
+</script>
 
 <?php
 require_once __DIR__ . '/../../includes/footer.php';
