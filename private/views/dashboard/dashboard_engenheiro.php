@@ -540,52 +540,6 @@ require_once __DIR__ . '/../../includes/sidebar.php';
                 </div>
             </div>
 
-            <!-- Consumíveis com stock baixo -->
-            <div class="tabela-container flex-fill">
-                <h5 class="subtitulo-bloco-form mb-1">
-                    <i class="fa-solid fa-box-open me-2"></i>Consumíveis com Stock Baixo
-                </h5>
-                <p class="texto-ajuda-form mb-3">Stock atual igual ou inferior ao mínimo definido.</p>
-                <?php if (empty($consumiveisBaixoStock)): ?>
-                    <p class="text-center text-muted py-3">
-                        <i class="fa-solid fa-check-circle me-1" style="color:#0d9e7e"></i>
-                        Todos os consumíveis têm stock suficiente.
-                    </p>
-                <?php else: ?>
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle tabela-dashboard mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Consumível</th>
-                                    <th>Equipamento</th>
-                                    <th class="text-center">Stock</th>
-                                    <th class="text-center">Mínimo</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($consumiveisBaixoStock as $c): ?>
-                                    <tr>
-                                        <td>
-                                            <strong><?php echo h($c['codigo_consumivel']); ?></strong><br>
-                                            <small class="text-muted"><?php echo h($c['nome']); ?></small>
-                                        </td>
-                                        <td>
-                                            <small><?php echo h($c['codigo_equipamento'] . ' · ' . $c['departamento_nome']); ?></small>
-                                        </td>
-                                        <td class="text-center">
-                                            <span class="estado <?php echo (int)$c['stock_atual'] === 0 ? 'estado-avariado' : 'estado-manutencao'; ?>">
-                                                <?php echo h((int)$c['stock_atual']); ?>
-                                            </span>
-                                        </td>
-                                        <td class="text-center text-muted"><?php echo h((int)$c['stock_minimo']); ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                <?php endif; ?>
-            </div>
-
         </div>
     </div>
 

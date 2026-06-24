@@ -3,10 +3,63 @@
 ================================================================================
 
 NOME DO PROJETO   : MEDICORE
-NOME DO ESTUDANTE : [NOME DO ESTUDANTE]
+NOME DO ESTUDANTE : Gonçalo Alexandre Camacho Brito
 NÚMERO DE ALUNO   : 1230404
 UNIDADE CURRICULAR: Sistemas de Informação e Bases de Dados Aplicados à Saúde
 ANO LETIVO        : 2025/2026
+
+================================================================================
+ DESCRIÇÃO DA APLICAÇÃO
+================================================================================
+
+O MEDICORE é uma aplicação web desenvolvida para a gestão de equipamentos
+médicos em ambiente hospitalar. O sistema permite registar e acompanhar o
+ciclo de vida completo dos equipamentos, desde a sua aquisição até ao abate,
+incluindo a gestão de acessórios, consumíveis, calibrações, manutenções,
+mobilidade (empréstimos e transferências entre departamentos) e reporte de
+avarias.
+
+Funcionalidades principais:
+  - Gestão de equipamentos, acessórios e consumíveis
+  - Processos de calibração e manutenção com fluxo de aprovação
+  - Mobilidade de equipamentos (empréstimos e transferências)
+  - Reporte e acompanhamento de avarias
+  - Gestão de fornecedores e localizações
+  - Página pública configurável (backoffice)
+  - Dois perfis de acesso: Administrador e Engenheiro
+
+Tecnologias utilizadas:
+  - PHP 8.1 (PDO + bcrypt), MySQL 8, Apache (Laragon)
+  - Bootstrap 5, DataTables, Font Awesome
+
+================================================================================
+ ESTRUTURA DE DIRETORIAS
+================================================================================
+
+medicore/
+├── config/               Configuração da ligação à base de dados
+├── docs/                 Scripts SQL e documentação
+│   ├── create_tables_medicore.sql        Script DDL (criação das tabelas)
+│   ├── INSERTS.sql                       Dados de teste
+│   └── modelo_relacional_medicore.dbml   Modelo relacional (DBML)
+├── private/              Área restrita (requer autenticação)
+│   ├── assets/           CSS, JS e imagens privadas
+│   ├── includes/         Componentes reutilizáveis (nav, sidebar, footer)
+│   └── views/            Páginas da aplicação por módulo
+│       ├── avarias/
+│       ├── backoffice/
+│       ├── calibracao_manutencao/
+│       ├── dashboard/
+│       ├── equipamentos/
+│       ├── fornecedores/
+│       ├── localizacoes/
+│       ├── mobilidade/
+│       └── utilizadores/
+├── public/               Área pública
+│   ├── assets/           CSS, JS e imagens públicas
+│   └── login.php         Página de autenticação
+├── index.php             Redireciona para a página pública
+└── README.txt            Este ficheiro
 
 ================================================================================
  INSTRUÇÕES DE INSTALAÇÃO E EXECUÇÃO

@@ -1,0 +1,605 @@
+// =============================================================================
+// MEDICORE - Modelo Relacional da Base de Dados
+// Número de Aluno: 1230404
+// Unidade Curricular: Sistemas de Informação e Bases de Dados Aplicados à Saúde
+// Ano Letivo: 2025/2026
+// =============================================================================
+
+Project MEDICORE {
+  database_type: 'MySQL'
+  Note: 'Sistema de Gestão de Equipamentos Médicos Hospitalares'
+}
+
+// ---------------------------------------------------------------------------
+// UTILIZADORES
+// ---------------------------------------------------------------------------
+Table utilizadores {
+  id_utilizador       int           [pk, increment]
+  codigo_utilizador   varchar(30)   [not null, unique]
+  nome                varchar(180)  [not null]
+  tipo_utilizador     varchar(20)   [not null, note: "ENUM: Administrador | Engenheiro"]
+  estado              varchar(20)   [not null, default: "Ativo", note: "ENUM: Ativo | Inativo | Pendente"]
+  cartao_cidadao      varchar(30)   [not null, unique]
+  nif                 varchar(20)   [unique]
+  data_nascimento     date
+  email               varchar(150)  [not null, unique]
+  telefone            varchar(30)
+  morada              varchar(255)
+  codigo_postal       varchar(20)
+  localidade          varchar(100)
+  username            varchar(80)   [not null, unique]
+  password_hash       varchar(255)  [not null]
+  foto_perfil         varchar(255)
+  ultimo_login        datetime
+  isActive            tinyint    [not null, default: 1]
+  criado_em           timestamp     [default: `CURRENT_TIMESTAMP`]
+  atualizado_em       timestamp     [default: `CURRENT_TIMESTAMP`]
+  atualizado_por      varchar(150)
+}
+
+// ---------------------------------------------------------------------------
+// LOCALIZAÇÕES
+// ---------------------------------------------------------------------------
+Table localizacoes {
+  id_localizacao                int           [pk, increment]
+  codigo                        varchar(30)   [not null, unique]
+  departamento_nome             varchar(150)  [not null]
+  departamento_sigla            varchar(20)   [not null]
+  edificio                      varchar(100)  [not null]
+  piso                          varchar(30)   [not null]
+  sala                          varchar(80)   [not null]
+  tipo_espaco                   varchar(80)   [not null]
+  estado                        varchar(30)   [not null, default: "Ativa"]
+  capacidade_equipamentos       int
+  permite_equipamentos_criticos tinyint    [not null, default: 0]
+  observacoes                   text
+  isActive                      tinyint    [not null, default: 1]
+}
+
+// ---------------------------------------------------------------------------
+// FAMÍLIAS DE EQUIPAMENTO
+// ---------------------------------------------------------------------------
+Table familias_equipamento {
+  id_familia_equipamento int          [pk, increment]
+  codigo_familia         varchar(10)  [not null, unique]
+  nome                   varchar(150) [not null]
+  descricao              text
+  isActive               tinyint  [not null, default: 1]
+}
+
+// ---------------------------------------------------------------------------
+// FORNECEDORES
+// ---------------------------------------------------------------------------
+Table fornecedores {
+  id_fornecedor      int          [pk, increment]
+  nome_empresa       varchar(180) [not null]
+  tipo_fornecedor    varchar(20)  [not null, note: "ENUM: Manutenção | Comercial | Fabricante | Calibração"]
+  nif                int          [not null, unique]
+  telefone           int
+  email_fornecedor   varchar(255)
+  pessoa_responsavel varchar(150)
+  telefone_contacto  int
+  email_contacto     varchar(150)
+  morada             varchar(255)
+  codigo_postal      varchar(20)
+  localidade         varchar(100)
+  pais               varchar(80)  [not null, default: "Portugal"]
+  observacoes        varchar(500)
+  isActive           tinyint  [not null, default: 1]
+}
+
+// ---------------------------------------------------------------------------
+// CONSUMÍVEIS
+// ---------------------------------------------------------------------------
+Table consumiveis {
+  id_consumivel              int           [pk, increment]
+  id_equipamento             int
+  codigo_consumivel          varchar(30)   [not null, unique]
+  nome                       varchar(150)  [not null]
+  categoria                  varchar(40)   [not null, note: "ENUM: eletrodos | papel_tecnico | filtros | circuitos_descartaveis | gel_contacto | sensores_descartaveis | reagente_calibracao | material_calibracao | outro"]
+  stock_atual                decimal(10,2) [not null, default: 0]
+  stock_minimo               decimal(10,2) [not null, default: 0]
+  stock_maximo               decimal(10,2)
+  preco_unitario             decimal(10,2)
+  id_localizacao             int
+  id_fornecedor_preferencial int
+  observacoes                text
+  isActive                   tinyint   [not null, default: 1]
+  criado_em                  timestamp    [default: `CURRENT_TIMESTAMP`]
+  atualizado_em              timestamp    [default: `CURRENT_TIMESTAMP`]
+  atualizado_por             varchar(150)
+}
+
+Ref: consumiveis.id_localizacao             > localizacoes.id_localizacao
+Ref: consumiveis.id_fornecedor_preferencial > fornecedores.id_fornecedor
+
+// ---------------------------------------------------------------------------
+// EQUIPAMENTOS
+// ---------------------------------------------------------------------------
+Table equipamentos {
+  id_equipamento          int           [pk, increment]
+  id_familia_equipamento  int           [not null]
+  numero_sequencial       int           [not null]
+  codigo_equipamento      varchar(30)   [not null, unique]
+  designacao              varchar(150)  [not null]
+  modelo                  varchar(120)  [not null]
+  marca                   varchar(30)
+  numero_serie            varchar(120)  [not null, unique]
+  tipo_entrada            varchar(20)   [note: "ENUM: compra | doacao | emprestimo"]
+  valor_aquisicao         decimal(10,2)
+  id_localizacao          int           [not null]
+  estado                  varchar(20)   [not null, default: "ativo", note: "ENUM: ativo | avariado | em_manutencao | em_calibracao | inativo | abatido"]
+  criticidade             varchar(10)   [not null, default: "media", note: "ENUM: baixa | media | alta | critica"]
+  periodicidade_manutencao  varchar(20) [note: "ENUM: semestral | anual | bienal | trienal"]
+  periodicidade_calibracao  varchar(20) [note: "ENUM: semestral | anual | bienal | trienal"]
+  id_responsavel          int
+  data_fabrico            date
+  data_aquisicao          date
+  data_instalacao         date
+  observacoes             text
+  isActive                tinyint   [not null, default: 1]
+  criado_em               timestamp    [default: `CURRENT_TIMESTAMP`]
+  atualizado_em           timestamp    [default: `CURRENT_TIMESTAMP`]
+  atualizado_por          varchar(150)
+}
+
+Ref: equipamentos.id_familia_equipamento > familias_equipamento.id_familia_equipamento
+Ref: equipamentos.id_localizacao         > localizacoes.id_localizacao
+Ref: equipamentos.id_responsavel         > utilizadores.id_utilizador
+
+// ---------------------------------------------------------------------------
+// ACESSÓRIOS DE EQUIPAMENTO
+// ---------------------------------------------------------------------------
+Table acessorios_equipamento {
+  id_acessorio               int          [pk, increment]
+  id_equipamento             int          [not null]
+  id_localizacao             int          [not null]
+  numero_sequencial          int          [not null]
+  designacao                 varchar(150) [not null]
+  tipo                       varchar(30)  [not null, default: "outro", note: "ENUM: sensor | cabo | modulo | consumivel_reutilizavel | adaptador | bateria | outro"]
+  fabricante                 varchar(120)
+  id_fornecedor              int
+  modelo                     varchar(120)
+  numero_serie               varchar(120) [unique]
+  data_aquisicao             date
+  estado                     varchar(20)  [not null, default: "ativo", note: "ENUM: ativo | inativo | avariado | em_manutencao | em_calibracao | abatido"]
+  requer_manutencao          tinyint   [not null, default: 0]
+  periodicidade_manutencao   varchar(20)  [note: "ENUM: semestral | anual | bienal | trienal"]
+  requer_calibracao          tinyint   [not null, default: 0]
+  periodicidade_calibracao   varchar(20)  [note: "ENUM: semestral | anual | bienal | trienal"]
+  id_fornecedor_garantia     int
+  data_inicio_garantia       date
+  data_fim_garantia          date
+  observacoes                text
+  isActive                   tinyint  [not null, default: 1]
+  criado_em                  timestamp   [default: `CURRENT_TIMESTAMP`]
+  atualizado_em              timestamp   [default: `CURRENT_TIMESTAMP`]
+  atualizado_por             varchar(150)
+}
+
+Ref: acessorios_equipamento.id_equipamento         > equipamentos.id_equipamento
+Ref: acessorios_equipamento.id_localizacao         > localizacoes.id_localizacao
+Ref: acessorios_equipamento.id_fornecedor          > fornecedores.id_fornecedor
+Ref: acessorios_equipamento.id_fornecedor_garantia > fornecedores.id_fornecedor
+
+// ---------------------------------------------------------------------------
+// CONSUMÍVEIS POR EQUIPAMENTO
+// ---------------------------------------------------------------------------
+Table consumiveis_equipamentos {
+  id_consumivel_equipamento int           [pk, increment]
+  id_consumivel             int           [not null]
+  id_equipamento            int           [not null]
+  necessario_utilizacao     tinyint    [not null, default: 1]
+  necessario_calibracao     tinyint    [not null, default: 0]
+  quantidade_prevista       decimal(10,2)
+  observacoes               text
+  isActive                  tinyint   [not null, default: 1]
+  criado_em                 timestamp    [default: `CURRENT_TIMESTAMP`]
+  atualizado_em             timestamp    [default: `CURRENT_TIMESTAMP`]
+  atualizado_por            varchar(150)
+
+  indexes {
+    (id_consumivel, id_equipamento) [unique]
+  }
+}
+
+Ref: consumiveis_equipamentos.id_consumivel  > consumiveis.id_consumivel
+Ref: consumiveis_equipamentos.id_equipamento > equipamentos.id_equipamento
+
+// ---------------------------------------------------------------------------
+// EQUIPAMENTOS — FORNECEDORES / GARANTIA
+// ---------------------------------------------------------------------------
+Table equipamentos_fornecedores {
+  id_equipamento_fornecedor int           [pk, increment]
+  id_equipamento            int           [not null, unique]
+  id_fornecedor_garantia    int
+  data_inicio_garantia      date
+  data_fim_garantia         date
+  observacoes               text
+  isActive                  tinyint   [not null, default: 1]
+  criado_em                 timestamp    [default: `CURRENT_TIMESTAMP`]
+  atualizado_em             timestamp    [default: `CURRENT_TIMESTAMP`]
+  atualizado_por            varchar(150)
+}
+
+Ref: equipamentos_fornecedores.id_equipamento         > equipamentos.id_equipamento
+Ref: equipamentos_fornecedores.id_fornecedor_garantia > fornecedores.id_fornecedor
+
+// ---------------------------------------------------------------------------
+// CALIBRAÇÕES DE EQUIPAMENTO
+// ---------------------------------------------------------------------------
+Table calibracoes_equipamento {
+  id_calibracao              int           [pk, increment]
+  codigo_processo            varchar(30)   [unique]
+  id_equipamento             int           [not null]
+  id_acessorio               int
+  id_fornecedor_responsavel  int
+  tipo_execucao              varchar(20)   [not null, default: "externa", note: "ENUM: interna | externa"]
+  estado_processo            varchar(30)   [not null, default: "aguarda_decisao", note: "ENUM: aguarda_decisao | aprovado | reprovado | cancelado | aguarda_recolha | procedimento_a_decorrer | procedimento_efetuado | emissao_relatorio | devolucao_equipamento | processo_finalizado"]
+  decisao_admin              varchar(20)   [not null, default: "pendente", note: "ENUM: pendente | aprovado | reprovado"]
+  id_admin_decisao           int
+  data_decisao               datetime
+  motivo_decisao             varchar(500)
+  data_abertura              date
+  data_prevista              date
+  data_recolha               date
+  data_inicio_procedimento   date
+  data_fim_procedimento      date
+  data_emissao_relatorio     date
+  data_devolucao             date
+  data_finalizacao           date
+  tecnico_interno            varchar(150)
+  data_calibracao            date
+  proxima_calibracao         date
+  numero_certificado         varchar(120)
+  resultado                  varchar(30)   [note: "ENUM: aprovado | aprovado_com_restricoes | reprovado"]
+  procedimento               text
+  coberta_por_garantia       tinyint   [not null, default: 0]
+  custo                      decimal(10,2)
+  observacoes                text
+  isActive                   tinyint  [not null, default: 1]
+  criado_em                  timestamp   [default: `CURRENT_TIMESTAMP`]
+  atualizado_em              timestamp   [default: `CURRENT_TIMESTAMP`]
+  atualizado_por             varchar(150)
+}
+
+Ref: calibracoes_equipamento.id_equipamento            > equipamentos.id_equipamento
+Ref: calibracoes_equipamento.id_acessorio              > acessorios_equipamento.id_acessorio
+Ref: calibracoes_equipamento.id_fornecedor_responsavel > fornecedores.id_fornecedor
+Ref: calibracoes_equipamento.id_admin_decisao          > utilizadores.id_utilizador
+
+// ---------------------------------------------------------------------------
+// CALIBRAÇÕES — ACESSÓRIOS
+// ---------------------------------------------------------------------------
+Table calibracoes_acessorios {
+  id_calibracao_acessorio int       [pk, increment]
+  id_calibracao           int       [not null]
+  id_acessorio            int       [not null]
+  isActive                tinyint [not null, default: 1]
+  criado_em               datetime  [default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    (id_calibracao, id_acessorio) [unique]
+  }
+}
+
+Ref: calibracoes_acessorios.id_calibracao > calibracoes_equipamento.id_calibracao
+Ref: calibracoes_acessorios.id_acessorio  > acessorios_equipamento.id_acessorio
+
+// ---------------------------------------------------------------------------
+// CALIBRAÇÕES — CONSUMÍVEIS
+// ---------------------------------------------------------------------------
+Table calibracoes_consumiveis {
+  id_calibracao_consumivel int           [pk, increment]
+  id_calibracao            int           [not null]
+  id_consumivel            int           [not null]
+  quantidade_utilizada     decimal(10,2) [not null, default: 1]
+  isActive                 tinyint   [not null, default: 1]
+  criado_em                datetime     [default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    (id_calibracao, id_consumivel) [unique]
+  }
+}
+
+Ref: calibracoes_consumiveis.id_calibracao > calibracoes_equipamento.id_calibracao
+Ref: calibracoes_consumiveis.id_consumivel > consumiveis.id_consumivel
+
+// ---------------------------------------------------------------------------
+// MANUTENÇÕES DE EQUIPAMENTO
+// ---------------------------------------------------------------------------
+Table manutencoes_equipamento {
+  id_manutencao              int           [pk, increment]
+  codigo_processo            varchar(30)   [unique]
+  id_equipamento             int           [not null]
+  id_acessorio               int
+  tipo_manutencao            varchar(20)   [not null, note: "ENUM: preventiva | corretiva"]
+  tipo_execucao              varchar(20)   [not null, default: "externa", note: "ENUM: interna | externa"]
+  estado_processo            varchar(30)   [not null, default: "aguarda_decisao", note: "ENUM: aguarda_decisao | aprovado | reprovado | cancelado | aguarda_recolha | procedimento_a_decorrer | procedimento_efetuado | emissao_relatorio | devolucao_equipamento | processo_finalizado"]
+  decisao_admin              varchar(20)   [not null, default: "pendente", note: "ENUM: pendente | aprovado | reprovado"]
+  id_admin_decisao           int
+  data_decisao               datetime
+  motivo_decisao             varchar(500)
+  data_abertura              date
+  data_prevista              date
+  data_recolha               date
+  data_inicio_procedimento   date
+  data_fim_procedimento      date
+  data_emissao_relatorio     date
+  data_devolucao             date
+  data_finalizacao           date
+  id_fornecedor_responsavel  int
+  tecnico_interno            varchar(150)
+  data_manutencao            date
+  proxima_manutencao         date
+  numero_relatorio           varchar(120)
+  descricao_procedimento     text
+  resultado                  varchar(30)   [note: "ENUM: aprovado | aprovado_com_restricoes | reprovado"]
+  coberta_por_garantia       tinyint   [not null, default: 0]
+  custo                      decimal(10,2)
+  observacoes                text
+  isActive                   tinyint  [not null, default: 1]
+  criado_em                  timestamp   [default: `CURRENT_TIMESTAMP`]
+  atualizado_em              timestamp   [default: `CURRENT_TIMESTAMP`]
+  atualizado_por             varchar(150)
+}
+
+Ref: manutencoes_equipamento.id_equipamento            > equipamentos.id_equipamento
+Ref: manutencoes_equipamento.id_acessorio              > acessorios_equipamento.id_acessorio
+Ref: manutencoes_equipamento.id_fornecedor_responsavel > fornecedores.id_fornecedor
+Ref: manutencoes_equipamento.id_admin_decisao          > utilizadores.id_utilizador
+
+// ---------------------------------------------------------------------------
+// MANUTENÇÕES — ACESSÓRIOS
+// ---------------------------------------------------------------------------
+Table manutencoes_acessorios {
+  id_manutencao_acessorio int       [pk, increment]
+  id_manutencao           int       [not null]
+  id_acessorio            int       [not null]
+  isActive                tinyint [not null, default: 1]
+  criado_em               datetime  [default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    (id_manutencao, id_acessorio) [unique]
+  }
+}
+
+Ref: manutencoes_acessorios.id_manutencao > manutencoes_equipamento.id_manutencao
+Ref: manutencoes_acessorios.id_acessorio  > acessorios_equipamento.id_acessorio
+
+// ---------------------------------------------------------------------------
+// MANUTENÇÕES — CONSUMÍVEIS
+// ---------------------------------------------------------------------------
+Table manutencoes_consumiveis {
+  id_manutencao_consumivel int           [pk, increment]
+  id_manutencao            int           [not null]
+  id_consumivel            int           [not null]
+  quantidade_utilizada     decimal(10,2) [not null, default: 1]
+  isActive                 tinyint   [not null, default: 1]
+  criado_em                datetime     [default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    (id_manutencao, id_consumivel) [unique]
+  }
+}
+
+Ref: manutencoes_consumiveis.id_manutencao > manutencoes_equipamento.id_manutencao
+Ref: manutencoes_consumiveis.id_consumivel > consumiveis.id_consumivel
+
+// ---------------------------------------------------------------------------
+// AVARIAS REPORTADAS
+// ---------------------------------------------------------------------------
+Table avarias_reportadas {
+  id_avaria              int          [pk, increment]
+  codigo_avaria          varchar(30)  [not null, unique]
+  id_equipamento         int          [not null]
+  id_acessorio           int
+  id_utilizador_reportou int          [not null]
+  descricao_avaria       varchar(500) [not null]
+  estado                 varchar(30)  [not null, default: "reportada", note: "ENUM: reportada | em_analise | convertida_manutencao | cancelada"]
+  id_manutencao          int
+  data_reporte           datetime     [not null, default: `CURRENT_TIMESTAMP`]
+  isActive               tinyint  [not null, default: 1]
+}
+
+Ref: avarias_reportadas.id_equipamento         > equipamentos.id_equipamento
+Ref: avarias_reportadas.id_acessorio           > acessorios_equipamento.id_acessorio
+Ref: avarias_reportadas.id_utilizador_reportou > utilizadores.id_utilizador
+Ref: avarias_reportadas.id_manutencao          > manutencoes_equipamento.id_manutencao
+
+// ---------------------------------------------------------------------------
+// EMPRÉSTIMOS DE EQUIPAMENTOS
+// ---------------------------------------------------------------------------
+Table emprestimos_equipamentos {
+  id_emprestimo              int          [pk, increment]
+  codigo_emprestimo          varchar(30)  [not null, unique]
+  id_equipamento             int          [not null]
+  id_localizacao_origem      int          [not null]
+  id_localizacao_destino     int          [not null]
+  id_utilizador_pedido       int          [not null]
+  id_utilizador_termino      int
+  responsavel_emprestimo     varchar(150) [not null]
+  motivo                     varchar(255)
+  data_inicio                date         [not null]
+  data_prevista_devolucao    date         [not null]
+  data_termino               date
+  estado                     varchar(20)  [not null, default: "pendente", note: "ENUM: pendente | ativo | rejeitado | terminado | atrasado"]
+  observacoes                varchar(500)
+  isActive                   tinyint  [not null, default: 1]
+  id_utilizador_aprovacao    int
+  data_aprovacao             datetime
+}
+
+Ref: emprestimos_equipamentos.id_equipamento          > equipamentos.id_equipamento
+Ref: emprestimos_equipamentos.id_localizacao_origem   > localizacoes.id_localizacao
+Ref: emprestimos_equipamentos.id_localizacao_destino  > localizacoes.id_localizacao
+Ref: emprestimos_equipamentos.id_utilizador_pedido    > utilizadores.id_utilizador
+Ref: emprestimos_equipamentos.id_utilizador_termino   > utilizadores.id_utilizador
+
+// ---------------------------------------------------------------------------
+// TRANSFERÊNCIAS DE EQUIPAMENTOS
+// ---------------------------------------------------------------------------
+Table transferencias_equipamentos {
+  id_transferencia          int          [pk, increment]
+  codigo_transferencia      varchar(30)  [not null, unique]
+  id_equipamento            int          [not null]
+  id_localizacao_origem     int          [not null]
+  id_localizacao_destino    int          [not null]
+  id_utilizador_pedido      int          [not null]
+  id_utilizador_aprovacao   int
+  motivo                    varchar(255)
+  estado                    varchar(20)  [not null, default: "pendente", note: "ENUM: pendente | aprovado | rejeitado"]
+  data_pedido               datetime     [not null, default: `CURRENT_TIMESTAMP`]
+  data_aprovacao            datetime
+  observacoes               varchar(500)
+  isActive                  tinyint  [not null, default: 1]
+}
+
+Ref: transferencias_equipamentos.id_equipamento          > equipamentos.id_equipamento
+Ref: transferencias_equipamentos.id_localizacao_origem   > localizacoes.id_localizacao
+Ref: transferencias_equipamentos.id_localizacao_destino  > localizacoes.id_localizacao
+Ref: transferencias_equipamentos.id_utilizador_pedido    > utilizadores.id_utilizador
+Ref: transferencias_equipamentos.id_utilizador_aprovacao > utilizadores.id_utilizador
+
+// ---------------------------------------------------------------------------
+// DOCUMENTOS DE EQUIPAMENTOS
+// ---------------------------------------------------------------------------
+Table documentos_equipamentos {
+  id_documento_equipamento  int          [pk, increment]
+  id_equipamento            int          [not null]
+  id_acessorio              int
+  id_manutencao             int
+  id_calibracao             int
+  id_equipamento_fornecedor int
+  tipo_documento            varchar(40)  [not null, note: "ENUM: manual_instrucoes | datasheet | contrato | garantia | contrato_aquisicao | contrato_garantia | contrato_manutencao | contrato_calibracao | certificado_calibracao | relatorio_calibracao | relatorio_manutencao | ficha_tecnica | declaracao_conformidade | fotografia | outro"]
+  nome_documento            varchar(150) [not null]
+  caminho_ficheiro          varchar(255) [not null]
+  data_documento            date
+  data_validade             date
+  observacoes               text
+  isActive                  tinyint  [not null, default: 1]
+  criado_em                 timestamp   [default: `CURRENT_TIMESTAMP`]
+  atualizado_em             timestamp   [default: `CURRENT_TIMESTAMP`]
+  atualizado_por            varchar(150)
+}
+
+Ref: documentos_equipamentos.id_equipamento            > equipamentos.id_equipamento
+Ref: documentos_equipamentos.id_acessorio              > acessorios_equipamento.id_acessorio
+Ref: documentos_equipamentos.id_manutencao             > manutencoes_equipamento.id_manutencao
+Ref: documentos_equipamentos.id_calibracao             > calibracoes_equipamento.id_calibracao
+Ref: documentos_equipamentos.id_equipamento_fornecedor > equipamentos_fornecedores.id_equipamento_fornecedor
+
+// ---------------------------------------------------------------------------
+// MOVIMENTOS DE STOCK DE CONSUMÍVEIS
+// ---------------------------------------------------------------------------
+Table movimentos_stock_consumiveis {
+  id_movimento_stock int           [pk, increment]
+  id_consumivel      int           [not null]
+  tipo_movimento     varchar(30)   [not null, note: "ENUM: entrada | saida | ajuste | consumo_calibracao | devolucao"]
+  quantidade         decimal(10,2) [not null]
+  stock_anterior     decimal(10,2)
+  stock_posterior    decimal(10,2)
+  id_equipamento     int
+  id_acessorio       int
+  id_calibracao      int
+  motivo             varchar(150)
+  observacoes        text
+  data_movimento     datetime      [not null, default: `CURRENT_TIMESTAMP`]
+  atualizado_por     varchar(150)
+}
+
+Ref: movimentos_stock_consumiveis.id_consumivel  > consumiveis.id_consumivel
+Ref: movimentos_stock_consumiveis.id_equipamento > equipamentos.id_equipamento
+Ref: movimentos_stock_consumiveis.id_acessorio   > acessorios_equipamento.id_acessorio
+Ref: movimentos_stock_consumiveis.id_calibracao  > calibracoes_equipamento.id_calibracao
+
+// ---------------------------------------------------------------------------
+// HISTÓRICO DE EQUIPAMENTOS
+// ---------------------------------------------------------------------------
+Table historico_equipamentos {
+  id_historico_equipamento int          [pk, increment]
+  id_equipamento           int          [not null]
+  id_localizacao           int
+  id_localizacao_origem    int
+  id_localizacao_destino   int
+  id_utilizador            int
+  tipo_evento              varchar(40)  [not null, note: "ENUM: criacao | alteracao_localizacao | transferencia_pendente | transferencia_aprovada | transferencia_rejeitada | emprestimo_pendente | emprestimo_iniciado | emprestimo_rejeitado | emprestimo_terminado | manutencao | calibracao | alteracao_dados"]
+  referencia_tabela        varchar(80)
+  referencia_id            int
+  descricao                varchar(500) [not null]
+  data_evento              datetime     [not null, default: `CURRENT_TIMESTAMP`]
+  isActive                 tinyint  [not null, default: 1]
+}
+
+Ref: historico_equipamentos.id_equipamento        > equipamentos.id_equipamento
+Ref: historico_equipamentos.id_localizacao        > localizacoes.id_localizacao
+Ref: historico_equipamentos.id_localizacao_origem > localizacoes.id_localizacao
+Ref: historico_equipamentos.id_localizacao_destino > localizacoes.id_localizacao
+Ref: historico_equipamentos.id_utilizador         > utilizadores.id_utilizador
+
+// ---------------------------------------------------------------------------
+// HISTÓRICO DE UTILIZADORES
+// ---------------------------------------------------------------------------
+Table historico_utilizadores {
+  id_historico_utilizador int          [pk, increment]
+  id_utilizador_alvo      int
+  codigo_utilizador       varchar(30)
+  acao                    varchar(40)  [not null, note: "ENUM: criacao_utilizador | edicao_utilizador | remocao_utilizador | reativacao_utilizador"]
+  campo_alterado          varchar(100)
+  valor_anterior          text
+  valor_novo              text
+  observacoes             text
+  realizado_por           varchar(150)
+  data_registo            datetime     [not null, default: `CURRENT_TIMESTAMP`]
+}
+
+Ref: historico_utilizadores.id_utilizador_alvo > utilizadores.id_utilizador
+
+// ---------------------------------------------------------------------------
+// PÁGINA PÚBLICA — CONFIGURAÇÃO
+// ---------------------------------------------------------------------------
+Table pagina_publica_config {
+  id_config               int          [pk, increment]
+  navbar_logo             varchar(255) [not null]
+  navbar_link_sobre       varchar(80)  [not null]
+  navbar_link_equipa      varchar(80)  [not null]
+  navbar_link_funcional   varchar(80)  [not null]
+  navbar_link_hospitais   varchar(80)  [not null]
+  navbar_link_contacto    varchar(80)  [not null]
+  navbar_btn_restrita     varchar(80)  [not null]
+  sobre_titulo            varchar(255) [not null]
+  sobre_texto             text         [not null]
+  contacto_texto          text         [not null]
+  rodape_localizacao      text         [not null]
+  rodape_horario_semana   varchar(100) [not null]
+  rodape_email            varchar(150) [not null]
+  rodape_telefone         varchar(30)  [not null]
+  atualizado_em           datetime     [default: `CURRENT_TIMESTAMP`]
+  atualizado_por          varchar(150)
+}
+
+// ---------------------------------------------------------------------------
+// PÁGINA PÚBLICA — SLIDES
+// ---------------------------------------------------------------------------
+Table pagina_publica_slides {
+  id_slide      int          [pk, increment]
+  ordem         int          [not null, default: 0]
+  imagem        varchar(255) [not null]
+  titulo        varchar(255) [not null]
+  descricao     text         [not null]
+  isActive      tinyint  [not null, default: 1]
+  atualizado_em datetime    [default: `CURRENT_TIMESTAMP`]
+}
+
+// ---------------------------------------------------------------------------
+// PÁGINA PÚBLICA — HOSPITAIS / CLÍNICAS
+// ---------------------------------------------------------------------------
+Table pagina_publica_hospitais {
+  id_hospital   int          [pk, increment]
+  ordem         int          [not null, default: 0]
+  nome          varchar(255) [not null]
+  descricao     text         [not null]
+  imagem        varchar(255) [not null]
+  isActive      tinyint  [not null, default: 1]
+  atualizado_em datetime    [default: `CURRENT_TIMESTAMP`]
+}

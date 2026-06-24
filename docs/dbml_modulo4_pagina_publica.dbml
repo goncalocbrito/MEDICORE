@@ -1,0 +1,46 @@
+// =============================================================================
+// MEDICORE — Módulo 4: Página Pública (Backoffice)
+// Tabelas: pagina_publica_config, pagina_publica_slides,
+//          pagina_publica_hospitais
+// (Tabelas independentes — sem chaves estrangeiras entre si)
+// =============================================================================
+
+Table pagina_publica_config {
+  id_config             int          [pk, increment]
+  navbar_logo           varchar(255) [not null]
+  navbar_link_sobre     varchar(80)  [not null]
+  navbar_link_equipa    varchar(80)  [not null]
+  navbar_link_funcional varchar(80)  [not null]
+  navbar_link_hospitais varchar(80)  [not null]
+  navbar_link_contacto  varchar(80)  [not null]
+  navbar_btn_restrita   varchar(80)  [not null]
+  sobre_titulo          varchar(255) [not null]
+  sobre_texto           text         [not null]
+  contacto_texto        text         [not null]
+  rodape_localizacao    text         [not null]
+  rodape_horario_semana varchar(100) [not null]
+  rodape_email          varchar(150) [not null]
+  rodape_telefone       varchar(30)  [not null]
+  atualizado_em         datetime     [default: `CURRENT_TIMESTAMP`]
+  atualizado_por        varchar(150)
+}
+
+Table pagina_publica_slides {
+  id_slide      int          [pk, increment]
+  ordem         int          [not null, default: 0]
+  imagem        varchar(255) [not null]
+  titulo        varchar(255) [not null]
+  descricao     text         [not null]
+  isActive      tinyint      [not null, default: 1]
+  atualizado_em datetime     [default: `CURRENT_TIMESTAMP`]
+}
+
+Table pagina_publica_hospitais {
+  id_hospital   int          [pk, increment]
+  ordem         int          [not null, default: 0]
+  nome          varchar(255) [not null]
+  descricao     text         [not null]
+  imagem        varchar(255) [not null]
+  isActive      tinyint      [not null, default: 1]
+  atualizado_em datetime     [default: `CURRENT_TIMESTAMP`]
+}

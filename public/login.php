@@ -90,10 +90,7 @@ if (!empty($_SESSION['server_error'])) {
                     </div>
                 </div>
 
-                <div class="login-options">
-                    <label><input type="checkbox" name="lembrar"> Lembrar sessão</label>
-                    <a href="#">Esqueceu-se da password?</a>
-                </div>
+
 
                 <button type="submit" class="btn-login">
                     <i class="fa-solid fa-right-to-bracket me-2"></i>

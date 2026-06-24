@@ -204,15 +204,8 @@ require_once __DIR__ . '/includes/sidebar.php';
 
 <main class="conteudo-private">
 
-    <section class="dashboard-header">
-        <div>
-            <h2>Dashboard</h2>
-            <p>Visão geral administrativa — avisos pendentes e análise de custos.</p>
-        </div>
-    </section>
-
     <!-- ── ALERTAS DE GARANTIA / MANUTENÇÃO / CALIBRAÇÃO ── -->
-    <section class="dashboard-indicadores" style="flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+    <section class="dashboard-indicadores" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.5rem;">
 
         <?php if ($totalGarantiaVencer > 0): ?>
         <a href="views/equipamentos/garantias_equipamentos.php" class="indicador-card indicador-card-aviso text-decoration-none" style="border-left:4px solid #e67e22;">
@@ -294,7 +287,7 @@ require_once __DIR__ . '/includes/sidebar.php';
     </section>
 
     <!-- ── AVISOS ── -->
-    <section class="dashboard-indicadores" style="flex-wrap:wrap; gap:1rem;">
+    <section class="dashboard-indicadores" style="display:grid; grid-template-columns:repeat(3,1fr); gap:1rem;">
 
         <?php if ($totalProcessos > 0): ?>
         <a href="views/calibracao_manutencao/aprovacao_processos.php" class="indicador-card indicador-card-aviso text-decoration-none" style="border-left:4px solid #e67e22;">
@@ -423,6 +416,8 @@ require_once __DIR__ . '/includes/sidebar.php';
 
 </main>
 
+<?php require_once __DIR__ . '/includes/footer.php'; ?>
+
 <script>
 const opcoesGrafico = (label, cor) => ({
     responsive: true,
@@ -498,5 +493,3 @@ new Chart(document.getElementById('graficoCalibracao'), {
 });
 <?php endif; ?>
 </script>
-
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
